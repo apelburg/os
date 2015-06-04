@@ -6,7 +6,7 @@
 	ini_set('display_startup_errors', 1);
 	set_time_limit(0);
 
-    include('libs/mysql.php');
+    //include('libs/mysql.php');
 	include('libs/mysqli.php');
     include('libs/config.php');
 	include('libs/lock.php');

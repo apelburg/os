@@ -618,21 +618,41 @@
 */
 
 	 function select_manager_data($id){
-	    global $db;
+	    global $mysqli;
+	    //global $db;
 		$query = "SELECT*FROM `".MANAGERS_TBL."` WHERE `id` = '".$id."'";
-	    $result = mysql_query($query,$db) or die(mysql_error());
-		if(mysql_num_rows($result)==0) exit('нет пользователя с таким id');
-		return $result;	
+		$result = $mysqli->query($query) or die($mysqli->error);
+		$arr = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$arr[] = $row;
+			}
+		}else{exit('нет пользователя с таким id');}
+		return $arr;
+	    //$result = mysql_query($query,$db) or die(mysql_error());
+		//if(mysql_num_rows($result)==0) exit('нет пользователя с таким id');
+		//return $result;	
 	}
 	
 	function get_managers_list(){
-	    global $db;
+	    //global $db;
+		global $mysqli;
 		$query = "SELECT*FROM `".MANAGERS_TBL."`";
-	    $result = mysql_query($query,$db);
-		if(mysql_num_rows($result)>0) while($item = mysql_fetch_assoc($result)){
-		     $manager_arr[] = array('id' => $item['id'],'name' => $item['name'],'last_name' => $item['last_name'],'email_2' => $item['email_2']);
-		}
-		else $manager_arr[] = 'none';
+	    $result = $mysqli->query($query) or die($mysqli->error);
+	    $manager_arr = array();
+	    if($result->num_rows > 0){
+			while($item = $result->fetch_assoc()){
+				$manager_arr[] = array('id' => $item['id'],'name' => $item['name'],'last_name' => $item['last_name'],'email_2' => $item['email_2']);
+			}
+		}else{$manager_arr[] = 'none';}
+		return $manager_arr;
+
+	 //    $result = mysql_query($query,$db);
+		// if(mysql_num_rows($result)>0) 
+		// 	while($item = mysql_fetch_assoc($result)){
+		//      $manager_arr[] = array('id' => $item['id'],'name' => $item['name'],'last_name' => $item['last_name'],'email_2' => $item['email_2']);
+		// 	}
+		// else $manager_arr[] = 'none';
 		return $manager_arr;
 	}
 	

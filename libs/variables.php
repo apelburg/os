@@ -1,7 +1,4 @@
 <?php
-	
-
-	
 	//$page = !empty($_GET['page'])? ((strpos($_GET['page'],'/'))? substr($_GET['page'],0,strpos($_GET['page'],'/')):$_GET['page']) : 'main';
 	$page = !empty($_GET['page'])? $_GET['page'] : FALSE ;
 	$section = !empty($_GET['section'])? $_GET['section'] : FALSE ;

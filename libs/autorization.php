@@ -17,13 +17,13 @@
 
 		$result = select_manager_data($_SESSION['access']['user_id']);
 		
-	    $user_id = mysql_result($result,0,'id');
-		$user_nickname = mysql_result($result,0,'nickname');
-		$user_name = mysql_result($result,0,'name');
-		$user_last_name = mysql_result($result,0,'last_name');
-		$user_department = mysql_result($result,0,'department');
-		$position = mysql_result($result,0,'position');
-	    $user_status = mysql_result($result,0,'access');
+	    $user_id = $result[0]['id'];
+		$user_nickname = $result[0]['nickname'];
+		$user_name = $result[0]['name'];
+		$user_last_name = $result[0]['last_name'];
+		$user_department = $result[0]['department'];
+		$position = $result[0]['position'];
+	    $user_status = $result[0]['access'];
 	}
 	else{
 	    $user_id = '';
