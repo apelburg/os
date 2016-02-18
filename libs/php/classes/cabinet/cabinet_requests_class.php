@@ -468,8 +468,7 @@
 					$no_edit = 1;
 				}else{
 					$no_edit = 0;
-				}
-			
+				}			
 
 				$html .= '<div>'.$this->get_all_manager_name_Database_Html($this->Query,$no_edit).'</div>';
 				// если не история - считаем сколько времени назад взяли заказ в работу
@@ -480,8 +479,7 @@
 			
 			$html .= '<td class="show_main_menu">'.$this->Query['create_time'].'</td>';
 			$html .= '<td class="show_main_menu"></td>';
-			$html .= '<td class="show_main_menu">
-</td>';
+			$html .= '<td class="show_main_menu"></td>';
 			
 			// $rrr = RT::calcualte_query_summ($this->Query['query_num']);
 			$rrr = $this->price_for_the_position_ITOGO;
@@ -562,11 +560,13 @@
 		protected function get_header_general_tbl(){
 			$html = '<table class="query_tbl" id="general_panel_orders_tbl">';
 				$html .= '<tr>';
-					$html .= '<th id="show_allArt" style="width: 14px;"></th>';
+					$html .= '<th id="show_allArt" style="width: 15px;min-width:15px;"></th>';
 					$html .= '<th>Номер</th>';					
 					$display = (isset($_GET['client_id']) && (int)$_GET['client_id'] > 0)?' style="display:none"':'';	
+					// $theme_style = (isset($_GET['client_id']) && (int)$_GET['client_id'] > 0)?' style="min-width: 804px;':'';
+
 					$html .= '<th'.$display.'>Компания</th>';
-					$html .= '<th>Тема</th>';
+					$html .= '<th >Тема</th>';
 					$html .= '<th>Менеджер</th>';
 					$html .= '<th style="width:87px">Дата запроса</th>';
 					$html .= '<th colspan="2"></th>';
@@ -574,7 +574,6 @@
 					$html .= '<th>Сумма</th>';
 					$html .= '<th>Статус</th>';
 				$html .= '</tr>';
-
 			return $html;
 		}
 

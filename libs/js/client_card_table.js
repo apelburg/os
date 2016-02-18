@@ -303,7 +303,7 @@ $(document).on('dblclick', '.edit_adress_row', function(event) {
     var name_window = $(this).parent().prev().html();
     var element = $(this);
     name_window = 'Редактировать '+ name_window.toLowerCase();
-    var html = '<img src="http://www.os1.ru/os/skins/images/img_design/preloader.gif" >';  
+    var html = '<img src="./test/skins/images/img_design/preloader.gif" >';  
     var id_row = ($(this).attr('data-adress-id') != "")?$(this).attr('data-adress-id'):'none';
     var tbl = 'CLIENT_ADRES_TBL';
     var buttons = $(this).attr('data-button-name-window');

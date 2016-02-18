@@ -8,12 +8,12 @@
  */
 function get_dop_data_rows(row){
 	// if(window.ui_add_class == 0){
-		if(!row.hasClass('ui-sort')){
-			row.addClass('checked-row');
-			if(row.next().length){
-				get_dop_data_rows(row.next());
-			}
+	if(!row.hasClass('ui-sort')){
+		row.addClass('checked-row');
+		if(row.next().length){
+			get_dop_data_rows(row.next());
 		}
+	}
 	// }
 }
 	
@@ -78,8 +78,7 @@ $(function() {
 				ui.children('.td:nth-of-type('+(1+index)+')').css({'padding':$(this).css('padding'),'height':$(this).height(),'width':$(this).css('width')})
 			});				
 			return ui;
-		}
-	
+		}	
 	};
 	
 	var fixStart = function(e, ui) {
@@ -136,10 +135,13 @@ $(function() {
 
 	var fixUpdate = function(e, ui){
 		// alert(654);
-		$('#rt_tbl_body .pos_edge td:first-child').each(function(index, el) {
+		var i = 0;
+		$('#rt_tbl_body .pos_edge td.glob_counter').each(function(index, el) {
 			// $(this).find('td.glob_counter').html(++index);
-			console.log($(this).html(++index));
-			console.log($(this).html());
+			// if($(this).hasAttribute('type') && $(this).attr('type') == 'glob_counter'){
+				console.log($(this).html( ++index ));
+				console.log($(this).html());	
+			// }			
 		});
 
 		// сохраняем ресорт

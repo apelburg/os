@@ -125,7 +125,7 @@
 			/////////////////////////////////////    AJAX  ///////////////////////////////////////////
 		
 			var request = HTTP.newRequest();
-			var url = "/os/?page=clients&section=client_folder&reset_calculation_data_in_db=true&row_id=" + row_id + "&data[" + data['type'] + "]=" + data['value'] + "&control_num=" + control_num;
+			var url = "/test/?page=clients&section=client_folder&reset_calculation_data_in_db=true&row_id=" + row_id + "&data[" + data['type'] + "]=" + data['value'] + "&control_num=" + control_num;
 		
 			// производим запрос
 			request.open("GET", url, true);
@@ -161,7 +161,7 @@
 			/////////////////////////////////////    AJAX  ///////////////////////////////////////////
 		
 			var request = HTTP.newRequest();
-			var url = "/os/?page=clients&section=client_folder&reset_switching_calculation_marker_in_db=true&row_id=" + row_id + "&status=" + status +  "&control_num=" + control_num;
+			var url = "/test/?page=clients&section=client_folder&reset_switching_calculation_marker_in_db=true&row_id=" + row_id + "&status=" + status +  "&control_num=" + control_num;
 		
 			// производим запрос
 			request.open("GET", url, true);
