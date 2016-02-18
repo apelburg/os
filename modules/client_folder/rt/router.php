@@ -266,10 +266,7 @@
 	
 	include ROOT.'/skins/tpl/client_folder/rt/options_bar.tpl';
 
-  	if(@$_SESSION['access']['user_id']==18 || @$_SESSION['access']['user_id']==6){ 
-		include 'controller2.php';
-	} 
-    else include 'controller.php';
+  	include 'controller.php';
 	// шаблон страницы
 	include ROOT.'/skins/tpl/client_folder/rt/show.tpl';
 

@@ -1282,6 +1282,8 @@ var printCalculator = {
 	} 
 	,
 	makeCommonSelect:function(glob_type,target,type,data){
+		// ламерский способ зделать клон объекта
+		var data = JSON.parse(JSON.stringify(data));
 		
 		// складываем элементы в ячейки будующей таблицы
 		var docFragment = document.createDocumentFragment();
