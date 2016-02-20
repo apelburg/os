@@ -1,10 +1,11 @@
 <?php 
 
     //echo date("Y-m-d H:i:s");
-
-	require_once (ROOT.'/../libs/mysqli.php');
-	require_once (ROOT.'/../libs/mysql.php');
-	require_once (ROOT.'/libs/php/classes/client_class.php');
+    // не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
+	require_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/mysqli.php');
+	require_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/mysql.php');
+	require_once ($_SERVER['DOCUMENT_ROOT'].'/libs/php/classes/aplStdClass.php');
+	require_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/client_class.php');
 	class Planner{
         //     Задачи класса: 
 		//     ПЕРВЫЙ ЭТАП: Выдавать сообщения об событиях в ПЛАНЕРЕ которые были просрочены (события типа звонок, встреча)
@@ -202,7 +203,7 @@
 			$result = $mysqli->query($query) or die($mysqli->error);
 				
 			if($result->num_rows > 0){
-			
+			   // не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
 			   include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
 			   
 			   while($row = $result->fetch_assoc()){
@@ -288,7 +289,7 @@
 			//echo'<pre>delayed_remainds<br>';echo $query;print_r($delayed_remainds); echo'<pre>';
 			
 			
-			//  вычисляем по каким из всех клиентов менеджера не ведутся записи в таблице PLANNER с разделение на типы
+			//  вычисляем по каким из всех клиентов менеджера не ведутся записи в таблице PLANNER с разделением на типы
 			//  ( не берем строки со значением status=init эти записи вносит система, не менеджер )
 			// массив клиентов по которым записи еще не велись 
 			// по этим клиентам надо выводить сообщение что необходимо запланировать действие (несколько раз, затем создавать атоматически?)
@@ -528,7 +529,7 @@
 		public static function set_approval_result($remainder_user_id,$plan_id,$status,$comment){ // при клике контороллером на кнопку "ОТЛОЖИТЬ"
 		    global $mysqli;
 		    //
-			
+			// не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
 			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
 		    $manager = new Manager($remainder_user_id);
 			
@@ -566,7 +567,8 @@
 		    if($result->num_rows > 0){
 			
 				// row_tpl - html шаблон ряда
-				$row_tpl_name =  $_SERVER['DOCUMENT_ROOT'].'/skins/tpl/admin/order_manager/planner/planner_table_rows.tpl';
+				// не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
+				$row_tpl_name =  $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/planner/planner_table_rows.tpl';
 				$fd = fopen($row_tpl_name,'r');
 				$row_tpl = fread($fd,filesize($row_tpl_name));
 				fclose($fd);
@@ -593,7 +595,8 @@
 			    }
 				$palnner_rows = ob_get_contents();
 	            ob_get_clean();
-				require_once (ROOT.'/skins/tpl/planner/planner_table.tpl');
+				// не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
+				require_once ($_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/planner/planner_table.tpl');
 		    }
 		}
 		public static function get_related_clients_ids($manager_id){

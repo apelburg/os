@@ -626,14 +626,13 @@
 				if($doc_type=='spec') $table .= '<tr class="bold_font"><td>№</td><td>Наименование и<br>описание продукции</td><td>Кол-во продукции</td><td colspan="2">стоимость за штуку</td><td colspan="2">Общая стоимость</td></tr>';
 				if($doc_type=='oferta') $table .= '<tr class="bold_font"><td>№</td><td>Товары (работы, услуги)</td><td>Кол-во</td><td colspan="2">Цена</td><td colspan="2">Сумма</td></tr>';
 
-				foreach($data as $key2 => $val2)
+		
+                foreach($data as $key2 => $val2)
 				{
 				    $discount = $data[$key2]['discount'];
-					//$price = $data[$key2]['price'];
-					//$summ = $data[$key2]['summ'];
-					$price = ($discount != 0)? (($data[$key2]['price']/100)*(100 + $discount)) : $data[$key2]['price'] ;
-					$summ = ($discount !=0)? (($data[$key2]['summ']/100)*(100 + $discount)) : $data[$key2]['summ'] ;
-				   
+					$price = ($discount != 0)? round((($data[$key2]['price']/100)*(100 + $discount)),2) : $data[$key2]['price'] ;
+				    $summ = $data[$key2]['quantity']*$price;
+						 
 				    $table .= '<tr><td class="num">'.($key2+1).'</td><td class="name">'.$data[$key2]['name'].'</td><td class="quantity">'.$data[$key2]['quantity'].'</td><td class="price">'.number_format($price,"2",".",'').'</td><td class="currensy">р.</td><td class="price">'.number_format($summ,"2",".",'').'</td><td class="currensy">р.</td></tr>';
 					$itogo += (float)$summ;
 					$nds += round(($summ/118*18), 2);
