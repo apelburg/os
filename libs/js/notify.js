@@ -562,17 +562,12 @@
 
 	//always include the default bootstrap style
 	addStyle("bootstrap", {
-<<<<<<< HEAD
-		html: "<div>\n<span data-notify-text></span>\n</div>",
-=======
-		html: 
-			"<div>"+
+		html:"<div>"+
 				"<span data-notify-html></span>"+
 				"<div class='buttons'>" +
 		        	"<button class='notify-no'>X</button>" +
 		        "</div>" +
 			"</div>",
->>>>>>> origin/master
 		classes: {
 			base: {
 				"font-weight": "bold",
