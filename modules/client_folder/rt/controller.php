@@ -31,7 +31,7 @@
 		 
 		                  dop_data_tbl.id AS dop_data_id , dop_data_tbl.row_id AS dop_t_row_id , dop_data_tbl.quantity AS dop_t_quantity , dop_data_tbl.price_in AS dop_t_price_in , dop_data_tbl.price_out AS dop_t_price_out , dop_data_tbl.discount AS dop_t_discount , dop_data_tbl.row_status AS row_status, dop_data_tbl.glob_status AS glob_status, dop_data_tbl.expel AS expel, dop_data_tbl.shipping_date AS shipping_date,dop_data_tbl.shipping_type AS shipping_type, dop_data_tbl.shipping_time AS shipping_time, dop_data_tbl.status_snab AS status_snab, dop_data_tbl.dop_men_text AS dop_men_text,
 						  
-						  dop_uslugi_tbl.id AS uslgi_t_id ,dop_uslugi_tbl.uslugi_id AS uslgi_t_uslugi_id ,dop_uslugi_tbl.dop_row_id AS uslugi_t_dop_row_id ,dop_uslugi_tbl.type AS uslugi_t_type ,
+						  dop_uslugi_tbl.id AS uslgi_t_id ,dop_uslugi_tbl.other_name AS uslugi_t_other_name ,dop_uslugi_tbl.uslugi_id AS uslgi_t_uslugi_id ,dop_uslugi_tbl.dop_row_id AS uslugi_t_dop_row_id ,dop_uslugi_tbl.type AS uslugi_t_type ,
 		                  dop_uslugi_tbl.glob_type AS uslugi_t_glob_type , dop_uslugi_tbl.quantity AS uslugi_t_quantity , dop_uslugi_tbl.price_in AS uslugi_t_price_in , dop_uslugi_tbl.price_out AS uslugi_t_price_out, dop_uslugi_tbl.discount AS uslugi_t_discount , dop_uslugi_tbl.for_how AS uslugi_t_for_how , dop_uslugi_tbl.print_details AS uslugi_t_print_details 
 		          FROM 
 		          `".RT_MAIN_ROWS."`  main_tbl 
@@ -80,6 +80,7 @@
 						'id' => $row['uslgi_t_id'],
 						'uslugi_id' => $row['uslgi_t_uslugi_id'],
 						'quantity' => $row['uslugi_t_quantity'],
+						'other_name' => $row['uslugi_t_other_name'],
 						'price_in' => $row['uslugi_t_price_in'],
 						'price_out' => $row['uslugi_t_price_out'],
 						'discount' => $row['uslugi_t_discount'],
@@ -245,6 +246,10 @@
 						 
 						  if(isset($uslugi_arr[$extra_data['uslugi_id']])) $usluga = $uslugi_arr[$extra_data['uslugi_id']];
 						  else $usluga='';
+						  // поправка по НЕТ В СПИСКЕ
+						  if($extra_data['other_name'] != ""){
+						  	$usluga = $extra_data['other_name'];
+						  }
 						 
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['extra']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$usluga.'</td><td class="small"></td><td class="center"></td><td class="border_r"></td><td class="right">'.(($extra_data['quantity']!=0 && $extra_data['for_how']=='for_one')?$extra_data['price_in']:number_format($extra_data['price_in']/$extra_data['quantity'],'2','.','')).'</td><td class="right">'.(($extra_data['quantity']!=0 && $extra_data['for_how']=='for_one')?$extra_data['price_out']:number_format($extra_data['price_out']/$extra_data['quantity'],'2','.','')).'</td></tr>';
 					 }
@@ -443,7 +448,7 @@
 	 
 	 $rt = '<table class="rt_tbl_head" id="rt_tbl_head" scrolled="head" style="width: 100%;" border="0">
 	          <tr class="w_border cap">
-			      <td width="30">'.((@$_SESSION['access']['user_id']==18 || $_SESSION['access']['user_id']==42)?'<button id="js-rt-resort-lock"></button>':'').'</td>
+			      <td width="30"><button id="js-rt-resort-lock"></button></td>
 			       <td width="35" class="top">
 				      <div class="master_button_container">
 						  <div class="master_button noselect">
