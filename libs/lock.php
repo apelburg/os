@@ -3,6 +3,7 @@
     
 	if(!isset($_SESSION['access'])){
          if(!isset($_POST['password']) || ( $_POST['password'] == '' || $_POST['login']== '')){
+	         unset($_SESSION['access']);
 	         include('./skins/tpl/sequrity.tpl');
 		     exit;
 	     }else{		 		 

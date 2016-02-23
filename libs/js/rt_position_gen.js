@@ -122,7 +122,7 @@ $(document).on('click', '#dialog_gen_window_form form .may_bee_checked', functio
 		var input_price_out = $('<input>',{
 			"name": 	"price_out",
 			"type": 	"text", 
-			"placeholder": 	"Цена входящая", 
+			"placeholder": 	"Цена исходящая", 
 		}).css({'width':'46%'});
 		// div = $('<div>').css({'paddingBottom':"0","paddingTop":"5px"});
 		input_price = div.append(input_price_out).append('<span> р. &nbsp;</span>');
