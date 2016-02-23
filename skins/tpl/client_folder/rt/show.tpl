@@ -1,4 +1,4 @@
-<!-- begin skins/tpl/client_folder/rt/show.tpl --> 
+<!-- <?php echo __FILE__; ?> -- START-->
 <script type="text/javascript">// возвращает размер
 $(document).on('click', '.getSizesBtn', function(event) {
 	event.preventDefault();
@@ -28,9 +28,15 @@ $( document ).ready(function() {
 <link href="<?php  echo HOST; ?>/skins/css/rt_position.css" rel="stylesheet" type="text/css">
 <link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/statusTooltip.js"></script>
+<!-- сервис центр -->
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.serviceCenter.js"></script>
+<link href="<?php  echo HOST; ?>/skins/css/serviceCenter.css" rel="stylesheet" type="text/css">
 
-<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.liTranslit.js"></script><!-- транслитерация-->
+<!-- транслитерация-->
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.liTranslit.js"></script>
+<!-- формы -->
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/forms__js.js"></script>
+<!-- выбор услуги в диалоговом окне -->
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/attach_dop_serv.js"></script>
 
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
@@ -56,4 +62,4 @@ $( document ).ready(function() {
 <div style="position:absolute;top:37px;left:50px;width:140px;height:35px;border:#ffff00 solid 0px" onclick="noticeQueryBlocked();"></div>
 <div style="position:absolute;top:110px;left:0px;right:0px;height:95px;border:#ffff00 solid 0px" onclick="noticeQueryBlocked();"></div>
 <?php } ?>
-<!-- end skins/tpl/client_folder/rt/show.tpl -->
+<!-- <?php echo __FILE__; ?> -- END-->
