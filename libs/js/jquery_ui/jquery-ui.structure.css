@@ -499,6 +499,10 @@ button.ui-button::-moz-focus-inner {
 	width: 90%;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	color: #fff;
+}
+.reminder_win .ui-dialog .ui-dialog-title {
+	color: #000;
 }
 .ui-dialog .ui-dialog-titlebar-close {
 	position: absolute;

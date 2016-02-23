@@ -1,0 +1,112 @@
+#js-win-sv{
+	cursor: pointer;
+	position:fixed;
+	right:40px;
+	bottom:20px;
+	padding : 5px;
+	width :25px;
+	height :25px;
+	border-radius:25px;
+	color:#fff;
+	font-size:15px;
+	
+	background: url(http://www.apelburg.ru/test/skins/images/img_design/b_new.png) no-repeat center;
+    -webkit-background-size: 23px 23px;
+    background-size: 23px 23px;
+    background-color:#db4437;
+}
+.sc-win-buttons{
+	background: #99cc33;
+	border-radius: 5px;
+}
+
+#main_window{
+    background: red;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 1000;
+    float: left;
+    /* width: 500px; */
+    /* height: 150px; */
+    top: 0;
+    left: 0;
+}
+#js-win-sv{
+	cursor: pointer;
+    position: fixed;
+    right: 40px;
+    bottom: 20px;
+    padding: 5px;
+    width: 25px;
+    height: 25px;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 15px;
+    background: url(http://www.apelburg.ru/test/skins/images/img_design/b_new.png) no-repeat center;
+    -webkit-background-size: 23px 23px;
+    background-size: 23px 23px;
+    background-color: #db4437;
+}
+
+/* ui-jquery */
+.ui-widget-header {
+    border: 1px solid #007036;
+    background: #007036 url("images/ui-bg_highlight-soft_0_9dbe8e_1x100.png") 50% 50% repeat-x;
+    color: #000;
+    font-weight: bold;
+}
+.ui-dialog .ui-dialog-title {
+    float: left;
+    margin: .1em 0;
+    white-space: nowrap;
+    width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+    font-weight: normal;
+    line-height: 13px;
+    font-size: 13px;
+}
+#js-SC_buttons button{
+	border-radius: 9px;
+	background: #fff;
+	height: 36px;
+	border:1px solid #999999;
+	background: #92B73E;
+	color: #fff;
+}
+#js-SC_buttons table{
+	width: 100%;
+}
+#js-SC_buttons table td:nth-of-type(1){
+	text-align: left;
+}
+#js-SC_buttons table td:nth-of-type(2){
+	text-align: center;
+}
+#js-SC_buttons table td:nth-of-type(3){
+	text-align: right;
+}
+
+
+button#sc_cancel_all{
+	width: 148px;
+	color: #9E9E9E;
+	background: url('../images/img_design/back_checkbox_btn.png') no-repeat;
+	background-color: #fff;
+	background-position-y: 9px;
+    background-position-x: 9px;
+    padding-left: 25px;
+}
+button#sc_add_service{
+	width: 186px;
+	background-image: url('../images/img_design/calc_btn.png');
+	background-repeat: no-repeat;
+	background-position-y: 9px;
+    background-position-x:15px;
+    padding-left: 35px;
+}
+button#sc_close_window{
+	width: 148px;
+}

@@ -372,7 +372,45 @@ var rtCalculator = {
 		}
 		
 		
-		
+		// $.post('', {
+		// 	AJAX: 'get_service_center'
+		// }, function(data, textStatus, xhr) {
+		// 	if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
+		// 		var buttons = new Array();
+		// 		buttons.push({
+		// 		    text: 'Список услуг',
+		// 		    click: function() {
+		// 				// подчищаем за собой
+		// 				// $.notify("Вызов калькулятора",'info');
+		// 				printCalculator.start_calculator({"calculator_type":"extra","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});	
+		// 		    }
+		// 		});	
+
+		// 		buttons.push({
+		// 		    text: 'Калькулятор',
+		// 		    click: function() {
+		// 				// подчищаем за собой
+		// 				// $.notify("Вызов калькулятора",'info');
+		// 				printCalculator.start_calculator({"calculator_type":"print","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});	
+		// 		    }
+		// 		});	
+
+
+		// 		buttons.push({
+		// 		    text: 'Закрыть',
+		// 		    click: function() {
+		// 				// подчищаем за собой
+		// 				$(this).dialog("destroy");
+		// 		    }
+		// 		});	
+
+
+		// 		show_SC(data,buttons);	
+		// 	}				
+		// 	standard_response_handler(data);
+		// },'json');
+
+		$.SC_sendAjax();return;
 		var dialog = $('<div class="uslugi_panel"></div>');
 		var btn1 = document.createElement('DIV');
 		btn1.className = 'ovalBtn';
