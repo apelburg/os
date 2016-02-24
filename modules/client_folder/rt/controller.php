@@ -265,11 +265,11 @@
 					 
 					 $uslugi_details_trs[] = '<tr><td></td><td></td><td></td><td></td><td class="border_r">ИТОГО:</td><td class="right">'.number_format($uslugi_price_in,'2','.','').'</td><td class="right">'.number_format($uslugi_price_out,'2','.','').'</td></tr>';
 					 $uslugi_details_window = '<div class="uslugi_details_window"><table border="1"><tr class="head border_b"><td>№</td><td width="200" class="left">вид услуги</td><td width="200" class="left">место</td><td width="60">цвет</td><td width="60" class="border_r">площадь</td><td width="60">вх. / шт</td><td width="60">исх. / шт</td></tr>'.implode('',$uslugi_details_trs).'</table></div>';
-					 $uslugi_btn = '<span>'.count($summ_in).'</span>'.$uslugi_details_window;
+					 $uslugi_btn = '<span>-'.count($summ_in).'</span>&nbsp;&nbsp;<span>'.count($summ_in).'</span>'.$uslugi_details_window;
 				 }
 				 else{// если данных по дополнительным услугам  нет выводим кнопку добавление дополнительных услуг
 				     $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in = $uslugi_summ_out = 0;
-				     $uslugi_btn = '<span>+</span>';
+				     $uslugi_btn = '<span>+</span>&nbsp;&nbsp;<span>+</span>';
 				 }
 
 
