@@ -21,6 +21,7 @@
 	//
 	//
     echo 1111111;
+	exit;
 	function fetch_rows_from_rt($query_num){
 	     global $mysqli;
 		 global $Position_no_catalog;

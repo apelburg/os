@@ -9,7 +9,8 @@
 	ini_set('display_startup_errors', 1);
 	set_time_limit(0);
 
-
+echo 111;
+exit;
     include_once('../libs/mysql.php');
 	include_once('../libs/mysqli.php');
     include_once('libs/config.php');
