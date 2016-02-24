@@ -6,6 +6,7 @@
  */
 jQuery(document).ready(function($) {
 	$.SC_createShowWindowButton();
+	$('#js-win-sv').click();
 });
 
 $(document).on('click', '.pos_plank.cat a', function(event) {

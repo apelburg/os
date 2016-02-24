@@ -26,23 +26,36 @@
 		 *	@version 	16:10 12.02.2016
 		 */
 		protected function get_service_center_AJAX(){
-			
-			$html = '<div id="js-service-center">';
-				ob_start();
-				echo '<pre>';
-				print_r($_SESSION);
-				echo '<pre>';
-				include_once ROOT.'/skins/tpl/client_folder/service_center/show.tpl';
-				$html .= ob_get_contents();
-				ob_get_clean();
-			$html .= '</div>';
+			// проверка на наличие номера запроса
+			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
+				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
+				return;
+			}
 
 			$this->responseClass->options['width'] = '100%';
 			$this->responseClass->options['height'] = '100%';
 			$this->responseClass->options['title'] = 'Центр услуг';
-			$this->responseClass->options['html'] = base64_encode($html);
+			$this->responseClass->options['html'] = base64_encode( $this->get_window_content() );
 			$this->responseClass->options['myFunc'] = 'show_SC';
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
+		}
+
+
+		private function get_window_content(){
+
+
+
+
+			$html = '<div id="js-service-center">';
+				ob_start();
+				// echo '<pre>';
+				// print_r($_SESSION);
+				// echo '<pre>';
+				include_once ROOT.'/skins/tpl/client_folder/service_center/show.tpl';
+				$html .= ob_get_contents();
+				ob_get_clean();
+			$html .= '</div>';
+			return $html;
 		}
 
 		// запрашивает из базы допуски пользователя
@@ -59,6 +72,16 @@
 			}
 			//echo $query;
 			return $int;
+		}
+
+		/**
+		 * 	 рандомный цвет
+		 *
+		 *	 @author  	Alexey Kapitonov
+		 *	 @version 	 	 
+		 */
+		public function rand_color() {
+		    return sprintf('#%06X', mt_rand(0, 0xFFFFFF));
 		}
 	}
 

@@ -89,7 +89,6 @@
 	text-align: right;
 }
 
-
 button#sc_cancel_all{
 	width: 148px;
 	color: #9E9E9E;
@@ -109,4 +108,126 @@ button#sc_add_service{
 }
 button#sc_close_window{
 	width: 148px;
+}
+
+#js-main_service_center{
+	padding: 0;
+	font-size: 12px;
+	background-color: #e1e1e1;
+}
+/* меню артикул/тираж */
+#js-main-service_center-top_menu{
+	border-top: 1px solid #808080;
+	margin-top: 3px;
+	background: #92B73E;
+    color: #fff;
+}
+#js-main-service_center-top_menu ul{
+    list-style: none;
+    padding: 0 11px;
+    margin: 0;
+}
+#js-main-service_center-top_menu ul li {
+    display: -webkit-inline-box;
+    padding: 3px 5px 3px 5px;
+}
+
+#js-main-service_center-top_menu ul li:hover,
+#js-main-service_center-top_menu ul li.led{
+    background-color: #6d9d32;
+    cursor: pointer;
+}
+#js-main-service_center-top_menu ul li div{
+	border: 1px solid transparent;
+	padding: 1px 60px 1px 60px;
+    font-size: 12px;
+}
+#js-main-service_center-top_menu ul li.checked div {
+    border: 1px solid #fff;
+    text-align: center;
+}
+
+/* таблица вариантов */
+#js-main-service_center-variants-table{
+	border-collapse: collapse;
+	width: 100%;
+}
+#js-main-service_center-variants-table input[type="checkbox"]{
+	display: block;
+}
+#js-main-service_center-variants-table tr{
+	
+}
+#js-main-service_center-variants-table tr th{
+	background-color: #eeeeee;
+	font-size: 10px;
+	color: #5a5c61;
+	font-weight: normal;
+	height: 17px;
+}
+#js-main-service_center-variants-table tr td{
+	background-color: #fff;
+}
+
+#js-main-service_center-variants-table tr th:nth-of-type(1){
+	width: 14px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(2){
+	width: 17px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(3),
+#js-main-service_center-variants-table tr td:nth-of-type(3){
+	width: 23px;
+	text-align: right;
+	color: #959595;
+}
+
+#js-main-service_center-variants-table tr th:nth-of-type(4){
+	text-align: right;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(4){
+	width: 8px;
+	color: #000;
+	text-align: right;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(5){
+	width: 14px;
+	color: #959595;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(6),
+#js-main-service_center-variants-table tr td:nth-of-type(6){
+	width: 90px;
+	padding-left: 25px;
+	text-align: left;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(7),
+#js-main-service_center-variants-table tr td:nth-of-type(7){
+	width: 30px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+#js-main-service_center-variants-table tr td span.service{
+	border:1px solid #c6e1aa;
+	font-size: 10px;
+	color: #5a5c61;
+	cursor: pointer;
+	padding: 2px 5px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(8){
+	text-align: left;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(8){
+	text-align: left;
+	color: #000;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(9){
+	text-align: right;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(9){
+	text-align: right;
+	color: #5a5c61;
+}
+
+#js-main-service_center-variants-table tr td{
+	
 }
