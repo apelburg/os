@@ -154,7 +154,7 @@
 	elseif($razdel == 'common'){ 
 	
 		$query = "SELECT*FROM `".PLANNER."` WHERE `client_id` = '".$client_id."'";	
-	    $query .= " ORDER BY `exec_datetime`";
+	    $query .= " ORDER BY `exec_datetime` DESC";
 	// `status` = 'new'
         ///////////////////       page nav       ///////////////////
 	    $num_row = mysql_query($query,$db);
