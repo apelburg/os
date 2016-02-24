@@ -321,7 +321,7 @@ var rtCalculator = {
 								//// console.log(j+' svetofor');
 								if(!block){
 									if(tds_arr[j].getElementsByTagName('span')[0]) tds_arr[j].getElementsByTagName('span')[0].onclick = this.launch_uslugi_panel;
-									if(tds_arr[j].getElementsByTagName('span')[1]) tds_arr[j].getElementsByTagName('span')[0].onclick = this.launch_uslugi_panel_2;
+									if(tds_arr[j].getElementsByTagName('span')[1]) tds_arr[j].getElementsByTagName('span')[1].onclick = this.launch_uslugi_panel_2;
 								}
 								if(tds_arr[j].getAttribute('print_exists_flag') == '1' || tds_arr[j].getAttribute('uslugi_exists_flag') == '1'){
 									$(tds_arr[j]).mouseenter(function() {this.getElementsByTagName('div')[0].style.display = 'block';}).mouseleave(function() {this.getElementsByTagName('div')[0].style.display = 'none';});
@@ -437,7 +437,6 @@ var rtCalculator = {
 		$(dialog).dialog({modal: true, width: 500,minHeight : 120 ,title: 'Выберите вид расчета',close: function() {$(this).remove();} });
 		$(dialog).dialog('open');
 	}
-	,
 	,
 	launch_uslugi_panel_2:function(e){
 	    e = e || window.event;
