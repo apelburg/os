@@ -144,7 +144,7 @@
 	                                   26 => array('name'=>'оазис','link'=>'http://www.oasiscatalog.com/search?q='),
 							           37 => array('name'=>'проект','link'=>'http://www.gifts.ru/search?text='),
 									   59 => array('name'=>'макрос','link'=>'http://cabinet.makroseuro.ru/catalogue/search/?keyword='),
-									  'e_'=> array('name'=>'ебазар','link'=>'http://ebazaar.ru/search/index.php?q='),
+									  'e_'=> array('name'=>'ебазар','link'=>'http://ebazaar.ru/catalog/?q='),
 									  'm_' => array('name'=>'', 'link'=>'#'),
 									  'FF' => array('name'=>'Апельбург', 'link'=>'#')
 									   );
@@ -323,6 +323,4 @@ $suppliers_names_by_prefix_for_get_name = array(
 	'm_' => 'Макрос',
 	'FF' => 'Апельбург'
 );
-
-$title = "ОС";
-
+$title = "Онлайн сервис";
