@@ -587,7 +587,14 @@ var printCalculator = {
 			
 			var input = inputTpl.cloneNode(true);
 		    input.value = printCalculator.currentCalculationData[type].quantity;
+			input.onfocus = function(){
+				if(this.value == '0') this.value ='';
+			}
 			input.onkeyup = function(){
+			   if(this.value != '' && this.value != '&nbsp;'){ 
+					var result = printCalculator.correctToInt(this,this.value);
+					if(result != 0) printCalculator.setCaretToPos(this,result);
+				}
 				printCalculator.currentCalculationData[printCalculator.type].quantity = this.value;
 				printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_in]')[0]);
 				printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_out]')[0]);
@@ -1527,13 +1534,13 @@ var printCalculator = {
 	}
 	,
 	noneAutoCalcProcessing:function(cell){ 
-
+		
 		var name = cell.name;
 		var value = cell.value;
 		var tr = $(cell).parents('tr');
 		var quantity = printCalculator.currentCalculationData[printCalculator.type].quantity;
 		var discount = printCalculator.currentCalculationData[printCalculator.type].discount;
-		//alert(cell.value);
+		
 		printCalculator.currentCalculationData[printCalculator.type][name] = value;
 		printCalculator.currentCalculationData[printCalculator.type]['total_'+name] = value*quantity;
 		$(tr).find( "td[total_cell=total_"+name+"]").html(((printCalculator.currentCalculationData[printCalculator.type]['total_'+name]).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
@@ -1547,6 +1554,92 @@ var printCalculator = {
 			$(tr).find( "td[total_cell="+name+"_discount]").html(((discount_price_out).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
 			$(tr).find( "td[total_cell=total_"+name+"_discount]").html(((discount_itog).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
 		}/**/
+	}
+	,
+	setCaretToPos:function (input, pos) {
+		var selectionStart = pos; 
+		var selectionEnd = pos; 
+		
+	    if (input.setSelectionRange) {
+			input.focus();
+			input.setSelectionRange(selectionStart, selectionEnd);
+	    }
+	    else if (input.createTextRange) {
+			var range = input.createTextRange();
+			range.collapse(true);
+			range.moveEnd('character', selectionEnd);
+			range.moveStart('character', selectionStart);
+			range.select();
+	    }
+	}
+	,
+	correctToInt:function (cell,str){// корректировка значений вводимых пользователем в поле ввода типа Integer
+		var wrong_input = false;
+		var pos = 0;
+		
+		// если строка содержит что-то кроме цифры или точки вырезаем этот символ
+		var pattern = /[^\d]+/; 
+		var result = pattern.exec(str);
+		if(result !== null){ 
+			wrong_input = true;
+			var substr_arr = str.split(result[0]);
+			pos =  substr_arr[0].length;
+			str =  substr_arr[0] + substr_arr[1];
+			
+		}
+		if(str.length>7){ wrong_input = true;  str = '1000000'; pos = 7;}
+
+		// если был выявлен некорректный ввод исправляем содержимое ячейки 
+		if(wrong_input){
+			if(cell.nodeName == 'INPUT') cell.value = str;
+			else cell.innerHTML = str;
+		}  
+		return pos;
+	}
+	,
+	correctToFloat:function(cell,str){// корректировка значений вводимых пользователем в поле ввода типа Float
+		var wrong_input = false;
+		var pos = 0;
+		
+		// если строка содержит запятую меняем её на точку
+		var pattern = /,/; 
+		if(str.match(pattern)){ wrong_input = true;  pos =  str.indexOf(',')+1; str =  str.replace(',','.');}
+		
+		// если строка содержит что-то кроме цифры или точки 
+		var pattern = /[^\d\.]+/; 
+		var result = pattern.exec(str);
+		if(result !== null){ 
+			wrong_input = true;
+			if(str.length==1){ 
+				// если это единственный символ в строке - заменяем его на 0
+			     wrong_input = true; str = 0; pos = 0;
+			}
+			else{
+				// если это не единственный символ в строке - вырезаем его
+				var substr_arr = str.split(result[0]);
+				pos =  substr_arr[0].length;
+				str =  substr_arr[0] + substr_arr[1];
+			}
+			
+			
+		}
+
+		
+		//  если после точки введено менее или более 2 цифр исправляем до 2-х
+		// ЗДЕСЬ НУЖНО РЕШИТЬ ВОПРОС УСТАНОВКИ КУРСОРА В НУЖНОЕ МЕСТО ПОКА ПЕРЕНОСИТСЯ В КОНЕЦ
+		//var pattern = /^\d+\.\d{2}$/; 
+	 
+		// если величина числа больше допустимого - обрезаем его
+		if(str.length>12){ wrong_input = true;  str = '100000000.00'; pos = 12;}
+     
+		// если был выявлен некорректный ввод исправляем содержимое ячейки 
+		if(wrong_input){
+			if(cell.nodeName == 'INPUT') cell.value = str;
+			else cell.innerHTML = str;
+		}
+		
+		//alert(pos);
+		return pos; 
 	}
 	,
 	showCalcItogDisplay:function(){
@@ -1614,7 +1707,14 @@ var printCalculator = {
 				inputClone = input.cloneNode(true);
 				inputClone.name = 'price_in';
 				inputClone.value = printCalculator.currentCalculationData[printCalculator.type]['price_in'];
+				inputClone.onfocus = function(){
+					if(this.value == '0') this.value ='';
+				}
 				inputClone.onkeyup = function(){
+                    if(this.value != '' && this.value != '&nbsp;'){ 
+						var result = printCalculator.correctToFloat(this,this.value);
+						if(result != 0) printCalculator.setCaretToPos(this,result);
+					}
 					printCalculator.noneAutoCalcProcessing(this);
 				}
 				tdClone.appendChild(inputClone);
@@ -1650,7 +1750,14 @@ var printCalculator = {
 				inputClone = input.cloneNode(true);
 				inputClone.name = 'price_out';
 				inputClone.value = printCalculator.currentCalculationData[printCalculator.type]['price_out'];
+				inputClone.onfocus = function(){
+					if(this.value == '0') this.value ='';
+				}
 				inputClone.onkeyup = function(){
+					if(this.value != '' && this.value != '&nbsp;'){ 
+						var result = printCalculator.correctToFloat(this,this.value);
+						if(result != 0) printCalculator.setCaretToPos(this,result);
+					}
 					printCalculator.noneAutoCalcProcessing(this);
 				}
 				tdClone.appendChild(inputClone);
@@ -1729,12 +1836,20 @@ var printCalculator = {
 			BtnsDiv.className = 'BtnsDiv';
 			BtnsDiv.id = 'calculatorsaveResultPlank';
 			
-			var showProcDetBtn = document.createElement('DIV');
-			showProcDetBtn.className = 'showProcessingDetailsBtn';
-			showProcDetBtn.innerHTML = 'Включить вкладку прайс';
-			showProcDetBtn.onclick =  printCalculator.showProcessingDetails;
-			
-			BtnsDiv.appendChild(showProcDetBtn);
+			if(printCalculator.type == 'auto' || printCalculator.type == 'free'){
+				var showDopInfoBtn = document.createElement('DIV');
+				showDopInfoBtn.className = 'showDopInfoBlockBtn';
+				if(printCalculator.type == 'auto'){
+					showDopInfoBtn.innerHTML = 'Включить вкладку прайс';
+				    showDopInfoBtn.onclick =  printCalculator.showProcessingDetails;
+				}
+				if(printCalculator.type == 'free'){
+					showDopInfoBtn.innerHTML = 'Вспомогательная информация';
+				    showDopInfoBtn.onclick =  printCalculator.showDopInfoBlock;
+				}
+				BtnsDiv.appendChild(showDopInfoBtn);
+				
+			}
 			
 			var saveBtn = document.createElement('DIV');
 			saveBtn.className = 'ovalBtn';
@@ -1774,6 +1889,27 @@ var printCalculator = {
 		$("#showProcessingDetailsBox").dialog("open");
 		 //
         //
+	}
+	,
+	showDopInfoBlock:function(){
+	    
+		// если данные по вспомогательной инофрмации еще не загруженные и окно не создано отправляем запрос и создаем окно
+		if(!printCalculator.DopInfoBlock && !printCalculator.showDopInfoBlock_InProcess){
+			alert(1);
+			printCalculator.showDopInfoBlock_InProcess = true;
+			// формируем url для AJAX запроса
+			var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&grab_dop_info=1','section');
+			printCalculator.send_ajax(url,callback);
+			
+			function callback(response){ 
+				alert(response);
+				// console.log(response);
+				printCalculator.showDopInfoBlock_InProcess = false;
+			}
+		}
+		else{
+			alert(2);
+		}
 	}
 	,
 	saveCalculatorResult:function(){

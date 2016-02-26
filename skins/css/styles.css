@@ -1834,8 +1834,8 @@ ul.central_menu li a:hover{
 #calculatorDialogBox .itogDisplayTbl tr.head td{ font-size: 11px; font-weight:100; color:#AAA; padding:0 8px;}
 #calculatorDialogBox .itogDisplayTbl td.title{ width: 70px; text-align: left; font-size: 12px; font-weight:100;}
 #calculatorDialogBox .BtnsDiv{margin:2px 0 10px 77px; width: 585px; height:45px; border:#CCC solid 0px;}
-#calculatorDialogBox .showProcessingDetailsBtn{ float:left; border:#CCC solid 1px;border-radius: 30px; padding:10px 25px;cursor:pointer}
-#calculatorDialogBox .ovalBtn {float:left; margin-left: 120px;}
+#calculatorDialogBox .showDopInfoBlockBtn{ float:left; border:#CCC solid 1px;border-radius: 30px; padding:10px 25px;cursor:pointer}
+#calculatorDialogBox .ovalBtn {float:right; margin-right: 60px;}
 #calculatorDialogBox .saveBtn:hover {background-color:#b8e34b}
 #calculatorDialogBox .distributionSaveBtn { float:right; margin:12px 65px 12px 0 ; color:#FFFFFF;border-radius:30px; border:#CCC solid 1px;padding:10px 25px;cursor:pointer; background-color:#99B52A}
 #calculatorDialogBox .distributionSaveBtn:hover {background-color:#b8e34b}
@@ -1877,7 +1877,7 @@ ul.central_menu li a:hover{
 
 .freeCalcBox .dopParametrsTitle .left{ float:left;}
 .freeCalcBox .dopParametrsTitle .right{ margin-left:351px;}
-.itogDisplayTbl input{ font-family: Arial, Helvetica, sans-serif; font-size:16px;font-weight: bold; margin: 0px; padding: 0px; width: 50px; text-align:right;}
+.itogDisplayTbl input[name]{ font-family: Arial, Helvetica, sans-serif; font-size:16px;font-weight: bold; margin: 0px; padding: 0px; width: 50px; text-align:right;}
 
 .agreement_setting_window{
    font-family: Arial, Helvetica, sans-serif;

@@ -1188,7 +1188,16 @@
 			
 			return array("new_summs"=>$new_summs,"price_arr"=>$price_arr);
 		}*/
+		static function grab_dop_info(){
+			global $mysqli;
+	
+			//$query = "SELECT * FROM `".OUR_USLUGI_LIST."` WHERE `parent_id` = '".$id."' AND `deleted` = '0'";
+			//$result = $mysqli->query($query) or die($mysqli->error);
+			return 1;
+		}
+	}
 		
-    }
-
+   
+	
+	
 ?>

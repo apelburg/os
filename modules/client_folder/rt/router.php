@@ -177,6 +177,14 @@
 		//print_r($out_put);
 		exit;
 	}
+	if(isset($_GET['grab_dop_info'])){
+	
+	    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		
+		$out_put = rtCalculators::grab_dop_info();
+		echo $out_put;
+		exit;
+	}
 	if(isset($_GET['save_calculator_result'])){
 		print_r(json_decode($_GET['details']));//
 		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
