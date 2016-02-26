@@ -1789,8 +1789,9 @@ ul.central_menu li a:hover{
 #showProcessingDetailsBox .calculatorPriceTbl td:first-of-type { text-align:center;}
 #showProcessingDetailsBox .cap{ color:#777;margin-bottom: 2px;}
 #calculatorDialogBox .calculatorMenuCell { float:left; padding:6px 40px; color:#000000; border-left: 1px solid #8b8a89; background-color:#99B52A}
+#calculatorDialogBox .quantityInfoField { position:absolute; right:17px; top:6px; }
 #calculatorDialogBox .deepGreyBg { background-color:#6D6E73; color:#FFFFFF; } 
-#calculatorDialogBox .menuContainer {margin-bottom: 40px; background-color:#99B52A; border: 0px solid #8b8a89; height:30px;width:100%;}
+#calculatorDialogBox .menuContainer {margin-bottom: 40px; background-color:#EEEEEE; border: 0px solid #8b8a89; height:30px;width:100%;}
 #calculatorDialogBox .calculatorDistributionTbl { border-collapse:collapse}
 #calculatorDialogBox .calculatorDistributionTbl td { vertical-align:top; font-size: 11px; border-bottom: 1px solid #8b8a89;}
 #calculatorDialogBox .printPlaceSelectDiv { float: left; margin-left: 54px; border: #FFFF66 solid 0px;}
@@ -1849,6 +1850,34 @@ ul.central_menu li a:hover{
 #calculatorDistributionTbl tr:last-of-type td{ border:none;}
 #calculatorDistributionTbl td:nth-of-type(1){ font-size:14px; color:#AAA; width:20px;}
 #calculatorDistributionTbl td:nth-of-type(3){ width:120px;}
+
+/* калькуляторы - новый */
+.freeCalcBox{
+ border: 1px solid #ССС;
+ margin-top: -41px;
+}
+
+/*.freeCalcBox .plank{
+ background: rgb(238, 238, 238);
+ padding: 3px 30px;
+ font-size: 11px;
+ text-align:left;
+}
+*/
+.freeCalcBox input{ margin: 20px 0 20px 30px; padding: 5px 10px;}
+.freeCalcBox input.usluga{ width: 370px;}
+.freeCalcBox input.quantity{ width: 100px;}
+.freeCalcBox input.supplier{ float:left; width: 235px;}
+.freeCalcBox .quantity_label:before{  content: 'тираж';  margin-left: 39px; margin-right: -20px;}
+
+.freeCalcBox textarea{ margin: 20px 0 20px 30px; padding: 5px 10px; resize:vertical; font-size: 11px;}
+.freeCalcBox textarea.commentForClient{ width: 590px;}
+.freeCalcBox textarea.comment{ float:left; width: 300px;}
+
+
+.freeCalcBox .dopParametrsTitle .left{ float:left;}
+.freeCalcBox .dopParametrsTitle .right{ margin-left:351px;}
+.itogDisplayTbl input{ font-family: Arial, Helvetica, sans-serif; font-size:16px;font-weight: bold; margin: 0px; padding: 0px; width: 50px; text-align:right;}
 
 .agreement_setting_window{
    font-family: Arial, Helvetica, sans-serif;

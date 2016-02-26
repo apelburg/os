@@ -178,7 +178,7 @@
 		exit;
 	}
 	if(isset($_GET['save_calculator_result'])){
-		//print_r(json_decode($_GET['details']));//
+		print_r(json_decode($_GET['details']));//
 		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
 		
 		rtCalculators::save_calculatoins_result(json_decode($_GET['details']));
@@ -266,10 +266,7 @@
 	
 	include ROOT.'/skins/tpl/client_folder/rt/options_bar.tpl';
 
-  	if(@$_SESSION['access']['user_id']==18 || @$_SESSION['access']['user_id']==6){ 
-		include 'controller2.php';
-	} 
-    else include 'controller.php';
+  	include 'controller.php';
 	// шаблон страницы
 	include ROOT.'/skins/tpl/client_folder/rt/show.tpl';
 

@@ -319,7 +319,10 @@ var rtCalculator = {
 							}
 							if(tds_arr[j].getAttribute('uslugi_btn')){
 								//// console.log(j+' svetofor');
-								if(!block) if(tds_arr[j].getElementsByTagName('span')[0]) tds_arr[j].getElementsByTagName('span')[0].onclick = this.launch_uslugi_panel;
+								if(!block){
+									if(tds_arr[j].getElementsByTagName('span')[0]) tds_arr[j].getElementsByTagName('span')[0].onclick = this.launch_uslugi_panel;
+									if(tds_arr[j].getElementsByTagName('span')[1]) tds_arr[j].getElementsByTagName('span')[1].onclick = this.launch_uslugi_panel_2;
+								}
 								if(tds_arr[j].getAttribute('print_exists_flag') == '1' || tds_arr[j].getAttribute('uslugi_exists_flag') == '1'){
 									$(tds_arr[j]).mouseenter(function() {this.getElementsByTagName('div')[0].style.display = 'block';}).mouseleave(function() {this.getElementsByTagName('div')[0].style.display = 'none';});
 								}
@@ -411,6 +414,69 @@ var rtCalculator = {
 		// },'json');
 
 		$.SC_sendAjax();return;
+		var dialog = $('<div class="uslugi_panel"></div>');
+		var btn1 = document.createElement('DIV');
+		btn1.className = 'ovalBtn';
+		btn1.innerHTML = 'Список услуг';
+		btn1.onclick =  function(){ 
+		     $(dialog).remove();
+			 printCalculator.start_calculator({"calculator_type":"extra","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});	
+	    };
+		dialog.append(btn1);
+	
+		var btn2 = document.createElement('DIV');
+		btn2.className = 'ovalBtn';
+		btn2.innerHTML = 'Калькулятор';
+		btn2.onclick =  function(){ 
+		     $(dialog).remove();
+			 printCalculator.start_calculator({"calculator_type":"print","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});	
+	    };
+		dialog.append(btn2);
+		
+		$('body').append(dialog);
+		$(dialog).dialog({modal: true, width: 500,minHeight : 120 ,title: 'Выберите вид расчета',close: function() {$(this).remove();} });
+		$(dialog).dialog('open');
+	}
+	,
+	launch_uslugi_panel_2:function(e){
+	    e = e || window.event;
+		var cell = e.target || e.srcElement;
+		// метод срабатывающий первым ( изначально ) при клике по значку обозначаещему услуги в РТ
+		
+		//if(cell.parentNode.getAttribute('calc_btn') == 'print') alert('калькулятор нанесения логотипа');
+		//if(cell.parentNode.getAttribute('calc_btn') == 'extra') alert('калькулятор доп. услуг');
+		// определяем из какой ячейки сделан вызов калькулятора ( могут быть - нанесение или доп услуги)
+		var calculator_type = cell.parentNode.getAttribute('calc_btn');
+		
+		// пользователь 
+		var creator_id = $('*[user_id]').attr('user_id');
+
+        // родительский тэг tr
+		var trTag = cell.parentNode.parentNode;
+		// id - артикула
+		var art_id = trTag.getAttribute('art_id');
+		// id - родительского ряда (ряда рассчета) (ряда в таблице os__rt_dop_data)
+		var dop_data_row_id = trTag.getAttribute('row_id');
+		//var discount =  ($($(cell).parents('tr')).find( "td[discount_fieid]" ).text()).slice(0,-1);
+		var discount = ($(trTag).find( "td[discount_fieid]" ).text()).slice(0,-1);
+		// определяем количество товара (берем данные из ячейки quantity данного ряда)
+		var tdsArr = $(trTag).children('td');
+		//alert(tdsArr);
+		var ln = tdsArr.length;
+		for(var i =0;i < ln;i++){
+			if(tdsArr[i].getAttribute('type') && tdsArr[i].getAttribute('type')=='quantity'){
+				var quantity = parseInt(tdsArr[i].innerHTML);
+			} 
+		}
+		if(typeof quantity === 'undefined'){
+			echo_message_js('Не удается получить данные о количестве товара!!!','system_message',3800);
+			return;
+		}
+		if(quantity === 0){
+		    echo_message_js('Расчет не возможен, тираж 0шт. !!!','system_message',3800);
+			return;
+		}
+		
 		var dialog = $('<div class="uslugi_panel"></div>');
 		var btn1 = document.createElement('DIV');
 		btn1.className = 'ovalBtn';
