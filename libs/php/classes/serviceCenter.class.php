@@ -40,7 +40,7 @@
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
 		}
 
-
+		// возвращает контент для окна
 		private function get_window_content(){
 
 

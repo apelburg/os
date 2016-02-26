@@ -9,51 +9,8 @@ jQuery(document).ready(function($) {
 	$('#js-win-sv').click();
 });
 
-$(document).on('click', '.pos_plank.cat a', function(event) {
-	event.preventDefault();
-	$.post('', {
-		AJAX: 'get_service_center'
-	}, function(data, textStatus, xhr) {
-		if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
-			show_SC(data,buttons);	
-		}				
-		standard_response_handler(data);
-	},'json');
-});
-
-$(document).on('dbclick', '.pos_plank.cat a', function(event) {
-	event.preventDefault();
-	window.location.href = $(this).attr('href');
-});
 
 
-
-
-function show_SC(data,buttons){ // необходимо передать кнопки
-	var html = (data['html'] !== undefined)?Base64.decode(data['html']):'нет информации';
-	var title = (data['title'] !== undefined)?data['title']:'Название окна';
-	var height = (data['height'] !== undefined)?data['height']:'auto';
-	if(height == '100%'){
-		height = $(window).height()-2;
-	}
-	var width = (data['width'] !== undefined)?data['width']:'auto';	
-	if(width == '100%'){
-		width = $(window).width()- 2;
-	}
-	
-		
-
-	$('body').append('<div id="SC_window"></div>');
-	$('#SC_window').html(html);
-	$('#SC_window').dialog({
-	    width: width,
-	    height: height,
-	    modal: true,
-	    title : title,
-	    autoOpen : true,
-	    buttons: buttons          
-	});
-}
 
 /**
  *	модуль окна Тотал
@@ -97,24 +54,58 @@ $.extend({
 			var title = 'Центр услуг';			
 			
 			$('#js-main_service_center').dialog({
-			        width: '1000px',
+			        width: $('body').innerWidth(),
 			        height: $(window).height()-100,
 			        modal: true,
 			        title : title,
 			        autoOpen : true,
+			        beforeClose: function( event, ui ) {
+			        	// перезагрузка RT
+			        	$.SC_reload_RT_content();
+			        },
+			        closeOnEscape: false
 			        // buttons: buttons          
 			    }).parent().css({'top':'0px'});
+			
 
-			$('#js-main_service_center').after('<div id="js-SC_buttons" class="ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"></div>')
-			$('#js-SC_buttons').append( $.SC_createButton() )
+			// ресайз блока вариантов
+			$( "#js-main-service_center-variants-div-table" ).resizable({
+				stop:function(event, ui){
+					var width = $('#js-main-service_center-variants-div-table').width();
+					if(ui.size.height > $('#js-main-service_center-variants-table').innerHeight()){
+						$('#js-main-service_center-variants-div-table').css({'overflowY':'hidden','overflowX':'hidden'});
+						$('#js-main-service_center-variants-table').width(width);
+					}else{
+						$('#js-main-service_center-variants-div-table').css({'overflowY':'scroll','overflowX':'hidden'});
+						$('#js-main-service_center-variants-table').width(width-16);
+					}
+				}
+			});
+			// добавляем блок кнопок
+			$.SC_createButton();
+			// выравнивем колонку тираж в верхней таблице по нижней
+			$('#js-main-service_center-variants-table th:last-child').width($('#js-main-service_center-variants-services-div-table').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(1)').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(2)').innerWidth())
+			
 		}else{
-			// если окно уже вызывалось
+			// если окно уже вызывалось - обновляем контент и открываем
 			$('#js-main_service_center').html(html);
 			$('#js-main_service_center').dialog('open')
 		}
 		
 	},
-	// кнопки окна Тотал
+	// перезагрузка RT
+	SC_reload_RT_content : function(){
+		// установка прелоад
+		window_preload_add();
+		$('#rt_tbl_body').load(' #rt_tbl_body',function(){
+			// запускаем РТ по новой
+			printCalculator;
+			rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
+			// убираем прелоад
+			window_preload_del();
+		});
+	},
+	// блок кнопок окна Тотал
 	SC_createButton: function(){
 		var buttons = new Array();
 		buttons.push({
@@ -135,7 +126,7 @@ $.extend({
 		    text: 'Закрыть',
 		    id: 	'sc_close_window',
 		    click: function() {
-		    	$('#js-main_service_center').dialog('close');			    	
+		    	$('#js-main_service_center').dialog('close');		    		    	
 		    }
 		});
 
@@ -160,9 +151,23 @@ $.extend({
 				.append(button)
 			);				
 		}
-		return buttons_html;
+		$('#js-main_service_center').after($('<div/>',{'id':'js-SC_buttons','class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'}).append( buttons_html));		
 	}
 });
 
+// подкрашиваем выбранные строки в блоке вариантов
+$(document).on('click', '#js-main-service_center-variants-table tr td', function(event) {
+	$(this).parent().toggleClass('tr_checked');
+});
+// закрытие окна на esc
+$(document).keyup(function (e) {
+    if (e.keyCode == 27) {
+    	$('#js-main_service_center').dialog('close')  
+    }
+});
+// включение будильника
+$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.service  td.alarm_clock', function(event) {
+	$(this).toggleClass('checked');
+});
 
 
