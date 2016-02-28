@@ -232,6 +232,8 @@ button#sc_close_window{
 }
 #js-main-service_center-variants-table tr td:nth-of-type(5){
 	padding-left: 3px;
+	color: #c2c2c2;
+	font-size: 11px;
 }
 #js-main-service_center-variants-table tr th:nth-of-type(6),
 #js-main-service_center-variants-table tr td:nth-of-type(6){
@@ -467,3 +469,10 @@ button#sc_close_window{
 	padding-top: 5px;
 	padding-bottom: 5px;
 }    
+
+span.marcker_led {
+	position: absolute;
+    margin-top: -9px;
+    padding: 3px 1px 1px 0;
+    margin-left: -3px;
+}

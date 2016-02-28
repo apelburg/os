@@ -20,7 +20,7 @@
 				<thead>
 					<tr class="">
 						<th></th>
-						<th class="checked-before">
+						<th class="">
 							<input type="checkbox" name="">
 							<div class="js-psevdo_checkbox"></div>
 						</th>
@@ -35,7 +35,8 @@
 					</tr>		
 				</thead>
 				<tbody>
-					<tr>
+					<?=$this->variants_print_Html();?>
+					<!-- <tr id="default_var">
 						<td></td>
 						<td>
 							<input type="checkbox" name="">
@@ -67,7 +68,7 @@
 					</tr>
 					<tr>
 						<td></td>
-						<td class="checked">
+						<td>
 							<input type="checkbox" name="">
 							<div class="js-psevdo_checkbox"></div>
 						</td>
@@ -109,7 +110,7 @@
 						<td>Футболка женская LADY 220 с круглым вырезом, фиолетовая </td>
 						<td>100 шт</td>
 						<td></td>
-					</tr>
+					</tr> -->
 				</tbody>			
 					
 			</table>
