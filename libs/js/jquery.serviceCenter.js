@@ -1,3 +1,17 @@
+// ГЛОБАЛЬНЫЕ ЗАГЛУШКИ
+$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.service  td.comment', function(event) {
+	echo_message_js('Вызов окна комментариев');
+});
+
+$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.service  td:last-child', function(event) {
+	echo_message_js('Удалить услугу');
+});
+
+$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.itogo  td:last-child', function(event) {
+	echo_message_js('Удалить все прикреплённые услуги');
+});
+
+
 /**
  *	Service center scripts	
  *
@@ -327,16 +341,7 @@ $(document).keyup(function (e) {
     }
 });
 
-$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.service  td.comment', function(event) {
-	echo_message_js('Вызов окна комментариев');
-});
 
-$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.service  td:last-child', function(event) {
-	echo_message_js('Удалить услугу');
-});
 
-$(document).on('click', '#js-main-service_center-variants-services-div-table table tr.itogo  td:last-child', function(event) {
-	echo_message_js('Удалить все прикреплённые услуги');
-});
 
 
