@@ -1,6 +1,7 @@
 <?php
 	class ServiceCenter  extends aplStdAJAXMethod{
 		private $Query;
+		private $first_default = true;
 
 		function __construct(){
 			$this->db();
@@ -82,8 +83,16 @@
 				
 				$variant_num = 1;
 				foreach ($position['variants'] as $variant) {
-					echo '<tr id="default_var">';
-						echo '<td></td>';
+					if($this->first_default){
+						if($variant_num == 1){
+							echo '<tr  id="default_var" class="tr_checked">';		
+						}
+						
+					}else{
+						echo '<tr  '.(($variant['id'] == (int)$_POST['row_id'])?'id="default_var" class="tr_checked"':'').'>';
+					}
+					
+						echo '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';
 						echo '<td>';
 							echo '<div class="js-psevdo_checkbox"></div>';
 						echo '</td>';
@@ -94,7 +103,9 @@
 						echo '<td><span class="service">'.count($variant['services']).'</span></td>';
 						echo '<td>'.$position['name'].'</td>';
 						echo '<td>'.$variant['quantity'].' шт</td>';
-						echo '<td></td>';
+						$my_variant = $variant;
+						unset($my_variant['services']);
+						echo '<td class="js-variant_info"><div>'.json_encode($my_variant).'</div></td>';
 					echo '</tr>';
 					$variant_num++;
 				}
@@ -128,6 +139,9 @@
 			$arr = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
+					if($this->first_default == true && $row['id'] == $_POST['row_id']){
+						$this->first_default = false;
+					}
 					$this->Query['positions'][$row['row_id']]['variants'][$row['id']] = $row;
 					// получаем услуги к варианту (в целях экономии ресрсов получаем сдесь)
 					$this->Query['positions'][$row['row_id']]['variants'][$row['id']]['services'] = $this->get_services($row['id']);
@@ -138,14 +152,16 @@
 
 		// возвращает прикрепленные услуги
 		private function get_services($id){
-			$query = "SELECT * FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$id."';";
+			$query = "SELECT `".RT_DOP_USLUGI."`.*, IFNULL(`".RT_DOP_USLUGI."`.`other_name`, `".OUR_USLUGI_LIST."`.`name`) AS `service_name` FROM `".RT_DOP_USLUGI."` ";
+			$query .= " INNER JOIN `".OUR_USLUGI_LIST."` ON `".RT_DOP_USLUGI."`.`uslugi_id` = `".OUR_USLUGI_LIST."`.`id`";
+			$query .= " WHERE `".RT_DOP_USLUGI."`.`dop_row_id` = '".$id."';";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			$arr = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
 					$arr[] = $row;
 				}
-			}	
+			}
 			return $arr;
 		}
 		// возвращает строку запроса

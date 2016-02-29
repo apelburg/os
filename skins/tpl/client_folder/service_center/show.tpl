@@ -16,6 +16,7 @@
 			</ul>
 		</div>
 		<div id="js-main-service_center-variants-div-table">
+			<div id="wraper_classer">
 			<table id="js-main-service_center-variants-table">
 				<thead>
 					<tr class="">
@@ -114,6 +115,7 @@
 				</tbody>			
 					
 			</table>
+			</div>
 		</div>
 			
 		<div class="spacer_div"></div>

@@ -98,6 +98,10 @@ button#sc_cancel_all{
     background-position-x: 9px;
     padding-left: 25px;
 }
+button#sc_cancel_all.no_click{
+	opacity: 0;
+	cursor: default;
+}
 button#sc_add_service{
 	width: 186px;
 	background-image: url('../images/img_design/calc_btn.png');
@@ -309,6 +313,21 @@ button#sc_close_window{
 	font-size: 11px;
 	text-align: right;
 }
+
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(2) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(3) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(4) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(5) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(2) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(3) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(4) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(5) div:nth-of-type(1){
+	color: #000;
+	font-weight: normal;
+	font-size: 11px;
+	text-align: right;
+}
+
 #js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(2) div:nth-of-type(2),
 #js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(3) div:nth-of-type(2),
 #js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(4) div:nth-of-type(2),
@@ -471,8 +490,33 @@ button#sc_close_window{
 }    
 
 span.marcker_led {
-	position: absolute;
+	/*position: absolute;*/
     margin-top: -9px;
-    padding: 3px 1px 1px 0;
+    padding: 4px 1px 1px 0;
     margin-left: -3px;
+}
+
+.js-variant_info div,
+.js-variant_services_json div{
+	position: absolute;
+     display: none; 
+    background: #ECC7C7;
+    padding: 15px;
+    border: 1px solid #000;
+    float: left;
+    z-index: 9;
+    left: 1%;
+    width: 90%;
+}
+/*.js-variant_info div{
+	left: 10px;
+}*/
+.js-variant_info:hover div,
+.js-variant_services_json:hover div{
+	display: block;
+}
+#js-main-service_center-variants-div-table #wraper_classer{
+	height: 100%;
+    width: 100%;
+    overflow: auto; 
 }
