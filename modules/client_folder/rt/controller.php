@@ -189,29 +189,32 @@
 					     // если количество в расчете нанесения не равно количеству в колонке тираж товара 
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
 						//$extra_data['quantity'] = 250;
-					    if($extra_data['quantity']!=$dop_row['quantity']){
-						     $reload['flag'] = true;
-						     //echo $dop_row['quantity'];
-						     include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
-		                     $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false');
-							 $json_out_obj =  json_decode($json_out);
-							 
-							 // если расчет не может быть произведен по причине outOfLimit или needIndividCalculation
-							 // сбрасываем количество тиража и нанесения до 1шт.
-							 if(isset($json_out_obj->print->outOfLimit) || isset($json_out_obj->print->needIndividCalculation)){
-							     rtCalculators::change_quantity_and_calculators(1,$dop_key,'true','false');
+						$print_details = json_decode($extra_data['print_details'],true);
+						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto' || $print_details['calculator_type'] =='manual')){
+							if($extra_data['quantity']!=$dop_row['quantity']){
+								 $reload['flag'] = true;
+								 //echo $dop_row['quantity'];
+								 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+								 $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false');
+								 $json_out_obj =  json_decode($json_out);
 								 
-								 $query="UPDATE `".RT_DOP_DATA."` SET  `quantity` = '1'  WHERE `id` = '".$dop_key."'";
-			                     $result = $mysqli->query($query)or die($mysqli->error);
-							 }
-							 
-	
-						 } /**/
+								 // если расчет не может быть произведен по причине outOfLimit или needIndividCalculation
+								 // сбрасываем количество тиража и нанесения до 1шт.
+								 if(isset($json_out_obj->print->outOfLimit) || isset($json_out_obj->print->needIndividCalculation)){
+									 rtCalculators::change_quantity_and_calculators(1,$dop_key,'true','false');
+									 
+									 $query="UPDATE `".RT_DOP_DATA."` SET  `quantity` = '1'  WHERE `id` = '".$dop_key."'";
+									 $result = $mysqli->query($query)or die($mysqli->error);
+								 }
+								 
+		
+							 } /**/
+						 }
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
 						 $summ_in[] = $extra_data['quantity']*$extra_data['price_in'];
 						 $summ_out[] = $extra_data['quantity']*$extra_data['price_out'];
 						 
-						 $print_details = json_decode($extra_data['print_details'],true);
+						
 						 $YPriceParamCount = (@isset($print_details['dop_params']['YPriceParam']))? count($print_details['dop_params']['YPriceParam']):'';
 						 if(isset($print_details['dop_params']['sizes'][0]['id'])){
 						     if(isset($print_sizes[$print_details['dop_params']['sizes'][0]['id']])) $size = $print_sizes[$print_details['dop_params']['sizes'][0]['id']];

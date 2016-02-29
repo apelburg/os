@@ -141,6 +141,7 @@ var printCalculator = {
 			var td =  td.cloneNode(false);
 			td.innerHTML = printCalculator.currentCalculationData[i].print_details.print_type;
 			td.setAttribute('index',i);
+			td.setAttribute('dop_uslugi_id',printCalculator.currentCalculationData[i].dop_uslugi_id);
 			td.style.textDecoration = 'underline';
 			td.style.cursor = 'pointer';
 			tr.appendChild(td);
@@ -150,6 +151,7 @@ var printCalculator = {
 				// добавляем в передаваемые данные данные индекс массива printCalculator.currentCalculationData содержащего
 				// данные конкретного(этого)нанесения
 				printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id = this.getAttribute('index');
+				printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id = this.getAttribute('dop_uslugi_id');
 				// запускаем
 				printCalculator.evoke_calculator();
 			}
@@ -317,8 +319,12 @@ var printCalculator = {
 	}
 	,
 	build_print_calculator:function(){
+	 
+		if(printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id){ 
+		    printCalculator.type = printCalculator.currentCalculationData[printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id].print_details.calculator_type;
+		}
+		else printCalculator.type = 'auto';
 		
-		printCalculator.type = 'auto';
 		var calcTypes = {auto:{title:'Автоматический'},manual:{title:'Ручной'},free:{title:'Дежурная услуга'}};
 		printCalculator.calcTypes = calcTypes;
 		
@@ -361,9 +367,16 @@ var printCalculator = {
 		
 		// загружаем текуший калькулятор
 		printCalculator['load_'+printCalculator.type+'_calc'](printCalculator.type);
+	  
 		
 		// открываем окно с калькулятором
 		document.body.appendChild(dialogBox);
+		if(printCalculator.type=='free'){
+			// запускаем обсчет
+			printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_in]')[0]);
+			printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_out]')[0]);
+		}
+		
 		$(dialogBox).dialog({autoOpen: false, position:{ at: "top+25%", of: window } ,title: "Расчет нанесения логотипа "+printCalculator.levelsRU[printCalculator.level],modal:true,width: 680,close: function() {this.remove();}});
 		$(dialogBox).dialog("open");
 	}
@@ -371,7 +384,7 @@ var printCalculator = {
 	load_auto_calc:function(type){
 		
 		printCalculator.type = type;
-		
+
 		$('#quantityInfoField').show();
 		
 		var boxId = printCalculator.type+'CalcBox';
@@ -423,6 +436,7 @@ var printCalculator = {
 				else printCalculator.currentCalculationData[printCalculator.type].discount = 0;
 			}
 			
+			if(printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id) printCalculator.currentCalculationData[printCalculator.type].dop_uslugi_id = printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id;
 			
 			console.log('>>> ДАННЫЕ КОНКРЕТНОГО ТЕКУЩЕГО РАСЧЕТА (если это новый расчет то это просто подготовленный для заполнения праметрами скелет, если это открыт существующий расчет то тогда он содержит его праметры)');
 			console.log(' printCalculator.currentCalculationData',printCalculator.currentCalculationData);
@@ -543,23 +557,60 @@ var printCalculator = {
 		if(document.getElementById(boxId) === null){
 			
 			
+			
+			
+			
 			if(typeof printCalculator.currentCalculationData === 'undefined') printCalculator.currentCalculationData = {};
-			printCalculator.currentCalculationData[type] = {};
-			printCalculator.currentCalculationData[type].print_details = {};
-			printCalculator.currentCalculationData[type].print_details.usluga = '';
-			printCalculator.currentCalculationData[type].print_details.comment = '';
-			printCalculator.currentCalculationData[type].print_details.commentForClient = '';
-			printCalculator.currentCalculationData[type].print_details.supplier = '';
-            printCalculator.currentCalculationData[type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
-		    printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
-			printCalculator.currentCalculationData[type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
-			printCalculator.currentCalculationData[type].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
-			printCalculator.currentCalculationData[type]['price_in'] = 0;
-			printCalculator.currentCalculationData[type]['price_out'] = 0;
-			printCalculator.currentCalculationData[type]['total_price_in'] = 0;
-			printCalculator.currentCalculationData[type]['total_price_out'] = 0;
 			
+			if(printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id){
+
+				var currentCalculationData =  printCalculator.currentCalculationData[printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id];
 			
+				printCalculator.currentCalculationData[type] = currentCalculationData;	
+				printCalculator.currentCalculationData[type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
+			    printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
+				printCalculator.currentCalculationData[type].quantity = parseInt(currentCalculationData.print_details.quantity);
+				printCalculator.currentCalculationData[type]['price_in'] = parseFloat(currentCalculationData.price_in);
+				printCalculator.currentCalculationData[type]['price_out'] = parseFloat(currentCalculationData.price_out);
+				printCalculator.currentCalculationData[type].discount =  parseFloat(currentCalculationData.discount);
+				printCalculator.currentCalculationData[type]['total_price_in'] = 0;
+				printCalculator.currentCalculationData[type]['total_price_out'] = 0;
+				if(printCalculator.currentCalculationData[type].tz && printCalculator.currentCalculationData[type].tz!=''){
+					// ВООБЩЕТО НАВЕРНО лучще переделать систему и кодировать сразу здесь чтобы не было путаницы и данные 
+					// всегда отправлялись на сервер в кодировке
+					printCalculator.currentCalculationData[type].tz = Base64.decode(printCalculator.currentCalculationData[type].tz);
+					printCalculator.currentCalculationData[type].print_details.comment = printCalculator.currentCalculationData[type].tz;
+					var comment = printCalculator.currentCalculationData[type].tz;
+				}
+				
+				
+	           // delete printCalculator.currentCalculationData[printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id];
+				delete printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id;
+				// console.log('===+++===',printCalculator.currentCalculationData[type]);
+				
+			}
+			else{
+			
+				printCalculator.currentCalculationData[type] = {};
+				printCalculator.currentCalculationData[type].print_details = {};
+				printCalculator.currentCalculationData[type].print_details.place_type = 'Дежурная услуга';
+				printCalculator.currentCalculationData[type].print_details.print_type = '';
+				printCalculator.currentCalculationData[type].print_details.comment = '';
+				printCalculator.currentCalculationData[type].print_details.commentForClient = '';
+				printCalculator.currentCalculationData[type].print_details.supplier = '';
+				printCalculator.currentCalculationData[type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
+				printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
+				printCalculator.currentCalculationData[type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
+				printCalculator.currentCalculationData[type].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
+				printCalculator.currentCalculationData[type]['price_in'] = 0;
+				printCalculator.currentCalculationData[type]['price_out'] = 0;
+				printCalculator.currentCalculationData[type]['total_price_in'] = 0;
+				printCalculator.currentCalculationData[type]['total_price_out'] = 0;
+			}
+			
+			if(printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id) printCalculator.currentCalculationData[printCalculator.type].dop_uslugi_id = printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id;
+			
+			console.log('777',printCalculator.currentCalculationData[type]);
 			
 			var calcBox = document.createElement('DIV');
 			calcBox.id = boxId;
@@ -578,7 +629,8 @@ var printCalculator = {
 		    calcBox.appendChild(plank);
 			
 			var input = inputTpl.cloneNode(true);
-			input.name = 'usluga';
+			input.name = 'print_type';
+			input.value = printCalculator.currentCalculationData[type].print_details.print_type;
 			input.onchange = function(){
 				printCalculator.currentCalculationData[printCalculator.type].print_details[this.name] = this.value;
 			}
@@ -587,7 +639,14 @@ var printCalculator = {
 			
 			var input = inputTpl.cloneNode(true);
 		    input.value = printCalculator.currentCalculationData[type].quantity;
+			input.onfocus = function(){
+				if(this.value == '0') this.value ='';
+			}
 			input.onkeyup = function(){
+			   if(this.value != '' && this.value != '&nbsp;'){ 
+					var result = printCalculator.correctToInt(this,this.value);
+					if(result != 0) printCalculator.setCaretToPos(this,result);
+				}
 				printCalculator.currentCalculationData[printCalculator.type].quantity = this.value;
 				printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_in]')[0]);
 				printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_out]')[0]);
@@ -607,11 +666,13 @@ var printCalculator = {
 			var textarea = textareaTpl.cloneNode(true);
 			textarea.className = 'commentForClient';
 			textarea.name = 'commentForClient';
+			textarea.value = printCalculator.currentCalculationData[type].print_details.commentForClient.replace(/<br \/>/g,"\r");
+
 			textarea.onchange = function(){
 				printCalculator.currentCalculationData[printCalculator.type].print_details[this.name] = this.value;
 			}
 		    calcBox.appendChild(textarea);
-			
+			             
 			// третий блок
 			var plank = plankTpl.cloneNode(true);
 		    plank.innerHTML = '<div class="sub_cap left">внутренний комментарий</div><div class="sub_cap right">поставщик</div><div class="clear"></div>';
@@ -620,6 +681,7 @@ var printCalculator = {
 			var textarea = textareaTpl.cloneNode(true);
 			textarea.className = 'comment';
 			textarea.name = 'comment';
+			textarea.value = printCalculator.currentCalculationData[type].print_details.comment;
 			textarea.onchange = function(){
 				printCalculator.currentCalculationData[printCalculator.type].print_details[this.name] = this.value;
 			}
@@ -628,11 +690,12 @@ var printCalculator = {
 			var input = inputTpl.cloneNode(true);
 			input.name = 'supplier';
 			input.className = 'supplier';
+			input.value = printCalculator.currentCalculationData[type].print_details.supplier;
 			input.onchange = function(){
 				printCalculator.currentCalculationData[printCalculator.type].print_details[this.name] = this.value;
 			}
 		    calcBox.appendChild(input);
-			
+			             
 			var div = document.createElement('DIV');
 		    div.style.clear = 'both';
 		    calcBox.appendChild(div);
@@ -640,8 +703,9 @@ var printCalculator = {
 			// добавляем контейнер в калькулятор
 			printCalculator.currentCalculationData[type].mainCalculatorBox = calcBox;
 			printCalculator.commonContainer.appendChild(calcBox);
+			                
 		}
-		printCalculator.showCalcItogDisplay();
+		printCalculator.showCalcItogDisplay();		
 	}
 	,
 	buildBlockA:function(){
@@ -1533,20 +1597,109 @@ var printCalculator = {
 		var tr = $(cell).parents('tr');
 		var quantity = printCalculator.currentCalculationData[printCalculator.type].quantity;
 		var discount = printCalculator.currentCalculationData[printCalculator.type].discount;
-		//alert(cell.value);
-		printCalculator.currentCalculationData[printCalculator.type][name] = value;
+		
+		printCalculator.currentCalculationData[printCalculator.type][name] = parseFloat(value);
 		printCalculator.currentCalculationData[printCalculator.type]['total_'+name] = value*quantity;
 		$(tr).find( "td[total_cell=total_"+name+"]").html(((printCalculator.currentCalculationData[printCalculator.type]['total_'+name]).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
 
-		
+
 		if(name == 'price_out'){
 			
 			var discount_price_out =(discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].price_out/100)*(100 + parseInt(discount)) : printCalculator.currentCalculationData[printCalculator.type].price_out;
 			var discount_itog =(printCalculator.currentCalculationData[printCalculator.type].discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].total_price_out/100)*(100 + parseInt(printCalculator.currentCalculationData[printCalculator.type].discount)) : printCalculator.currentCalculationData[printCalculator.type].total_price_out;
 
+
 			$(tr).find( "td[total_cell="+name+"_discount]").html(((discount_price_out).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
+
 			$(tr).find( "td[total_cell=total_"+name+"_discount]").html(((discount_itog).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
 		}/**/
+
+	}
+	,
+	setCaretToPos:function (input, pos) {
+		var selectionStart = pos; 
+		var selectionEnd = pos; 
+		
+	    if (input.setSelectionRange) {
+			input.focus();
+			input.setSelectionRange(selectionStart, selectionEnd);
+	    }
+	    else if (input.createTextRange) {
+			var range = input.createTextRange();
+			range.collapse(true);
+			range.moveEnd('character', selectionEnd);
+			range.moveStart('character', selectionStart);
+			range.select();
+	    }
+	}
+	,
+	correctToInt:function (cell,str){// корректировка значений вводимых пользователем в поле ввода типа Integer
+		var wrong_input = false;
+		var pos = 0;
+		
+		// если строка содержит что-то кроме цифры или точки вырезаем этот символ
+		var pattern = /[^\d]+/; 
+		var result = pattern.exec(str);
+		if(result !== null){ 
+			wrong_input = true;
+			var substr_arr = str.split(result[0]);
+			pos =  substr_arr[0].length;
+			str =  substr_arr[0] + substr_arr[1];
+			
+		}
+		if(str.length>7){ wrong_input = true;  str = '1000000'; pos = 7;}
+
+		// если был выявлен некорректный ввод исправляем содержимое ячейки 
+		if(wrong_input){
+			if(cell.nodeName == 'INPUT') cell.value = str;
+			else cell.innerHTML = str;
+		}  
+		return pos;
+	}
+	,
+	correctToFloat:function(cell,str){// корректировка значений вводимых пользователем в поле ввода типа Float
+		var wrong_input = false;
+		var pos = 0;
+		
+		// если строка содержит запятую меняем её на точку
+		var pattern = /,/; 
+		if(str.match(pattern)){ wrong_input = true;  pos =  str.indexOf(',')+1; str =  str.replace(',','.');}
+		
+		// если строка содержит что-то кроме цифры или точки 
+		var pattern = /[^\d\.]+/; 
+		var result = pattern.exec(str);
+		if(result !== null){ 
+			wrong_input = true;
+			if(str.length==1){ 
+				// если это единственный символ в строке - заменяем его на 0
+			     wrong_input = true; str = 0; pos = 0;
+			}
+			else{
+				// если это не единственный символ в строке - вырезаем его
+				var substr_arr = str.split(result[0]);
+				pos =  substr_arr[0].length;
+				str =  substr_arr[0] + substr_arr[1];
+			}
+			
+			
+		}
+
+		
+		//  если после точки введено менее или более 2 цифр исправляем до 2-х
+		// ЗДЕСЬ НУЖНО РЕШИТЬ ВОПРОС УСТАНОВКИ КУРСОРА В НУЖНОЕ МЕСТО ПОКА ПЕРЕНОСИТСЯ В КОНЕЦ
+		//var pattern = /^\d+\.\d{2}$/; 
+	 
+		// если величина числа больше допустимого - обрезаем его
+		if(str.length>12){ wrong_input = true;  str = '100000000.00'; pos = 12;}
+     
+		// если был выявлен некорректный ввод исправляем содержимое ячейки 
+		if(wrong_input){
+			if(cell.nodeName == 'INPUT') cell.value = str;
+			else cell.innerHTML = str;
+		}
+		
+		//alert(pos);
+		return pos; 
 	}
 	,
 	showCalcItogDisplay:function(){
@@ -1601,7 +1754,7 @@ var printCalculator = {
 			tdClone.innerHTML = 'тираж';
 			TRclone.appendChild(tdClone);
 			total_tbl.appendChild(TRclone);
-			
+		
 			
 			TRclone = tr.cloneNode(true);
 			tdClone = td.cloneNode(true);
@@ -1614,11 +1767,19 @@ var printCalculator = {
 				inputClone = input.cloneNode(true);
 				inputClone.name = 'price_in';
 				inputClone.value = printCalculator.currentCalculationData[printCalculator.type]['price_in'];
+				inputClone.onfocus = function(){
+					if(this.value == '0') this.value ='';
+				}
 				inputClone.onkeyup = function(){
+                    if(this.value != '' && this.value != '&nbsp;'){ 
+						var result = printCalculator.correctToFloat(this,this.value);
+						if(result != 0) printCalculator.setCaretToPos(this,result);
+					}
 					printCalculator.noneAutoCalcProcessing(this);
 				}
 				tdClone.appendChild(inputClone);
 			}
+	
 			TRclone.appendChild(tdClone);
 			tdClone = td.cloneNode(true);
 			tdClone.setAttribute('total_cell','total_price_in');
@@ -1638,23 +1799,32 @@ var printCalculator = {
 			//tdClone.innerHTML = '-';
 			TRclone.appendChild(tdClone);
 			total_tbl.appendChild(TRclone);
-			
+
 			TRclone = tr.cloneNode(true);
 			tdClone = td.cloneNode(true);
 			tdClone .className = 'title';
 			tdClone.innerHTML = 'Исходящая:';
 			TRclone.appendChild(tdClone);
 			tdClone = td.cloneNode(true);
+		
 			if(printCalculator.type=='auto') tdClone.innerHTML = ((printCalculator.currentCalculationData[printCalculator.type].price_out).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р';
 			else{
 				inputClone = input.cloneNode(true);
 				inputClone.name = 'price_out';
 				inputClone.value = printCalculator.currentCalculationData[printCalculator.type]['price_out'];
+				inputClone.onfocus = function(){
+					if(this.value == '0') this.value ='';
+				}
 				inputClone.onkeyup = function(){
+					if(this.value != '' && this.value != '&nbsp;'){ 
+						var result = printCalculator.correctToFloat(this,this.value);
+						if(result != 0) printCalculator.setCaretToPos(this,result);
+					}
 					printCalculator.noneAutoCalcProcessing(this);
 				}
 				tdClone.appendChild(inputClone);
 			}
+
 			TRclone.appendChild(tdClone);
 			tdClone = td.cloneNode(true);
 			tdClone.setAttribute('total_cell','total_price_out');
@@ -1669,14 +1839,16 @@ var printCalculator = {
 			TRclone.appendChild(tdClone);
 			tdClone = td.cloneNode(true);
 			tdClone.setAttribute('total_cell','price_out_discount');
-			
+			// alert(34);
 			var discount_price_out =(printCalculator.currentCalculationData[printCalculator.type].discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].price_out/100)*(100 + parseInt(printCalculator.currentCalculationData[printCalculator.type].discount)) : printCalculator.currentCalculationData[printCalculator.type].price_out;
+
+			
 			tdClone.innerHTML = ((discount_price_out).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р';
 
 			TRclone.appendChild(tdClone);
 			tdClone = td.cloneNode(true);
 			tdClone.setAttribute('total_cell','total_price_out_discount');
-			
+
 			var discount_itog =(printCalculator.currentCalculationData[printCalculator.type].discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].total_price_out/100)*(100 + parseInt(printCalculator.currentCalculationData[printCalculator.type].discount)) : printCalculator.currentCalculationData[printCalculator.type].total_price_out;
 			tdClone.innerHTML = ((discount_itog).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р';
 			
@@ -1729,13 +1901,21 @@ var printCalculator = {
 			BtnsDiv.className = 'BtnsDiv';
 			BtnsDiv.id = 'calculatorsaveResultPlank';
 			
-			var showProcDetBtn = document.createElement('DIV');
-			showProcDetBtn.className = 'showProcessingDetailsBtn';
-			showProcDetBtn.innerHTML = 'Включить вкладку прайс';
-			showProcDetBtn.onclick =  printCalculator.showProcessingDetails;
-			
-			BtnsDiv.appendChild(showProcDetBtn);
-			
+			if(printCalculator.type == 'auto' || printCalculator.type == 'free'){
+				var showDopInfoBtn = document.createElement('DIV');
+				showDopInfoBtn.className = 'showDopInfoBlockBtn';
+				if(printCalculator.type == 'auto'){
+					showDopInfoBtn.innerHTML = 'Включить вкладку прайс';
+				    showDopInfoBtn.onclick =  printCalculator.showProcessingDetails;
+				}
+				if(printCalculator.type == 'free'){
+					showDopInfoBtn.innerHTML = 'Вспомогательная информация';
+				    showDopInfoBtn.onclick =  printCalculator.showDopInfoBlock;
+				}
+				BtnsDiv.appendChild(showDopInfoBtn);
+				
+			}
+
 			var saveBtn = document.createElement('DIV');
 			saveBtn.className = 'ovalBtn';
 			saveBtn.innerHTML = 'Сохранить расчет';
@@ -1776,6 +1956,27 @@ var printCalculator = {
         //
 	}
 	,
+	showDopInfoBlock:function(){
+	    
+		// если данные по вспомогательной инофрмации еще не загруженные и окно не создано отправляем запрос и создаем окно
+		if(!printCalculator.DopInfoBlock && !printCalculator.showDopInfoBlock_InProcess){
+			alert(1);
+			printCalculator.showDopInfoBlock_InProcess = true;
+			// формируем url для AJAX запроса
+			var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&grab_dop_info=1','section');
+			printCalculator.send_ajax(url,callback);
+			
+			function callback(response){ 
+				alert(response);
+				// console.log(response);
+				printCalculator.showDopInfoBlock_InProcess = false;
+			}
+		}
+		else{
+			alert(2);
+		}
+	}
+	,
 	saveCalculatorResult:function(){
 		// в этом методе две задачи 
 		// 1. отправить данные на сервер
@@ -1800,6 +2001,31 @@ var printCalculator = {
 			}
 		    printCalculator.currentCalculationData[printCalculator.type].print_details.place_type =  printCalculator.calculatorParamsObj.places[printCalculator.currentCalculationData[printCalculator.type].print_details.place_id].name;
 		    printCalculator.currentCalculationData[printCalculator.type].print_details.print_type =  printCalculator.calculatorParamsObj.places[printCalculator.currentCalculationData[printCalculator.type].print_details.place_id].prints[printCalculator.currentCalculationData[printCalculator.type].print_details.print_id];
+		}
+		if(printCalculator.type=='free'){
+			var unfilled = false;
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.print_type.replace(/^\s\s*/, '').replace(/\s\s*$/, '') ==''){
+				echo_message_js("Заполните поле \"Название услуги\"",'system_message',3800);
+				unfilled = true;
+			}
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.comment.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				echo_message_js("Заполните поле \"Bнутренний комментарий\"",'system_message',3800);
+				unfilled = true;
+			}
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.commentForClient.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				echo_message_js("Заполните поле \"Подробное описание для клиента\"",'system_message',3800);
+				unfilled = true;
+			}
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.supplier.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				echo_message_js("Заполните поле \"Поставщик\"",'system_message',3800);
+				unfilled = true;
+			}
+			if(printCalculator.currentCalculationData[printCalculator.type].quantity.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				echo_message_js("Заполните поле\"Тираж\"",'system_message',3800);
+				unfilled = true;
+			}
+
+			if(unfilled) return;
 		}
 
 		printCalculator.currentCalculationData[printCalculator.type].print_details.calculator_type = printCalculator.type;
@@ -1838,7 +2064,7 @@ var printCalculator = {
 		function callback(response){ 
 		     alert(response);
 			// console.log(response);
-			// location.reload();
+		    //location.reload();
 		}
 		
 	}
