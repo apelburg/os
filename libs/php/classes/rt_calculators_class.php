@@ -431,16 +431,27 @@
 		static function save_calculatoins_result($details_obj){
 		    global $mysqli;  
 			
-		    //print_r($details_obj);
-			foreach($details_obj->print_details->dop_params->YPriceParam as $key => $data){
-			   if(isset($data->cmyk)) $details_obj->print_details->dop_params->YPriceParam[$key]->cmyk =  base64_encode($data->cmyk);
-			} 
+		     print_r($details_obj);
+			
+			if($details_obj->print_details->calculator_type=='free'){
+			    // надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
+				// и убирать все дальнейшие связанные с этим полем обработки например в карточке товара
+			    $details_obj->print_details->print_id = 0;
+				$details_obj->print_details->quantity = $details_obj->quantity;
+			}
+			
+			if($details_obj->print_details->calculator_type=='auto' || $details_obj->print_details->calculator_type=='manual'){
+				foreach($details_obj->print_details->dop_params->YPriceParam as $key => $data){
+				   if(isset($data->cmyk)) $details_obj->print_details->dop_params->YPriceParam[$key]->cmyk =  base64_encode($data->cmyk);
+				} 
+			}
 			
             $details_obj->print_details->comment = (isset($details_obj->print_details->comment))? base64_encode($details_obj->print_details->comment):'';
             // если PHP 5.4 то достаточно этого
                /* $print_details = json_encode($details_obj->print_details,JSON_UNESCAPED_UNICODE);*/
 			// но пришлось использовать это
 			$print_details = self::json_fix_cyr(json_encode($details_obj->print_details)); 
+			
 
 			// если нет dop_uslugi_id или он равен ноль, добавляем новый расчет доп услуг для ряда 
 			// иначе перезаписываем данные в строке где `id` = $details_obj->dop_uslugi_id

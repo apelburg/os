@@ -6,7 +6,7 @@
  */
 jQuery(document).ready(function($) {
 	$.SC_createShowWindowButton();
-	$('#js-win-sv').click();
+	//$('#js-win-sv').click();
 });
 
 
@@ -99,7 +99,7 @@ $.extend({
 		window_preload_add();
 		$('#rt_tbl_body').load(' #rt_tbl_body',function(){
 			// запускаем РТ по новой
-			printCalculator;
+			
 			rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
 			// убираем прелоад
 			window_preload_del();

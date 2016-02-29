@@ -1870,9 +1870,9 @@ ul.central_menu li a:hover{
 .freeCalcBox input.supplier{ float:left; width: 235px;}
 .freeCalcBox .quantity_label:before{  content: 'тираж';  margin-left: 39px; margin-right: -20px;}
 
-.freeCalcBox textarea{ margin: 20px 0 20px 30px; padding: 5px 10px; resize:vertical; font-size: 11px;}
-.freeCalcBox textarea.commentForClient{ width: 590px;}
-.freeCalcBox textarea.comment{ float:left; width: 300px;}
+.freeCalcBox textarea{ margin: 20px 0 20px 30px; padding: 5px 10px; resize:vertical;}
+.freeCalcBox textarea.commentForClient{ width: 590px; font-size: 11px;}
+.freeCalcBox textarea.comment{ float:left; width: 300px; font-size: 11px;}
 
 
 .freeCalcBox .dopParametrsTitle .left{ float:left;}
