@@ -60,7 +60,7 @@
 <script type="text/javascript">
 $(document).keydown(function(e) {   
 	if(e.keyCode == 27){
-		window.location.href = "http://www.apelburg.ru/"
+		window.location.href = "http://<?=$_SERVER['HTTP_HOST'];?>/"
 	}
             // alert(e.keyCode);
             // alert($('#tableSeach input,#MobilSeach').is(':focus'));
@@ -121,7 +121,7 @@ function submit_autorisation(){
 		function(data){
 			
 			if(data=="OKEY"){
-				 window.location.href = "http://www.apelburg.ru/os/"
+				 window.location.href = "http://<?=$_SERVER['HTTP_HOST'];?>/os/"
 			}else{				
 				//$('#autorisationWindow').find('.error').fadeOut('fast')
 				//alert("Это json с сервера:\n\n"+data);
