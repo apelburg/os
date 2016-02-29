@@ -124,6 +124,9 @@ button#sc_close_window{
 	height: 2px;
 	background-color: #e1e1e1;
 }
+#js-main-service_center-variants-services-div-table table tr.js-service_spacer th{
+	color: #eeeeee;	
+}
 /* меню артикул/тираж */
 #js-main-service_center-top_menu{
 	/*border-top: 1px solid #808080;
