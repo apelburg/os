@@ -52,8 +52,8 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				methods.variants_rows = 	$this.find('#js-main-service_center-variants-table tbody tr');
 				methods.top_menu = 			$this.find('#js-main-service_center-top_menu ul li');
 				methods.checkbox_main = 	$this.find('#js-main-service_center-variants-table thead tr th:nth-of-type(2) div.js-psevdo_checkbox');
+				
 				methods.services_tbl =		$this.find('#js-main-service_center-variants-services-div-table table');
-				methods.services_rows = 	$this.find('#js-main-service_center-variants-services-div-table table tr.service');
 
 				// кнопка сбросить все 
 				methods.btn_cancel_all = 	$('#sc_cancel_all');
@@ -71,15 +71,13 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					$(this).find('td:nth-of-type(2) div.js-psevdo_checkbox').click();
 				});
 
-
-				// events services 
-				methods.services_rows.find('.alarm_clock').bind("click.totalCommander", function(){
-					$(this).toggleClass('checked');
-				});
+				// инициализируем работу нижней части окна
+				methods.services_init();
 
 				// кнопка сбросить всё
 				methods.btn_cancel_all.bind('click.totalCommander', methods.cancel_all_choosen_variants );
-
+				// добавить услугу
+				methods.btn_calculators.bind('click.totalCommander', methods.add_services_from_calculator );
 
 				$this.show();
 
@@ -88,6 +86,20 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			});
 
 		},
+		services_init:function(){
+			
+			methods.services_rows = 	methods.services_tbl.find('tr.service');
+			// events services 
+			methods.services_rows.find('.alarm_clock').bind("click.totalCommander", function(){
+				$(this).toggleClass('checked');
+				echo_message_js( 'будильник' );
+			});
+		},
+		// нажатие на кнопку калькуля/тора
+		add_services_from_calculator:function(){
+			echo_message_js( 'вызов калькулятора' );
+		},
+		// сбросить выбранные checkbox
 		cancel_all_choosen_variants:function(){
 			methods.variants_rows
 				.removeClass('tr_checked')
@@ -242,6 +254,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     		methods.services_tbl.find('.service').remove();
     		methods.services_tbl.find('.service_th');
 
+    		var spacer = methods.services_tbl.find('.spacer').clone();
     		var object = {};
 
     		var services = {};
@@ -295,11 +308,17 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					bariant_row += '<td></td>';
 				bariant_row += '</tr>';
 
-					methods.services_tbl.find('.service_th').show().before(bariant_row);
+					
 
     				var service = jQuery.parseJSON( $(this).find('td.js-variant_services_json div').html() );
     				// console.log(service.length);
+    				if(service.length){
+    					methods.services_tbl.find('.service_th').show().removeClass('js-service_spacer').before(bariant_row);		
+    				}else{
+    					methods.services_tbl.find('.service_th').show().addClass('js-service_spacer').before(bariant_row);	
+    				}
     				
+
     				for (var i = 0; i < service.length; i++) {
     					if(service[i].for_how == 'for_all'){
     						service[i].quantity = 1;
@@ -339,6 +358,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     				}
     			}
     		});
+		methods.services_init();
 		}
 	};
 
@@ -450,7 +470,7 @@ $.extend({
 		// обновление таблицы РТ
 		$('#scrolled_part_container').load(' #rt_tbl_body',function(){
 			// запускаем РТ по новой
-
+			// printCalculator;
 			rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
 			// убираем прелоад
 			window_preload_del();
@@ -467,9 +487,9 @@ $.extend({
 		buttons.push({
 		    text: 'Добавить услугу',
 		    id: 	'sc_add_service',
-		    click: function() {
-		    	$('#js-main_service_center').dialog('close');			    	
-		    }
+		    // click: function() {
+		    // 	$('#js-main_service_center').dialog('close');			    	
+		    // }
 		});
 		buttons.push({
 		    text: 'Закрыть',
@@ -512,8 +532,3 @@ $(document).keyup(function (e) {
     	$('#js-main_service_center').dialog('close')  
     }
 });
-
-
-
-
-

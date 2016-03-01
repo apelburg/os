@@ -187,7 +187,7 @@
 	}
 	if(isset($_GET['save_calculator_result'])){
 		// print_r(json_decode($_GET['details']));//
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		rtCalculators::save_calculatoins_result(json_decode($_GET['details']));
 		exit;
