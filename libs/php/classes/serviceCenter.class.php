@@ -41,6 +41,16 @@
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
 		}
 
+		/**
+		 *	удвляет услугу
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	16:50 01.03.2016
+		 */
+		protected function services_del_AJAX(){
+			$this->responseClass->addMessage('Удаление услуги');
+		}
+
 		// возвращает контент для окна
 		private function get_window_content(){
 			// собираем объект
@@ -62,7 +72,7 @@
 		// во
 		private function variants_print_Html(){
 			$position_num = 1;
-			$color_arr = array('#e2f0d4','#89AB67');
+			$color_arr = array('rgba(79, 154, 48, 0.2)','rgba(79, 142, 13, 0.37)');
 			$color = $color_arr[1];$old_color = '';
 
 			foreach ($this->Query['positions'] as $position) {
@@ -85,13 +95,17 @@
 				foreach ($position['variants'] as $variant) {
 					if($this->first_default){
 						if($variant_num == 1){
-							echo '<tr  id="default_var" class="tr_checked">';		
+							echo '<tr data-dop_row_id="'.$variant['id'].'" id="default_var" class="tr_checked">';		
 						}
 						
 					}else{
-						echo '<tr  '.(($variant['id'] == (int)$_POST['row_id'])?'id="default_var" class="tr_checked"':'').'>';
-					}
-					
+						echo '<tr data-dop_row_id="'.$variant['id'].'"  '.(($variant['id'] == (int)$_POST['row_id'])?'id="default_var" class="tr_checked"':'').'>';
+					}	
+
+						foreach ($variant['services'] as $key => $value) {
+							$variant['services'][$key]['print_details'] = json_decode($variant['services'][$key]['print_details'],'true');	
+						}
+						 
 						echo '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';
 						echo '<td>';
 							echo '<div class="js-psevdo_checkbox"></div>';
@@ -153,8 +167,9 @@
 		// возвращает прикрепленные услуги
 		private function get_services($id){
 			$query = "SELECT `".RT_DOP_USLUGI."`.*, IFNULL(`".RT_DOP_USLUGI."`.`other_name`, `".OUR_USLUGI_LIST."`.`name`) AS `service_name` FROM `".RT_DOP_USLUGI."` ";
-			$query .= " INNER JOIN `".OUR_USLUGI_LIST."` ON `".RT_DOP_USLUGI."`.`uslugi_id` = `".OUR_USLUGI_LIST."`.`id`";
+			$query .= " LEFT JOIN `".OUR_USLUGI_LIST."` ON `".RT_DOP_USLUGI."`.`uslugi_id` = `".OUR_USLUGI_LIST."`.`id`";
 			$query .= " WHERE `".RT_DOP_USLUGI."`.`dop_row_id` = '".$id."';";
+			
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			$arr = array();
 			if($result->num_rows > 0){

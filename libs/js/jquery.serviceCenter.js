@@ -1,3 +1,20 @@
+/*
+	
+	// перезагрузка РТ без перезагрузки окна
+	$.SC_reload_RT_content();
+
+
+	// вызов калькулятора
+	add_services_from_calculator
+
+
+*/
+
+
+
+
+
+
 // ГЛОБАЛЬНЫЕ ЗАГЛУШКИ
 $(document).on('click', '#js-main-service_center-variants-services-div-table table tr.service  td.comment', function(event) {
 	echo_message_js('Вызов окна комментариев');
@@ -89,15 +106,23 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		services_init:function(){
 			
 			methods.services_rows = 	methods.services_tbl.find('tr.service');
-			// events services 
-			methods.services_rows.find('.alarm_clock').bind("click.totalCommander", function(){
-				$(this).toggleClass('checked');
-				echo_message_js( 'будильник' );
-			});
+			
+			// // events services 
+			// methods.services_rows.find('.alarm_clock').bind("click.totalCommander", function(){
+			// 	$(this).toggleClass('checked');
+			// 	echo_message_js( 'будильник' );
+			// });
 		},
 		// нажатие на кнопку калькуля/тора
 		add_services_from_calculator:function(){
-			echo_message_js( 'вызов калькулятора' );
+			var id_dop_data = '';
+			var i = 0;
+			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
+				 id_dop_data += ((i>0)?',':'')+' '+$(this).attr('data-dop_row_id') ;i++;
+			});
+
+			echo_message_js( 'вызов калькулятора id = '+id_dop_data );
+			// console.log(id_dop_data)
 		},
 		// сбросить выбранные checkbox
 		cancel_all_choosen_variants:function(){
@@ -107,6 +132,23 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				.removeClass('checked');
 
 			methods.variants_tbody.find('#default_var').addClass('tr_checked')
+
+			methods.checkbox_main.parent().removeClass('checked-before').removeClass('checked');
+			// обновление блока услуг
+			methods.update_services_content();
+			// скролл к default
+			setTimeout(methods.scroll_to_default,500);
+			// скрываем кнопку
+			methods.btn_cancel_all.addClass('no_click');
+		},
+		// сбросить группу и перейти к определённой строке
+		cancel_all_choosen_variants_and_chose_one_row:function(row){
+			methods.variants_rows
+				.removeClass('tr_checked')
+				.find('td:nth-of-type(2).checked')
+				.removeClass('checked');
+
+			row.addClass('tr_checked')
 
 			methods.checkbox_main.parent().removeClass('checked-before').removeClass('checked');
 			// обновление блока услуг
@@ -202,10 +244,10 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						// закрываем 
 						flag = false;
 					}
-					console.log(destination_v1)
+					// console.log(destination_v1)
 				}
 			});
-			console.log($("#js-main-service_center-variants-div-table div#wraper_classer").animate({scrollTop: destination_v1+'px'}, 200));
+			// console.log($("#js-main-service_center-variants-div-table div#wraper_classer").animate({scrollTop: destination_v1+'px'}, 200));
 		},
 		// показать окно
 		show : function( ) {
@@ -246,7 +288,9 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
 		},
 		hide : function( ) {
-    		this.dialog('close');
+    		$('#js-main_service_center').dialog('destroy');
+    		$('#js-main_service_center').remove()
+    		this.remove();
 		},
 		update_services_content : function( content ) {
     		// подчищаем данные в таблице услуг
@@ -265,49 +309,44 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     		methods.variants_rows.each(function(index, el) {
     			if($(this).hasClass('tr_checked')){
     			var variant = jQuery.parseJSON( $(this).find('td.js-variant_info div').html() );
-    			var bariant_row = '<tr class="variant">';
-					bariant_row += '<td colspan="2">';
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						bariant_row += '<div>';
-							bariant_row += '<span>'+$(this).find('td').eq(2).text()+'</span>';
-							bariant_row += '<span>'+$(this).find('td').eq(4).text()+'</span>';
-						bariant_row += '</div>';
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						bariant_row += $(this).find('td').eq(5).text();
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						bariant_row += '<span>'+$(this).find('td span.service').html()+'</span>';
-					bariant_row += '</td>';
-					bariant_row += '<td colspan="4">';
-						bariant_row += $(this).find('td').eq(7).text();
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						bariant_row += $(this).find('td').eq(8).text();
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						// входащая
-						bariant_row += '<div><span>'+variant.price_in+'</span>р</div>';
-						bariant_row += '<div><span>'+variant.price_in*variant.quantity+'</span>р</div>';
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						// без скидки (исходящая)
-						bariant_row += '<div><span>'+variant.price_out+'</span>р</div>';
-						bariant_row += '<div><span>'+variant.price_out*variant.quantity+'</span>р</div>';
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						// скидка
-						bariant_row += '<span>'+variant.discount+'</span>%';
-					bariant_row += '</td>';
-					bariant_row += '<td>';
-						// со скидкой (исходящая)
-						bariant_row += '<div><span>'+variant.price_out+'</span>р</div>';
-						bariant_row += '<div><span>'+variant.price_out*variant.quantity+'</span>р</div>';
-					bariant_row += '</td>				';	
-					bariant_row += '<td></td>';
-				bariant_row += '</tr>';
+    			var bariant_row = $('<tr/>',{'class':'variant'});
 
+    			bariant_row.append($('<td/>',{"colspan":"2"}));
+    			
+    			var span = $('<span/>',{'html': $(this).find('td').eq(2).text()});
+    			var span2 = $('<span/>',{'html': $(this).find('td').eq(4).text()});
+    			var div = $('<div/>').append(span).append(span2);
+    			bariant_row.append($('<td/>').append(div));
+				
+				bariant_row.append($('<td/>').append($(this).find('td').eq(5).text()));
+
+				var span = $('<span/>',{'html': $(this).find('td span.service').html()});
+				bariant_row.append($('<td/>').append(span));
+				
+				// название
+				var obj = $(this);
+				// console.log(obj)
+				var link = $('<a/>',{'html':$(this).find('td').eq(7).text()}).bind('click.totalCommander', function(event) {
+					methods.cancel_all_choosen_variants_and_chose_one_row(obj);
+				});
+
+				bariant_row.append($('<td/>',{'colspan':'4'}).append(link))
+
+				bariant_row.append($('<td/>',{'html':$(this).find('td').eq(8).text()}));
+				
+				// входащая
+				bariant_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+variant.price_in+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+variant.price_in*variant.quantity+'</span>р</div>'})));
+				// без скидки (исходящая)
+				bariant_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+variant.price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+variant.price_out*variant.quantity+'</span>р</div>'})));
+				
+				
+				var span = $('<span/>',{'html': variant.discount });
+				bariant_row.append($('<td/>').append(span));
+
+				// со скидкой (исходящая)
+				bariant_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+variant.price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+variant.price_out*variant.quantity+'</span>р</div>'})));
+				
+				bariant_row.append($('<td/>'));
 					
 
     				var service = jQuery.parseJSON( $(this).find('td.js-variant_services_json div').html() );
@@ -317,43 +356,93 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     				}else{
     					methods.services_tbl.find('.service_th').show().addClass('js-service_spacer').before(bariant_row);	
     				}
-    				
-
-    				for (var i = 0; i < service.length; i++) {
+    				console.log(service)
+    				for (var i = service.length-1; i >= 0; i--) {
+    					// return true;
+    					var td = '';
     					if(service[i].for_how == 'for_all'){
     						service[i].quantity = 1;
     					}
-    					service_row = '<tr class="service">';
-						service_row += '<td>'+(i+1)+'</td>';
-						service_row += '<td class="alarm_clock"></td>';
-						service_row += '<td colspan="3">'+service[i].service_name+'</td>';
-						service_row += '<td class="note_title">Грудь</td>';
-						service_row += '<td class="note_title">синий, чёрный, подложка</td>';
-						service_row += '<td class="note_title">до 1260 см2 (А3)</td>';
-						service_row += '<td class="comment is_full"></td>';
-						service_row += '<td>'+service[i].quantity+' шт</td>';
-						service_row += '<td>';
-							// входящая
-							service_row += '<div><span>'+service[i].price_in+'</span>р</div>';
-							service_row += '<div><span>'+service[i].price_in*service[i].quantity+'</span>р</div>';
-						service_row += '</td>';
-						service_row += '<td>';
-							// без скидки (исходящая)
-							service_row += '<div><span>'+service[i].price_out+'</span>р</div>';
-							service_row += '<div><span>'+service[i].price_out*service[i].quantity+'</span>р</div>';
-						service_row += '</td>';
-						service_row += '<td>';
-							// скидка
-							service_row += '<span>'+service[i].discount+'</span>%';
-						service_row += '</td>';
-						service_row += '<td>';
-							// со скидкой (исходящая)
-							service_row += '<div><span>'+service[i].price_out+'</span>р</div>';
-							service_row += '<div><span>'+service[i].price_out*service[i].quantity+'</span>р</div>';
-						service_row += '</td>					';
-						service_row += '<td></td>';
-					service_row += '</tr>';
-					console.log(service[i]);
+    					service_row = $('<tr/>',{'class':'service'});
+						
+						service_row.append( $('<td/>',{text:(i+1)}));
+
+						// alarm
+						var div = $('<div/>',{'class':'alarm_clock'}).css({'float':'left','width':'100%','height':'100%'});
+						var check_alarm = '';var alarm_notify = '';
+						var print_details = service[i].print_details;
+						// if (print_details) {
+						// 	// console.log(print_details)
+						// };
+						if(print_details && print_details.dop_params && print_details.dop_params.coeffs && print_details.dop_params.coeffs.summ){
+							// console.log(print_details.dop_params.coeffs.summ)
+							if(print_details.dop_params.coeffs.summ['72 hours']){
+								div.click(function(event) {
+									$(this).notify('72 часа',{ position:"right",className:'total_12px' });
+								}).addClass('checked');	
+							}else if(print_details.dop_params.coeffs.summ['48 hours']){
+								div.click(function(event) {
+									$(this).notify('48 часа',{ position:"right",className:'total_12px' });
+								}).addClass('checked');	
+							}else if(print_details.dop_params.coeffs.summ['24 hours']){
+								div.click(function(event) {
+									$(this).notify('24 часа',{ position:"right",className:'total_12px' });
+								}).addClass('checked');	
+							}
+							// console.log(print_details);	
+						}
+						service_row.append($('<td/>').append( div ));
+						
+						// название услуги из калькулятора
+						if(print_details && print_details.print_type){
+							service_row.append($('<td/>',{'colspan':'3','text':print_details.print_type}));	
+						}else{
+							service_row.append($('<td/>',{'colspan':'3','text':service[i].service_name}));
+						}
+						
+						// ОПИСАНИЕ УСЛУГИ
+						if (print_details && print_details.dop_params) { // из калькулятора
+							if (print_details.place_type = "Дежурная услуга") {
+
+							}else{
+
+							}
+							// цвета печати
+							service_row.append($('<td/>',{'class':'note_title','text':'Грудь'}));
+							// площадь
+							service_row.append($('<td/>',{'class':'note_title','text':'синий, чёрный, подложка'}));
+							// место печати
+							service_row.append($('<td/>',{'class':'note_title','text':'до 1260 см2 (А3)'}));
+							console.log(service[i])
+						}else{ // из списка доп услуг
+							console.log(service[i])
+							service_row.append($('<td/>',{'colspan':'3'}));
+						}
+						
+
+						service_row.append($('<td/>',{'class':'comment is_full'}));
+
+						// тираж в услуге
+						if(service[i].related_services && service[i].related_services !== null){
+							service_row.append($('<td/>',{'data-id_s':service[i].related_services,'class':'service_group','text':service[i].quantity+' шт'}));
+						}else {
+							service_row.append($('<td/>',{'text':service[i].quantity+' шт'}));
+						}
+
+						
+
+						service_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+service[i].price_in+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+service[i].price_in*service[i].quantity+'</span>р</div>'})));
+
+						service_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+service[i].price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+service[i].price_out*service[i].quantity+'</span>р</div>'})));
+
+						// // скидка
+						service_row.append($('<td/>',{'html':'<span>'+service[i].discount+'</span>%'}));
+						// // со скидкой (исходящая)
+						service_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+service[i].price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+service[i].price_out*service[i].quantity+'</span>р</div>'})));
+
+						service_row.append($('<td/>'));
+					// service_row += '</tr>';
+					// console.log(service[i]);
     					methods.services_tbl.find('.service_th').show().after(service_row);
     				}
     			}

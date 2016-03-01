@@ -559,11 +559,14 @@
 
 	//always include the default bootstrap style
 	addStyle("bootstrap", {
+		// html:"<div>"+
+		// 		"<span data-notify-html></span>"+
+		// 		"<div class='buttons'>" +
+		//         	"<button class='notify-no'>X</button>" +
+		//         "</div>" +
+		// 	"</div>",
 		html:"<div>"+
 				"<span data-notify-html></span>"+
-				"<div class='buttons'>" +
-		        	"<button class='notify-no'>X</button>" +
-		        "</div>" +
 			"</div>",
 		classes: {
 			base: {
@@ -573,6 +576,35 @@
 				"background-color": "#fcf8e3",
 				"border": "1px solid #fbeed5",
 				"border-radius": "4px",
+				"white-space": "nowrap",
+				"padding-left": "25px",
+				"background-repeat": "no-repeat",
+				"background-position": "3px 7px"
+			},
+			total_12px: {
+				"font-weight": "normal",
+				"font-size":"12px",
+				"color":"#fff",
+				"padding": "8px 15px 8px 14px",
+				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
+				"background-color": "#5B5C61",
+				"border": "1px solid #828388",
+				"border-radius": "0px",
+				"white-space": "nowrap",
+				"padding-left": "25px",
+				"background-repeat": "no-repeat",
+				"background-position": "3px 7px"
+			},
+
+			total: {
+				"font-weight": "normal",
+				"font-size":"10px",
+				"color":"#fff",
+				"padding": "8px 15px 8px 14px",
+				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
+				"background-color": "#5B5C61",
+				"border": "1px solid #828388",
+				"border-radius": "0px",
 				"white-space": "nowrap",
 				"padding-left": "25px",
 				"background-repeat": "no-repeat",

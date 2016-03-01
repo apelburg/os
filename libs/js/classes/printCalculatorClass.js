@@ -2020,11 +2020,10 @@ var printCalculator = {
 				echo_message_js("Заполните поле \"Поставщик\"",'system_message',3800);
 				unfilled = true;
 			}
-			if(printCalculator.currentCalculationData[printCalculator.type].quantity.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
-				echo_message_js("Заполните поле\"Тираж\"",'system_message',3800);
+			if(typeof printCalculator.currentCalculationData[printCalculator.type].quantity == 'string' && printCalculator.currentCalculationData[printCalculator.type].quantity.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				echo_message_js("Заполните поле \"Тираж\"",'system_message',3800);
 				unfilled = true;
 			}
-
 			if(unfilled) return;
 		}
 
@@ -2045,7 +2044,7 @@ var printCalculator = {
 		if(typeof printCalculator.price_tblIn !== 'undefined') delete printCalculator.price_tblIn;
 		if(typeof printCalculator.price_tblOut !== 'undefined') delete printCalculator.price_tblOut;
 		if(typeof printCalculator.total_details !== 'undefined') delete printCalculator.total_details;
-		
+
 		
 		if(typeof printCalculator.dataObj_toEvokeCalculator !== 'undefined') delete printCalculator.dataObj_toEvokeCalculator;
 		
@@ -2060,11 +2059,11 @@ var printCalculator = {
 		//alert(url);//
 		document.getElementById("calculatorsaveResultPlank").style.visibility ='hidden';
 		printCalculator.send_ajax(url,callback);
-		
+
 		function callback(response){ 
-		     alert(response);
+		    // alert(response);
 			// console.log(response);
-		    //location.reload();
+		    location.reload();
 		}
 		
 	}

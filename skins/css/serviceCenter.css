@@ -453,7 +453,10 @@ button#sc_close_window{
 	border-left: 1px solid #ebebeb;
 	padding-left: 11px;
 }
-#js-main-service_center-variants-services-div-table table tr.service  td.alarm_clock{
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(2){
+	width: 15px
+}
+#js-main-service_center-variants-services-div-table table tr.service  td .alarm_clock{
 	cursor: pointer; 
 	background-image: url(../images/img_design/alarm_clock.png);
 	background-repeat: no-repeat;
@@ -461,8 +464,9 @@ button#sc_close_window{
 	width: 17px;
 	padding-left: 0;
 	padding-right: 0;
+	    padding: 17px 0px;
 }
-#js-main-service_center-variants-services-div-table table tr.service  td.alarm_clock.checked{
+#js-main-service_center-variants-services-div-table table tr.service  td .alarm_clock.checked{
 	background-image: url(../images/img_design/alarm_clock_checked.png);
 }
 #js-main-service_center-variants-services-div-table table tr.service  td.comment{
@@ -478,12 +482,20 @@ button#sc_close_window{
 #js-main-service_center-variants-services-div-table table tr.service  td.comment.is_full{
 	background-image: url(../images/img_design/comment_icon.png);
 }
+#js-main-service_center-variants-services-div-table table tr.service  td.service_group{
+	background-image: url(../images/img_design/service_group.png);
+	background-repeat: no-repeat;
+}
 #js-main-service_center-variants-services-div-table table tr.service_th th:nth-of-type(4),
 #js-main-service_center-variants-services-div-table table tr.service_th th:nth-of-type(5),
 #js-main-service_center-variants-services-div-table table tr.service_th th:nth-of-type(6),
 #js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(7){
 	padding-left: 10px;
 	text-align: left;
+}
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(7) a{
+	cursor: pointer;
+	text-decoration: underline;
 }
 #js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(2),
 #js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(4),
@@ -495,7 +507,7 @@ button#sc_close_window{
 span.marcker_led {
 	/*position: absolute;*/
     margin-top: -9px;
-    padding: 4px 1px 1px 0;
+    padding: 2px 1px 2px 0;
     margin-left: -3px;
 }
 
@@ -517,6 +529,9 @@ span.marcker_led {
 .js-variant_info:hover div,
 .js-variant_services_json:hover div{
 	display: block;
+}
+#js-main-service_center-variants-div-table{
+	height: 130px;
 }
 #js-main-service_center-variants-div-table #wraper_classer{
 	height: 100%;
