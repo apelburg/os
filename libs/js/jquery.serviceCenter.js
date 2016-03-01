@@ -584,7 +584,7 @@ $.extend({
 		    text: 'Закрыть',
 		    id: 	'sc_close_window',
 		    click: function() {
-		    	$('#js-main_service_center').dialog('close');		    		    	
+		    	$('#js-main_service_center').dialog('destroy').remove();		    		    	
 		    }
 		});
 
@@ -618,6 +618,6 @@ $.extend({
 // закрытие окна на esc
 $(document).keyup(function (e) {
     if (e.keyCode == 27) {
-    	$('#js-main_service_center').dialog('close')  
+    	$('#js-main_service_center').dialog('destroy').remove();
     }
 });
