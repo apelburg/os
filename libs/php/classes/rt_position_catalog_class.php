@@ -521,7 +521,7 @@ inner join `".OUR_USLUGI_LIST."` AS `".OUR_USLUGI_LIST."_par` ON `".OUR_USLUGI_L
 			}
 		}
 
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/print_calculators_class.php");
 
 		$uslname = '';
 		foreach ($services_arr as $key => $service) {

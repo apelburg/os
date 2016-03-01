@@ -2,8 +2,8 @@
     // echo '<br><br><br><br><br><br><br><br><br><br><br><br>'.'1';
     // переделывать
 	//$client_firm_acting_manegement_face = get_client_requisites_acting_manegement_face($agreement['client_requisit_id']);
-    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+    include_once(ROOT."/libs/php/classes/agreement_class.php");
+	include_once(ROOT."/libs/php/classes/client_class.php");
 	
     if(!isset($_GET['our_firm_id']))
 	{
@@ -101,7 +101,7 @@
 			//echo $_SESSION['data_for_specification'];
 			//exit;
 			//exit; 
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+			include_once(ROOT."/libs/php/classes/agreement_class.php");
 	        $specification_num = Agreement::add_items_for_specification($spec_num,$_SESSION['data_for_specification'],$client_id,$agreement_id,$agreement['date'],$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$_GET['date'],$_GET['short_description'],urldecode($_GET['address']),$_GET['prepayment']);
 	
 			 
@@ -234,7 +234,7 @@
 				    $delivery_adderss = '<span class="field_for_fill" managed="text" bd_row_id="<?php echo $specifications_arr[$key][0][\'id\']; ?>" bd_field="address" file_link="1"><?php echo $specifications_arr[$key][0][\'address\']; ?>&nbsp;</span>';
 				}
 				else{
-					$delivery_adderss_tpl_path = ($specifications_arr[$key][0]['address'] == 'samo_vivoz')? $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/samo_vivoz.tpl':$_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/nasha_dostavka.tpl';
+					$delivery_adderss_tpl_path = ($specifications_arr[$key][0]['address'] == 'samo_vivoz')? ROOT.'/modules/agreement/agreements_templates/samo_vivoz.tpl':ROOT.'/modules/agreement/agreements_templates/nasha_dostavka.tpl';
 					$fd = fopen($delivery_adderss_tpl_path,'rb');
 					$delivery_adderss_string = fread($fd,filesize($delivery_adderss_tpl_path));
 					fclose($fd);

@@ -5,8 +5,8 @@
     ini_set('display_startup_errors', 1);
 	
 	include_once($_SERVER['DOCUMENT_ROOT']."/libs/php/classes/aplStdClass.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/art_img_class.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/com_pred_class.php");
+	include_once(ROOT."/libs/php/classes/art_img_class.php");
+	include_once(ROOT."/libs/php/classes/com_pred_class.php");
 	
 ?>
 <script src="http://<?php echo $_SERVER['HTTP_HOST']; ?>/os/libs/js/convert_spec_offer_class.js" type="application/javascript"></script>
@@ -24,14 +24,14 @@
 </script>
 
 <?php	
-    //echo $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/common.php';
+    //echo ROOT.'/libs/php/common.php';
 	
-    include($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/common.php');
+    include(ROOT.'/libs/php/common.php');
 	//echo; 
 	list($version,$param) = explode('{@}',$_GET['data']);
 	if($version == 'new'){
-	    include($_SERVER['DOCUMENT_ROOT'].'/os/libs/mysqli.php');
-	    include($_SERVER['DOCUMENT_ROOT'].'/os/libs/config.php');
+	    include(ROOT.'/libs/mysqli.php');
+	    include(ROOT.'/libs/config.php');
 	    
 	    list($id,$client_id,$manager_id) = explode('-',$param);
 		

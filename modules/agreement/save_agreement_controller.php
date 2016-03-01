@@ -8,8 +8,8 @@
 	echo 1;
 	/*
 	 */
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
-    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+	include_once(ROOT."/libs/php/classes/agreement_class.php");
+    include_once(ROOT."/libs/php/classes/client_class.php");
 	
 	// если тип документа спецификация() и еще нет договора (нет $agreement_id), то создается новый договор
 	$dateDataObj = json_decode($_GET['dateDataObj']);

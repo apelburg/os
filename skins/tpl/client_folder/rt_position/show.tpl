@@ -27,7 +27,7 @@
 <script type="text/javascript" src="./libs/js/jsPositionUniverasal.js"></script>
 
 <?php
-	include_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_class.php');
+	include_once (ROOT.'/libs/php/classes/rt_class.php');
 	$query_num = (isset($_GET['query_num'])?$_GET['query_num']:0);
 	$cont_face_data = RT::fetch_query_client_face($query_num);
 	//print_r($cont_face_data);

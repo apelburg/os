@@ -38,7 +38,7 @@
 	 /*  УДАЛИТЬ ПОСЛЕ ЗАПУСКА
 	  if(isset($_GET['ajax_make_com_offer']))
 	 {
-         include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/com_pred_class.php");
+         include_once(ROOT."/libs/php/classes/com_pred_class.php");
 	     $id_arr = explode(";",$_GET['data']);
 		 
 		 echo Com_pred::save_to_tbl($id_arr,(int)$_GET['conrtol_num']);

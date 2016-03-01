@@ -4,8 +4,8 @@
 	 
 	$dateDataObj = json_decode($_GET['dateDataObj']);
 
-    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+    include_once(ROOT."/libs/php/classes/agreement_class.php");
+	include_once(ROOT."/libs/php/classes/client_class.php");
 	
     if(!isset($_GET['our_firm_id']))
 	{
@@ -100,7 +100,7 @@
 			
 			//echo $_SESSION['data_for_specification'];//exit;
 
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+			include_once(ROOT."/libs/php/classes/agreement_class.php");
 			
 			$dateDataObj = json_decode($_GET['dateDataObj']);
 	        $specification_num = Agreement::add_items_for_specification($dateDataObj,$spec_num,$_SESSION['data_for_specification'],$client_id,$agreement_id,$agreement['date'],$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$_GET['date'],$_GET['short_description'],urldecode($_GET['address']),$_GET['prepayment']);
@@ -252,7 +252,7 @@
 					$paymnet_date = $final_date_time_arr[1].$final_date_time_arr[0].'г.';
 				
 				     
-					$prepayment_term_tpl_path = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/'.$specifications_arr[$key][0]['prepayment'].'_prepaiment_conditions_type2_by_date.tpl';
+					$prepayment_term_tpl_path = ROOT.'/modules/agreement/agreements_templates/'.$specifications_arr[$key][0]['prepayment'].'_prepaiment_conditions_type2_by_date.tpl';
 					$fd = fopen($prepayment_term_tpl_path,'rb');
 					$prepayment_term = fread($fd,filesize($prepayment_term_tpl_path));
 					fclose($fd);
@@ -265,7 +265,7 @@
 				    $delivery_adderss = '<span class="field_for_fill" managed="text" bd_row_id="<?php echo $specifications_arr[$key][0][\'id\']; ?>" bd_field="address" file_link="1"><?php echo $specifications_arr[$key][0][\'address\']; ?>&nbsp;</span>';
 				}
 				else{
-					$delivery_adderss_tpl_path = ($specifications_arr[$key][0]['address'] == 'samo_vivoz')? $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/samo_vivoz.tpl':$_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/nasha_dostavka.tpl';
+					$delivery_adderss_tpl_path = ($specifications_arr[$key][0]['address'] == 'samo_vivoz')? ROOT.'/modules/agreement/agreements_templates/samo_vivoz.tpl':ROOT.'/modules/agreement/agreements_templates/nasha_dostavka.tpl';
 					$fd = fopen($delivery_adderss_tpl_path,'rb');
 					$delivery_adderss_string = fread($fd,filesize($delivery_adderss_tpl_path));
 					fclose($fd);

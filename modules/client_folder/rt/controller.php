@@ -100,7 +100,7 @@
 	 $rows = fetch_rows_from_rt($query_num);
 	 
 	 // получаем информацию по площадям нанесения для калькуляторов
-	 require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+	 require_once(ROOT."/libs/php/classes/print_calculators_class.php");
 	 $print_sizes = printCalculator::get_sizes();
 	 $uslugi_arr = printCalculator::get_uslugi();
 
@@ -194,7 +194,7 @@
 							if($extra_data['quantity']!=$dop_row['quantity']){
 								 $reload['flag'] = true;
 								 //echo $dop_row['quantity'];
-								 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+								 include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 								 $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false');
 								 $json_out_obj =  json_decode($json_out);
 								 

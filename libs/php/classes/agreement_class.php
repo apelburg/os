@@ -227,10 +227,17 @@
 						 $result2_dop = $mysqli->query($query2_dop)or die($mysqli->error);
 						 if($result2_dop->num_rows>0){
 						     while($uslugi_data = $result2_dop->fetch_assoc()){
-							     if($uslugi_data['glob_type']=='print' && ($uslugi_data['quantity']!=$dop_data['quantity'])){
+							 
+							     $print_details_arr = json_decode($uslugi_data['print_details'],TRUE);
+							  		  
+								 // если calculator_type =='free' то непроверяем, isset($print_details_arr["calculator_type"]) 
+								 // для совместимости с предыдущими версиями в которых $print_details_arr["calculator_type"] нет
+								 $revoke = (isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free')?true:false;
+								 
+							     if($uslugi_data['glob_type']=='print' && !$revoke && ($uslugi_data['quantity']!=$dop_data['quantity'])){
 									 $reload['flag'] = true;
 									 //echo $dop_data['quantity'];
-									 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+									 include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 									 $json_out =  rtCalculators::change_quantity_and_calculators($dop_data['quantity'],$dop_data['id'],'true','false');
 									 $json_out_obj =  json_decode($json_out);
 									 
@@ -260,8 +267,8 @@
 						 }
 						 
 						 if($main_data['type']!='cat'){
-							 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/os_form_class.php");
-							 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/cabinet/cabinet_class.php");//os_form_class.php
+							 include_once(ROOT."/libs/php/classes/os_form_class.php");
+							 include_once(ROOT."/libs/php/classes/cabinet/cabinet_class.php");//os_form_class.php
 							 $cabinet = new Cabinet();
 							 $details =  $cabinet->get_a_detailed_specifications($main_data['type'], $dop_data['no_cat_json']);
 							 $details =  strip_tags($details,'<div><br><br/><br />');
@@ -285,8 +292,19 @@
 						     while($uslugi_data = $result3->fetch_assoc()){
 					            // 3). uslugi_data
 								 if($uslugi_data['glob_type'] == 'print' && !(!!$expel["print"])){
-									  include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
-								      $name = printCalculator::convert_print_details($uslugi_data['print_details']);
+									  //include_once(ROOT."/libs/php/classes/print_calculators_class.php");
+								      //$name = printCalculator::convert_print_details($uslugi_data['print_details']);
+									  
+									  $print_details_arr = json_decode($uslugi_data['print_details'],TRUE);
+									  
+									  if(!isset($print_details_arr["calculator_type"]) || (isset($print_details_arr["calculator_type"]) && ($print_details_arr["calculator_type"] =='auto' || $print_details_arr["calculator_type"] =='manual'))){
+									      include_once(ROOT."/libs/php/classes/print_calculators_class.php");
+								          $name = printCalculator::convert_print_details($uslugi_data['print_details']);
+									  }
+									  if(isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free'){
+									      $uslugi_data['quantity'] = $print_details_arr['quantity'];
+										  $name = $print_details_arr['print_type'].' '.$print_details_arr['commentForClient'];
+									  }
 									 // записываем ряд
 									 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount']);
 								 }
@@ -380,7 +398,7 @@
 			
 			/*
 			// создаем предзаказ 
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_class.php");
+			include_once(ROOT."/libs/php/classes/rt_class.php");
 			
 		    RT::make_order($rows_data,$client_id,$_GET['query_num'],0,$oferta_id,$dateDataObj->doc_type,$dateDataObj->data_type,$dates_data['shipping_date_time'],$dates_data['item_production_term'],$dates_data['final_date_time']);*/
 			
@@ -626,14 +644,13 @@
 				if($doc_type=='spec') $table .= '<tr class="bold_font"><td>№</td><td>Наименование и<br>описание продукции</td><td>Кол-во продукции</td><td colspan="2">стоимость за штуку</td><td colspan="2">Общая стоимость</td></tr>';
 				if($doc_type=='oferta') $table .= '<tr class="bold_font"><td>№</td><td>Товары (работы, услуги)</td><td>Кол-во</td><td colspan="2">Цена</td><td colspan="2">Сумма</td></tr>';
 
-				foreach($data as $key2 => $val2)
+		
+                foreach($data as $key2 => $val2)
 				{
 				    $discount = $data[$key2]['discount'];
-					//$price = $data[$key2]['price'];
-					//$summ = $data[$key2]['summ'];
-					$price = ($discount != 0)? (($data[$key2]['price']/100)*(100 + $discount)) : $data[$key2]['price'] ;
-					$summ = ($discount !=0)? (($data[$key2]['summ']/100)*(100 + $discount)) : $data[$key2]['summ'] ;
-				   
+					$price = ($discount != 0)? round((($data[$key2]['price']/100)*(100 + $discount)),2) : $data[$key2]['price'] ;
+				    $summ = $data[$key2]['quantity']*$price;
+						 
 				    $table .= '<tr><td class="num">'.($key2+1).'</td><td class="name">'.$data[$key2]['name'].'</td><td class="quantity">'.$data[$key2]['quantity'].'</td><td class="price">'.number_format($price,"2",".",'').'</td><td class="currensy">р.</td><td class="price">'.number_format($summ,"2",".",'').'</td><td class="currensy">р.</td></tr>';
 					$itogo += (float)$summ;
 					$nds += round(($summ/118*18), 2);
@@ -769,10 +786,18 @@
 						 $result2_dop = $mysqli->query($query2_dop)or die($mysqli->error);
 						 if($result2_dop->num_rows>0){
 						     while($uslugi_data = $result2_dop->fetch_assoc()){
-							     if($uslugi_data['glob_type']=='print' && ($uslugi_data['quantity']!=$dop_data['quantity'])){
+							 
+							     $print_details_arr = json_decode($uslugi_data['print_details'],TRUE);
+									  
+								 // если calculator_type =='free' то непроверяем, isset($print_details_arr["calculator_type"]) 
+								 // для совместимости с предыдущими версиями в которых $print_details_arr["calculator_type"] нет
+								 $revoke = (isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free')?true:false;
+									  
+									  
+							     if($uslugi_data['glob_type']=='print' && !$revoke && ($uslugi_data['quantity']!=$dop_data['quantity'])){
 									 $reload['flag'] = true;
 									 //echo $dop_data['quantity'];
-									 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+									 include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 									 $json_out =  rtCalculators::change_quantity_and_calculators($dop_data['quantity'],$dop_data['id'],'true','false');
 									 $json_out_obj =  json_decode($json_out);
 									 
@@ -802,8 +827,8 @@
 						 }
 						 
 						 if($main_data['type']!='cat'){
-							 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/os_form_class.php");
-							 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/cabinet/cabinet_class.php");//os_form_class.php
+							 include_once(ROOT."/libs/php/classes/os_form_class.php");
+							 include_once(ROOT."/libs/php/classes/cabinet/cabinet_class.php");//os_form_class.php
 							 $cabinet = new Cabinet();
 							 $details =  $cabinet->get_a_detailed_specifications($main_data['type'], $dop_data['no_cat_json']);
 							 $details =  strip_tags($details,'<div><br><br/><br />');
@@ -828,8 +853,20 @@
 						     while($uslugi_data = $result3->fetch_assoc()){
 					            // 3). uslugi_data
 								 if($uslugi_data['glob_type'] == 'print' && !(!!$expel["print"])){
-									  include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
-								      $name = printCalculator::convert_print_details($uslugi_data['print_details']);
+									  //include_once(ROOT."/libs/php/classes/print_calculators_class.php");
+								      //$name = printCalculator::convert_print_details($uslugi_data['print_details']);
+									  
+									  $print_details_arr = json_decode($uslugi_data['print_details'],TRUE);
+									  
+									  if(!isset($print_details_arr["calculator_type"]) || (isset($print_details_arr["calculator_type"]) && ($print_details_arr["calculator_type"] =='auto' || $print_details_arr["calculator_type"] =='manual'))){
+									      include_once(ROOT."/libs/php/classes/print_calculators_class.php");
+								          $name = printCalculator::convert_print_details($uslugi_data['print_details']);
+									  }
+									  if(isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free'){
+									      $uslugi_data['quantity'] = $print_details_arr['quantity'];
+										  $name = $print_details_arr['print_type'].' '.$print_details_arr['commentForClient'];
+									  }
+									  
 									 // записываем ряд
 									 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount'],$date,$dateDataObj,$dates_data);
 								 }
@@ -938,7 +975,7 @@
 			
 			/*
 			// создаем предзаказ 
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_class.php");
+			include_once(ROOT."/libs/php/classes/rt_class.php");
 
 			RT::make_order($rows_data,$client_id,$_GET['query_num'],$specification_num,$agreement_id,$dateDataObj->doc_type,$dateDataObj->data_type,$dates_data['shipping_date_time'],$dates_data['item_production_term'],$dates_data['final_date_time']);
 			*/

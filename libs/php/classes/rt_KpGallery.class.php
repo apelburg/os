@@ -61,7 +61,7 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 					// $this->responseClass->addMessage($html,'error_message');
 	 				$img_arr = explode(",", $_POST['data']['delete_img']);
 	 				foreach ($img_arr as $key => $value) {
-	 					$dir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$_POST['data']['delete_img_width_folder'].'/';
+	 					$dir = ROOT.'/data/images/'.$_POST['data']['delete_img_width_folder'].'/';
 	 					// полный путь к файлу 
 	 					$filename = $dir.''.$value;
 	 					
@@ -207,7 +207,7 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
  			static function checkTheFolder($RT_id, $name = ''){				
  				// echo method_get_name();
  				$global_dir = 'http://'.$_SERVER['HTTP_HOST'].'/admin/order_manager/data/images/'.$RT_id.'/';
- 				$dir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$RT_id.'/';
+ 				$dir = ROOT.'/data/images/'.$RT_id.'/';
 				// если папка не нейдена возвращаем false
 				if (!is_dir($dir)) {
 					return flase;
@@ -235,7 +235,7 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 				// по умолчанию возвращаем название выбранного изображения
 				switch ($name) {
 					case 'dir':
-						$dir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$RT_id.'/'.$img;
+						$dir = ROOT.'/data/images/'.$RT_id.'/'.$img;
 						return $dir;
 						break;
 					case 'global_dir':
@@ -348,7 +348,7 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 				//////////////////////////
 				//	Загруженные изображения
 				//////////////////////////
-					$upload_dir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$folder.'/';
+					$upload_dir = ROOT.'/data/images/'.$folder.'/';
 					$global_link_dir = 'http://'.$_SERVER['HTTP_HOST'].'/os/data/images/'.$folder.'/';
 					// если директория (папка) существует
 					if($folder != '' && is_dir($upload_dir)){			
@@ -435,7 +435,7 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 			// получаем контент из галлереи загруженных изображений
 			protected function getImageGalleryContent($rt_main_row){
 				// $folder_name = $rt_main_row['img_folder'];
-				// $folder = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$folder_name.'/';
+				// $folder = ROOT.'/data/images/'.$folder_name.'/';
 				
 				// DEBUG
 					// $html  = ''.$folder.'<br>'.$rt_id;
@@ -447,14 +447,14 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 			}
 			// проверка существования папки
 			protected function checkFolderExist($folder){
-				return is_dir($_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$folder.'/');
+				return is_dir(ROOT.'/data/images/'.$folder.'/');
 			}
 
 			// создание новой папки
 			protected function createNewDir($rt_main_row_id){
 				$dirName_1 = md5(time());
 				
-				$dirName = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$dirName_1.'/';
+				$dirName = ROOT.'/data/images/'.$dirName_1.'/';
 				
 				if (!is_dir($dirName)) {
 					//если папкb $dirName не существует
@@ -566,12 +566,12 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 			protected function add_new_files_in_kp_gallery_AJAX(){
 				$firstImg = false;
 				$folder_name = $_POST['folder_name'];
-				$uploadDir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$folder_name.'/';
+				$uploadDir = ROOT.'/data/images/'.$folder_name.'/';
 				// echo $uploadDir;
 
 				if (!is_dir($uploadDir)) {
 					$folder_name = $this->createNewDir($_POST['id']);
-					$uploadDir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$folder_name.'/';
+					$uploadDir = ROOT.'/data/images/'.$folder_name.'/';
 					
 				}
 				// меняем права на папку

@@ -1025,7 +1025,7 @@ class Images extends rtPositionUniversal
 		//	Загруженные изображения
 		//////////////////////////
 
-			$upload_dir = $_SERVER['DOCUMENT_ROOT'].'/os/data/images/'.$this->position['img_folder'].'/';
+			$upload_dir = ROOT.'/data/images/'.$this->position['img_folder'].'/';
 			$global_link_dir = 'http://'.$_SERVER['HTTP_HOST'].'/os/data/images/'.$this->position['img_folder'].'/';
 			// если директория (папка) существует
 			if($this->position['img_folder'] != '' && is_dir($upload_dir)){			
@@ -1366,7 +1366,7 @@ class Services extends Variants
 				}
 			}
 		}
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/print_calculators_class.php");
 		//foreach ($services_arr as $key => $service) {
 			foreach ($arr as $key2 => $service_attach) {
 				// исключение на ошибку в записи uslugi_id

@@ -203,7 +203,7 @@
 				
 			if($result->num_rows > 0){
 			
-			   include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+			   include_once(ROOT."/libs/php/classes/manager_class.php");
 			   
 			   while($row = $result->fetch_assoc()){
 			      if(!(isset($delayed_remainds[$row['id']]) &&  $cur_time < strtotime($delayed_remainds[$row['id']]))){
@@ -529,7 +529,7 @@
 		    global $mysqli;
 		    //
 			
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+			include_once(ROOT."/libs/php/classes/manager_class.php");
 		    $manager = new Manager($remainder_user_id);
 			
 			
