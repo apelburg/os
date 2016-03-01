@@ -1656,7 +1656,7 @@
 		
 		e = e || window.event;
 		var element = e.target;
-		
+
 		// определяем какие ряды были выделены (какие Мастер Кнопки были нажаты и установлен ли зеленый маркер в светофоре)
         if(!(idsObj = rtCalculator.get_active_rows())){
 			echo_message_js('не возможно создать КП, не выбрано ни одного расчета','system_message',2000);
@@ -1677,11 +1677,12 @@
 		
 	    // формируем url для AJAX запроса
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('make_com_offer='+JSON.stringify(make_com_offer_obj));
+		alert(url);
 		// AJAX запрос
 		make_ajax_request(url,callback);
 		function callback(response){ 
-		    // alert(response);
-		    if(response == '1') location = OS_HOST+'?page=client_folder&section=business_offers&query_num='+query_num+'&client_id='+client_id;
+		     alert(response);
+		    //if(response == '1') location = OS_HOST+'?page=client_folder&section=business_offers&query_num='+query_num+'&client_id='+client_id;
 		    /*console.log(response);*/ 
 			close_processing_timer(); closeAllMenuWindows();
 		}	  

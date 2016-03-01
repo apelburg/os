@@ -13,8 +13,8 @@
 
 
 
-    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+    include_once(ROOT."/libs/php/classes/agreement_class.php");
+	include_once(ROOT."/libs/php/classes/client_class.php");
 	
     if(!isset($_GET['our_firm_id']))
 	{
@@ -102,7 +102,7 @@
             $spec_num = (!empty($_GET['existent_agreement_spec_num']))? $_GET['existent_agreement_spec_num']: false;
 			
 			//echo '<pre>data_for_specification --'; print_r($_SESSION['data_for_specification']); echo '-- </pre>'; exit;//
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+			include_once(ROOT."/libs/php/classes/agreement_class.php");
 			
 			/*if(@$_SESSION['access']['user_id']==18){ 
 		echo  '111'; 
@@ -255,7 +255,7 @@
 					$paymnet_date = $final_date_time_arr[1].$final_date_time_arr[0].'г.';
 				
 				     
-					$prepayment_term_tpl_path = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/'.$specifications_arr[$key][0]['prepayment'].'_prepaiment_conditions_type2_by_date.tpl';
+					$prepayment_term_tpl_path = ROOT.'/modules/agreement/agreements_templates/'.$specifications_arr[$key][0]['prepayment'].'_prepaiment_conditions_type2_by_date.tpl';
 					$fd = fopen($prepayment_term_tpl_path,'rb');
 					$prepayment_term = fread($fd,filesize($prepayment_term_tpl_path));
 					fclose($fd);
@@ -269,7 +269,7 @@
 				    $delivery_adderss = '<span class="field_for_fill" managed="text" bd_row_id="<?php echo $specifications_arr[$key][0][\'id\']; ?>" bd_field="address" file_link="1"><?php echo $specifications_arr[$key][0][\'address\']; ?>&nbsp;</span>';
 				}
 				else{
-					$delivery_adderss_tpl_path = ($specifications_arr[$key][0]['address'] == 'samo_vivoz')? $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/samo_vivoz.tpl':$_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/nasha_dostavka.tpl';
+					$delivery_adderss_tpl_path = ($specifications_arr[$key][0]['address'] == 'samo_vivoz')? ROOT.'/modules/agreement/agreements_templates/samo_vivoz.tpl':ROOT.'/modules/agreement/agreements_templates/nasha_dostavka.tpl';
 					$fd = fopen($delivery_adderss_tpl_path,'rb');
 					$delivery_adderss_string = fread($fd,filesize($delivery_adderss_tpl_path));
 					fclose($fd);
@@ -440,7 +440,7 @@
 			
 			//echo $_SESSION['data_for_specification'];//exit;
 
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+			include_once(ROOT."/libs/php/classes/agreement_class.php");
 			
 			$dateDataObj = json_decode($_GET['dateDataObj']);
 	        $specification_num = 
@@ -449,7 +449,7 @@
 			$our_firm_acting_manegement_face = our_firm_acting_manegement_face_new($_GET['signator_id']);
 			$client_firm_acting_manegement_face = Client::requisites_acting_manegement_face_details($_GET['requisit_id']);
 			
-		    $oferta_id = Agreement::create_oferta($dateDataObj,$_SESSION['data_for_specification'],$client_id,$_GET['our_firm_id'],$_GET['requisit_id'],$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$_GET['short_description'],urldecode($_GET['address']),$_GET['prepayment']);
+		   // $oferta_id = Agreement::create_oferta($dateDataObj,$_SESSION['data_for_specification'],$client_id,$_GET['our_firm_id'],$_GET['requisit_id'],$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$_GET['short_description'],urldecode($_GET['address']),$_GET['prepayment']);
 		    unset($_SESSION['data_for_specification']);
 		    // создали оферту перезагружаем страницу с указанием номера
 			header('Location:?'.addOrReplaceGetOnURL('open=oferta&oferta_id='.$oferta_id,'short_description')); 

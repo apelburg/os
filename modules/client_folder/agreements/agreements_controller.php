@@ -1,5 +1,5 @@
 <?php 
-    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+    include_once(ROOT."/libs/php/classes/client_class.php");
 	
     if(isset($_GET['update_specification_short_description_ajax']))
 	{
@@ -146,7 +146,7 @@
 		}
 	}
 	if($doc_type=='oferta'){
-	    require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+	    require_once(ROOT."/libs/php/classes/agreement_class.php");
 	    $oferts_data = Agreement::fetch_all_client_oferts($client_id);
 		
 		if($oferts_data){

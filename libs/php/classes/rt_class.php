@@ -133,7 +133,7 @@
 			$data['id'] = $row['client_face_id'];
 			
 			if($data['id']!=0){
-			    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+			    include_once(ROOT."/libs/php/classes/client_class.php");
 			    $data['details'] = Client::get_cont_face_details($data['id']);
 			}
 			
@@ -630,7 +630,7 @@
 				$result = $mysqli->query($query)or die($mysqli->error);
 				while($item = $result->fetch_assoc()) $characteristics['materials'][] = $item['material'];
 				
-				require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+				require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 				$characteristics =(count($characteristics)>0)?rtCalculators::json_fix_cyr(json_encode($characteristics)):'';
 				
 				//print_r($dop_info);
@@ -701,7 +701,7 @@
 			
 			// -->  START  <-- //
 			if($customer_data){
-				include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/comments_class.php");
+				include_once(ROOT."/libs/php/classes/comments_class.php");
 				$COMMENTS = new Comments_for_query_class;
 	
 				$text = (trim($customer_data['name'])!='')?'Имя: '.$customer_data['name'].'<br>':'';
@@ -788,7 +788,7 @@
 							// шлем оповещение менеджерам на почту
 							//////////////////////////////////
 								// получаем информацию по клиенту
-							 	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+							 	include_once(ROOT."/libs/php/classes/client_class.php");
 			    				$Client = Client::get_client_informationDatabase($client_id);
 			    					
 								// получаем информацию по кураторам + пользователю, который добавил запрос
@@ -818,7 +818,7 @@
 							// шлем оповещение менеджерам на почту (всем кроме того у которого заказ в работе)
 							//////////////////////////////////
 								// получаем информацию по клиенту
-							 	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+							 	include_once(ROOT."/libs/php/classes/client_class.php");
 			    				$Client = Client::get_client_informationDatabase($client_id);
 
 			    				// получаем информацию по кураторам + пользователю, который добавил запрос
@@ -1114,7 +1114,7 @@
             echo '<br><br><strong>$limit = </strong>'.$limit.'<br>'; 
             
             // подключаем класс для информации из калькулятора
-        	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+        	include_once(ROOT."/libs/php/classes/print_calculators_class.php");
             global $mysqli;
             $user_id = $_SESSION['access']['user_id'];
 

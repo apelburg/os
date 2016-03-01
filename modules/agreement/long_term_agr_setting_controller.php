@@ -6,7 +6,7 @@
 	$dateDataObj = json_decode($_GET['dateDataObj']);
 	
 	// класс работы с менеджерами
-	require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+	require_once(ROOT."/libs/php/classes/client_class.php");
 	$data_arr = Client::requisites($client_id);
 	
 	$client_requisites=''; 

@@ -24,14 +24,14 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
         </div>
     <?php
     // комментарии
-    // include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/comments_class.php';
+    // include ROOT.'/libs/php/classes/comments_class.php';
     // $comments = new Comments_for_query_class;
     if(isset($COMMENTS)){
         $comments = $COMMENTS;
     }
 
     // класс работы с базой
-    include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/db_class.php';
+    include ROOT.'/libs/php/classes/db_class.php';
     // класс работы с формами
     // include './libs/php/classes/os_form_class.php';
 
@@ -39,19 +39,19 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
     // include './libs/php/classes/supplier_class.php';
 
     // класс карточки товара
-    include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_position_gen_class.php';
+    include ROOT.'/libs/php/classes/rt_position_gen_class.php';
     
     // отключить после приведения карточки товара к единому виду
         // класс работы с позициями каталога
-        include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_position_catalog_class.php';
+        include ROOT.'/libs/php/classes/rt_position_catalog_class.php';
         // класс работы с позициями не каталога
-        include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_position_no_catalog_class.php';
+        include ROOT.'/libs/php/classes/rt_position_no_catalog_class.php';
     
     // расширение класса карточки товара
-    include_once $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rtPositionUniversal.class.php';
+    include_once ROOT.'/libs/php/classes/rtPositionUniversal.class.php';
     
     // класс работы с менеджерами
-    include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/manager_class.php';
+    include ROOT.'/libs/php/classes/manager_class.php';
 
     
     $id = (isset($_GET['id']))?$_GET['id']:'none';
@@ -64,7 +64,7 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
 
 
 
-    include_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_class.php');
+    include_once (ROOT.'/libs/php/classes/rt_class.php');
     $query_num = $_GET['query_num'];
     $cont_face_data = RT::fetch_query_client_face($query_num);
     //print_r($cont_face_data);

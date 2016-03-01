@@ -61,10 +61,18 @@
 						 $result_dop2 = $mysqli->query($query_dop2)or die($mysqli->error);
 						 if($result_dop2->num_rows>0){
 						      while($row_dop2=$result_dop2->fetch_assoc()){
-								  if($row_dop2['glob_type']=='print' && ($row_dop2['quantity']!=$row_dop1['quantity'])){
+							      $print_details_arr = json_decode($row_dop2['print_details'],TRUE);
+								  
+								  // echo '<pre>'; print_r($print_details_arr); echo '</pre>';
+								  
+								  // если calculator_type =='free' то непроверяем, isset($print_details_arr["calculator_type"]) 
+								  // для совместимости с предыдущими версиями в которых $print_details_arr["calculator_type"] нет
+								  $revoke = (isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free')?true:false;
+								  if($row_dop2['glob_type']=='print' && !$revoke && ($row_dop2['quantity']!=$row_dop1['quantity'])){
 								       $reload['flag'] = true;
 									   //echo $dop_data['quantity'];
-									   include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+									   
+									   include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 									   $json_out =  rtCalculators::change_quantity_and_calculators($row_dop1['quantity'],$row_dop1['id'],'true','false');
 									   $json_out_obj =  json_decode($json_out);
 									 
@@ -85,7 +93,7 @@
 						 }
 			        }
 			   }
-			   
+
 			   if(isset($reload['flag']) && $reload['flag'] == true){
 				   header('Location:'.HOST.'/?'.$_SERVER['QUERY_STRING']);
 				   exit;
@@ -177,8 +185,8 @@
 						    $row3=$result3->fetch_assoc();
 							
 							if($row['type']!='cat'){
-							    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/os_form_class.php");
-							    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/cabinet/cabinet_class.php");//os_form_class.php
+							    include_once(ROOT."/libs/php/classes/os_form_class.php");
+							    include_once(ROOT."/libs/php/classes/cabinet/cabinet_class.php");//os_form_class.php
 							    $cabinet = new Cabinet();
 							    $details =  $cabinet->get_a_detailed_specifications($row['type'], $row3['no_cat_json']);
 								$details =  strip_tags($details,'<div><br><br/><br />');
@@ -462,7 +470,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
             exit;
 	   }
 	   static function clear_client_kp_folder($kp_id,$attached_files){
-	        $dirname = $_SERVER['DOCUMENT_ROOT'].'/os/data/com_offers/'.strval(intval($_GET['client_id'])).'/'.strval(intval($kp_id));
+	        $dirname = ROOT.'/data/com_offers/'.strval(intval($_GET['client_id'])).'/'.strval(intval($kp_id));
 	        if($files_arr = read_Dir($dirname)){
 			    foreach($files_arr as $file){
 				     $flag=TRUE;
@@ -487,7 +495,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 	   
             $html = self::open_in_blank($kp_id,$client_id,$user_id,true);
 			
-			include($_SERVER['DOCUMENT_ROOT']."/os/libs/php/mpdf60/mpdf.php");
+			include(ROOT."/libs/php/mpdf60/mpdf.php");
 			$mpdf=new mPDF();
 			//$mpdf->SetHTMLHeader('<div style="height:80px;border:#000 solid 1px;"><img src="'.HOST.'/skins/images/img_design/spec_offer_top_plank_2.jpg"></div><br><br><br><br>'); 
 			$mpdf->SetHTMLHeader('<img src="'.HOST.'/skins/images/img_design/spec_offer_top_plank_2.jpg">');
@@ -499,7 +507,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
             $html = self::open_in_blank($kp_id,$client_id,$user_id,true);
 		    //echo $html;
 		    //exit;
-			include($_SERVER['DOCUMENT_ROOT']."/os/libs/php/mpdf60/mpdf.php");
+			include(ROOT."/libs/php/mpdf60/mpdf.php");
             //$stylesheet = file_get_contents('style.css');
 			$filename = 'Презентация_'.$client_id.'_'.date('Ymd_His').'.pdf';
 
@@ -994,9 +1002,12 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							if($print_details_obj == NULL) continue;
 							$print_details_arr = json_decode($u_level['print_details'],TRUE);
 							
-							  /*if(@$_SESSION['access']['user_id']==18){ 
+							  if(@$_SESSION['access']['user_id']==18){ 
 									echo '<pre>';print_r($print_details_arr);echo '</pre>';
-							  } */
+							  }
+							 
+							//$quantity = (isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free')?$u_level['quantity']:$quantity;
+							$quantity = (isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type'] == 'free')?$u_level['quantity']:$quantity;
 							
 							if(isset($print_details_arr['dop_params']['sizes'])){
 							    if($print_details_arr['dop_params']['sizes'][0]['type'] == 'coeff'){
@@ -1015,22 +1026,25 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							//$new_price_arr['price_in'] = $u_level['price_in'];
 							//$new_price_arr['price_out'] = $u_level['price_out'];
 							
-							include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
-							$calculations = rtCalculators::make_calculations($quantity,$new_price_arr,$print_details_obj->dop_params);
+							if(isset($print_details_obj->dop_params)){
+							    include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+							    $calculations = rtCalculators::make_calculations($quantity,$new_price_arr,$print_details_obj->dop_params);
+							}
 							// echo  '<pre>'; print_r($new_price_arr); echo '</pre>';  //
                             /*if(@$_SESSION['access']['user_id']==18){ 
 									echo '<pre>';print_r($calculations);echo '</pre>';
 							} */
 							// наименование нанесения
-							include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+							include_once(ROOT."/libs/php/classes/print_calculators_class.php");
 							$print_data = printCalculator::convert_print_details_for_kp($u_level['print_details']);
                             /*if(@$_SESSION['access']['user_id']==18){ 
 									echo '<pre>';print_r($print_data);echo '</pre>';
 							} */
 							// Собираем данные для print_block (Печать логотипа)
 							$print_block[] = '<table border="0" style="font-family:arial;font-size:13px;right;margin:15px 0 0 11px;width:100%;border-collapse:collapse;width:350px;table-layout:fixed;">';
-							$print_block[] = '<tr><td valign="top" style="width:90px;">метод '.(($show_count)?(++$counter2).': ':'').' </td><td style="width:170px;">'.$print_data['block1']['print_type'].'</td></tr>';
-							$print_block[] = '<tr><td valign="top">Место нанесения: </td><td>'.$print_data['block1']['place_type'].'</td></tr>';
+							$print_block[] = '<tr><td valign="top" style="width:90px;">Вид '.(($show_count)?(++$counter2).': ':'').' </td><td style="width:170px;">'.$print_data['block1']['print_type'].'</td></tr>';
+						    if(!isset($print_details_obj->calculator_type) || (isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type != 'free')) $print_block[] = '<tr><td valign="top">Место нанесения: </td><td>'.$print_data['block1']['place_type'].'</td></tr>';
+							 if(isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free') $print_block[] = '<tr><td valign="top"></td><td>'.$print_details_obj->commentForClient.'</td></tr>';
 							
 							if(isset($print_data['block1']['price_data']['y_params'])){
 								 $print_block[] = '<tr><td valign="top">'.$print_data['block1']['price_data']['cap'].': </td><td>'.count($print_data['block1']['price_data']['y_params']).' ('.implode(', ',$print_data['block1']['price_data']['y_params']).')</td></tr>';
@@ -1181,59 +1195,60 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							$square_coeff = 1;
 							//echo  '<pre>--1--'; print_r( $print_data['block1']['price_data']['y_params']); echo '</pre>';
 							//echo  '<pre>--2--'; print_r( $print_details_arr['dop_params']); echo '</pre>';
-							foreach($print_details_arr['dop_params'] as $type => $data){
-							   
-			                    $price_addition = $summ_addition = 0;
-								//
-							    if($type == 'sizes' && isset($data[0]['val'])){// в итгое не выводится первым потому что в исходном массиве не на первом месте
-								    if($data[0]['val'] == 0) $data[0]['val'] = 1;
-								    if($data[0]['target'] == 'price') $square_coeff =  $data[0]['val'];
-								    //!!if($data->target == 'summ') $summ_coeff += (float)$data->val-1;
-									
-									if($square_coeff==1) continue;
-
-									$print_summ = $quantity*($new_price_arr['price_out']*($square_coeff-1));
-									
-									
-									
-									   if($save_on_disk && $display_setting_2!=0){
-											$rows_2[] = '<tr><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($square_coeff-1)*100).'% за увелич. площади печати</td>';
-								            $rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
-								            $rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';/**/
+							if(isset($print_details_arr['dop_params'])){
+								foreach($print_details_arr['dop_params'] as $type => $data){
+								   
+									$price_addition = $summ_addition = 0;
+									//
+									if($type == 'sizes' && isset($data[0]['val'])){// в итгое не выводится первым потому что в исходном массиве не на первом месте
+										if($data[0]['val'] == 0) $data[0]['val'] = 1;
+										if($data[0]['target'] == 'price') $square_coeff =  $data[0]['val'];
+										//!!if($data->target == 'summ') $summ_coeff += (float)$data->val-1;
 										
-										}
-										else if(!$save_on_disk){
-											$rows_2[] = '<tr id="metod_display_setting_'.$counter2.'3" style="display:'.(($display_setting_2!=0)?'table-row':'none').'"><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($square_coeff-1)*100).'% за увелич. площади печати</td>';
-											$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
-											$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';/**/ 
-										}
-								
-								}
-								if($type == 'YPriceParam'){
-								    
-								    $price_tblYindex=(count($data)==0)?1:count($data);
-									$base_price_for_Y = $new_price_arr['price_out']/$price_tblYindex;
-								    foreach($data as $index => $Y_data){
-									    if($Y_data['coeff']==1) continue;
-						                $Y_coeff = (float)$Y_data['coeff']-1;     
-										$print_summ = $quantity*($base_price_for_Y*$Y_coeff);
-
+										if($square_coeff==1) continue;
+	
+										$print_summ = $quantity*($new_price_arr['price_out']*($square_coeff-1));
 										
-										if($save_on_disk && $display_setting_2!=0){
-											$rows_2[] = '<tr><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($Y_data['coeff']-1)*100).'% за металлик ('.$print_data['block1']['price_data']['y_params_ids'][$Y_data['id']].')</td>';
-											$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
-											$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';
 										
-										}
-										else if(!$save_on_disk){
-											$rows_2[] = '<tr id="metod_display_setting_'.$counter2.$index.'4" style="display:'.(($display_setting_2!=0)?'table-row':'none').'"><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($Y_data['coeff']-1)*100).'% за металлик ('.$print_data['block1']['price_data']['y_params_ids'][$Y_data['id']].')</td>';
-											$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
-											$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';  
+										
+										   if($save_on_disk && $display_setting_2!=0){
+												$rows_2[] = '<tr><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($square_coeff-1)*100).'% за увелич. площади печати</td>';
+												$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
+												$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';/**/
+											
+											}
+											else if(!$save_on_disk){
+												$rows_2[] = '<tr id="metod_display_setting_'.$counter2.'3" style="display:'.(($display_setting_2!=0)?'table-row':'none').'"><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($square_coeff-1)*100).'% за увелич. площади печати</td>';
+												$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
+												$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';/**/ 
+											}
+									
+									}
+									if($type == 'YPriceParam'){
+										
+										$price_tblYindex=(count($data)==0)?1:count($data);
+										$base_price_for_Y = $new_price_arr['price_out']/$price_tblYindex;
+										foreach($data as $index => $Y_data){
+											if($Y_data['coeff']==1) continue;
+											$Y_coeff = (float)$Y_data['coeff']-1;     
+											$print_summ = $quantity*($base_price_for_Y*$Y_coeff);
+	
+											
+											if($save_on_disk && $display_setting_2!=0){
+												$rows_2[] = '<tr><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($Y_data['coeff']-1)*100).'% за металлик ('.$print_data['block1']['price_data']['y_params_ids'][$Y_data['id']].')</td>';
+												$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
+												$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';
+											
+											}
+											else if(!$save_on_disk){
+												$rows_2[] = '<tr id="metod_display_setting_'.$counter2.$index.'4" style="display:'.(($display_setting_2!=0)?'table-row':'none').'"><td align="left" style="width:230px;padding:0 5px 0 15px;">+ '.(($Y_data['coeff']-1)*100).'% за металлик ('.$print_data['block1']['price_data']['y_params_ids'][$Y_data['id']].')</td>';
+												$rows_2[] = '<td align="right" style="width:90px;">'.number_format($print_summ,2,'.',' ').'</td>';
+												$rows_2[] = '<td align="left" style="width:30px;">руб. </td></tr>';  
+											}
 										}
 									}
 								}
-							}
-
+                            }
  
 
 							$base_price2 = $new_price_arr['price_out']*$square_coeff;
@@ -1276,7 +1291,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 	
 						foreach($r_level['dop_uslugi']['extra'] as $u_key => $u_level){
 					        if($u_level['price_out']==0) continue;
-                            include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+                            include_once(ROOT."/libs/php/classes/agreement_class.php");
                             // если альтернативное название отсутствует (вводится при заведении услуги "НЕТ В СПИСКЕ")
 							if(trim($u_level['other_name']) == ""){
 								$extra_usluga_details = Agreement::get_usluga_details($u_level['usluga_id']);
@@ -1306,7 +1321,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
  
 				    // Вставляем блоки в тело КП
 					if(isset($print_block) && count($print_block)>0){
-					    $description_cell .= '<hr style="border:none;border-top:#888 solid 1px;"><div style="margin-top:5px;"><b>Печать логотипа:</b></div>';
+					    $description_cell .= '<hr style="border:none;border-top:#888 solid 1px;"><div style="margin-top:5px;"><b>Дополнительно:</b></div>';
 						$description_cell .= '<div style="">'.implode('<div></div>',$print_block).'</div>';
 					   
 				    }
@@ -1354,7 +1369,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 			// потом передаем его в метод Client::get_cont_face_details($recipient_id);
 			reset($multi_dim_arr);
 			$recipient_id = $multi_dim_arr[key($multi_dim_arr)]['recipient_id'];
-			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+			include_once(ROOT."/libs/php/classes/client_class.php");
 			$cont_face_data = Client::get_cont_face_details($recipient_id);
 			//print_r($cont_face_data_arr);//exit;625
 			
@@ -1808,7 +1823,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 					 }
 					 else $send_time = 'не отправленно';
 					 
-					 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+					 include_once(ROOT."/libs/php/classes/client_class.php");
 					 $cont_face_data = Client::get_cont_face_details($row['recipient_id']);
 					 
 					 $recipient = '<div class="client_faces_select1" sourse="kp" row_id="'.$row['id'].'" client_id="'.$client_id.'" onclick="openCloseMenu(event,\'clientManagerMenu\');">'.(($row['recipient_id']==0)?'не установлен':$cont_face_data['last_name'].' '.$cont_face_data['name'].' '.$cont_face_data['surname']).'</div>';

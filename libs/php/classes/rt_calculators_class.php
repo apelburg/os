@@ -450,7 +450,7 @@
             // если PHP 5.4 то достаточно этого
                /* $print_details = json_encode($details_obj->print_details,JSON_UNESCAPED_UNICODE);*/
 			// но пришлось использовать это
-			$print_details = self::json_fix_cyr(json_encode($details_obj->print_details)); 
+			if(isset($details_obj->print_details)) $print_details = self::json_fix_cyr(json_encode($details_obj->print_details)); 
 			
 
 			// если нет dop_uslugi_id или он равен ноль, добавляем новый расчет доп услуг для ряда 

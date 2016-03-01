@@ -621,8 +621,3 @@ $(document).keyup(function (e) {
     	$('#js-main_service_center').dialog('close')  
     }
 });
-
-
-
-
-

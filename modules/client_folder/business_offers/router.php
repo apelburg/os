@@ -10,19 +10,19 @@
 	save_way_back(array('section=agreements','section=business_offers','section=planner'),'?page=cabinet&client_id='.$client_id);
 	$quick_button_back = get_link_back();
 	
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/art_img_class.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/com_pred_class.php");
+	include_once(ROOT."/libs/php/classes/art_img_class.php");
+	include_once(ROOT."/libs/php/classes/com_pred_class.php");
 	
 	///////////////////////////////////////// AJAX ////////////////////////////////////////////////////
 	
 	if(isset($_GET['send_kp_by_mail'])){
 	    // echo  $_GET['send_kp_by_mail'];exit;
 		
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+		include_once(ROOT."/libs/php/classes/manager_class.php");
 		$manager = new Manager($user_id);
 		
 		
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+		include_once(ROOT."/libs/php/classes/client_class.php");
 		$client_mails = Client::cont_faces_data_for_mail($client_id);
 
 	    $kp_id = $_GET['send_kp_by_mail'];
@@ -117,7 +117,7 @@
 		if(isset($_POST['AJAX'])){
 				
 		    if($_POST['AJAX']=='edit_query_theme'){
-		        include_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_class.php');
+		        include_once (ROOT.'/libs/php/classes/rt_class.php');
 		        RT::save_theme($_POST['query_num'],$_POST['theme']);
 				echo '{"response":"OK"}';
 				exit;

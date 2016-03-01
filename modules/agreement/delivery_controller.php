@@ -3,7 +3,7 @@
    
 	if(isset($_GET['agreement_id']))
 	{
-	    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+	    include_once(ROOT."/libs/php/classes/agreement_class.php");
 		
 		$data = Agreement::fetch_agreement_content($agreement_id);
 		$requisit_id = $data['client_requisit_id'];
@@ -11,7 +11,7 @@
 	}
 	 
  
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+	include_once(ROOT."/libs/php/classes/client_class.php");
 	$addresses_arr = Client::get_addres($client_id);
 	$addresses = '';
 	foreach($addresses_arr as $data){

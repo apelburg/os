@@ -1387,7 +1387,7 @@ class Client extends aplStdAJAXMethod{
 						if(isset($_POST['query_status']) && $_POST['query_status'] == 'in_work'){
 							global $mysqli;
 							// include_once ('./cabinet/cabinet_class.php');
-							include_once($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/cabinet/cabinet_class.php');
+							include_once(ROOT.'/libs/php/classes/cabinet/cabinet_class.php');
 							$Cabinet = new Cabinet;
 							$this->Query = $Cabinet->get_query((int)$_POST['row_id']);
 							
@@ -1542,7 +1542,7 @@ class Client extends aplStdAJAXMethod{
 		
 		// оповещение группы менеджеров о новом запросе
 		$mail_message = "";
-		include_once($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/cabinet/cabinet_class.php');
+		include_once(ROOT.'/libs/php/classes/cabinet/cabinet_class.php');
 		$Cabinet = new Cabinet;
 
 		$this->Query = $Cabinet->get_query((int)$_POST['rt_list_id']);
