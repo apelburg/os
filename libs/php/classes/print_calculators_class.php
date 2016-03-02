@@ -2,6 +2,14 @@
     class printCalculator{
 	    function __consturct(){
 		}
+		static function startCalculator(dataObj){
+		    // dataObj = {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			//  action [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			//  type [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			//  usluga_id [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			//  dop_data_ids [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			//  quantity [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+		}
 		static function get_sizes(){
 		
 		    global $mysqli;
