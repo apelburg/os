@@ -333,7 +333,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				 id_dop_data += ((i>0)?',':'')+' '+$(this).attr('data-dop_row_id') ;i++;
 			});
 
-			echo_message_js( 'вызов калькулятора id = '+id_dop_data );
+			echo_message_js( 'вызов калькулятора id. = '+id_dop_data );
 			// console.log(id_dop_data)
 		},
 		// сбросить выбранные checkbox
