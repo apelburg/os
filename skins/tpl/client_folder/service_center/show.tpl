@@ -138,20 +138,20 @@
 				<tr class="itogo">
 					<td colspan="9">Сувенир и дополнительные услуги, итоговая исходящая стоимость</td>
 					<td></td>
-					<td>
-						<div><span>205.73</span>р</div>
-						<div><span>28332.00</span>р</div>
+					<td class="price price_in">
+						<div class="for_one"><span>205.73</span>р</div>
+						<div class="for_all"><span>28332.00</span>р</div>
 					</td>
-					<td>
-						<div><span>205.73</span>р</div>
-						<div><span>28332.00</span>р</div>
+					<td class="price price_out">
+						<div class="for_one"><span>205.73</span>р</div>
+						<div class="for_all"><span>28332.00</span>р</div>
 					</td>
-					<td>
-						<span>-2.66</span>%
+					<td class="price discount">
+						<input type="text" value="0">%
 					</td>
-					<td>
-						<div><span>205.73</span>р</div>
-						<div><span>28332.00</span>р</div>
+					<td class="price price_out_width_discount">
+						<div class="for_one"><span>205.73</span>р</div>
+						<div class="for_all"><span>28332.00</span>р</div>
 					</td>
 					<td>
 						<!-- <img src="skins/images/img_design/tc_del_service_all.png" alt="удалить все услуги"> -->

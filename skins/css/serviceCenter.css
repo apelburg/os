@@ -52,7 +52,7 @@
 /* ui-jquery */
 .ui-widget-header {
     border: 1px solid #007036;
-    background: #007036 url("images/ui-bg_highlight-soft_0_9dbe8e_1x100.png") 50% 50% repeat-x;
+    background: #007036;/* url("images/ui-bg_highlight-soft_0_9dbe8e_1x100.png") 50% 50% repeat-x;*/
     color: #000;
     font-weight: bold;
 }
@@ -537,4 +537,17 @@ span.marcker_led {
 	height: 100%;
     width: 100%;
     overflow: auto; 
+}
+
+
+.itogo .price.discount input{
+	font-weight: bold;
+}
+.price.discount input{
+	width: 50px;
+	border:1px solid #fff;
+	text-align: right;
+}
+.price.discount input:focus{
+	outline: none;
 }

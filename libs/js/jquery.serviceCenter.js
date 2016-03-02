@@ -12,7 +12,12 @@
 
 
 
-
+function round_money(num){
+	num = Number(num);
+	var new_num = Math.ceil((num)*100)/100;
+    return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
+    // return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+}
 
 
 // ГЛОБАЛЬНЫЕ ЗАГЛУШКИ
@@ -62,6 +67,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
 			return this.each(function(){
 				var $this = $(this);
+
 				$this.addClass('totalCommander');
 
 				// выделяем рабочие области
@@ -88,6 +94,11 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					$(this).find('td:nth-of-type(2) div.js-psevdo_checkbox').click();
 				});
 
+				// сохраняем ИТОГО
+				methods.services_itogo_row = methods.services_tbl.find('tr.itogo');
+				methods.services_itogo_row.find('.price.discount input').bind('keyup', function(event) {
+					methods.save_main_discount($(this).val());
+				});
 				// инициализируем работу нижней части окна
 				methods.services_init();
 
@@ -100,12 +111,213 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
 				// загрузка контента default
 				$('#default_var').click()
+
+				// подсчитывает стоимость в окне
+				methods.calc_price();
 			});
 
 		},
-		services_init:function(){
+		// сохранение главной скидки
+		save_main_discount:function(value){
+			console.info('меняем общую скидку на ', value );
+			// console.group("Overlord");
+
+			// var a = 1, b = "1";
+			// console.assert(a === b, "A doesn't equal B");
+
+
+			// перебор вариантов
+			methods.change_obj = {
+				varians: [],
+				services: []
+			}; 
+			var i = 0;
+			methods.services_variants_rows.each(function(index, el) {
+				methods.change_obj['varians'][i] = [];
+				methods.change_obj['varians'][i++][$(this).attr('data-dop_data_id')] = value;
+				// редактируем поле discount
+				$(this).find('.price.discount input').val(value);
+
+				// собираем данные
+				methods.calc_row = {
+					price_out: {
+						for_one: 	$(this).find('.price.price_out .for_one span'),
+						for_all: 	$(this).find('.price.price_out .for_all span')
+					},
+					price_out_width_discount: {
+						for_one: 	$(this).find('.price.price_out_width_discount .for_one span'),
+						for_all: 	$(this).find('.price.price_out_width_discount .for_all span'),
+					},
+				}
+
+				// расчитываем скидку и правим DOM
+				methods.calc_row.price_out_width_discount.for_one.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_one.html(), value)));
+				methods.calc_row.price_out_width_discount.for_all.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_all.html(), value)));
+			});
+
+			// перебор услуг
+			i = 0;
+			methods.services_rows.each(function(index, el) {
+				methods.change_obj['services'][i] = [];
+				methods.change_obj['services'][i++][$(this).attr('data-dop_uslugi_id')] = value;
+				// редактируем поле discount
+				$(this).find('.price.discount input').val(value);
+
+				// собираем данные
+				methods.calc_row = {
+					price_out: {
+						for_one: 	$(this).find('.price.price_out .for_one span'),
+						for_all: 	$(this).find('.price.price_out .for_all span')
+					},
+					price_out_width_discount: {
+						for_one: 	$(this).find('.price.price_out_width_discount .for_one span'),
+						for_all: 	$(this).find('.price.price_out_width_discount .for_all span'),
+					},
+				}
+
+				// расчитываем скидку и правим DOM
+				methods.calc_row.price_out_width_discount.for_one.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_one.html(),value)));
+				methods.calc_row.price_out_width_discount.for_all.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_all.html(),value)));
+
+			});
+			// подсчитывает стоимость в окне
+			methods.calc_price('discount');
 			
-			methods.services_rows = 	methods.services_tbl.find('tr.service');
+			console.warn('ДЕЛАТЬ ТУТ >>> ',methods.change_obj);
+			echo_message_js('1) Пишем запрос сохранения общей скидки для всех строк');
+			echo_message_js('2) описать изменения json в верхней таблице, ведь оттуда берутся данные и при перезагрузке они вернуться к неверному значению');
+		},
+		// сохранение скидки для строки варианта или услуги
+		save_discount:function(obj, id, type, value){
+			
+			$.post('', {
+				AJAX: 'save_discount',
+				row_id:id,
+				type:type,
+				value:value
+			}, function(data, textStatus, xhr) {
+				standard_response_handler(data);
+			},'json');
+
+			methods.calc_row = {
+				price_out: {
+					for_one: 	obj.parent().prev().find('.for_one span'),
+					for_all: 	obj.parent().prev().find('.for_all span')
+				},
+				price_out_width_discount: {
+					for_one: 	obj.parent().next().find('.for_one span'),
+					for_all: 	obj.parent().next().find('.for_all span'),
+				},
+			}
+
+			// расчитываем скидку и правим DOM
+			methods.calc_row.price_out_width_discount.for_one.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_one.html(),value)));
+			methods.calc_row.price_out_width_discount.for_all.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_all.html(),value)));
+
+			// подсчитывает стоимость в окне
+			methods.calc_price();
+		},
+		// расчет исходящей стоимости относительноdiscount
+		calc_price_width_discount:function (price_out, discount) {
+			 return Number(price_out/100) * (100 + Number(discount));
+		},
+		// пересчёт итого
+		calc_price:function(no_discount){
+			// return;
+			methods.service_itogo = {
+				num_rows: 0,				
+				discount: 0,
+				price_in: {
+					for_one:0,
+					for_all:0
+				},
+				price_out: {
+					for_one:0,
+					for_all:0
+				},
+				price_out_width_discount: {
+					for_one:0,
+					for_all:0
+				},
+			};
+
+			methods.services_variants_rows.each(function(index, el) {
+				// входящая за единицу товара
+				methods.service_itogo.price_in.for_one += Number($(this).find('.price.price_in .for_one span').html());
+				// входящая за все
+				methods.service_itogo.price_in.for_all += Number($(this).find('.price.price_in .for_all span').html());
+				// исходящая за единицу товара
+				methods.service_itogo.price_out.for_one += Number($(this).find('.price.price_out .for_one span').html());
+				// исходящая за все
+				methods.service_itogo.price_out.for_all += Number($(this).find('.price.price_out .for_all span').html());
+
+				// исходащая за единицу товара
+				methods.service_itogo.price_out_width_discount.for_one += Number($(this).find('.price.price_out_width_discount .for_one span').html());
+				// исходящая за все
+				methods.service_itogo.price_out_width_discount.for_all += Number($(this).find('.price.price_out_width_discount .for_all span').html());
+				// суммируем скидку
+				methods.service_itogo.discount += Number($(this).find('.price.discount input').val());
+				// console.log('discount = ',$(this).find('.price.discount span').html())
+				// считаем количество обработанных строк
+				methods.service_itogo.num_rows++;
+			});
+			methods.services_rows.each(function(index, el) {
+				// входящая за единицу товара
+				methods.service_itogo.price_in.for_one += Number($(this).find('.price.price_in .for_one span').html());
+				// входящая за все
+				methods.service_itogo.price_in.for_all += Number($(this).find('.price.price_in .for_all span').html());
+				// исходящая за единицу товара
+				methods.service_itogo.price_out.for_one += Number($(this).find('.price.price_out .for_one span').html());
+				// исходящая за все
+				methods.service_itogo.price_out.for_all += Number($(this).find('.price.price_out .for_all span').html());
+
+				// исходащая за единицу товара
+				methods.service_itogo.price_out_width_discount.for_one += Number($(this).find('.price.price_out_width_discount .for_one span').html());
+				// исходящая за все
+				methods.service_itogo.price_out_width_discount.for_all += Number($(this).find('.price.price_out_width_discount .for_all span').html());
+				
+				// суммируем скидку
+				// console.log('discount = ',$(this).find('.price.discount span').html())
+				methods.service_itogo.discount += Number($(this).find('.price.discount input').val());
+
+				// считаем количество обработанных строк
+				methods.service_itogo.num_rows++;
+			});
+
+			if(methods.service_itogo.discount == 0){
+				methods.service_itogo.discount = '0.00';
+			}else{
+				methods.service_itogo.discount = round_money(methods.service_itogo.discount / methods.service_itogo.num_rows);
+			}
+			
+			// console.log('methods.service_itogo = ', methods.service_itogo)
+			// вывод данных в итого
+			methods.services_itogo_row.find('.price.price_in .for_one span').html(round_money(methods.service_itogo.price_in.for_one));
+			methods.services_itogo_row.find('.price.price_in .for_all span').html(round_money(methods.service_itogo.price_in.for_all));
+
+			methods.services_itogo_row.find('.price.price_out .for_one span').html(round_money(methods.service_itogo.price_out.for_one));
+			methods.services_itogo_row.find('.price.price_out .for_all span').html(round_money(methods.service_itogo.price_out.for_all));
+
+			methods.services_itogo_row.find('.price.price_out_width_discount .for_one span').html(round_money(methods.service_itogo.price_out_width_discount.for_one));
+			// console.log('methods.service_itogo.price_out_width_discount.for_all',methods.service_itogo.price_out_width_discount)
+			methods.services_itogo_row.find('.price.price_out_width_discount .for_all span').html(round_money(methods.service_itogo.price_out_width_discount.for_all));
+
+			no_discount = no_discount || 'auto';
+			if(no_discount == 'auto'){
+				methods.services_itogo_row.find('.price.discount input').val(round_money(methods.service_itogo.discount));	
+			}
+			
+
+			// console.log(methods.services_itogo_row.find('.price.discount span').html())
+
+			// console.info('methods.service_itogo',methods.service_itogo)
+			// console.log( 'round_money = 65401232,0000355', round_money(65401232.0000355) )
+		},
+
+		services_init:function(){			
+			
+			methods.services_variants_rows =	methods.services_tbl.find('tr.variant');
+			methods.services_rows  = 			methods.services_tbl.find('tr.service');
 			
 			// // events services 
 			// methods.services_rows.find('.alarm_clock').bind("click.totalCommander", function(){
@@ -147,8 +359,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				.removeClass('tr_checked')
 				.find('td:nth-of-type(2).checked')
 				.removeClass('checked');
-
-			row.addClass('tr_checked')
+			row.addClass('tr_checked');
 
 			methods.checkbox_main.parent().removeClass('checked-before').removeClass('checked');
 			// обновление блока услуг
@@ -190,7 +401,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					}
 				}
 			});
-			console.log(object)
+			// console.log(object)
 			methods.checkbox_main_check();
 		},
 		// проверка и правка главного чекбокса
@@ -208,7 +419,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// скрываем кнопку
 				methods.btn_cancel_all.addClass('no_click');
 			}
-			console.log(methods.btn_cancel_all);
+			// console.log(methods.btn_cancel_all);
 			// обновление блока услуг
 			methods.update_services_content();
 		},
@@ -233,6 +444,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		scroll_to_default:function(){
 			// подсчитываем скроллинг
 			var destination = 0; var destination_v1 = 0; var flag = true;
+			// console.log(methods.variants_rows)
 			methods.variants_rows.each(function(index, el) {
 				if(flag){
 					destination += $(this).height();
@@ -247,7 +459,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					// console.log(destination_v1)
 				}
 			});
-			// console.log($("#js-main-service_center-variants-div-table div#wraper_classer").animate({scrollTop: destination_v1+'px'}, 200));
+			$("#js-main-service_center-variants-div-table div#wraper_classer").animate({scrollTop: destination_v1+'px'}, 200);
 		},
 		// показать окно
 		show : function( ) {
@@ -255,7 +467,6 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
     		// подгоняем ширину столбика тираж
     		$('#js-main-service_center-variants-table th:last-child').width($('#js-main-service_center-variants-services-div-table').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(1)').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(2)').innerWidth());
-
 
     		// меняем высоту, если она превышает допустимую
     		var top_block_height = 190;
@@ -309,19 +520,19 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     		methods.variants_rows.each(function(index, el) {
     			if($(this).hasClass('tr_checked')){
     			var variant = jQuery.parseJSON( $(this).find('td.js-variant_info div').html() );
-    			var bariant_row = $('<tr/>',{'class':'variant'});
+    			var variant_row = $('<tr/>',{'class':'variant','data-dop_data_id':variant.id});
 
-    			bariant_row.append($('<td/>',{"colspan":"2"}));
+    			variant_row.append($('<td/>',{"colspan":"2"}));
     			
     			var span = $('<span/>',{'html': $(this).find('td').eq(2).text()});
     			var span2 = $('<span/>',{'html': $(this).find('td').eq(4).text()});
     			var div = $('<div/>').append(span).append(span2);
-    			bariant_row.append($('<td/>').append(div));
+    			variant_row.append($('<td/>').append(div));
 				
-				bariant_row.append($('<td/>').append($(this).find('td').eq(5).text()));
+				variant_row.append($('<td/>').append($(this).find('td').eq(5).text()));
 
 				var span = $('<span/>',{'html': $(this).find('td span.service').html()});
-				bariant_row.append($('<td/>').append(span));
+				variant_row.append($('<td/>').append(span));
 				
 				// название
 				var obj = $(this);
@@ -330,46 +541,53 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					methods.cancel_all_choosen_variants_and_chose_one_row(obj);
 				});
 
-				bariant_row.append($('<td/>',{'colspan':'4'}).append(link))
+				variant_row.append($('<td/>',{'colspan':'4'}).append(link))
 
-				bariant_row.append($('<td/>',{'html':$(this).find('td').eq(8).text()}));
+				variant_row.append($('<td/>',{'html':$(this).find('td').eq(8).text()}));
 				
 				// входащая
-				bariant_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+variant.price_in+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+variant.price_in*variant.quantity+'</span>р</div>'})));
+				variant_row.append($('<td/>',{'class':'price price_in'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(variant.price_in)+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(variant.price_in*variant.quantity)+'</span>р</div>'})));
 				// без скидки (исходящая)
-				bariant_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+variant.price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+variant.price_out*variant.quantity+'</span>р</div>'})));
+				variant_row.append($('<td/>',{'class':'price price_out'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(variant.price_out)+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(variant.price_out*variant.quantity)+'</span>р</div>'})));
 				
-				
-				var span = $('<span/>',{'html': variant.discount });
-				bariant_row.append($('<td/>').append(span));
+				// скидка
+				var input = $('<input/>',{
+					'value': round_money(variant.discount),
+					'data-id':variant.id,
+					keyup:function(e){
+						methods.save_discount($(this),$(this).attr('data-id'),'variant',$(this).val())
+					}
+				});
+				variant_row.append($('<td/>',{'class':'price discount'}).append(input).append('%'));
 
 				// со скидкой (исходящая)
-				bariant_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+variant.price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+variant.price_out*variant.quantity+'</span>р</div>'})));
+				variant_row.append($('<td/>',{'class':'price price_out_width_discount'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(methods.calc_price_width_discount(variant.price_out, variant.discount))+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(methods.calc_price_width_discount(variant.price_out*variant.quantity, variant.discount))+'</span>р</div>'})));
 				
-				bariant_row.append($('<td/>'));
+				variant_row.append($('<td/>'));
 					
 
     				var service = jQuery.parseJSON( $(this).find('td.js-variant_services_json div').html() );
     				// console.log(service.length);
     				if(service.length){
-    					methods.services_tbl.find('.service_th').show().removeClass('js-service_spacer').before(bariant_row);		
+    					methods.services_tbl.find('.service_th').show().removeClass('js-service_spacer').before(variant_row);		
     				}else{
-    					methods.services_tbl.find('.service_th').show().addClass('js-service_spacer').before(bariant_row);	
+    					methods.services_tbl.find('.service_th').show().addClass('js-service_spacer').before(variant_row);	
     				}
-    				console.log(service)
+    				
+    				// перебор услуг к варианту
     				for (var i = service.length-1; i >= 0; i--) {
     					// return true;
     					var td = '';
     					if(service[i].for_how == 'for_all'){
     						service[i].quantity = 1;
     					}
-    					service_row = $('<tr/>',{'class':'service'});
+    					service_row = $('<tr/>',{'class':'service','data-dop_uslugi_id':service[i].id,'data-dop_data_id':service[i].dop_row_id});
 						
 						service_row.append( $('<td/>',{text:(i+1)}));
 
-						// alarm
+						// иконка будильник
 						var div = $('<div/>',{'class':'alarm_clock'}).css({'float':'left','width':'100%','height':'100%'});
-						var check_alarm = '';var alarm_notify = '';
+						var check_alarm = ''; var alarm_notify = '';
 						var print_details = service[i].print_details;
 						// if (print_details) {
 						// 	// console.log(print_details)
@@ -413,9 +631,9 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 							service_row.append($('<td/>',{'class':'note_title','text':'синий, чёрный, подложка'}));
 							// место печати
 							service_row.append($('<td/>',{'class':'note_title','text':'до 1260 см2 (А3)'}));
-							console.log(service[i])
+							// console.log(service[i]);
 						}else{ // из списка доп услуг
-							console.log(service[i])
+							// console.log(service[i]);
 							service_row.append($('<td/>',{'colspan':'3'}));
 						}
 						
@@ -423,22 +641,30 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						service_row.append($('<td/>',{'class':'comment is_full'}));
 
 						// тираж в услуге
-						if(service[i].related_services && service[i].related_services !== null){
-							service_row.append($('<td/>',{'data-id_s':service[i].related_services,'class':'service_group','text':service[i].quantity+' шт'}));
+						if(service[i].united_calculations && service[i].united_calculations !== null){
+							service_row.append($('<td/>',{'data-id_s':service[i].united_calculations,'class':'service_group','text':service[i].quantity+' шт'}));
 						}else {
 							service_row.append($('<td/>',{'text':service[i].quantity+' шт'}));
 						}
 
 						
-
-						service_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+service[i].price_in+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+service[i].price_in*service[i].quantity+'</span>р</div>'})));
-
-						service_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+service[i].price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+service[i].price_out*service[i].quantity+'</span>р</div>'})));
-
-						// // скидка
-						service_row.append($('<td/>',{'html':'<span>'+service[i].discount+'</span>%'}));
-						// // со скидкой (исходящая)
-						service_row.append($('<td/>').append($('<div/>',{'html':'<div><span>'+service[i].price_out+'</span>р</div>'})).append($('<div/>',{'html':'<div><span>'+service[i].price_out*service[i].quantity+'</span>р</div>'})));
+						// цена входящая
+						service_row.append($('<td/>',{'class':'price price_in'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_in)+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(service[i].price_in*service[i].quantity)+'</span>р</div>'})));
+						// цена без скидки
+						service_row.append($('<td/>',{'class':'price price_out'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_out)+'</span>р</div>'})).append($('<div/>',{'html':'<div  class="for_all"><span>'+round_money(service[i].price_out*service[i].quantity)+'</span>р</div>'})));
+						// скидка
+						var input = $('<input/>',{
+							'value': round_money(service[i].discount),
+							'data-id':service[i].id,
+							keyup:function(e){
+								methods.save_discount($(this), $(this).attr('data-id'),'service', $(this).val())
+							}
+						});
+						// console.log(service[i])
+						service_row.append($('<td/>',{'class':'price discount'}).append(input).append('%'));
+						// service_row.append($('<td/>',{'class':'price discount','html':'<span>'+round_money(service[i].discount)+'</span>%'}));
+						// со скидкой (исходящая)
+						service_row.append($('<td/>',{'class':'price price_out_width_discount'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(methods.calc_price_width_discount(service[i].price_out, service[i].discount))+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(methods.calc_price_width_discount(service[i].price_out*service[i].quantity, service[i].discount))+'</span>р</div>'})));
 
 						service_row.append($('<td/>'));
 					// service_row += '</tr>';
@@ -447,7 +673,11 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     				}
     			}
     		});
-		methods.services_init();
+			
+			// запоминаем данные услуг
+			methods.services_init();
+			// пересчёт итого
+			methods.calc_price();
 		}
 	};
 

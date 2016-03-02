@@ -1171,6 +1171,7 @@ function calkulate_row_itogo(){
 			i++;
 		}
 	});
+	
 	$(id_active_variant+' .variant_calc_itogo td:nth-of-type(3) span').html(Math.ceil((percent/i)*100)/100)
 	console.log((percent/i));
 

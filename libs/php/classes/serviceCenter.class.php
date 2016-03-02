@@ -41,6 +41,41 @@
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
 		}
 
+
+
+		/**
+		 *	редактирование скидки / наценки
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	14:19 02.03.2016
+		 */
+		protected function save_discount_AJAX(){
+			switch ($_POST['type']) {
+				case 'service':
+					$query = "UPDATE `".RT_DOP_USLUGI."` SET ";
+					$query .= " `discount` = '".$_POST['value']."' ";
+					$query .= " WHERE `id` = '".(int)$_POST['row_id']."';";
+					$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+
+					// $this->responseClass->addMessage('редактирование скидки / наценки - Сервис');
+					break;
+				case 'variant':
+					$query = "UPDATE `".RT_DOP_DATA."` SET ";
+					$query .= " `discount` = '".$_POST['value']."' ";
+					$query .= " WHERE `id` = '".(int)$_POST['row_id']."';";
+					$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+
+					// $this->responseClass->addMessage('редактирование скидки / наценки - Вариант');
+					break;				
+				default:
+					$this->responseClass->addMessage('редактирование скидки / наценки');
+					break;
+			}
+			
+
+			
+		}
+
 		/**
 		 *	удвляет услугу
 		 *
@@ -50,6 +85,7 @@
 		protected function services_del_AJAX(){
 			$this->responseClass->addMessage('Удаление услуги');
 		}
+
 
 		// возвращает контент для окна
 		private function get_window_content(){
@@ -192,7 +228,7 @@
 		}
 		// возвращает строки позиций
 		private function get_positions($id){
-			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `query_num` = '".$id."';";
+			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `query_num` = '".$id."' ORDER BY  `sort` ASC ;";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			$arr = array();
 			if($result->num_rows > 0){
