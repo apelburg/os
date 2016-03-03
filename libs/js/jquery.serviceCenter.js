@@ -73,6 +73,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// выделяем рабочие области
 				methods.variants_tbody = 	$this.find('#js-main-service_center-variants-table tbody');
 				methods.variants_rows = 	$this.find('#js-main-service_center-variants-table tbody tr');
+				methods.top_menu_div = 			$this.find('#js-main-service_center-top_menu ul');
 				methods.top_menu = 			$this.find('#js-main-service_center-top_menu ul li');
 				methods.checkbox_main = 	$this.find('#js-main-service_center-variants-table thead tr th:nth-of-type(2) div.js-psevdo_checkbox');
 				
@@ -83,7 +84,8 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// кнопка Добавить услугу
 				methods.btn_calculators = 	$('#sc_add_service');
 
-
+				// получаем объект зависимостей услуг от вариантов
+				methods.depending_on_the_services_and_options = jQuery.parseJSON($this.find('#js-depending_on_the_services_and_options').html());
 
 				// events chose variants rows
 				methods.checkbox_main.bind("click.totalCommander", methods.checkbox_main_click );
@@ -94,13 +96,39 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					$(this).find('td:nth-of-type(2) div.js-psevdo_checkbox').click();
 				});
 
+				// отработка верхнего меню
+				methods.top_menu.bind('click',function(){		
+					if($(this).find('div').html() == 'Артикулы'){
+						methods.cancel_all_choosen_variants();
+					}else{
+						methods.top_menu.removeClass('checked');
+						$(this).addClass('checked');
+						// снимаем выделение отовсюду
+						methods.variants_rows.removeClass('tr_checked').find('td:nth-of-type(2).checked').removeClass('checked');
+						// получаем id dop_data для данной группы
+						var serv_id = $(this).attr('data-var_id').split(',');
+
+
+						for(var k = 0, length1 = serv_id.length; k < length1; k++){
+							// console.log(methods.variants_tbody.find('tr#dop_data_'+serv_id[k]))
+							methods.variants_tbody.find('tr#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]).addClass('tr_checked').find('td:nth-of-type(2)').addClass('checked');
+
+						}
+						// обновляем контент услуг
+						methods.update_services_content();
+						// инициализируем работу нижней части окна
+						methods.services_init();
+					}					
+				});
+
 				// сохраняем ИТОГО
 				methods.services_itogo_row = methods.services_tbl.find('tr.itogo');
 				methods.services_itogo_row.find('.price.discount input').bind('keyup', function(event) {
 					methods.save_main_discount($(this).val());
 				});
+
 				// инициализируем работу нижней части окна
-				methods.services_init();
+				// methods.services_init();
 
 				// кнопка сбросить всё
 				methods.btn_cancel_all.bind('click.totalCommander', methods.cancel_all_choosen_variants );
@@ -110,7 +138,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				$this.show();
 
 				// загрузка контента default
-				$('#default_var').click()
+				methods.variants_tbody.find('.default_var').click()
 
 				// подсчитывает стоимость в окне
 				methods.calc_price();
@@ -186,6 +214,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			console.warn('ДЕЛАТЬ ТУТ >>> ',methods.change_obj);
 			echo_message_js('1) Пишем запрос сохранения общей скидки для всех строк');
 			echo_message_js('2) описать изменения json в верхней таблице, ведь оттуда берутся данные и при перезагрузке они вернуться к неверному значению');
+			
 		},
 		// сохранение скидки для строки варианта или услуги
 		save_discount:function(obj, id, type, value){
@@ -327,23 +356,47 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// нажатие на кнопку калькуля/тора
 		add_services_from_calculator:function(){
-			var id_dop_data = '';
+			// var id_dop_data = '';
 			var i = 0;
+			// methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
+			// 	 id_dop_data += ((i>0)?',':'')+' '+$(this).attr('data-dop_row_id') ;i++;
+			// });
+
+			// echo_message_js( 'вызов калькулятора id. = '+id_dop_data );
+
+			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			methods.dataObj['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			methods.dataObj['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+
+			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-				 id_dop_data += ((i>0)?',':'')+' '+$(this).attr('data-dop_row_id') ;i++;
+				methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
+				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
+				i++;
 			});
 
-			echo_message_js( 'вызов калькулятора id. = '+id_dop_data );
-			// console.log(id_dop_data)
+			if(i>1){
+				methods.dataObj['type'] = 'union';
+			}
+
+			// вызов калькулятора
+			printCalculator.startCalculator(methods.dataObj);
+			
 		},
 		// сбросить выбранные checkbox
 		cancel_all_choosen_variants:function(){
+			// верхнее меню, раздел артикулы
+			methods.top_menu.removeClass('checked').eq(0).addClass('checked');
+
 			methods.variants_rows
 				.removeClass('tr_checked')
 				.find('td:nth-of-type(2).checked')
 				.removeClass('checked');
 
-			methods.variants_tbody.find('#default_var').addClass('tr_checked')
+			methods.variants_tbody.find('.default_var').addClass('tr_checked')
 
 			methods.checkbox_main.parent().removeClass('checked-before').removeClass('checked');
 			// обновление блока услуг
@@ -377,7 +430,12 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					// object.className = '';
 				}else{
 					methods.variants_rows.removeClass('tr_checked');
-					object.className = 'tr_checked';
+					if (object.className == 'tr_checked default_var' || object.className == 'default_var') {
+						object.className = 'tr_checked default_var';
+					}else{
+						object.className = 'tr_checked';
+					}
+					
 				}	
 			}
 			// обновление блока услуг
@@ -386,21 +444,54 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// клик по чекбоксу в строке
 		checkbox_change: function(e){
-			var object= this.parentNode.parentNode;
-			if(object.className == 'tr_checked' && this.parentNode.className == 'checked'){
+			var object = this.parentNode.parentNode;
+
+			if((object.className == 'tr_checked default_var' || object.className == 'default_var tr_checked') && this.parentNode.className == 'checked' ){
+				// console.log(1);
+				object.className = 'default_var';
+				this.parentNode.className = '';
+			}else if(object.className == 'tr_checked' && this.parentNode.className == 'checked'){
+				// console.log(2);
 				object.className = '';
 				this.parentNode.className = '';
+			}else if(object.className == 'default_var' && this.parentNode.className == 'checked'){
+				// console.log(3);
+				object.className = 'tr_checked default_var';
+				this.parentNode.className = 'checked';
+			}else if(object.className == 'default_var' && this.parentNode.className == ''){
+				// console.log(4);
+				object.className = 'tr_checked default_var';
+				this.parentNode.className = 'checked';
+			}else if((object.className == 'tr_checked default_var' || object.className == 'default_var tr_checked') && this.parentNode.className == ''){
+				// console.log(5);
+				object.className = 'tr_checked default_var';
+				this.parentNode.className = 'checked';
 			}else{
+				// console.log(6);
 				object.className = 'tr_checked';
 				this.parentNode.className = 'checked';
 			}
+			console.log('object.className = %s, this.parentNode.className = %s',object.className,this.parentNode.className)
+			methods.top_menu_options = [];
 			methods.variants_rows.each(function(index, el) {
 				if ($(this).hasClass('tr_checked')) {
 					if(!$(this).find('td:nth-of-type(2)').hasClass('checked')){
 						$(this).removeClass('tr_checked');
+					}else{
+						methods.top_menu_options.push($(this).attr('data-dop_row_id'));
 					}
 				}
+				
 			});
+			console.log('li#list_'+methods.top_menu_options.join('_'))
+			if(methods.top_menu_div.find('li#list_'+methods.top_menu_options.join('_')).length){
+							
+					methods.top_menu_div.removeClass('checked').find('li#list_'+methods.top_menu_options.join('_')).addClass('checked');
+				}else{
+					if(!methods.top_menu_div.removeClass('checked').find('li').eq(0).hasClass('checked')){
+						methods.top_menu_div.removeClass('checked').find('li').eq(0).addClass('checked');	
+					}
+				}
 			// console.log(object)
 			methods.checkbox_main_check();
 		},
@@ -642,7 +733,49 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
 						// тираж в услуге
 						if(service[i].united_calculations && service[i].united_calculations !== null){
-							service_row.append($('<td/>',{'data-id_s':service[i].united_calculations,'class':'service_group','text':service[i].quantity+' шт'}));
+							var td = $('<td/>',{
+								'data-id_s':service[i].united_calculations,
+								'class':'service_group',
+								'text':service[i].quantity+' шт',
+								'on':{
+									mouseenter:function(){
+										// получаем id dop_data для данной группы
+										var serv_id = $(this).attr('data-id_s').split(',');
+										// вычисляем id кнопки группы
+										var id_group = serv_id.join('_');
+										// снимаем подсветку кнопки
+										$('#list_'+id_group).addClass('led');
+
+										// добавляем сласс для подсветки строк группы
+										for(var k = 0, length1 = serv_id.length; k < length1; k++){
+											$('#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]+' td').addClass('hover_group_class');
+										}
+									},
+									mouseleave:function(){
+										// получаем id dop_data для данной группы
+										var serv_id = $(this).attr('data-id_s').split(',');
+										// вычисляем id кнопки группы
+										var id_group = serv_id.join('_');
+										// снимаем подсветку кнопки
+										methods.top_menu_div.find('li#list_'+id_group).removeClass('led');
+
+										// снимаем подсветку группы
+										for(var k = 0, length1 = serv_id.length; k < length1; k++){
+											$('#dop_data_' + methods.depending_on_the_services_and_options[serv_id[k]]+' td').removeClass('hover_group_class');
+										}
+									}
+								},
+								'click':function(){
+									// получаем id dop_data для данной группы
+									var serv_id = $(this).attr('data-id_s').split(',');
+									// вычисляем id кнопки группы
+									var id_group = serv_id.join('_');
+									// снимаем подсветку кнопки
+									methods.top_menu_div.find('li#list_'+id_group).click();
+								}
+							})
+							
+							service_row.append(td);
 						}else {
 							service_row.append($('<td/>',{'text':service[i].quantity+' шт'}));
 						}

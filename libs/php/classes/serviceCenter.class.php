@@ -2,6 +2,9 @@
 	class ServiceCenter  extends aplStdAJAXMethod{
 		private $Query;
 		private $first_default = true;
+		private $services_related;
+		private $group_list_services = array();
+		private $group_list = array();
 
 		function __construct(){
 			$this->db();
@@ -39,6 +42,16 @@
 			$this->responseClass->options['html'] = base64_encode( $this->get_window_content() );
 			$this->responseClass->options['myFunc'] = 'show_SC';
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
+		}
+
+
+		private function group_list(){
+			$i = 1;
+			foreach ($this->group_list as $key => $list) {
+				echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'">';
+					echo '<div>Тираж № '.($i++).'</div>';
+				echo '</li>';
+			}
 		}
 
 
@@ -94,9 +107,12 @@
 
 
 			$html = '<div id="js-service-center">';
+				$variants_rows = $this->variants_print_Html();
+
 				ob_start();
 				// echo '<pre>';
 				// print_r($_SESSION);
+
 				// echo '<pre>';
 				include_once ROOT.'/skins/tpl/client_folder/service_center/show.tpl';
 				$html .= ob_get_contents();
@@ -107,9 +123,10 @@
 
 		// во
 		private function variants_print_Html(){
+			$html = '';
 			$position_num = 1;
 			$color_arr = array('rgba(79, 154, 48, 0.2)','rgba(79, 142, 13, 0.37)');
-			$color = $color_arr[1];$old_color = '';
+			$color = $color_arr[1]; $old_color = '';
 
 			foreach ($this->Query['positions'] as $position) {
 				
@@ -131,38 +148,39 @@
 				foreach ($position['variants'] as $variant) {
 					if($this->first_default){
 						if($variant_num == 1){
-							echo '<tr data-dop_row_id="'.$variant['id'].'" id="default_var" class="tr_checked">';		
+							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
 						}
 						
 					}else{
-						echo '<tr data-dop_row_id="'.$variant['id'].'"  '.(($variant['id'] == (int)$_POST['row_id'])?'id="default_var" class="tr_checked"':'').'>';
+						$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" id="dop_data_'.$variant['id'].'" '.(($variant['id'] == (int)$_POST['row_id'])?' class="tr_checked default_var"':'').'>';
 					}	
 
 						foreach ($variant['services'] as $key => $value) {
 							$variant['services'][$key]['print_details'] = json_decode($variant['services'][$key]['print_details'],'true');	
 						}
 						 
-						echo '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';
-						echo '<td>';
-							echo '<div class="js-psevdo_checkbox"></div>';
-						echo '</td>';
-						echo '<td>'.$position_num.'.'.$variant_num.'</td>';
-						echo '<td><span class="marcker_led"  '.$color_style.'>&nbsp;</span></td>';
-						echo '<td>в'.$variant_num.'</td>';
-						echo '<td>'.$position['art'].'</td>';
-						echo '<td><span class="service">'.count($variant['services']).'</span></td>';
-						echo '<td>'.$position['name'].'</td>';
-						echo '<td>'.$variant['quantity'].' шт</td>';
+						$html .= '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';
+						$html .= '<td>';
+							$html .= '<div class="js-psevdo_checkbox"></div>';
+						$html .= '</td>';
+						$html .= '<td>'.$position_num.'.'.$variant_num.'</td>';
+						$html .= '<td><span class="marcker_led"  '.$color_style.'>&nbsp;</span></td>';
+						$html .= '<td>в'.$variant_num.'</td>';
+						$html .= '<td>'.$position['art'].'</td>';
+						$html .= '<td><span class="service">'.count($variant['services']).'</span></td>';
+						$html .= '<td>'.$position['name'].'</td>';
+						$html .= '<td>'.$variant['quantity'].' шт</td>';
 						$my_variant = $variant;
 						unset($my_variant['services']);
-						echo '<td class="js-variant_info"><div>'.json_encode($my_variant).'</div></td>';
-					echo '</tr>';
+						$html .= '<td class="js-variant_info"><div>'.json_encode($my_variant).'</div></td>';
+					$html .= '</tr>';
 					$variant_num++;
 				}
 				$position_num++;
 
 				$old_color = $color;
 			}
+			return $html;
 		}
 
 		// собираем объект
@@ -211,6 +229,18 @@
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
 					$arr[] = $row;
+					
+					//
+					$this->services_related[$row['id']] = $row['dop_row_id'];
+					if(trim($row['united_calculations']) != ''){
+
+						$dop_row_arr = explode(",", $row['united_calculations']);
+						if(count($dop_row_arr) > 1){
+							$c = 'list_'.implode('_', $dop_row_arr);
+							$this->group_list[ $c ]['id'] = implode('_', $dop_row_arr);
+							$this->group_list[ $c ]['data-var_id'] = implode(',', $dop_row_arr);
+						}
+					}
 				}
 			}
 			return $arr;

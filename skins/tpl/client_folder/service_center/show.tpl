@@ -7,16 +7,12 @@
 				<li class="checked">
 					<div>Артикулы</div>
 				</li>
-				<li class="led">
-					<div>Тираж №1</div>
-				</li>
-				<li>
-					<div>Тираж №2</div>
-				</li>
+				<?=$this->group_list();?>
 			</ul>
 		</div>
 		<div id="js-main-service_center-variants-div-table">
 			<div id="wraper_classer">
+
 			<table id="js-main-service_center-variants-table">
 				<thead>
 					<tr class="">
@@ -36,87 +32,15 @@
 					</tr>		
 				</thead>
 				<tbody>
-					<?=$this->variants_print_Html();?>
-					<!-- <tr id="default_var">
-						<td></td>
-						<td>
-							<input type="checkbox" name="">
-							<div class="js-psevdo_checkbox"></div>
-						</td>
-						<td>1.1</td>
-						<td style="background-color: <?=$this->rand_color()?>"></td>
-						<td>в.1</td>
-						<td>2633S0633</td>
-						<td><span class="service">2</span></td>
-						<td>«Футболка «200» мужская. без боковых швов, резинка с эластаном по линии горловины»</td>
-						<td>3000 шт</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td>
-							<input type="checkbox" name="">
-							<div class="js-psevdo_checkbox"></div>
-						</td>
-						<td>2.1</td>
-						<td style="background-color: <?=$this->rand_color()?>"></td>
-						<td>в.1</td>
-						<td>2633S0633</td>
-						<td><span class="service">2</span></td>
-						<td>«Футболка «200» мужская. без боковых швов, резинка с эластаном по линии горловины»</td>
-						<td>3000 шт</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td>
-							<input type="checkbox" name="">
-							<div class="js-psevdo_checkbox"></div>
-						</td>
-						<td>2.2</td>
-						<td style="background-color: <?=$this->rand_color()?>"></td>
-						<td>в.2</td>
-						<td>2633S0633</td>
-						<td><span class="service">2</span></td>
-						<td>«Футболка «200» мужская. без боковых швов, резинка с эластаном по линии горловины»</td>
-						<td>30 шт</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td>
-							<input type="checkbox" name="">
-							<div class="js-psevdo_checkbox"></div>
-						</td>
-						<td>3.1</td>
-						<td style="background-color: <?=$this->rand_color()?>"></td>
-						<td>в.1</td>
-						<td>2633S0633</td>
-						<td><span class="service">0</span></td>
-						<td>«Футболка «200» мужская. без боковых швов, резинка с эластаном по линии горловины»</td>
-						<td>250 шт</td>
-						<td></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td>
-							<input type="checkbox" name="">
-							<div class="js-psevdo_checkbox"></div>
-						</td>
-						<td>5.1</td>
-						<td style="background-color: <?=$this->rand_color()?>"></td>
-						<td>в.1</td>
-						<td>2633S0633</td>
-						<td><span class="service">7</span></td>
-						<td>Футболка женская LADY 220 с круглым вырезом, фиолетовая </td>
-						<td>100 шт</td>
-						<td></td>
-					</tr> -->
+					<?=$variants_rows;?>
+					
 				</tbody>			
 					
 			</table>
 			</div>
+
 		</div>
+		<?php echo '<div id="js-depending_on_the_services_and_options">'.json_encode($this->services_related).'</div>'; ?>
 			
 		<div class="spacer_div"></div>
 	</div>
