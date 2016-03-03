@@ -385,6 +385,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				methods.dataObj['type'] = 'union';
 			}
 
+			console.info('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
 			// вызов калькулятора
 			printCalculator.startCalculator(methods.dataObj);			
 		},
@@ -409,7 +410,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				methods.dataObj['type'] = 'union';
 			}
 
-			console.info(methods.dataObj)
+			console.info('РЕДАКТИРУЕМ УСЛУГУ >>>',methods.dataObj);
 			// вызов калькулятора
 			printCalculator.startCalculator(methods.dataObj);		
 		},
