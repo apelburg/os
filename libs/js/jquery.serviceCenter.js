@@ -356,14 +356,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// нажатие на кнопку калькуля/тора
 		add_services_from_calculator:function(){
-			// var id_dop_data = '';
 			var i = 0;
-			// methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-			// 	 id_dop_data += ((i>0)?',':'')+' '+$(this).attr('data-dop_row_id') ;i++;
-			// });
-
-			// echo_message_js( 'вызов калькулятора id. = '+id_dop_data );
-
 			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 			methods.dataObj['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
@@ -383,8 +376,32 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			}
 
 			// вызов калькулятора
-			printCalculator.startCalculator(methods.dataObj);
-			
+			printCalculator.startCalculator(methods.dataObj);			
+		},
+		// редактирование услуги
+		edit_the_service_of_the_calculator:function(obj){
+			var i = 0;
+			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			methods.dataObj['action'] = 'update'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			methods.dataObj['usluga_id'] = obj.parent().attr('data-dop_uslugi_id');		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+
+			// собираем id строк вариантов
+			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
+				methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
+				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
+				i++;
+			});
+
+			if(i>1){
+				methods.dataObj['type'] = 'union';
+			}
+
+			console.info(methods.dataObj)
+			// вызов калькулятора
+			printCalculator.startCalculator(methods.dataObj);		
 		},
 		// сбросить выбранные checkbox
 		cancel_all_choosen_variants:function(){
@@ -704,9 +721,23 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						
 						// название услуги из калькулятора
 						if(print_details && print_details.print_type){
-							service_row.append($('<td/>',{'colspan':'3','text':print_details.print_type}));	
+							service_row.append($('<td/>',{
+								'colspan':'3',
+								'class':'service_name',
+								'text':print_details.print_type,
+								click:function(){
+									methods.edit_the_service_of_the_calculator($(this));
+								}
+							}));	
 						}else{
-							service_row.append($('<td/>',{'colspan':'3','text':service[i].service_name}));
+							service_row.append($('<td/>',{
+								'colspan':'3',
+								'class':'service_name',
+								'text':service[i].service_name,
+								click:function(){
+									methods.edit_the_service_of_the_calculator($(this));
+								}
+							}));
 						}
 						
 						// ОПИСАНИЕ УСЛУГИ
