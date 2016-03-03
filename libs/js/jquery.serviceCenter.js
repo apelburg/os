@@ -45,8 +45,18 @@ jQuery(document).ready(function($) {
 	//$('#js-win-sv').click();
 });
 jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', function(event) {
-	event.preventDefault();
-	$.SC_sendAjax(event);
+	// console.log(event)
+	// console.log($(this))
+	//event.stopPropagation();
+	$.post('', {
+			AJAX: 	'get_service_center',
+			row_id: $(this).parent().parent().attr("row_id")
+		}, function(data, textStatus, xhr) {
+			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
+				$.SC_createWindow(Base64.decode(data['html']));	
+			}				
+			standard_response_handler(data);
+		},'json');
 });
 
 /**
@@ -135,7 +145,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// добавить услугу
 				methods.btn_calculators.bind('click.totalCommander', methods.add_services_from_calculator );
 
-				$this.show();
+				methods.show();
 
 				// загрузка контента default
 				methods.variants_tbody.find('.default_var').click()
@@ -356,14 +366,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// нажатие на кнопку калькуля/тора
 		add_services_from_calculator:function(){
-			// var id_dop_data = '';
 			var i = 0;
-			// methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-			// 	 id_dop_data += ((i>0)?',':'')+' '+$(this).attr('data-dop_row_id') ;i++;
-			// });
-
-			// echo_message_js( 'вызов калькулятора id. = '+id_dop_data );
-
 			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 			methods.dataObj['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
@@ -383,8 +386,32 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			}
 
 			// вызов калькулятора
-			printCalculator.startCalculator(methods.dataObj);
-			
+			printCalculator.startCalculator(methods.dataObj);			
+		},
+		// редактирование услуги
+		edit_the_service_of_the_calculator:function(obj){
+			var i = 0;
+			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			methods.dataObj['action'] = 'update'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			methods.dataObj['usluga_id'] = obj.parent().attr('data-dop_uslugi_id');		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+
+			// собираем id строк вариантов
+			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
+				methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
+				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
+				i++;
+			});
+
+			if(i>1){
+				methods.dataObj['type'] = 'union';
+			}
+
+			console.info(methods.dataObj)
+			// вызов калькулятора
+			printCalculator.startCalculator(methods.dataObj);		
 		},
 		// сбросить выбранные checkbox
 		cancel_all_choosen_variants:function(){
@@ -554,7 +581,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// показать окно
 		show : function( ) {
-    		this.dialog('open');
+    		$('#js-main_service_center').dialog('open');
 
     		// подгоняем ширину столбика тираж
     		$('#js-main-service_center-variants-table th:last-child').width($('#js-main-service_center-variants-services-div-table').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(1)').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(2)').innerWidth());
@@ -704,9 +731,23 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						
 						// название услуги из калькулятора
 						if(print_details && print_details.print_type){
-							service_row.append($('<td/>',{'colspan':'3','text':print_details.print_type}));	
+							service_row.append($('<td/>',{
+								'colspan':'3',
+								'class':'service_name',
+								'text':print_details.print_type,
+								click:function(){
+									methods.edit_the_service_of_the_calculator($(this));
+								}
+							}));	
 						}else{
-							service_row.append($('<td/>',{'colspan':'3','text':service[i].service_name}));
+							service_row.append($('<td/>',{
+								'colspan':'3',
+								'class':'service_name',
+								'text':service[i].service_name,
+								click:function(){
+									methods.edit_the_service_of_the_calculator($(this));
+								}
+							}));
 						}
 						
 						// ОПИСАНИЕ УСЛУГИ
@@ -846,29 +887,22 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
  */
 $.extend({
 	// создание кнопки открытия окна Тотал 
-	SC_createShowWindowButton : function(event){
-		if($('#js-win-sv').length) return true;
-		var obj = $('<div/>',{
-			"id" : "js-win-sv"	
-		}).click(function(event) {
-			$.SC_sendAjax();
-		});
+	// SC_createShowWindowButton : function(event){
+	// 	if($('#js-win-sv').length) return true;
+	// 	var obj = $('<div/>',{
+	// 		"id" : "js-win-sv"	
+	// 	}).click(function(event) {
+	// 		$.SC_sendAjax(event);
+	// 	});
 
-		$('body').append( obj );
-	},
+	// 	$('body').append( obj );
+	// },
 	// запрос на вызов окна
-	SC_sendAjax:function(event){
-		event.preventDefault();
+	SC_sendAjax:function(obj){
+		// event.preventDefault();
+		// console.log(this)
 
-		$.post('', {
-			AJAX: 	'get_service_center',
-			row_id: event.target.parentNode.parentNode.getAttribute("row_id")
-		}, function(data, textStatus, xhr) {
-			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
-				$.SC_createWindow(Base64.decode(data['html']));	
-			}				
-			standard_response_handler(data);
-		},'json');
+		
 	},
 	// открытие окна Тотал
 	SC_createWindow : function(html){

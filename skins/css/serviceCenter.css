@@ -318,6 +318,12 @@ button#sc_close_window{
 	text-align: right;
 }
 
+#js-main-service_center-variants-services-div-table table tr.service td.service_name:hover{
+	background-color: #eeeeee;
+	cursor: pointer;
+}
+
+
 #js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(2) div:nth-of-type(1),
 #js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(3) div:nth-of-type(1),
 #js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(4) div:nth-of-type(1),
