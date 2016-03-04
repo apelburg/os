@@ -749,6 +749,10 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				k = 0;
 				service_arr = service; var service = [];
 
+				
+
+				// проверка сгрупированнных услуг на принадлежность 
+				// к выбранной группе товаров(вариантов) 
 				function checking_service(service){
 					var g = true;
 					var sirvices_rel  = service.united_calculations.split(',')
@@ -772,18 +776,43 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 									}
 								}
 							}
-						}
-						
+						}						
 					}
 					// console.log(g)
 					return g;
 				}
 
+				// перебираем и проверяем принадлежность к группе
+				// расфасовываем по группам
+				var services_arr2 = [];
 				for (var i = service_arr.length-1; i >= 0; i--) {
 					if(checking_service(service_arr[i])){
-						service[ k ] = [];
-						service[ k++ ] = service_arr[i];	
+						var key = service_arr[i].united_calculations.split(',').join('_');
+						if(!services_arr2[ key ]){
+							// var key = service_arr[i].united_calculations.split(','),join('_');	
+							services_arr2[ key ] = [];
+							services_arr2[ key ][k] = [];
+						}
+						services_arr2[ key ][k++] = service_arr[i];	
 					}					
+				}
+				k=0;
+				// console.log(services_arr2)
+				for(var ArrVal in services_arr2) {
+					var quantity = 0;
+					// console.log(quantity)
+					// console.log(services_arr2[ArrVal])
+					service[ k ] = [];
+					for(var i = 0, length1 = services_arr2[ArrVal].length; i < length1; i++){
+						quantity = Number(services_arr2[ArrVal][i].quantity)+quantity;
+						delete services_arr2[ArrVal][i].quantity;
+						// console.log((services_arr2[ArrVal][i]))
+						service[ k ] = services_arr2[ArrVal][i];
+					}
+					// console.log(service[k])
+					service[ k ].quantity = quantity;
+					// console.log(service[k])
+					// console.log(service[ k ].quantity)
 				}
 
 			}else{
