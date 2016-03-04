@@ -395,9 +395,15 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 			methods.dataObj['action'] = 'update'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-			methods.dataObj['usluga_id'] = obj.parent().attr('data-dop_uslugi_id');		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
 			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
 			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+
+			if(obj.parent().find('.service_group').length == 0){
+				methods.dataObj['usluga_id'] = obj.parent().attr('data-dop_uslugi_id').split(',');
+			}else{
+				methods.dataObj['usluga_id'] = obj.parent().find('.service_group').attr('data-id_s').split(',');
+			}
 
 			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
@@ -712,9 +718,9 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// выбираем только групперованые услуги
 				var service = [];
 				var k = 0;
-				var group_name = [
-					quantity = 0;
-				];
+				// var group_name = [
+				// 	quantity : 0
+				// ];
 				
 				for (var i = service_arr.length-1; i >= 0; i--) {
 					if(service_arr[i].united_calculations || service_arr[i].united_calculations !== null){
