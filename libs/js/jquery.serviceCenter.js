@@ -394,7 +394,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			var i = 0;
 			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 			methods.dataObj['action'] = 'update'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-			methods.dataObj['type'] = [];			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			methods.dataObj['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
 			methods.dataObj['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
 			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
 			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
