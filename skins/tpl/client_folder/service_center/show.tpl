@@ -40,7 +40,10 @@
 			</div>
 
 		</div>
-		<?php echo '<div id="js-depending_on_the_services_and_options">'.json_encode($this->services_related).'</div>'; ?>
+		<?php 
+			echo '<div id="js-depending_on_the_services_and_options">'.json_encode($this->services_related).'</div>';
+			echo '<div id="js-depending_on_the_options_and_services">'.json_encode($this->services_related_dop).'</div>';
+		?>
 			
 		<div class="spacer_div"></div>
 	</div>

@@ -96,7 +96,10 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
 				// получаем объект зависимостей услуг от вариантов
 				methods.depending_on_the_services_and_options = jQuery.parseJSON($this.find('#js-depending_on_the_services_and_options').html());
+				methods.depending_on_the_options_and_services = jQuery.parseJSON($this.find('#js-depending_on_the_options_and_services').html());
 
+				console.log(methods.depending_on_the_services_and_options)
+				console.log(methods.depending_on_the_options_and_services)
 				// events chose variants rows
 				methods.checkbox_main.bind("click.totalCommander", methods.checkbox_main_click );
 				methods.variants_rows.find('.js-psevdo_checkbox').bind("click.totalCommander", methods.checkbox_change );
@@ -505,7 +508,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				object.className = 'tr_checked';
 				this.parentNode.className = 'checked';
 			}
-			console.log('object.className = %s, this.parentNode.className = %s',object.className,this.parentNode.className)
+			// console.log('object.className = %s, this.parentNode.className = %s',object.className,this.parentNode.className)
 			methods.top_menu_options = [];
 			methods.variants_rows.each(function(index, el) {
 				if ($(this).hasClass('tr_checked')) {
@@ -517,7 +520,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				}
 				
 			});
-			console.log('li#list_'+methods.top_menu_options.join('_'))
+			// console.log('li#list_'+methods.top_menu_options.join('_'))
 			if(methods.top_menu_div.find('li#list_'+methods.top_menu_options.join('_')).length){
 							
 					methods.top_menu_div.removeClass('checked').find('li#list_'+methods.top_menu_options.join('_')).addClass('checked');
@@ -637,17 +640,28 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     		var spacer = methods.services_tbl.find('.spacer').clone();
     		var object = {};
 
+
+
     		var services = {};
 
     		var service_row = '';
 
     		var service_arr = []; 
     		var service_num = 0;
-
+    		var key = 0;
+    		methods.checked_variants_id = [];
     		methods.variants_rows.each(function(index, el) {
+
+    			
+
     			if($(this).hasClass('tr_checked')){
 
     			var variant = jQuery.parseJSON( $(this).find('td.js-variant_info div').html() );
+    			
+    			// запоминаем выбранные строки
+    			methods.checked_variants_id[Number(variant.id)] = [];
+    			methods.checked_variants_id[Number(variant.id)] = methods.depending_on_the_options_and_services[Number(variant.id)];
+
     			var variant_row = $('<tr/>',{'class':'variant','data-dop_data_id':variant.id});
 
     			variant_row.append($('<td/>',{"colspan":"2"}));
@@ -709,11 +723,11 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     			}
     		});
 
-			// выбираем строки вариантов
+			// выбираем объекты строк вариантов
 			methods.checked_variants = methods.services_tbl.find('.variant');
 
 
-			// работаем с группой вариантов или нет
+			// ФИЛЬТР УСЛУГ для выгрузки 
 			if (methods.checked_variants.length>1) {
 				// выбираем только групперованые услуги
 				var service = [];
@@ -726,27 +740,61 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					if(service_arr[i].united_calculations || service_arr[i].united_calculations !== null){
 						service[ k ] = [];
 						service[ k++ ] = service_arr[i];
-
 					}
 				}
 
+    			// console.log(methods.checked_variants_id)
 
 				// получаем группы
 				k = 0;
 				service_arr = service; var service = [];
+
+				function checking_service(service){
+					var g = true;
+					var sirvices_rel  = service.united_calculations.split(',')
+					for(var ArrVal in methods.checked_variants_id) {
+						// console.log('methods.checked_variants_id[ArrVal]',methods.checked_variants_id[ArrVal],sirvices_rel)
+						
+						if (g == true){
+							g = false;
+							var flag = true;
+
+							for(var i = 0, length1 = sirvices_rel.length; i < length1; i++){
+								if(flag == true){
+									if(methods.checked_variants_id[ArrVal]){
+										for(var is = 0, length2 = methods.checked_variants_id[ArrVal].length; is < length2; is++){
+											if(methods.checked_variants_id[ArrVal][is] == sirvices_rel[i]){
+												g = true;
+												flag = false;
+												console.log('search in '+methods.checked_variants_id[ArrVal][is]+' ** '+sirvices_rel[i], g, flag);
+											}
+										}
+									}
+								}
+							}
+						}
+						
+					}
+					// console.log(g)
+					return g;
+				}
+
 				for (var i = service_arr.length-1; i >= 0; i--) {
-					service[ k ] = [];
-					service[ k++ ] = service_arr[i];
+					if(checking_service(service_arr[i])){
+						service[ k ] = [];
+						service[ k++ ] = service_arr[i];	
+					}					
 				}
 
 			}else{
 				// выводим все
-				if(service_arr.length>0){
+				// if(service_arr.length>0){
 					methods.services_tbl.find('.service_th.js-service_spacer').removeClass('js-service_spacer');
 					var service = service_arr;
-				}
+				// }
 			}
-			// перебор услуг к варианту
+
+			// ПЕРЕБОР УСЛУГ
     		for (var i = service.length-1; i >= 0; i--) {
     			// return true;
     			var td = '';

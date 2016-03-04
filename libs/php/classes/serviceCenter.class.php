@@ -232,6 +232,7 @@
 					
 					//
 					$this->services_related[$row['id']] = $row['dop_row_id'];
+					$this->services_related_dop[$row['dop_row_id']][] = $row['id'];
 					if(trim($row['united_calculations']) != ''){
 
 						$dop_row_arr = explode(",", $row['united_calculations']);
