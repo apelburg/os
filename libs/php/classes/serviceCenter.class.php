@@ -169,7 +169,7 @@
 						$html .= '<td>'.$position['art'].'</td>';
 						$html .= '<td><span class="service">'.count($variant['services']).'</span></td>';
 						$html .= '<td>'.$position['name'].'</td>';
-						$html .= '<td>'.$variant['quantity'].' шт</td>';
+						$html .= '<td><span>'.$variant['quantity'].'</span> шт</td>';
 						$my_variant = $variant;
 						unset($my_variant['services']);
 						$html .= '<td class="js-variant_info"><div>'.json_encode($my_variant).'</div></td>';
