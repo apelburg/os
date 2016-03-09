@@ -12,7 +12,7 @@
 
 /*
 	ЧТО ОСТАЛОСЬ:
-	1) сохранение общей скидки в группе и нет
+	1) сохранение общей скидки в группе и нет ( READY )
 	2) изменение комментариев - в группе и нет
 	3) выгрузка валидного описания услуги из калькулятора
 	4) добавление и удаление в связанный тираж других вариантов 
@@ -20,7 +20,8 @@
 	6) удаление услуг в группе и нет ( READY )
 	7) полное обновление информации в окне Тотал и чтоб после все работало (в основном после калькулятора) 
 	   или предоставление методов добавления услуг в объект ТОТАЛ
-	8) метод редактирования json услуг для часных случаев  (нужен в случае, когда окно нельзя обновить, скажем при редактировании информации по услугам, их удалении)
+	8) метод редактирования json услуг для часных случаев   ( READY )
+	(нужен в случае, когда окно нельзя обновить, скажем при редактировании информации по услугам, их удалении)
 */
 
 
@@ -230,6 +231,57 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// подсчитывает стоимость в окне
 				methods.calc_price();
 			});
+
+		},
+		/**
+		 *	добавление услуг по id
+		 *
+		 *	@param 		id_s - Object id_dop_uslugi
+		 *	@return  	Alexey Kapitonov
+		 *	@version 	16:41 09.03.2016
+		 */
+		add_services:function( id_s ){
+			
+
+			// запрос информации по услугам
+			$.post('', {
+				AJAX:'get_new_services',
+				id_s:id_s
+			}, function(data, textStatus, xhr) {
+				var new_services = [];
+				new_services = data;
+			
+
+
+				for(var dop_row_id in new_services) {
+					for(var i = 0, length1 = new_services[dop_row_id].length; i < length1; i++){
+						var service_id = new_services[dop_row_id][i].id;
+
+						// добавляем информацию в главный объект
+						var len = methods.mainObj[dop_row_id]['services'].length;
+						methods.mainObj[dop_row_id]['services'][len] = [];
+						methods.mainObj[dop_row_id]['services'][len] = new_services[dop_row_id][i];
+						// получаем id строки варианта, в которой будем править JSON
+						var tr_id = '#dop_data_'+dop_row_id;
+						// правим JSON в DOM в соответствии с mainObject
+						var html_row = methods.variants_tbody.find(tr_id);
+						html_row.find('td.js-variant_services_json div').html(JSON.stringify(methods.mainObj[dop_row_id]['services']));
+						
+						// правим количество услуг
+						html_row.find('td span.service').html(methods.mainObj[dop_row_id]['services'].length);
+
+						// устанваливаем зависимости
+						// объект зависимостей услуг от вариантов
+						console.log(methods.depending_on_the_services_and_options)
+						methods.depending_on_the_services_and_options[new_services[dop_row_id][i]] = dop_row_id;
+						// объект зависимостей вариантов от услуг
+						console.log(methods.depending_on_the_options_and_services)
+						methods.depending_on_the_options_and_services[dop_row_id][methods.depending_on_the_options_and_services[dop_row_id].length] = new_services[dop_row_id][i];
+					}
+				}
+				// console.log(new_services);
+			},'json');
+			
 
 		},
 		/**

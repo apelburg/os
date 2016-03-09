@@ -25,6 +25,29 @@
 		}
 
 		/**
+		 *	возвращает json услуг по id
+		 *
+		 *	@param 		$_POST['id_s'] - array()
+		 *	@return  	json
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	16:49 09.03.2016
+		 */
+		protected function get_new_services_AJAX(){
+			$query = "SELECT * FROM `".RT_DOP_USLUGI."` ";
+			$query .= " WHERE `id` IN ('".implode("','", $_POST['id_s'])."');";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+			$arr = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$arr[$row['dop_row_id']][] = $row;
+				}
+			}
+			echo json_encode($arr);
+			exit;
+		}
+
+		/**
 		 *	сохранение общей скидки
 		 *
 		 *	@author  	Alexey Kapitonov
@@ -36,7 +59,7 @@
 				$query .= " `discount` = '".$_POST['value']."' ";
 				$query .= " WHERE `id` IN ('".implode("','", $_POST['dop_data_ids'])."');";
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
-				$this->responseClass->addMessage('Скидка на варианты изенена.');
+				// $this->responseClass->addMessage('Скидка на варианты изенена.');
 			}
 
 			if(isset($_POST['services_ids']) && count($_POST['services_ids']) > 0){
@@ -44,7 +67,7 @@
 				$query .= " `discount` = '".$_POST['value']."' ";
 				$query .= " WHERE `id` IN ('".implode("','", $_POST['services_ids'])."');";
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
-				$this->responseClass->addMessage('Скидка на услуги изенена.');
+				// $this->responseClass->addMessage('Скидка на услуги изенена.');
 			}
 
 		}
