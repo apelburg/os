@@ -5,6 +5,7 @@
 		private $services_related;
 		private $group_list_services = array();
 		private $group_list = array();
+		private $services_related_dop = array();
 
 		function __construct(){
 			$this->db();
@@ -21,6 +22,45 @@
 			if(isset($_GET['AJAX'])){
 				$this->_AJAX_($_GET['AJAX']);		
 			}
+		}
+
+		/**
+		 *	сохранение общей скидки
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	16:06 09.03.2016
+		 */
+		protected function save_main_discount_AJAX(){
+			if(isset($_POST['dop_data_ids']) && count($_POST['dop_data_ids']) > 0){
+				$query = "UPDATE `".RT_DOP_DATA."` SET ";
+				$query .= " `discount` = '".$_POST['value']."' ";
+				$query .= " WHERE `id` IN ('".implode("','", $_POST['dop_data_ids'])."');";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				$this->responseClass->addMessage('Скидка на варианты изенена.');
+			}
+
+			if(isset($_POST['services_ids']) && count($_POST['services_ids']) > 0){
+				$query = "UPDATE `".RT_DOP_USLUGI."` SET ";
+				$query .= " `discount` = '".$_POST['value']."' ";
+				$query .= " WHERE `id` IN ('".implode("','", $_POST['services_ids'])."');";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				$this->responseClass->addMessage('Скидка на услуги изенена.');
+			}
+
+		}
+
+		/**
+		 *	удаление услуги
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:06 09.03.2016
+		 */
+		protected function delete_services_AJAX(){
+			if(isset($_POST['service_ids']) && count($_POST['service_ids']) > 0){
+				$query = "DELETE FROM `".RT_DOP_USLUGI."` WHERE `id` IN ('".implode("','", $_POST['service_ids'])."')";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			}
+			// $this->responseClass->addMessage($this->printArr($_POST));
 		}
 
 		/**
@@ -165,7 +205,7 @@
 						$html .= '</td>';
 						$html .= '<td>'.$position_num.'.'.$variant_num.'</td>';
 						$html .= '<td><span class="marcker_led"  '.$color_style.'>&nbsp;</span></td>';
-						$html .= '<td>в'.$variant_num.'</td>';
+						$html .= '<td data-no_short="вар '.$variant_num.'">в'.$variant_num.'</td>';
 						$html .= '<td>'.$position['art'].'</td>';
 						$html .= '<td><span class="service">'.count($variant['services']).'</span></td>';
 						$html .= '<td>'.$position['name'].'</td>';

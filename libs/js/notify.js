@@ -599,7 +599,7 @@
 				"font-weight": "normal",
 				"font-size":"12px",
 				"color":"#fff",
-				"padding": "3px",
+				"padding": "0 3px",
 				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
 				"background-color": "#5B5C61",
 				"border": "1px solid #828388",
