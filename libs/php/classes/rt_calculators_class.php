@@ -479,7 +479,7 @@
 					 $ln = count($details_obj->dop_data_row_id);
 					 for($i=0; $i<$ln; $i++){
 					     // echo $dop_data_row_id."\r\n";
-						 $cur_data=array('dop_data_row_id'=>$details_obj->dop_data_row_id[$i],'quantity'=>(int)$details_obj->print_details->quantity);
+						 $cur_data=array('dop_data_row_id'=>$details_obj->dop_data_row_id[$i],'quantity'=>(int)$details_obj->quantity);
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 				 }
@@ -492,7 +492,7 @@
 			
 		   
 		    // если это объедененный тираж высчитываем цену для каждого расчета отдельно исходя из общего тиража
-			if($cur_data['type']=='union'){
+			if(isset($cur_data['type']) && $cur_data['type']=='union'){
 			    // echo ' - '.$details_obj->price_in.' - '.$cur_data['union_quantity'].' - '.$cur_data['quantity']."\r";
 			    $price_in = round(($details_obj->price_in/$cur_data['union_quantity'])*$cur_data['quantity'],2);
 			    $price_out = round(($details_obj->price_out/$cur_data['union_quantity'])*$cur_data['quantity'],2);
