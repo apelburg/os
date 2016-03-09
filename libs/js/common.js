@@ -1,5 +1,5 @@
 // JavaScript Document
-    var OS_HOST = location.protocol+'//'+location.hostname+'/os/';
+    var OS_HOST = location.protocol+'//'+location.hostname+'/test/';
 	
     var error_report = '';
 	window.onerror = function(msg,url,line){

@@ -48,7 +48,7 @@ var printCalculator = {
 			}
 			delete dataObj;
 			
-			// ПОЛУЧИТЬ ДАННАЕ ОБ id АРТИКУЛА
+			// НЕДОСТАЕТ - ПОЛУЧИТЬ ДАННыЕ ОБ id АРТИКУЛА чтобы подгрузить правильный калькулятор
 			printCalculator.dataObj_toEvokeCalculator = {"art_id":15431,type:dataObj.type,"dop_data_row_id":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
 			printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
 		    printCalculator.evoke_calculator();
@@ -2160,14 +2160,14 @@ var printCalculator = {
 		// формируем url для AJAX запроса
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&save_calculator_result=1&details='+JSON.stringify(printCalculator.currentCalculationData[printCalculator.type]),'section');
 		
-		//alert(url);//
+		//alert(url);
 		document.getElementById("calculatorsaveResultPlank").style.visibility ='hidden';
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    //alert(response);
+		    alert(response);
 			// console.log(response);
-		      location.reload();
+		    //  location.reload();
 		}
 		
 	}
