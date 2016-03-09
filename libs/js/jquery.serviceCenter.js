@@ -15,11 +15,12 @@
 	1) сохранение общей скидки в группе и нет
 	2) изменение комментариев - в группе и нет
 	3) выгрузка валидного описания услуги из калькулятора
-	4) добавление и удаление в связанный тираж других вариантов()
+	4) добавление и удаление в связанный тираж других вариантов 
 	5) запрет объединения вариантов
-	6) удаление услуг в группе и нет !!!!!!!!!!!!!!!!!!
-	7) полное обновление информации в окне Тотал и чтоб после все работало (в основном после калькулятора)
-	8) метод редактирования json услуг для часных случаев  (нужен в случае, когда окно нельзя обновить, скажем при редактировании какого-либо поля)
+	6) удаление услуг в группе и нет ( READY )
+	7) полное обновление информации в окне Тотал и чтоб после все работало (в основном после калькулятора) 
+	   или предоставление методов добавления услуг в объект ТОТАЛ
+	8) метод редактирования json услуг для часных случаев  (нужен в случае, когда окно нельзя обновить, скажем при редактировании информации по услугам, их удалении)
 */
 
 
@@ -57,9 +58,6 @@ jQuery(document).ready(function($) {
 	//$('#js-win-sv').click();
 });
 jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', function(event) {
-	// console.log(event)
-	// console.log($(this))
-	//event.stopPropagation();
 	$.post('', {
 			AJAX: 	'get_service_center',
 			row_id: $(this).parent().parent().attr("row_id")
@@ -79,10 +77,10 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 (function( $ ){
 
 	var methods = {
+		mainObj : {},		// содержит все варианты
 		variants_rows : {}, 	// строки вариантов
 		top_menu : {}, 			// меню тиражей
 		checkbox_main : {}, 	// чек управления группой
-		checkbox_var : {}, 		// чекбоксы вариантов расчёта
   	
 
 		init : function( options ) {
@@ -95,7 +93,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// выделяем рабочие области
 				methods.variants_tbody = 	$this.find('#js-main-service_center-variants-table tbody');
 				methods.variants_rows = 	$this.find('#js-main-service_center-variants-table tbody tr');
-				methods.top_menu_div = 			$this.find('#js-main-service_center-top_menu ul');
+				methods.top_menu_div = 		$this.find('#js-main-service_center-top_menu ul');
 				methods.top_menu = 			$this.find('#js-main-service_center-top_menu ul li');
 				methods.checkbox_main = 	$this.find('#js-main-service_center-variants-table thead tr th:nth-of-type(2) div.js-psevdo_checkbox');
 				
@@ -107,15 +105,27 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				methods.btn_calculators = 	$('#sc_add_service');
 
 
-				// 
+				// собираем главный объект
+				methods.variants_rows.each(function(index, el) {
+					var dop_row_id = $(this).attr('data-dop_row_id');
+					methods.mainObj[dop_row_id] = [];
+					methods.mainObj[dop_row_id]['variant'] = [];
+					// console.log($(this).find('.js-variant_services_json div').html())
+					methods.mainObj[dop_row_id]['variant'] = jQuery.parseJSON($(this).find('.js-variant_info div').html());
+					methods.mainObj[dop_row_id]['services'] = [];
+					methods.mainObj[dop_row_id]['services'] = jQuery.parseJSON($(this).find('.js-variant_services_json div').html());
+					// console.log(jQuery.parseJSON($(this).find('.js-variant_services_json div').html()))
+				});
+
+				// console.log(methods.mainObj)$(this).find('.js-js-variant_services_json div').html()
 
 				// объект зависимостей услуг от вариантов
 				methods.depending_on_the_services_and_options = jQuery.parseJSON($this.find('#js-depending_on_the_services_and_options').html());
 				// объект зависимостей вариантов от услуг
 				methods.depending_on_the_options_and_services = jQuery.parseJSON($this.find('#js-depending_on_the_options_and_services').html());
 
-				console.info(methods.depending_on_the_services_and_options)
-				console.info(methods.depending_on_the_options_and_services)
+				// console.info(methods.depending_on_the_services_and_options)
+				// console.info(methods.depending_on_the_options_and_services)
 				// events chose variants rows
 				methods.checkbox_main.bind("click.totalCommander", methods.checkbox_main_click );
 				methods.variants_rows.find('.js-psevdo_checkbox').click(function(event) {
@@ -155,7 +165,50 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// сохраняем ИТОГО
 				methods.services_itogo_row = methods.services_tbl.find('tr.itogo');
 				methods.services_itogo_row.find('.delete_all_services').click(function(){
-					echo_message_js('Удалить все прикреплённые услуги');
+					var delete_service_ids = [];
+					if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
+						var i = 0;
+						// перебираем DOM услуг
+						methods.services_rows.each(function(index, el) {
+							// get group services
+							if($(this).find('.service_group').length > 0){
+								// получаем id группы услуг
+								var service_id_arr = $(this).find('.service_group').attr('data-id_s').split(',');
+								// записываем id для удаления
+								for(var k = 0, length1 = service_id_arr.length; k < length1; k++){
+									delete_service_ids[i] = [];	
+									delete_service_ids[i++] = service_id_arr[k];	
+								}
+								
+								$(this).remove();
+							}else{
+
+							}							
+						});
+						// echo_message_js('Мы в группе. Удалить все прикреплённые связанные услуги');
+					}else{
+						var i = 0;						
+						var group_services_num = 0;
+						// перебираем DOM услуг
+						methods.services_rows.each(function(index, el) {
+							// get no group services
+							if($(this).find('.service_group').length == 0){								
+								delete_service_ids[i] = [];	
+								delete_service_ids[i++] = $(this).attr('data-dop_uslugi_id');	
+								$(this).remove();
+							}else{
+								group_services_num++;
+							}							
+						});
+
+						if(group_services_num > 0){
+							echo_message_js('В варианте расчета имеются связанные услуги, для их удаления пройдите в соответствующий тираж.');	
+						}
+						
+					}
+					console.log(delete_service_ids)
+					methods.delete_services(delete_service_ids);
+					
 				})
 				methods.services_itogo_row.find('.price.discount input').bind('keyup', function(event) {
 					methods.save_main_discount($(this).val());
@@ -179,27 +232,126 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			});
 
 		},
-		// удаление услуги
+		/**
+		 *	редактирование JSON услуги
+		 *
+		 *	@param    	id строки в базе
+		 *	@param    	row_type тип строки определяет где именно будем переписывать данные
+		 *  в услуге или в варианте
+		 *	@param    	key путь в объекте из json
+		 *	@param    	value подставляемое занчение
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	12:27 09.03.2016
+		 */
+		edit_service_json:function(id, row_type, key, value){
+
+			console.warn( id, row_type, key, value );
+
+			switch (row_type) {
+				case 'service':
+					console.log(id,id.length)
+					// перебираем отправленную к нам группу строк по услугам (по их id)
+					for(var i = 0, length1 = id.length; i < length1; i++){
+						// будем копать в строках 
+						var tr_id = '#dop_data_'+methods.depending_on_the_services_and_options[id[i]];
+						// места хранения JSON
+						// var variantObjJson = methods.variants_tbody.find(tr_id+' td.js-variant_info div');
+						var variantServicesObjJson = methods.variants_tbody.find(tr_id+' td.js-variant_services_json div');
+						
+						var dop_row_id = methods.depending_on_the_services_and_options[id[i]];
+						
+						var index = 0;
+						var flag = false;
+
+						// перебираем соответствия (должно быть найдено одно!)
+						for(var k = 0, length2 = methods.mainObj[dop_row_id]['services'].length; k < length2; k++){
+							
+
+							console.log(methods.mainObj[dop_row_id]['services'][k], id[i])
+							if (methods.mainObj[dop_row_id]['services'][k].id == id[i]) {
+								index = k; flag = true;
+							}
+						}
+
+						// если соответствия найдены
+						if(flag){
+							// вносим изменения в mainObj 
+							// вносим изменения в jsonObj в DOM в соответствии с mainObj
+							methods.mainObj[dop_row_id]['services'][index][key] = value;							
+							methods.variants_tbody.find(tr_id+' td.js-variant_services_json div').html(JSON.stringify(methods.mainObj[dop_row_id]['services']));
+						}
+					}
+					break;
+
+				case 'variant':
+					// обрабатываем массив id_dop_data
+					for(var i = 0, length1 = id.length; i < length1; i++){
+						// будем копать в строках 
+						var tr_id = '#dop_data_'+id[i];
+						// места хранения JSON
+						var variantObjJson = methods.variants_tbody.find(tr_id+' td.js-variant_info div');
+						
+						var dop_row_id = methods.depending_on_the_services_and_options[id[i]];
+						
+						// вносим изменения в mainObj 
+						// вносим изменения в jsonObj в DOM в соответствии с mainObj
+						methods.mainObj[id[i]]['variant'][key] = value;							
+						methods.variants_tbody.find(tr_id+' td.js-variant_info div').html(JSON.stringify(methods.mainObj[id[i]]['variant']));
+						
+					}
+					break;
+				default:
+					// statements_def
+					break;
+			}
+
+			// echo_message_js('json edit')
+		},
+		/**
+		 *	удаление услуги	
+		 *
+		 *	@param 		obj - service_row
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:36 09.03.2016
+		 */
 		delete_service:function(obj){
 			var service = obj.parent();
+			var service_ids = [];
 			if(service.find('.service_group').length > 0){
-				var service_ids = service.find('.service_group').attr('data-id_s').split(',');
-
-				echo_message_js('Удалить сгрупированную услугу ID = '+ service_ids.join(', '));
+				service_ids = service.find('.service_group').attr('data-id_s').split(',');
 			}else{
-				
-				echo_message_js('Удалить услугу ID = '+service.attr('data-dop_uslugi_id'));
-			}	
-
+				service_ids = service.attr('data-dop_uslugi_id').split(',');
+			}			
 			service.remove();
-
-			// запоминаем данные услуг
-			methods.services_init();
-			// пересчёт итого
-			methods.calc_price();		
+			// удаляем услуги
+			methods.delete_services(service_ids,service);				
+		},
+		/**
+		 *	удаление услуг	
+		 *
+		 *	@param 		arr - service_id
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:36 09.03.2016
+		 */
+		delete_services:function(service_ids){
+			$.post('', {
+				AJAX:'delete_services',
+				service_ids:service_ids
+			}, function(data, textStatus, xhr) {
+				standard_response_handler(data);
+				if(data['response'] == 'OK'){
+					// запоминаем данные услуг
+					methods.services_init();
+					// пересчёт итого
+					methods.calc_price();	
+					// перегружаем РТ
+					$.SC_reload_RT_content();
+				}				
+				
+			},'json');				
 		},
 
-		// сохранение главной скидки
+		// сохранение общей скидки
 		save_main_discount:function(value){
 			console.info('меняем общую скидку на ', value );
 			// console.group("Overlord");
@@ -214,9 +366,17 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				services: []
 			}; 
 			var i = 0;
+			var savedVariantsIds = []; // содержит id_dop_data изменяемых строк
+			// работаем с вариантами
 			methods.services_variants_rows.each(function(index, el) {
+				var dop_data_id = $(this).attr('data-dop_data_id');
 				methods.change_obj['varians'][i] = [];
-				methods.change_obj['varians'][i++][$(this).attr('data-dop_data_id')] = value;
+				savedVariantsIds[i] = dop_data_id;
+				methods.change_obj['varians'][i++][dop_data_id] = value;
+				
+
+				
+
 				// редактируем поле discount
 				$(this).find('.price.discount input').val(value);
 
@@ -232,14 +392,35 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 					},
 				}
 
+
 				// расчитываем скидку и правим DOM
 				methods.calc_row.price_out_width_discount.for_one.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_one.html(), value)));
 				methods.calc_row.price_out_width_discount.for_all.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_all.html(), value)));
 			});
-
+			
 			// перебор услуг
-			i = 0;
+			var k=0;i=0;
+			var savedServicesIds = []; // содержит id_dop_data изменяемых строк
 			methods.services_rows.each(function(index, el) {
+					
+				var id_s = [];
+				if($(this).find('.service_group').length > 0){
+					// работаем с группой
+					id_s = $(this).find('.service_group').attr('data-id_s').split(',');
+				}else{
+					// работаем с одной услугой
+					id_s[0] = $(this).attr('data-dop_uslugi_id');
+				}
+
+				for(var i = 0, length1 = id_s.length; i < length1; i++){
+					savedServicesIds[k++] = id_s[i];
+				}
+
+
+
+
+				
+				// правим и обсчитываем DOM
 				methods.change_obj['services'][i] = [];
 				methods.change_obj['services'][i++][$(this).attr('data-dop_uslugi_id')] = value;
 				// редактируем поле discount
@@ -256,19 +437,34 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						for_all: 	$(this).find('.price.price_out_width_discount .for_all span'),
 					},
 				}
-
 				// расчитываем скидку и правим DOM
 				methods.calc_row.price_out_width_discount.for_one.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_one.html(),value)));
 				methods.calc_row.price_out_width_discount.for_all.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_all.html(),value)));
-
 			});
+
 			// подсчитывает стоимость в окне
 			methods.calc_price('discount');
 			
 			console.warn('ДЕЛАТЬ ТУТ >>> ',methods.change_obj);
-			echo_message_js('1) Пишем запрос сохранения общей скидки для всех строк');
-			echo_message_js('2) описать изменения json в верхней таблице, ведь оттуда берутся данные и при перезагрузке они вернуться к неверному значению');
+			// echo_message_js('1) Пишем запрос сохранения общей скидки для всех строк');
+			// echo_message_js('2) описать изменения json в верхней таблице, ведь оттуда берутся данные и при перезагрузке они вернуться к неверному значению');
 			
+
+			// сохраняем mainObj и json по вариантам
+			// console.log(savedVariantsIds,savedServicesIds);
+			methods.edit_service_json(savedVariantsIds,'variant','discount',value);
+			// сохраняем mainObj и json по услугам
+			methods.edit_service_json(savedServicesIds,'service','discount',value);
+			// сохраняем на сервере
+			$.post('', {
+				AJAX:'save_main_discount',
+				dop_data_ids:savedVariantsIds,
+				services_ids:savedServicesIds,
+				value:value
+			}, function(data, textStatus, xhr) {
+				standard_response_handler(data);
+			},'json');	
+
 		},
 		// сохранение скидки для строки варианта или услуги
 		save_discount:function(obj, id, type, value){
@@ -297,8 +493,32 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			methods.calc_row.price_out_width_discount.for_one.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_one.html(),value)));
 			methods.calc_row.price_out_width_discount.for_all.html(round_money( methods.calc_price_width_discount(methods.calc_row.price_out.for_all.html(),value)));
 
-			// подсчитывает стоимость в окне
+			// подсчитывает итого
 			methods.calc_price();
+
+			// правим json в верхнем окне
+			switch (type) {
+				case 'service':
+					// service_id, key, value 
+					if(obj.parent().parent().find('.service_group').length>0){
+						// console.log(obj.parent().parent())
+						var id_row = obj.parent().parent().find('.service_group').attr('data-id_s').split(',');
+					}else{
+						var id_row = [];
+						id_row[0] = id;	
+					}
+					break;
+				case 'variant':
+					var id_row = [];
+					id_row[0] = id;	
+					break;
+				default:
+					// statements_def
+					break;
+			}
+
+			// редактируем данные в json
+			methods.edit_service_json(id_row,type,'discount',value);
 		},
 		// расчет исходящей стоимости относительноdiscount
 		calc_price_width_discount:function (price_out, discount) {
@@ -495,7 +715,8 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			methods.variants_rows
 				.removeClass('tr_checked')
 				.find('td:nth-of-type(2).checked')
-				.removeClass('checked');
+				.removeClass('checked')
+				.parent().find('.hover_group_class').removeClass('hover_group_class');
 			row.addClass('tr_checked');
 
 			methods.checkbox_main.parent().removeClass('checked-before').removeClass('checked');
@@ -624,12 +845,12 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// console.log(methods.variants_tbody.find('tr#dop_data_'+serv_id[k]))
 				var variant_tr = methods.variants_tbody.find('tr#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]);
 				// var variant _info
-				var quantity_notify = Number(variant_tr.find('td:nth-of-type(7) span').html());
+				var quantity_notify = Number(variant_tr.find('td:nth-of-type(9) span').html());
 				tr
 				// номер позиции
 				.append($('<td/>',{'text':variant_tr.find('td').eq(2).html()}))
 				// номер варианта
-				.append($('<td/>',{'text':variant_tr.find('td').eq(4).html()}))
+				.append($('<td/>',{'text':variant_tr.find('td').eq(4).attr('data-no_short')}))
 				// артикул
 				.append($('<td/>',{'text':variant_tr.find('td').eq(5).html()}))
 				// номенклатура
@@ -647,6 +868,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				.append($('<td/>',{'text':quantity_notify_all+' шт'}))
 			content.append(tr);
 
+			console.log('content >> ',quantity_notify_all)
 			return content;
 		},
 
@@ -812,6 +1034,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			}
 			return service;
 		},
+		// добавляет строки услуг в DOM
 		create_service_row_from_variants:function(service){
 			// ПЕРЕБОР УСЛУГ
     		for (var i = service.length-1; i >= 0; i--) {
@@ -856,6 +1079,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						'colspan':'3',
 						'class':'service_name',
 						'text':print_details.print_type,
+						// 'text':service[i].id+' >> '+service[i].united_calculations,
 						click:function(){
 							methods.calculator_edit_the_service($(this));
 						}
@@ -865,6 +1089,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						'colspan':'3',
 						'class':'service_name',
 						'text':service[i].service_name,
+						// 'text':service[i].id+' >> '+service[i].united_calculations,
 						click:function(){
 							methods.calculator_edit_the_service($(this));
 						}
@@ -906,50 +1131,43 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 						var id_group = serv_id.join('_');
 						
 						// собираем notify с информацией по объединённому тиражу
-						var content = methods.get_service_notify(serv_id);						
+						// var content = ;	
 
 						var td = $('<td/>',{
-						'data-id_s':service[i].united_calculations,
-						'class':'service_group',
-						'on':{
-							mouseenter:function(){
-								
-								// добавляем подсветку вкладки группы
-								$('#list_'+id_group).addClass('led');
-								// добавляем сласс для подсветки строк группы
-								for(var k = 0, length1 = serv_id.length; k < length1; k++){
-									$('#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]+' td').addClass('hover_group_class');
+							'data-id_s':service[i].united_calculations,
+							'class':'service_group',
+							'on':{
+								mouseenter:function(){
+									// добавляем подсветку вкладки группы
+									$('#list_'+id_group).addClass('led');
+									// добавляем сласс для подсветки строк группы
+									for(var k = 0, length1 = serv_id.length; k < length1; k++){
+										$('#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]+' td').addClass('hover_group_class');
+									}
+								},
+								mouseleave:function(){
+									// снимаем подсветку вкалдки группы
+									methods.top_menu_div.find('li#list_'+id_group).removeClass('led');
+									// снимаем подсветку группы
+									for(var k = 0, length1 = serv_id.length; k < length1; k++){
+										$('#dop_data_' + methods.depending_on_the_services_and_options[serv_id[k]]+' td').removeClass('hover_group_class');
+									}
 								}
-
-								
 							},
-							mouseleave:function(){
-								// снимаем подсветку вкалдки группы
-								methods.top_menu_div.find('li#list_'+id_group).removeClass('led');
-
-								// снимаем подсветку группы
-								for(var k = 0, length1 = serv_id.length; k < length1; k++){
-									$('#dop_data_' + methods.depending_on_the_services_and_options[serv_id[k]]+' td').removeClass('hover_group_class');
+							'click':function(){
+								// снимаем подсветку кнопки
+								methods.top_menu_div.find('li#list_'+id_group).click();
+							}
+						}).append($('<span/>',{
+							'data-id_s':service[i].united_calculations,
+							'text':service[i].quantity+' шт',
+							'on':{ 
+								mouseenter:function(){
+									// показываем дополнительную информацию
+									$(this).notify(  methods.get_service_notify( $(this).attr('data-id_s').split(',') ),{ position:"top center",className:'total_10px' });
 								}
 							}
-						},
-						'click':function(){
-							// получаем id dop_data для данной группы
-							var serv_id = $(this).attr('data-id_s').split(',');
-									// вычисляем id кнопки группы
-							var id_group = serv_id.join('_');
-							// снимаем подсветку кнопки
-							methods.top_menu_div.find('li#list_'+id_group).click();
-						}
-					}).append($('<span/>',{
-						'text':service[i].quantity+' шт',
-						'on':{ 
-							mouseenter:function(){
-								// показываем дополнительную информацию
-								$(this).notify(content,{ position:"top center",className:'total_10px' });
-							}
-						}
-					}))
+						}))
 							
 					service_row.append(td);
 				}else {
@@ -1039,7 +1257,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     			variant_row.append($('<td/>',{"colspan":"2"}));
     			
     			var span = $('<span/>',{'html': $(this).find('td').eq(2).text()});
-    			var span2 = $('<span/>',{'html': $(this).find('td').eq(4).text()});
+    			var span2 = $('<span/>',{'html': $(this).find('td').eq(4).attr('data-no_short')});
     			var div = $('<div/>').append(span).append(span2);
     			variant_row.append($('<td/>').append(div));
 				

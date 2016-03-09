@@ -569,7 +569,6 @@ span.marcker_led {
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr,
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td,
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th{
-	
 	font-weight:normal; 
 	background: none;
 	background-image: none;
@@ -583,27 +582,52 @@ span.marcker_led {
 
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
 	border-bottom: 1px solid #828388;
+	padding: 2px 5px;
 }
-#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-last-of-type(1) td{
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:last-child td{
 	border-top: 1px solid #828388;
 }
 
-#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:nth-last-of-type(1),
-#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-last-of-type(1){
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:last-child,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:last-child{
 	border-left: 1px solid #828388;	
-}
-#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:nth-last-of-type(1),
-#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-last-of-type(1){
 	text-align: right;
 }
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th,
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td,
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-last-of-type(1) td:nth-of-type(1){
 	font-size: 12px;
-	padding: 5px; 
+	padding: 6px; 
 	text-align: left;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
+	padding: 2px 5px;
 }
 
 #js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
 	font-size: 10px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-of-type(2){
+	font-size: 12px;font-size:10px; 
+	padding-left: 2px;
+	padding-right: 2px;
+	line-height: 16px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:last-child td{
+	font-size: 12px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:last-child,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:last-child{
+	padding-left: 20px;
+	padding-right: 23px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:first-child,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:first-child{
+    padding-left: 10px;
+    padding-right: 0px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:nth-of-type(3),
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-of-type(4){
+    padding-left: 20px;
+    /*padding-right: 0px;*/
 }
