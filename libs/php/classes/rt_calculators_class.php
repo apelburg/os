@@ -438,7 +438,7 @@
 				}
 				
 				if($details_obj->print_details->calculator_type=='auto' || $details_obj->print_details->calculator_type=='manual'){
-				    if(isset($details_obj->print_details->dop_params->YPriceParam))
+				    if(isset($details_obj->print_details->dop_params->YPriceParam)){
 						foreach($details_obj->print_details->dop_params->YPriceParam as $key => $data){
 						   if(isset($data->cmyk)) $details_obj->print_details->dop_params->YPriceParam[$key]->cmyk =  base64_encode($data->cmyk);
 						} 

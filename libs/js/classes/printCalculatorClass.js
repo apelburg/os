@@ -59,7 +59,8 @@ var printCalculator = {
 		if(dataObj.action=='update'){
 			// дейстие - вызов из существующего нанесения
 			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
-			alert(2);
+			//alert(2);
+			printCalculator.evoke_calculator_directly({"art_id":15431,"dop_data_row_id":221,"dop_uslugi_id":109});
 			delete dataObj;
 		}
 		
@@ -100,18 +101,25 @@ var printCalculator = {
 	,
 	evoke_calculator_directly: function(data){
 	    //console.log(data);
-		printCalculator.discount = Number($('.percent_nacenki.js--calculate_tbl-edit_percent:visible').attr('data-val'));
+		//printCalculator.discount = Number($('.percent_nacenki.js--calculate_tbl-edit_percent:visible').attr('data-val'));
+		printCalculator.discount = 0;
 		printCalculator.creator_id = $('*[user_id]').attr('user_id');
 		
 		if(data.dop_uslugi_id){
 			var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&fetch_data_for_dop_uslugi_row='+data.dop_uslugi_id,'section');
+			alert(url);
 			printCalculator.send_ajax(url,callback);
 			function callback(response){ 
 			
-				//console.log(response);console.log(data_AboutPrintsArr);
+				console.log('evoke_calculator_directly',response);
+				
 				var data_AboutPrintsArr = JSON.parse(response);
 				data_AboutPrintsArr.print_details =JSON.parse(data_AboutPrintsArr.print_details);
 
+calculator_type
+                printCalculator.type = (data_AboutPrintsArr.print_details.calculator_type)? data_AboutPrintsArr.print_details.calculator_type:'auto';
+				alert(printCalculator.type);
+				printCalculator.currentCalculationData = {};
 				printCalculator.currentCalculationData[printCalculator.type] = [];
 				printCalculator.currentCalculationData[printCalculator.type][0] = data_AboutPrintsArr;
 				printCalculator.currentCalculationData[printCalculator.type][0].dop_uslugi_id =  data_AboutPrintsArr.id;
@@ -128,6 +136,8 @@ var printCalculator = {
 				// в условиии if(printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id)
 				printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id = "0";
 				printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
+				console.log('evoke_calculator_directly2',printCalculator);
+				
 				printCalculator.evoke_calculator();
 			  
 				
