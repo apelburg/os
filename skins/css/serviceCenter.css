@@ -287,7 +287,7 @@ button#sc_close_window{
 #js-main-service_center-variants-services-head{
 	background: #92B73E;
     color: #fff;
-    padding: 2px 15px 3px 15px;
+    padding: 5px 15px;
 }
 #js-main-service_center-variants-services-div-table table{
 	width: 100%;
@@ -559,6 +559,51 @@ span.marcker_led {
 .price.discount input:focus{
 	outline: none;
 }
-#js-depending_on_the_services_and_options{
+#js-depending_on_the_services_and_options,
+#js-depending_on_the_options_and_services{
 	display: none;
+}
+
+/* таблица подсказок группы*/
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th{
+	
+	font-weight:normal; 
+	background: none;
+	background-image: none;
+	border:none;
+	border-collapse: collapse;
+	color: #ECEDEE;
+	padding:0;
+	margin: 0; 
+	text-shadow:none;
+}
+
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
+	border-bottom: 1px solid #828388;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-last-of-type(1) td{
+	border-top: 1px solid #828388;
+}
+
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:nth-last-of-type(1),
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-last-of-type(1){
+	border-left: 1px solid #828388;	
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:nth-last-of-type(1),
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-last-of-type(1){
+	text-align: right;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-last-of-type(1) td:nth-of-type(1){
+	font-size: 12px;
+	padding: 5px; 
+	text-align: left;
+}
+
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
+	font-size: 10px;
 }

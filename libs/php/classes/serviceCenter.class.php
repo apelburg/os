@@ -169,7 +169,7 @@
 						$html .= '<td>'.$position['art'].'</td>';
 						$html .= '<td><span class="service">'.count($variant['services']).'</span></td>';
 						$html .= '<td>'.$position['name'].'</td>';
-						$html .= '<td>'.$variant['quantity'].' шт</td>';
+						$html .= '<td><span>'.$variant['quantity'].'</span> шт</td>';
 						$my_variant = $variant;
 						unset($my_variant['services']);
 						$html .= '<td class="js-variant_info"><div>'.json_encode($my_variant).'</div></td>';
@@ -232,6 +232,7 @@
 					
 					//
 					$this->services_related[$row['id']] = $row['dop_row_id'];
+					$this->services_related_dop[$row['dop_row_id']][] = $row['id'];
 					if(trim($row['united_calculations']) != ''){
 
 						$dop_row_arr = explode(",", $row['united_calculations']);

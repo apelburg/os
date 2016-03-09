@@ -40,7 +40,10 @@
 			</div>
 
 		</div>
-		<?php echo '<div id="js-depending_on_the_services_and_options">'.json_encode($this->services_related).'</div>'; ?>
+		<?php 
+			echo '<div id="js-depending_on_the_services_and_options">'.json_encode($this->services_related).'</div>';
+			echo '<div id="js-depending_on_the_options_and_services">'.json_encode($this->services_related_dop).'</div>';
+		?>
 			
 		<div class="spacer_div"></div>
 	</div>
@@ -49,7 +52,7 @@
 			Управление дополнительными улугами
 		</div>
 		<div id="js-main-service_center-variants-services-div-table">
-			<table>
+			<table class="service_tbl">
 				<tr>
 					<th colspan="9"></th>
 					<th>тираж</th>
@@ -77,7 +80,7 @@
 						<div class="for_one"><span>205.73</span>р</div>
 						<div class="for_all"><span>28332.00</span>р</div>
 					</td>
-					<td>
+					<td class="delete_all_services">
 						<!-- <img src="skins/images/img_design/tc_del_service_all.png" alt="удалить все услуги"> -->
 					</td>
 				</tr>
