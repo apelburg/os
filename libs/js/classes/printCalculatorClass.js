@@ -22,7 +22,7 @@ var printCalculator = {
 			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
 			
 			if(dataObj.dop_data_ids){
-				if(typeof dataObj.dop_data_ids != 'array'){ echo_message_js('переменная dataObj.dop_data_ids должна быть массивом');return;}
+				if(typeof dataObj.dop_data_ids != 'object'){ echo_message_js('переменная dataObj.dop_data_ids должна быть массивом');return;}
 				if(dataObj.dop_data_ids.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
 				// список id расчетов, надо передать в калькулятор
 				
@@ -32,12 +32,16 @@ var printCalculator = {
 			     // внести в объект калькулятора метку о том что тираж сборный
 				 // сложить тиражы всех расчетов входящив в объединенный тираж и передать в калькулятор
 			}
+			delete dataObj;
+
 		}
 		
 		// UPDATE
 		if(dataObj.action=='update'){
 			// дейстие - вызов из существующего нанесения
 			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
+			alert(2);
+			delete dataObj;
 		}
 		
 		// ATTACH
