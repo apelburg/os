@@ -1,5 +1,6 @@
 var printCalculator = {
    startCalculator:function (dataObj){
+ 
 		// dataObj = {action: string value, type: string value, usluga_id: массив value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 		//  action [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 		//  type [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
@@ -16,6 +17,13 @@ var printCalculator = {
 		dataObj.dop_data_ids = dataObj.dop_data_ids ||  false;
 		dataObj.quantity = dataObj.quantity ||  false;
 		
+		
+		// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ id АРТИКУЛА
+		// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ discount
+	    //printCalculator.discount = Number($('.percent_nacenki.js--calculate_tbl-edit_percent:visible').attr('data-val'));
+		printCalculator.discount = 0;
+		printCalculator.creator_id = $('*[user_id]').attr('user_id');
+		
 		// NEW
 		if(dataObj.action=='new'){
 			// дейстие - новое нанесение 
@@ -27,12 +35,23 @@ var printCalculator = {
 				// список id расчетов, надо передать в калькулятор
 				
 			}
+			
+			var quantity= parseInt(dataObj.quantity[0]);
+			
+			// если тип - объединенный тираж 
 			if(dataObj.type && dataObj.type=='union'){
-				 // тип - объединенный тираж 
 			     // внести в объект калькулятора метку о том что тираж сборный
-				 // сложить тиражы всех расчетов входящив в объединенный тираж и передать в калькулятор
+				 // сложить тиражы всех расчетов входящих в объединенный тираж и передать в калькулятор
+				 //dataObj.quantity;
+				 var quantity=0;
+                 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
 			}
 			delete dataObj;
+			
+			// ПОЛУЧИТЬ ДАННАЕ ОБ id АРТИКУЛА
+			printCalculator.dataObj_toEvokeCalculator = {"art_id":15431,type:dataObj.type,"dop_data_row_id":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
+			printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
+		    printCalculator.evoke_calculator();
 
 		}
 		
@@ -508,6 +527,8 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
 				printCalculator.currentCalculationData[printCalculator.type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
 				printCalculator.currentCalculationData[printCalculator.type].print_details = {};
+				printCalculator.currentCalculationData[printCalculator.type].type = printCalculator.dataObj_toEvokeCalculator.type;
+				printCalculator.currentCalculationData[printCalculator.type].quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
 				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params = {};
 		        //printCalculator.currentCalculationData[printCalculator.type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
 				if(typeof printCalculator.discount !== 'undefined'){
@@ -678,6 +699,9 @@ var printCalculator = {
 				printCalculator.currentCalculationData[type].print_details.comment = '';
 				printCalculator.currentCalculationData[type].print_details.commentForClient = '';
 				printCalculator.currentCalculationData[type].print_details.supplier = '';
+				// если что можно пересохранить в .print_details в методе saveCalculatorResult
+				printCalculator.currentCalculationData[type].type = printCalculator.dataObj_toEvokeCalculator.type;
+				printCalculator.currentCalculationData[type].quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
 				printCalculator.currentCalculationData[type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
 				printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
 				printCalculator.currentCalculationData[type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
@@ -2141,9 +2165,9 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    // alert(response);
+		    //alert(response);
 			// console.log(response);
-		    location.reload();
+		      location.reload();
 		}
 		
 	}
