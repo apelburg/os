@@ -49,7 +49,7 @@ var printCalculator = {
 			delete dataObj;
 			
 			// НЕДОСТАЕТ - ПОЛУЧИТЬ ДАННыЕ ОБ id АРТИКУЛА чтобы подгрузить правильный калькулятор
-			printCalculator.dataObj_toEvokeCalculator = {"art_id":15431,type:dataObj.type,"dop_data_row_id":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
+			printCalculator.dataObj_toEvokeCalculator = {"art_id":15431,distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
 			printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
 		    printCalculator.evoke_calculator();
 
@@ -60,7 +60,7 @@ var printCalculator = {
 			// дейстие - вызов из существующего нанесения
 			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
 			//alert(2);
-			printCalculator.evoke_calculator_directly({"art_id":15431,"dop_data_row_id":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0]});
+			printCalculator.evoke_calculator_directly({"art_id":15431,"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0]});
 			delete dataObj;
 		}
 		
@@ -107,23 +107,28 @@ var printCalculator = {
 		
 		if(data.dop_uslugi_id){
 			var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&fetch_data_for_dop_uslugi_row='+data.dop_uslugi_id,'section');
-			alert(url);
+			// alert(url);
 			printCalculator.send_ajax(url,callback);
 			function callback(response){ 
-			    //alert(response);
-				console.log('evoke_calculator_directly',response);
+			    //alert(response);				
 				
 				var data_AboutPrintsArr = JSON.parse(response);
 				
 				data_AboutPrintsArr.print_details =JSON.parse(data_AboutPrintsArr.print_details);
+				
+                console.log('=evoke_calculator_directly=',response);
 
                 printCalculator.type = (data_AboutPrintsArr.print_details.calculator_type)? data_AboutPrintsArr.print_details.calculator_type:'auto';
 				printCalculator.currentCalculationData = {};
 				printCalculator.currentCalculationData[printCalculator.type] = [];
 				printCalculator.currentCalculationData[printCalculator.type][0] = data_AboutPrintsArr;
+				
+				
 				printCalculator.currentCalculationData[printCalculator.type][0].dop_uslugi_id =  data_AboutPrintsArr.id;
-			
-			
+			    
+
+			    if(typeof printCalculator.currentCalculationData[printCalculator.type].id !== 'undefined')
+				
 				if(typeof printCalculator.currentCalculationData[printCalculator.type].id !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].id;
 				if(typeof printCalculator.currentCalculationData[printCalculator.type].type !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].type;
 			
@@ -135,6 +140,33 @@ var printCalculator = {
 				// в условиии if(printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id)
 				printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id = "0";
 				printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
+				
+				// если это объединенный тираж 
+				if(data_AboutPrintsArr.print_details.distribution_type && data_AboutPrintsArr.print_details.distribution_type == 'union'){
+					if(data_AboutPrintsArr.print_details.calculator_type){
+						// если  ручной или дежурный калькулятор
+				        // получаем цены соответсвующие полному объему объединенного тиража
+						if(data_AboutPrintsArr.print_details.calculator_type == 'manual' || data_AboutPrintsArr.print_details.calculator_type == 'free'){
+							if(data_AboutPrintsArr.print_details.union_price){
+							   printCalculator.currentCalculationData[printCalculator.type][0].price_in = data_AboutPrintsArr.print_details.union_price.in;
+							   printCalculator.currentCalculationData[printCalculator.type][0].price_out = data_AboutPrintsArr.print_details.union_price.out;
+							}
+						}
+						// если автоматический или ручной  калькулятор
+				        // получаем количество иходя из объединенного тиража
+						if(data_AboutPrintsArr.print_details.calculator_type == 'auto' || data_AboutPrintsArr.print_details.calculator_type == 'manual'){
+							
+							if(data_AboutPrintsArr.print_details.quantity_details){
+								printCalculator.dataObj_toEvokeCalculator.quantity = 0;
+								for(var i in data_AboutPrintsArr.print_details.quantity_details) { printCalculator.dataObj_toEvokeCalculator.quantity += parseInt(data_AboutPrintsArr.print_details.quantity_details[i]); }
+								 printCalculator.currentCalculationData[printCalculator.type][0].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
+							}
+						}
+					}
+				}
+				
+				
+				
 				console.log('evoke_calculator_directly2',printCalculator.dataObj_toEvokeCalculator);
 				console.log('evoke_calculator_directly3',printCalculator.currentCalculationData);
 				printCalculator.evoke_calculator();
@@ -461,6 +493,7 @@ var printCalculator = {
 		infoField.id = "quantityInfoField";
 		infoField.className = "quantityInfoField";
 		infoField.innerHTML = printCalculator.dataObj_toEvokeCalculator.quantity+' шт.';
+		alert(printCalculator.dataObj_toEvokeCalculator.quantity);
 		//infoField.innerHTML = "Тираж  шт.";
 		menuContainer.appendChild(infoField);
 		dialogBox.appendChild(menuContainer);
@@ -531,10 +564,11 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type] =  {};	
 				printCalculator.currentCalculationData[printCalculator.type].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
 				printCalculator.currentCalculationData[printCalculator.type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
-				printCalculator.currentCalculationData[printCalculator.type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
 				printCalculator.currentCalculationData[printCalculator.type].print_details = {};
-				printCalculator.currentCalculationData[printCalculator.type].type = printCalculator.dataObj_toEvokeCalculator.type;
-				printCalculator.currentCalculationData[printCalculator.type].quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
+				printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type = printCalculator.dataObj_toEvokeCalculator.distribution_type;
+				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids = printCalculator.dataObj_toEvokeCalculator.dop_data_ids;
+				
+				printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
 				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params = {};
 		        //printCalculator.currentCalculationData[printCalculator.type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
 				if(typeof printCalculator.discount !== 'undefined'){
@@ -602,8 +636,27 @@ var printCalculator = {
 				//alert(this.options[this.selectedIndex].value);
 				console.log('printPlaceSelect.onchange',printCalculator.currentCalculationData[printCalculator.type]);
 				//
+				var dop_data_ids = distribution_type = quantity_details = false;
+				if(typeof printCalculator.currentCalculationData[printCalculator.type] !== 'undefined'){
+					if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details !== 'undefined'){
+						if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids !== 'undefined'){
+							dop_data_ids = printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids;
+						}
+						if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type !== 'undefined'){
+							distribution_type = printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type;
+						}
+						if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details !== 'undefined'){
+							quantity_details = printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details;
+						}
+					}
+				}
 				if(typeof printCalculator.currentCalculationData[printCalculator.type] === 'undefined')printCalculator.currentCalculationData[printCalculator.type] = {};
+				
 				printCalculator.currentCalculationData[printCalculator.type].print_details = {};
+				if(dop_data_ids) printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids = dop_data_ids;
+				if(distribution_type) printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type = distribution_type;
+				if(quantity_details) printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details = quantity_details;
+				
 				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params = {};
 				// определяем id места нанесения
 				printCalculator.currentCalculationData[printCalculator.type].print_details.place_id = parseInt(this.options[this.selectedIndex].value);
@@ -706,9 +759,9 @@ var printCalculator = {
 				printCalculator.currentCalculationData[type].print_details.commentForClient = '';
 				printCalculator.currentCalculationData[type].print_details.supplier = '';
 				// если что можно пересохранить в .print_details в методе saveCalculatorResult
-				printCalculator.currentCalculationData[type].type = printCalculator.dataObj_toEvokeCalculator.type;
-				printCalculator.currentCalculationData[type].quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
-				printCalculator.currentCalculationData[type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
+				printCalculator.currentCalculationData[type].print_details.distribution_type = printCalculator.dataObj_toEvokeCalculator.distribution_type;
+				printCalculator.currentCalculationData[type].print_details.quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
+				printCalculator.currentCalculationData[type].print_details.dop_data_ids = printCalculator.dataObj_toEvokeCalculator.dop_data_ids;
 				printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
 				printCalculator.currentCalculationData[type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
 				printCalculator.currentCalculationData[type].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
@@ -917,7 +970,29 @@ var printCalculator = {
 			if(document.getElementById(printCalculator.type + 'CalcBlockB'))document.getElementById(printCalculator.type + 'CalcBlockB').parentNode.removeChild(document.getElementById(printCalculator.type + 'CalcBlockB'));
 			if(document.getElementById(printCalculator.type+"CalcItogDisplay")) document.getElementById(printCalculator.type+"CalcItogDisplay").innerHTML = '';
 			var place_id  = printCalculator.currentCalculationData[printCalculator.type].print_details.place_id;
+			
+			
+			var dop_data_ids = distribution_type = quantity_details = false;
+			if(typeof printCalculator.currentCalculationData[printCalculator.type] !== 'undefined'){
+				if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details !== 'undefined'){
+					if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids !== 'undefined'){
+						dop_data_ids = printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids;
+					}
+					if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type !== 'undefined'){
+						distribution_type = printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type;
+					}
+					if(typeof printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details !== 'undefined'){
+						quantity_details = printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details;
+					}
+				}
+			}
+			if(typeof printCalculator.currentCalculationData[printCalculator.type] === 'undefined')printCalculator.currentCalculationData[printCalculator.type] = {};
+			
+			
 			printCalculator.currentCalculationData[printCalculator.type].print_details = {};
+			if(dop_data_ids) printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids = dop_data_ids;
+			if(distribution_type) printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type = distribution_type;
+			if(quantity_details) printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details = quantity_details;
 			printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params = {};
 			printCalculator.currentCalculationData[printCalculator.type].print_details.place_id = place_id;
 			printCalculator.currentCalculationData[printCalculator.type].print_details.print_id = this.options[this.selectedIndex].value;
