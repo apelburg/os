@@ -451,7 +451,8 @@
 				$details_obj->print_details->comment = (isset($details_obj->print_details->comment))? base64_encode($details_obj->print_details->comment):'';
 				$details_obj->print_details->type = (isset($details_obj->type))? $details_obj->type:'';
 				$details_obj->print_details->quantity_details = (isset($details_obj->print_details->quantity_details))? $details_obj->print_details->quantity_details:'';
-				$details_obj->print_details->comment = (isset($details_obj->print_details->comment))? base64_encode($details_obj->print_details->comment):'';
+				if(isset($details_obj->print_details->commentForClient)) $details_obj->print_details->commentForClient = base64_encode($details_obj->print_details->commentForClient);
+				
 				
 				if(isset($details_obj->type) && $details_obj->type=='union') $details_obj->print_details->union_price = array('in'=>$details_obj->price_in,'out'=>$details_obj->price_out);
 				
@@ -471,8 +472,8 @@
 				     for($i=0; $i<$ln; $i++){
 					     // echo $dop_data_row_id."\r\n";
 						 $details_obj->dop_uslugi_id = $united_calculations[$i];
-						 echo $details_obj->dop_uslugi_id;
-						 $cur_data=array('type'=>$details_obj->type,'quantity'=>(int)$details_obj->print_details->quantity_details[$i],'union_quantity'=>array_sum($details_obj->print_details->quantity_details));
+						 $cur_data=array('quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
+						 // $cur_data=array('type'=>$details_obj->type,'quantity'=>(int)$details_obj->print_details->quantity_details[$i],'union_quantity'=>array_sum($details_obj->print_details->quantity_details));
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 
@@ -483,7 +484,8 @@
 					 $ln = count($details_obj->print_details->dop_data_ids);
 					 for($i=0; $i<$ln; $i++){
 					     // echo $dop_data_row_id."\r\n";
-						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'distribution_type'=>$details_obj->print_details->distribution_type,'quantity'=>(int)$details_obj->print_details->quantity_details[$i],'union_quantity'=>array_sum($details_obj->print_details->quantity_details));
+						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
+						 //$cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'distribution_type'=>$details_obj->print_details->distribution_type,'quantity'=>(int)$details_obj->print_details->quantity_details[$i],'union_quantity'=>array_sum($details_obj->print_details->quantity_details));
 					     $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 					 // вносим в базу id-шники связанных нанесений 
@@ -491,12 +493,12 @@
 				 }
 			 }
 			 else{ // необъединенный тираж
-			     if(isset($details_obj->dop_data_row_id)){
+			     if(isset($details_obj->print_details->dop_data_ids)){
 
-					 $ln = count($details_obj->dop_data_row_id);
+					 $ln = count($details_obj->print_details->dop_data_ids);
 					 for($i=0; $i<$ln; $i++){
 					     // echo $dop_data_row_id."\r\n";
-						 $cur_data=array('dop_data_row_id'=>$details_obj->dop_data_row_id[$i],'quantity'=>(int)$details_obj->quantity);
+						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->quantity);
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 				 }
@@ -508,7 +510,9 @@
 			//echo $dop_data_row_id;
 			
 		   
-		    // если это объедененный тираж высчитываем цену для каждого расчета отдельно исходя из общего тиража
+		    /* 
+			 // ЭТО БЫЛ НЕ ВЕРНЫЙ ПОДХОД, ЦЕНУ ЗА ЕДИНИЦ ОСТАВЛЯЙ БЕЗ ИМЕНЕИНЯ ДЛЯ ВСЕХ
+			 // если это объедененный тираж высчитываем цену для каждого расчета отдельно исходя из общего тиража
 			if(isset($cur_data['distribution_type']) && $cur_data['distribution_type']=='union'){
 			    // echo ' - '.$details_obj->price_in.' - '.$cur_data['union_quantity'].' - '.$cur_data['quantity']."\r";
 			    $price_in = round(($details_obj->price_in/$cur_data['union_quantity'])*$cur_data['quantity'],2);
@@ -517,7 +521,7 @@
 			else{
 			    $price_in = $details_obj->price_in;
 			    $price_out = $details_obj->price_out;
-			}
+			}*/
 
 			// если нет dop_uslugi_id или он равен ноль, добавляем новый расчет доп услуг для ряда 
 			// иначе перезаписываем данные в строке где `id` = $details_obj->dop_uslugi_id
@@ -529,8 +533,8 @@
 									   `glob_type` ='print',
 									   `tz` ='".cor_data_for_SQL($details_obj->print_details->comment)."',
 									   `quantity` ='".$cur_data['quantity']."',
-									   `price_in` = '".$price_in."',
-									   `price_out` ='".$price_out."',
+									   `price_in` = '".$details_obj->price_in."',
+									   `price_out` ='".$details_obj->price_out."',
 									   `discount` ='".$details_obj->discount."',
 									   `creator_id` ='".$details_obj->creator_id."',
 									   `print_details` ='".cor_data_for_SQL($details_obj->print_details_json)."'"; 

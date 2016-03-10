@@ -459,6 +459,10 @@ var printCalculator = {
 	}
 	,
 	build_print_calculator:function(){
+		
+		console.log('>>> build_print_calculator');
+	   	console.log(printCalculator.calculatorParamsObj);
+		console.log('<<< build_print_calculator');
 
 		if(typeof printCalculator.type === 'undefined') printCalculator.type = 'auto';
 		
@@ -492,8 +496,8 @@ var printCalculator = {
 		var infoField = document.createElement('DIV');
 		infoField.id = "quantityInfoField";
 		infoField.className = "quantityInfoField";
-		infoField.innerHTML = printCalculator.dataObj_toEvokeCalculator.quantity+' шт.';
-		alert(printCalculator.dataObj_toEvokeCalculator.quantity);
+		if(printCalculator.type!='free') infoField.innerHTML = printCalculator.dataObj_toEvokeCalculator.quantity+' шт.';
+		//alert(printCalculator.dataObj_toEvokeCalculator.quantity);
 		//infoField.innerHTML = "Тираж  шт.";
 		menuContainer.appendChild(infoField);
 		dialogBox.appendChild(menuContainer);
@@ -509,7 +513,7 @@ var printCalculator = {
 		
 		// открываем окно с калькулятором
 		document.body.appendChild(dialogBox);
-		if(printCalculator.type=='free'){
+		if(printCalculator.type=='manual' || printCalculator.type=='free'){
 			// запускаем обсчет
 			printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_in]')[0]);
 			printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_out]')[0]);
@@ -520,7 +524,7 @@ var printCalculator = {
 	}
 	,
 	load_auto_calc:function(type){
-		alert('load_'+printCalculator.type+'_calc');
+		// alert('load_'+printCalculator.type+'_calc');
 		printCalculator.type = type;
 
 		$('#quantityInfoField').show();
@@ -539,8 +543,12 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
 	            delete printCalculator.currentCalculationData[printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id];
 				if(typeof printCalculator.currentCalculationData[printCalculator.type].dop_row_id !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].dop_row_id;
-				if(typeof printCalculator.currentCalculationData[printCalculator.type].price_in !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].price_in;
-				if(typeof printCalculator.currentCalculationData[printCalculator.type].price_out !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].price_out;
+				if(printCalculator.currentCalculationData['auto']){
+					if(typeof printCalculator.currentCalculationData[printCalculator.type].price_in !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].price_in;
+				    if(typeof printCalculator.currentCalculationData[printCalculator.type].price_out !== 'undefined') delete printCalculator.currentCalculationData[printCalculator.type].price_out;
+				}
+				printCalculator.currentCalculationData[printCalculator.type]['total_price_in'] = 0;
+				printCalculator.currentCalculationData[printCalculator.type]['total_price_out'] = 0;
 			}
 			else if(printCalculator.type == 'manual' && printCalculator.currentCalculationData['auto']){
 				 if(printCalculator.currentCalculationData['manual']){
@@ -709,7 +717,7 @@ var printCalculator = {
 	load_free_calc:function(type){
 
 		printCalculator.type = type;
-		alert('load_'+printCalculator.type+'_calc');
+		// alert('load_'+printCalculator.type+'_calc');
 		
 		$('#quantityInfoField').hide();
 		// если его еще нет строим контейнер калькулятора
@@ -829,7 +837,8 @@ var printCalculator = {
 			var textarea = textareaTpl.cloneNode(true);
 			textarea.className = 'commentForClient';
 			textarea.name = 'commentForClient';
-			textarea.value = printCalculator.currentCalculationData[type].print_details.commentForClient.replace(/<br \/>/g,"\r");
+			var commentForClient = Base64.decode(printCalculator.currentCalculationData[type].print_details.commentForClient);
+			textarea.value = commentForClient.replace(/<br \/>/g,"\r");
 
 			textarea.onchange = function(){
 				printCalculator.currentCalculationData[printCalculator.type].print_details[this.name] = this.value;
@@ -1782,11 +1791,10 @@ var printCalculator = {
 		var tr = $(cell).parents('tr');
 		var quantity = printCalculator.currentCalculationData[printCalculator.type].quantity;
 		var discount = printCalculator.currentCalculationData[printCalculator.type].discount;
-		
+ 
 		printCalculator.currentCalculationData[printCalculator.type][name] = parseFloat(value);
 		printCalculator.currentCalculationData[printCalculator.type]['total_'+name] = value*quantity;
 		$(tr).find( "td[total_cell=total_"+name+"]").html(((printCalculator.currentCalculationData[printCalculator.type]['total_'+name]).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р');
-
 
 		if(name == 'price_out'){
 			
@@ -2025,9 +2033,8 @@ var printCalculator = {
 			tdClone = td.cloneNode(true);
 			tdClone.setAttribute('total_cell','price_out_discount');
 			// alert(34);
-			var discount_price_out =(printCalculator.currentCalculationData[printCalculator.type].discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].price_out/100)*(100 + parseInt(printCalculator.currentCalculationData[printCalculator.type].discount)) : printCalculator.currentCalculationData[printCalculator.type].price_out;
-
-			
+			var discount_price_out =(printCalculator.currentCalculationData[printCalculator.type].discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].price_out/100)*(100 + parseInt(printCalculator.currentCalculationData[printCalculator.type].discount)) : parseInt(printCalculator.currentCalculationData[printCalculator.type].price_out);
+ 
 			tdClone.innerHTML = ((discount_price_out).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р';
 
 			TRclone.appendChild(tdClone);
@@ -2036,10 +2043,9 @@ var printCalculator = {
 
 			var discount_itog =(printCalculator.currentCalculationData[printCalculator.type].discount != 0 )? (printCalculator.currentCalculationData[printCalculator.type].total_price_out/100)*(100 + parseInt(printCalculator.currentCalculationData[printCalculator.type].discount)) : printCalculator.currentCalculationData[printCalculator.type].total_price_out;
 			tdClone.innerHTML = ((discount_itog).toFixed(2)).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1 ")+'р';
-			
 			TRclone.appendChild(tdClone);
 			total_tbl.appendChild(TRclone);
-	
+
 		}
 		else{
 			alert(caution);
