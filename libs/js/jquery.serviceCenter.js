@@ -803,7 +803,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				methods.dataObj['type'] = 'union';
 			}
 
-			console.info('РЕДАКТИРУЕМ УСЛУГУ >>>',methods.dataObj);
+			// console.info('РЕДАКТИРУЕМ УСЛУГУ >>>',methods.dataObj);
 			// вызов калькулятора
 			printCalculator.startCalculator(methods.dataObj);		
 		},
@@ -990,7 +990,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				.append($('<td/>',{'text':quantity_notify_all+' шт'}))
 			content.append(tr);
 
-			console.log('content >> ',quantity_notify_all)
+			// console.log('content >> ',quantity_notify_all)
 			return content;
 		},
 
@@ -1158,7 +1158,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// добавляет строки услуг в DOM
 		create_service_row_from_variants:function(service){
-			console.log(service)
+			// console.log(service)
 			// ПЕРЕБОР УСЛУГ
     		for (var i = service.length-1; i >= 0; i--) {
     			// return true;
@@ -1227,16 +1227,20 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details && print_details.dop_params) { // из калькулятора
 					if (print_details.place_type = "Дежурная услуга") {
-
+						
+						service_row.append($('<td/>',{'colspan':'3'}));
 					}else{
-
+						// цвета печати
+						var colors = '';
+						service_row.append($('<td/>',{'class':'note_title','text':colors}));
+						// площадь
+						var a_place_print = '';
+						service_row.append($('<td/>',{'class':'note_title','text':a_place_print}));
+						// место печати
+						var format = '';
+						service_row.append($('<td/>',{'class':'note_title',format}));
 					}
-					// цвета печати
-					service_row.append($('<td/>',{'class':'note_title','text':'Грудь'}));
-					// площадь
-					service_row.append($('<td/>',{'class':'note_title','text':'синий, чёрный, подложка'}));
-					// место печати
-					service_row.append($('<td/>',{'class':'note_title','text':'до 1260 см2 (А3)'}));
+
 					// console.log(service[i]);
 				}else{ // из списка доп услуг
 					// console.log(service[i]);
