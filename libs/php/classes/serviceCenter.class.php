@@ -107,6 +107,17 @@
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
 		}
 
+		/**
+		 *	обновление окна 
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	16:34 11.03.2016
+		 */
+		protected function update_service_center_AJAX(){
+			$this->responseClass->options['html'] = base64_encode( $this->get_window_content() );
+			$this->responseClass->options['myFunc'] = 'update_SC';
+		}
+
 
 		private function group_list(){
 			$i = 1;
