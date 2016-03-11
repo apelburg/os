@@ -210,7 +210,11 @@
 				exit;
 			}
 		}
-		
+		// проверяем не входитят ли услуги расчета в объединеный тираж
+		if(RT::checkPosAboutSizes($_GET['id'])==true){
+			 echo '{"warning":"size_exists"}';
+			 exit;
+		}
 		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		echo rtCalculators::change_quantity_and_calculators($_GET['quantity'],$_GET['id'],$_GET['print'],$_GET['extra'],$_GET['source']);
