@@ -14,7 +14,7 @@
 	 *  @example 	$('#js-main_service_center').totalCommander('add_services',adsObj);
 	 */
 	/**
-	 *  обновление окна в Тотал 
+	 *  обновление окна Тотал 
 	 *
 	 *  @param 		adsObj = ['2245','6543'] - id table rows rt_dop_uslugi
 	 *  @example 	$('#js-main_service_center').totalCommander('update_total_window');
@@ -1158,12 +1158,18 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 		},
 		// добавляет строки услуг в DOM
 		create_service_row_from_variants:function(service){
+			console.log(service)
 			// ПЕРЕБОР УСЛУГ
     		for (var i = service.length-1; i >= 0; i--) {
     			// return true;
     			var td = '';
+    			service[i].discount = Number(service[i].discount)
+    			service[i].price_in = Number(service[i].price_in);
+    			service[i].price_out = Number(service[i].price_out);
     			if(service[i].for_how == 'for_all'){
     				service[i].quantity = 1;
+    			}else{
+    				service[i].quantity = Number(service[i].quantity);
     			}
     			service_row = $('<tr/>',{'class':'service','data-dop_uslugi_id':service[i].id,'data-dop_data_id':service[i].dop_row_id});
 						
@@ -1297,9 +1303,9 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				}
 						
 				// цена входящая
-				service_row.append($('<td/>',{'class':'price price_in'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_in)+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(service[i].price_in*service[i].quantity)+'</span>р</div>'})));
+				service_row.append($('<td/>',{'class':'price price_in'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_in)+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(service[i].price_in*Number(service[i].quantity))+'</span>р</div>'})));
 				// цена без скидки
-				service_row.append($('<td/>',{'class':'price price_out'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_out)+'</span>р</div>'})).append($('<div/>',{'html':'<div  class="for_all"><span>'+round_money(service[i].price_out*service[i].quantity)+'</span>р</div>'})));
+				service_row.append($('<td/>',{'class':'price price_out'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_out)+'</span>р</div>'})).append($('<div/>',{'html':'<div  class="for_all"><span>'+round_money(service[i].price_out*Number(service[i].quantity))+'</span>р</div>'})));
 				// скидка
 				var input = $('<input/>',{
 					'value': round_money(service[i].discount),
@@ -1312,7 +1318,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				service_row.append($('<td/>',{'class':'price discount'}).append(input).append('%'));
 				// service_row.append($('<td/>',{'class':'price discount','html':'<span>'+round_money(service[i].discount)+'</span>%'}));
 				// со скидкой (исходящая)
-				service_row.append($('<td/>',{'class':'price price_out_width_discount'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(methods.calc_price_width_discount(service[i].price_out, service[i].discount))+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(methods.calc_price_width_discount(service[i].price_out*service[i].quantity, service[i].discount))+'</span>р</div>'})));
+				service_row.append($('<td/>',{'class':'price price_out_width_discount'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(methods.calc_price_width_discount(service[i].price_out, service[i].discount))+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(methods.calc_price_width_discount(service[i].price_out*Number(service[i].quantity), service[i].discount))+'</span>р</div>'})));
 
 				// удаление услуги
 				if(service[i].united_calculations && service[i].united_calculations !== null ){
@@ -1369,9 +1375,9 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
     			if($(this).hasClass('tr_checked')){
 
     			var dop_row_id = Number($(this).attr('data-dop_row_id'));
-				var variant = methods.mainObj[dop_row_id]['variant'];
+				// var variant = methods.mainObj[dop_row_id]['variant'];
 				// console.log(methods.mainObj[dop_row_id]);
-    			// var variant = jQuery.parseJSON( $(this).find('td.js-variant_info div').html() );
+    			var variant = jQuery.parseJSON( $(this).find('td.js-variant_info div').html() );
     			
     			// запоминаем выбранные строки
     			methods.checked_variants_id[Number(variant.id)] = [];
@@ -1422,8 +1428,8 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				
 				variant_row.append($('<td/>'));
 					
-					var service = methods.mainObj[dop_row_id]['services'];
-    				// var service = jQuery.parseJSON( $(this).find('td.js-variant_services_json div').html() );
+					// var service = methods.mainObj[dop_row_id]['services'];
+    				var service = jQuery.parseJSON( $(this).find('td.js-variant_services_json div').html() );
     				// console.log(service.length);
     				
     				methods.services_tbl.find('.service_th').show().addClass('js-service_spacer').before(variant_row);	
