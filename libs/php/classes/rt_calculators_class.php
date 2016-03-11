@@ -431,7 +431,7 @@
 		 static function save_calculatoins_result_router($details_obj){
 		 
 		    //print_r($details_obj);
-			//exit;
+			//exit; 
 		    if(isset($details_obj->print_details)){
 		        if($details_obj->print_details->calculator_type=='free'){
 					// надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
@@ -493,7 +493,8 @@
 				 }
 			 }
 			 else{ // необъединенный тираж
-			     if(isset($details_obj->print_details->dop_data_ids)){
+			 
+			     if(isset($details_obj->print_details->dop_data_ids)){// распределение по нескольким расчетам
 
 					 $ln = count($details_obj->print_details->dop_data_ids);
 					 for($i=0; $i<$ln; $i++){
@@ -501,6 +502,9 @@
 						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->quantity);
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
+				 }
+				 else{// если надо обновить существующий расчет
+				     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 				 }
 			 }
 			//print_r($last_uslugi_ids);
@@ -539,8 +543,8 @@
 									   `creator_id` ='".$details_obj->creator_id."',
 									   `print_details` ='".cor_data_for_SQL($details_obj->print_details_json)."'"; 
 									   
-				//echo $query;
-				$mysqli->query($query)or die($mysqli->error);
+				echo $query;
+				//$mysqli->query($query)or die($mysqli->error);
 				
 				return $mysqli->insert_id;
 
@@ -555,7 +559,7 @@
 									   `creator_id` ='".$details_obj->creator_id."',
 									   `print_details` ='".cor_data_for_SQL($details_obj->print_details_json)."'
 									    WHERE `id` ='".$details_obj->dop_uslugi_id."'"; 
-				 //echo $query;
+				 echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
 			
 			}

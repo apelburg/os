@@ -60,7 +60,7 @@ var printCalculator = {
 			// дейстие - вызов из существующего нанесения
 			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
 			//alert(2);
-			printCalculator.evoke_calculator_directly({"art_id":15431,"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0]});
+			printCalculator.evoke_calculator_directly({"art_id":15431,"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity});
 			delete dataObj;
 		}
 		
