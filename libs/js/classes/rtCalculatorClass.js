@@ -810,12 +810,29 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			//alert(response);
+			alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) {}
 			
 			if(response_obj){
+				
+			
+				if(response_obj.warning || response_obj.warning=='united_calculations_exists'){
+					// если найдено что позиция имеет услуги входящие в объединенный тираж
+					// выбрасываем confirm()
+					// если получено подтверждение, отправляем запрос на сервер по новой с игнорированием проверки на united_calculations
+					// если нет возвращаем в ячейку прежнее значение, и прекращаем выполнение задачи
+					//alert(response_obj.warning);
+					if(confirm("В данный расчет содержит услуги входящие в объединенный тираж\rизменение тиража в данной ячейке приведёт к\r изменению стоимости в объединенном тираже\rПродолжить?")) {
+						url += '&ignore_united_calculations_checking=1';
+                        rtCalculator.send_ajax(url,callbackPrintsExists);
+					} 
+					else{
+						cell.innerHTML = rtCalculator.tbl_model[row_id]['quantity'];
+						return;
+					}
+				}
 				if(response_obj.warning || response_obj.warning=='size_exists'){
 					// если найдено что позиция имеет какие-либо размеры изменение количества должно быть отменено
 					// возвращаем в ячейку прежнее значение

@@ -543,8 +543,8 @@
 									   `creator_id` ='".$details_obj->creator_id."',
 									   `print_details` ='".cor_data_for_SQL($details_obj->print_details_json)."'"; 
 									   
-				echo $query;
-				//$mysqli->query($query)or die($mysqli->error);
+				//echo $query;
+				$mysqli->query($query)or die($mysqli->error);
 				
 				return $mysqli->insert_id;
 
@@ -559,7 +559,7 @@
 									   `creator_id` ='".$details_obj->creator_id."',
 									   `print_details` ='".cor_data_for_SQL($details_obj->print_details_json)."'
 									    WHERE `id` ='".$details_obj->dop_uslugi_id."'"; 
-				 echo $query;
+				 //echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
 			
 			}

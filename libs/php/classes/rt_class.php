@@ -183,6 +183,16 @@
 			// чтобы графически выделить их на строне клиента
 			return (count($out_put)>0)? '["united_calculations",'.json_encode($out_put).']':false;  
 		}
+		static function check_on_united_calculations_existence_by_id($id){
+			global $mysqli;
+			
+			// NULL ?
+			// узнаем есть ли услуги входящие в объединенный тираж
+			$query="SELECT*FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$id."' AND `united_calculations` <>''";
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0) return true;  
+			return false;  
+		}
 		static function shift_rows_down($place_id,$mainCopiedRowId,$shift_counter /* $place_id - куда вставляем, $pos_id - что будем вставлять */){
 		    global $mysqli;
 			

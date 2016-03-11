@@ -211,9 +211,22 @@
 			}
 		}
 		// проверяем не входитят ли услуги расчета в объединеный тираж
-		if(RT::checkPosAboutSizes($_GET['id'])==true){
-			 echo '{"warning":"size_exists"}';
-			 exit;
+		if(!isset($_GET['ignore_united_calculations_checking'])){
+			if(RT::check_on_united_calculations_existence_by_id($_GET['id'])==true){
+				 echo '{"warning":"united_calculations_exists"}';
+				 exit;
+			}
+		}
+		if(isset($_GET['ignore_united_calculations_checking'])){
+		    // ЧТО В ПРИНЦИПЕ НАДО ПОМЕНЯТЬ ПРИ ТАКОЙ СИТУАЦИИ
+			// - стоимость нанесения в данном расчете и в остальных расчетах где находятся объединенные тиражи
+			// - для этого надо:
+			// - пересчитать услугу с новым тиражом (тираж можно вычислить из print_detials->quantity_detials)
+			// - получится новая цена за штуку, её надо вписать в объединенные расчеты и вписать туда новые данные по количеству
+			// - и потом еще это все надо обновить без перезагрузки
+			// - как это все сделать??? С помощью jquery?
+		    echo 333;
+			exit;
 		}
 		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
