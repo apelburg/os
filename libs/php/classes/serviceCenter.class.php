@@ -123,7 +123,7 @@
 			$i = 1;
 			foreach ($this->group_list as $key => $list) {
 				echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'">';
-					echo '<div>Тираж № '.($i++).'</div>';
+					echo '<div>Макет № '.($i++).'</div>';
 				echo '</li>';
 			}
 		}

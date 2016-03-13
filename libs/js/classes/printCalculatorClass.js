@@ -79,8 +79,7 @@ var printCalculator = {
 			if(dataObj.usluga_id){
 				if(typeof dataObj.usluga_id != 'array'){ echo_message_js('переменная dataObj.usluga_id должна быть массивом');return;}
 				if(dataObj.usluga_id.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
-				// список usluga_id, надо передать в калькулятор
-				
+				// список usluga_id, надо передать в калькулятор				
 			}
 		}
 		
