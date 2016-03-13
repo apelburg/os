@@ -729,12 +729,13 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			// console.info('methods.service_itogo',methods.service_itogo)
 			// console.log( 'round_money = 65401232,0000355', round_money(65401232.0000355) )
 		},
-
+		// 
 		services_init:function(){			
 			
 			methods.services_variants_rows =	methods.services_tbl.find('tr.variant');
 			methods.services_rows  = 			methods.services_tbl.find('tr.service');
 		},
+		// создает простое модальное окно
 		create_small_dialog:function(html, title, buttons){
 			// проверяем 
 			var html1 = (html !== undefined)?html:'текст не был передан';
@@ -1106,8 +1107,60 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 			methods.update_services_content();
 		},
 		// редатирование комментария к услуге
-		edit_service_comments:function(){
-			echo_message_js('Вызов окна комментариев');
+		edit_service_comments:function(obj){
+			console.log(obj);
+			var id = obj.parent().attr('data-dop_uslugi_id').split(',');
+
+			if (obj.next().attr('data-id_s')) {
+				id = obj.next().attr('data-id_s').split(',');
+			}
+
+			var buttons = [];
+			buttons.push({
+			    text: 'Сохранить',
+			    'class':'save',
+			    click:function(){
+			    	// закрываем окно при клике
+			    	$('#js-alert_union').dialog('destroy').remove(); 
+			    }
+			});
+
+
+			var i = 0;
+			var service_id = id[i];
+			var dop_row_id = obj.parent().attr('data-dop_data_id');
+			var tr_id = '#dop_data_'+methods.depending_on_the_services_and_options[id[i]];
+			// места хранения JSON
+			var index = 0;
+			var flag = false;
+			// перебираем соответствия (должно быть найдено одно!)
+			for(var k = 0, length2 = methods.mainObj[dop_row_id]['services'].length; k < length2; k++){
+				console.log(methods.mainObj[dop_row_id]['services'][k], id[i])
+				if (methods.mainObj[dop_row_id]['services'][k].id == id[i]) {
+					index = k; flag = true;
+				}
+			}
+
+			console.log(methods.mainObj[dop_row_id]['services'][index]);
+
+			var html = $('<textarea/>',{
+				'style':'width:250px;height:150px;',
+				'val':Base64.decode(methods.mainObj[dop_row_id]['services'][index]['tz']),
+				keyup:function(){
+					var value = Base64.encode($(this).val());
+					methods.edit_service_json(id, 'service', 'tz', value);
+					$.post('', {
+						AJAX:'save_coment_tz',
+						'value':value,
+						'ids':id,
+					}, function(data, textStatus, xhr) {
+						standard_response_handler(data);
+					},'json');
+				}
+			})
+
+			methods.create_small_dialog(html,'Редактор комментариев',buttons)
+			console.log('Вызов окна комментариев');
 		},
 		// всплывающее окно м доп информацией по группе услуг
 		get_service_notify:function(serv_id){
@@ -1414,7 +1467,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				service_row.append($('<td/>',{
 					'class':'comment is_full',
 					click:function(){
-						methods.edit_service_comments();
+						methods.edit_service_comments($(this));
 					}
 				}));
 

@@ -83,6 +83,10 @@ body #js-alert_union_buttons .button_yes_or_no.no{
 	background:#fff; 
 	color: #999999;
 }
+body #js-alert_union_buttons .save{
+	float: right;
+}
+
 #js-SC_buttons table,
 #js-alert_union_buttons table{
 	width: 100%;

@@ -48,6 +48,22 @@
 		}
 
 		/**
+		 * 	 редактирование в окне комментарии
+		 *
+		 *	 @author  	Alexey Kapitonov
+		 *	 @version 	2:18 14.03.2016 	 
+		 */
+		protected function save_coment_tz_AJAX(){
+			if(isset($_POST['ids']) && count($_POST['ids']) > 0){
+				$query = "UPDATE `".RT_DOP_USLUGI."` SET ";
+				$query .= " `tz` = '".$_POST['value']."' ";
+				$query .= " WHERE `id` IN ('".implode("','", $_POST['ids'])."');";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				// $this->responseClass->addMessage('Скидка на варианты изенена.');
+			}
+		}
+
+		/**
 		 *	сохранение общей скидки
 		 *
 		 *	@author  	Alexey Kapitonov
