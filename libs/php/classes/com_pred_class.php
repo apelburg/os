@@ -1002,10 +1002,10 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							if($print_details_obj == NULL) continue;
 							$print_details_arr = json_decode($u_level['print_details'],TRUE);
 							
-							  if(@$_SESSION['access']['user_id']==18){ 
+							  /*if(@$_SESSION['access']['user_id']==18){ 
 									echo '<pre>';print_r($print_details_arr);echo '</pre>';
 							  }
-							 
+							 */
 							//$quantity = (isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free')?$u_level['quantity']:$quantity;
 							$quantity = (isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type'] == 'free')?$u_level['quantity']:$quantity;
 							
@@ -1044,7 +1044,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							$print_block[] = '<table border="0" style="font-family:arial;font-size:13px;right;margin:15px 0 0 11px;width:100%;border-collapse:collapse;width:350px;table-layout:fixed;">';
 							$print_block[] = '<tr><td valign="top" style="width:90px;">Вид '.(($show_count)?(++$counter2).': ':'').' </td><td style="width:170px;">'.$print_data['block1']['print_type'].'</td></tr>';
 						    if(!isset($print_details_obj->calculator_type) || (isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type != 'free')) $print_block[] = '<tr><td valign="top">Место нанесения: </td><td>'.$print_data['block1']['place_type'].'</td></tr>';
-							 if(isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free') $print_block[] = '<tr><td valign="top"></td><td>'.$print_details_obj->commentForClient.'</td></tr>';
+							if(isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free') $print_block[] = '<tr><td valign="top"></td><td>'.$print_details_obj->commentForClient.'</td></tr>';
 							
 							if(isset($print_data['block1']['price_data']['y_params'])){
 								 $print_block[] = '<tr><td valign="top">'.$print_data['block1']['price_data']['cap'].': </td><td>'.count($print_data['block1']['price_data']['y_params']).' ('.implode(', ',$print_data['block1']['price_data']['y_params']).')</td></tr>';
@@ -1169,7 +1169,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 										<td align="right" style="padding:0 5px;"><nobr>'.number_format($print_block_summ,2,'.',' ').'</nobr></td>
 										<td align="left">руб.</td>
 									  </tr>
-									</table>';
+									 </table>';
 							}
 							else{	
 								
@@ -1183,7 +1183,8 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 										<td align="right" style="color:#888;">тираж: '.$quantity.' шт. </td>
 										<td align="right" style="padding:0 5px;"><nobr><span id="metod_display_setting_'.$counter2.'2_0"  style="display:'.(($display_setting_2==0)?'inline-block':'none').'">'.number_format($print_block_summ1,2,',',' ').'</span><span id="metod_display_setting_'.$counter2.'2_1" style="display:'.(($display_setting_2==1)?'inline-block':'none').'">'.number_format($print_block_summ2,2,',',' ').'</span><span id="metod_display_setting_'.$counter2.'2_2" style="display:'.(($display_setting_2==2)?'inline-block':'none').'">'.number_format($print_block_summ3,2,',',' ').'</span></nobr></td>
 										<td align="left">руб.</td>
-									  </tr>
+										'.((isset($print_details_obj->distribution_type) && $print_details_obj->distribution_type == 'union')?'<tr><td valign="top" colspan="3" style="color:#FF0000;">Стоимость оказываемых услуг указана за комплекс работ и может быть пересмотрена при изменении условий оказываемых услуг.</td></tr>':'').
+									'</tr>
 									</table>';
 							}	
 								

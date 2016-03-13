@@ -107,6 +107,17 @@
 			// $this->responseClass->addResponseFunction('show_SC',$options);	  
 		}
 
+		/**
+		 *	обновление окна 
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	16:34 11.03.2016
+		 */
+		protected function update_service_center_AJAX(){
+			$this->responseClass->options['html'] = base64_encode( $this->get_window_content() );
+			$this->responseClass->options['myFunc'] = 'update_SC';
+		}
+
 
 		private function group_list(){
 			$i = 1;
@@ -186,6 +197,10 @@
 
 		// во
 		private function variants_print_Html(){
+			// echo '<pre>';
+			// print_r($this->Query['positions']);
+			// echo '</pre>';
+				
 			$html = '';
 			$position_num = 1;
 			$color_arr = array('rgba(79, 154, 48, 0.2)','rgba(79, 142, 13, 0.37)');
@@ -211,11 +226,11 @@
 				foreach ($position['variants'] as $variant) {
 					if($this->first_default){
 						if($variant_num == 1){
-							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
+							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
 						}
 						
 					}else{
-						$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" id="dop_data_'.$variant['id'].'" '.(($variant['id'] == (int)$_POST['row_id'])?' class="tr_checked default_var"':'').'>';
+						$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" '.(($variant['id'] == (int)$_POST['row_id'])?' class="tr_checked default_var"':'').'>';
 					}	
 
 						foreach ($variant['services'] as $key => $value) {

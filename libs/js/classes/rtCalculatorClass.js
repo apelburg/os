@@ -810,12 +810,29 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			//alert(response);
+			alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) {}
 			
 			if(response_obj){
+				
+			
+				if(response_obj.warning || response_obj.warning=='united_calculations_exists'){
+					// если найдено что позиция имеет услуги входящие в объединенный тираж
+					// выбрасываем confirm()
+					// если получено подтверждение, отправляем запрос на сервер по новой с игнорированием проверки на united_calculations
+					// если нет возвращаем в ячейку прежнее значение, и прекращаем выполнение задачи
+					//alert(response_obj.warning);
+					if(confirm("В данный расчет содержит услуги входящие в объединенный тираж\rизменение тиража в данной ячейке приведёт к\r изменению стоимости в объединенном тираже\rПродолжить?")) {
+						url += '&ignore_united_calculations_checking=1';
+                        rtCalculator.send_ajax(url,callbackPrintsExists);
+					} 
+					else{
+						cell.innerHTML = rtCalculator.tbl_model[row_id]['quantity'];
+						return;
+					}
+				}
 				if(response_obj.warning || response_obj.warning=='size_exists'){
 					// если найдено что позиция имеет какие-либо размеры изменение количества должно быть отменено
 					// возвращаем в ячейку прежнее значение
@@ -1585,7 +1602,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){  /*console.log(response);  // */ close_processing_timer(); closeAllMenuWindows(); }
+		function callback(response){ /* alert(response); // */ rtCalculator.handler_for_copy_row_response(response); close_processing_timer(); closeAllMenuWindows(); }
 	}
 	,
 	copy_row:function(e){ 
@@ -1604,7 +1621,26 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){ /* console.log(response);  // */   close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF'; }
+		function callback(response){/* alert(response); // */  rtCalculator.handler_for_copy_row_response(response);close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
+		}
+	}
+	,
+	handler_for_copy_row_response:function(response){
+		try {  var dataObj = JSON.parse(response); }
+		catch (e) { 
+			alert('неправильный формат данных in calculatorClass.copy_row() ошибка JSON.parse(response)');
+			return;
+		}
+		//console.log('--',dataObj);
+		if(dataObj[0]=='united_calculations'){
+			//console.log('-1-',dataObj[1]);
+			for(var i in dataObj[1]){
+				//console.log('--',$('#rt_tbl_body tr[row_id='+ dataObj[1][i] +']')[0]);
+				$('#rt_tbl_body tr[row_id='+ dataObj[1][i] +']')[0].style.border = '#CCC 3px solid';
+			}
+			echo_message_js('отмеченные расчеты содержат услуги входящие в объединенный тираж','system_message',5800);
+		}
+		
 	}
 	,
 	get_active_rows_for_one_position:function(pos_id){ 
