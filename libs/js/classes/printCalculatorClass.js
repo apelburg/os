@@ -87,7 +87,7 @@ var printCalculator = {
 				 
 				 // вызываем калькулятор с новым тиражом
 				 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
-				 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[3],"dop_uslugi_id":4304,"action":dataObj.action,"quantity_details":dataObj.quantity[3]});//dataObj.usluga_id[0]
+				 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[3],"dop_uslugi_id":4330,"action":dataObj.action,"quantity_details":dataObj.quantity[3]});//dataObj.usluga_id[0]
 			     delete dataObj;
 				
 			}
