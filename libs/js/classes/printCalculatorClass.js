@@ -1,117 +1,140 @@
 var printCalculator = {
-   startCalculator:function (dataObj){
- 
-		// dataObj = {action: string value, type: string value,art_id: array [1345,3322,2330], usluga_id: массив value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-		//  action [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-		//  type [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-		//  usluga_id [необязательный] - массив, нужен когда тыкаем по существующему нанесению, либо добавляем в тираж или выводим из тиража
-		//  art_id [необязательный] - массив id-шников артикулов, (может не быть артикула)
-		//  dop_data_ids [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-		//  quantity [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-		//  calculator_type [необязательный] - строка, возможные значения - "auto" , "manual", "fee"
-		
-		console.log('---- Центр услуг вызов калькулятора -----',dataObj);
-		
-		dataObj.action = dataObj.action || 'new';
-		dataObj.type = dataObj.type ||  false;
-		dataObj.usluga_id = dataObj.usluga_id ||  false;
-		dataObj.dop_data_ids = dataObj.dop_data_ids ||  false;
-		dataObj.quantity = dataObj.quantity ||  false;
-		dataObj.art_id = dataObj.art_id || [0];
-		
-		// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ id АРТИКУЛА
-		// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ discount
-	    //printCalculator.discount = Number($('.percent_nacenki.js--calculate_tbl-edit_percent:visible').attr('data-val'));
-		printCalculator.discount = 0;
-		printCalculator.creator_id = $('*[user_id]').attr('user_id');
-		
-		// NEW
-		if(dataObj.action=='new'){
-			// дейстие - новое нанесение 
-			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
+   startCalculator:function (dataObejct){
+	   //dataObejct = [dataObejct];
+	   //alert(JSON.stringify(dataObejct));
+	   //return;
+       for(var ind in dataObejct){
+			var dataObj = dataObejct[ind];
+			// dataObj = {action: string value, type: string value,art_id: array [1345,3322,2330], usluga_id: массив value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			//  action [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			//  type [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			//  usluga_id [необязательный] - массив, нужен когда тыкаем по существующему нанесению, либо добавляем в тираж или выводим из тиража
+			//  art_id [необязательный] - массив id-шников артикулов, (может не быть артикула)
+			//  dop_data_ids [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			//  quantity [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+			//  calculator_type [необязательный] - строка, возможные значения - "auto" , "manual", "fee"
 			
-			if(dataObj.dop_data_ids){
-				if(typeof dataObj.dop_data_ids != 'object'){ echo_message_js('переменная dataObj.dop_data_ids должна быть массивом');return;}
-				if(dataObj.dop_data_ids.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
-				// список id расчетов, надо передать в калькулятор
+			console.log('---- Центр услуг вызов калькулятора -----',dataObj);
+			
+			dataObj.action = dataObj.action || 'new';
+			dataObj.type = dataObj.type ||  false;
+			dataObj.usluga_id = dataObj.usluga_id ||  false;
+			dataObj.dop_data_ids = dataObj.dop_data_ids ||  false;
+			dataObj.quantity = dataObj.quantity ||  false;
+			dataObj.calculator_type = dataObj.calculator_type ||  false;
+			dataObj.art_id = dataObj.art_id || [0];
+			
+			// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ id АРТИКУЛА
+			// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ discount
+			//printCalculator.discount = Number($('.percent_nacenki.js--calculate_tbl-edit_percent:visible').attr('data-val'));
+			printCalculator.discount = 0;
+			printCalculator.creator_id = $('*[user_id]').attr('user_id');
+			
+			// NEW
+			if(dataObj.action=='new'){
+				// дейстие - новое нанесение 
+				// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
 				
+				if(dataObj.dop_data_ids){
+					if(typeof dataObj.dop_data_ids != 'object'){ echo_message_js('переменная dataObj.dop_data_ids должна быть массивом');return;}
+					if(dataObj.dop_data_ids.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
+					// список id расчетов, надо передать в калькулятор
+					
+				}
+				
+				var quantity= parseInt(dataObj.quantity[0]);
+				
+				// если тип - объединенный тираж 
+				if(dataObj.type && dataObj.type=='union'){
+					 // внести в объект калькулятора метку о том что тираж сборный
+					 // сложить тиражы всех расчетов входящих в объединенный тираж и передать в калькулятор
+					 //dataObj.quantity;
+					 var quantity=0;
+					 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
+				}
+				delete dataObj;
+	
+				// НЕДОСТАЕТ - ПОЛУЧИТЬ ДАННыЕ ОБ id АРТИКУЛА чтобы подгрузить правильный калькулятор
+				printCalculator.dataObj_toEvokeCalculator = {"art_id":dataObj.art_id[0],distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
+				printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
+				printCalculator.evoke_calculator();
+	
 			}
 			
-			var quantity= parseInt(dataObj.quantity[0]);
-			
-			// если тип - объединенный тираж 
-			if(dataObj.type && dataObj.type=='union'){
-			     // внести в объект калькулятора метку о том что тираж сборный
-				 // сложить тиражы всех расчетов входящих в объединенный тираж и передать в калькулятор
-				 //dataObj.quantity;
-				 var quantity=0;
-                 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
+			// UPDATE
+			if(dataObj.action=='update'){
+				// дейстие - вызов из существующего нанесения
+				// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
+				//alert(2);
+				printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity});
+				delete dataObj;
 			}
-			delete dataObj;
+			
+			// ATTACH
+			if(dataObj.action=='attach'){
+				// дейстие - добавление нанесения в объединенный тираж или распределение существующего нанесения
+				
+				// если Ручной или Держурная услуга просто вызываем калькулятор и затем открываем его с правильним тиражем(объединенный или нет)
+				// если Автоматический надо сделать фоновый перерасчет на основе правильного тиража, если будут ошибки при расчете выкинуть
+				// стандартные окна
+				if(dataObj.usluga_id){
+					if(typeof dataObj.usluga_id != 'object'){ echo_message_js('переменная dataObj.usluga_id должна быть массивом');return;}
+					if(dataObj.usluga_id.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
+					// список usluga_id, надо передать в калькулятор				
+				}
+				
+	
+				if(dataObj.calculator_type=='manual' || dataObj.calculator_type=='fee'){// если Ручной или Держурная услуга вызываем калькулятор c новым тиражем
+					// пересчитываем новый тираж
+					 var quantity=0;
+					 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
+					 
+					 // вызываем калькулятор с новым тиражом
+					 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
+					 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"id_for_attachment":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"action":dataObj.action,"attachment_quantity":dataObj.quantity[0]});//dataObj.usluga_id[0]
+					 
+					
+				}
+				
+				if(dataObj.calculator_type=='auto'){// если калькулятор атоматический 
+				    var newDataObj= {};
+				    for(var prop in dataObj){
+					   alert(prop+'-'+dataObj[prop]);
+					   newDataObj[prop] = dataObj[prop];
+				    }
+				
+				     // отправляем прямой запрос без открытия калькулятора на стороне клиента
+					var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&save_calculator_result=1&details='+JSON.stringify(newDataObj),'section');
+alert(url);
+		            printCalculator.send_ajax(url,callback);
+					
+                   
 
-			// НЕДОСТАЕТ - ПОЛУЧИТЬ ДАННыЕ ОБ id АРТИКУЛА чтобы подгрузить правильный калькулятор
-			printCalculator.dataObj_toEvokeCalculator = {"art_id":dataObj.art_id[0],distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
-			printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
-		    printCalculator.evoke_calculator();
-
-		}
-		
-		// UPDATE
-		if(dataObj.action=='update'){
-			// дейстие - вызов из существующего нанесения
-			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
-			//alert(2);
-			printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity});
-			delete dataObj;
-		}
-		
-		// ATTACH
-		if(dataObj.action=='attach'){
-			// дейстие - добавление нанесения в объединенный тираж или распределение существующего нанесения
-			
-			// если Ручной или Держурная услуга просто вызываем калькулятор и затем открываем его с правильним тиражем(объединенный или нет)
-			// если Автоматический надо сделать фоновый перерасчет на основе правильного тиража, если будут ошибки при расчете выкинуть
-			// стандартные окна
-			
-			if(dataObj.usluga_id){
-				if(typeof dataObj.usluga_id != 'array'){ echo_message_js('переменная dataObj.usluga_id должна быть массивом');return;}
-				if(dataObj.usluga_id.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
-				// список usluga_id, надо передать в калькулятор				
-			}
-			
-
-			if(true/*dataObj.calculator_type=='manual' || dataObj.calculator_type=='fee'*/){// если Ручной или Держурная услуга вызываем калькулятор c новым тиражем
-			    // пересчитываем новый тираж
-				 var quantity=0;
-                 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
-				 
-				 // вызываем калькулятор с новым тиражом
-				 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
-				 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[3],"dop_uslugi_id":4330,"action":dataObj.action,"quantity_details":dataObj.quantity[3]});//dataObj.usluga_id[0]
-			     delete dataObj;
-				
-			}
-			if(dataObj.calculator_type=='auto'){// если калькулятор атоматический прозиводим c новым тиражем
-				
+					function callback(response){ 
+						alert(response);
+						// console.log(response);
+						 //location.reload();
+					}
+					
+				}
+				//delete dataObj;
 				
 			}
 			
-		}
-		
-		// DETACH
-		if(dataObj.action=='detach'){
-			// дейстие - новое нанесение 
-			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
-				
-			if(dataObj.type && dataObj.type=='union'){
-				 // тип - объединенный тираж 
-			     // внести в объект калькулятора метку о том что тираж сборный
-				 // внести в объект массив содержащий id расчетов включенных в тираж
-				 // сложить тиражы всех расчетов входящив в объединенный тираж и передать в калькулятор
+			// DETACH
+			if(dataObj.action=='detach'){
+				// дейстие - новое нанесение 
+				// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
+					
+				if(dataObj.type && dataObj.type=='union'){
+					 // тип - объединенный тираж 
+					 // внести в объект калькулятора метку о том что тираж сборный
+					 // внести в объект массив содержащий id расчетов включенных в тираж
+					 // сложить тиражы всех расчетов входящив в объединенный тираж и передать в калькулятор
+				}
 			}
-		}
-		
-		// запустить калькулятор
+			
+		}// запустить калькулятор
 	}
 	,
 	evoke_calculator_directly: function(data){
@@ -181,7 +204,8 @@ var printCalculator = {
 						// если добавление тиража 
 					    if(data.action=='attach'){
 							printCalculator.currentCalculationData[printCalculator.type][0].action = 'attach';
-							printCalculator.currentCalculationData[printCalculator.type][0].id_for_attachment = data.dop_data_ids;
+							printCalculator.currentCalculationData[printCalculator.type][0].id_for_attachment = data.id_for_attachment;
+							printCalculator.currentCalculationData[printCalculator.type][0].attachment_quantity = data.attachment_quantity;
 						}
 					}
 				}

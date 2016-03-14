@@ -431,7 +431,7 @@
 		 static function save_calculatoins_result_router($details_obj){
 		    global $mysqli;
 		    print_r($details_obj);
-			// exit;
+			exit;
 		    if(isset($details_obj->print_details)){
 		        if($details_obj->print_details->calculator_type=='free'){
 					// надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
@@ -468,9 +468,39 @@
 		    if(isset($details_obj->print_details->distribution_type) && $details_obj->print_details->distribution_type=='union'){ // объединенный тираж
 			     if(isset($details_obj->united_calculations)){// уже существующий расчет обновление
 				      $united_calculations = explode(',',$details_obj->united_calculations);
+					  $quantity = array();
 					 
 					  if(isset($details_obj->action) && $details_obj->action=='attach'){
 						 // print_r($details_obj);
+						 $query="SELECT id, quantity FROM `".RT_DOP_USLUGI."` WHERE `id` IN('".implode("','",$united_calculations)."')";
+						 $result = $mysqli->query($query)or die($mysqli->error);
+						 if($result->num_rows>0){
+				             while($row = $result->fetch_assoc()){
+							     $quantity[$row['id']]=$row['quantity'];
+							 }
+					     }
+						 
+						 if(isset($details_obj->print_details->calculator_type) && $details_obj->print_details->calculator_type=='auto'){
+						      // если это автоматический калькулятор
+							  // надо сначала получить данные о тиражах уже существующих нанесений
+							  // суммировать с тиражом данного нанесения 
+							  // произвести перерасчет стоимости нанесения
+							  // если тираж привысит максимальный вернуть об этом ответ на сторону клиента
+							  // для вывода окна предупреждения и открытия ручного калькулятора
+							  $new_quantity = array_sum($quantity)+$details_obj->attachment_quantity;
+							  echo ' - '.$new_quantity.' - ';
+						 
+						     $YPriceParam = (isset($details_obj->print_details->dop_params->YPriceParam))? count($details_obj->print_details->dop_params->YPriceParam):1;
+
+							 // получаем новые исходящюю и входящюю цену исходя из нового таража
+							 $new_price_arr = self::change_quantity_and_calculators_price_query($new_quantity,$details_obj->print_details,$YPriceParam); 
+                             // здесь надо обпрботать превышение тиража
+							 print_r($new_price_arr);
+							 
+							 $details_obj->price_in = $new_price_arr['price_in'];
+							 $details_obj->price_out = $new_price_arr['price_out'];
+
+						 }
 
 						 // добавляем пустую запись в базу (записываем добавляемый расчет)
 						 $query="INSERT INTO `".RT_DOP_USLUGI."` SET 
@@ -478,31 +508,30 @@
 													`glob_type` ='print'"; 
 						 
 						 $mysqli->query($query)or die($mysqli->error);
-				         $last_uslugi_ids = $mysqli->insert_id;
+				         $last_uslugi_id = $mysqli->insert_id;
 						 // добавляем id новой записи в общий массив по которому далее сделаем перезапись данных
-						 array_push($united_calculations, $last_uslugi_ids);
-						 //print_r($united_calculations);
-						 array_push($details_obj->print_details->quantity_details, 10);
+						
 						 //print_r($details_obj->print_details->quantity_details);
+						 array_push($united_calculations, $last_uslugi_id);
+						 $quantity[$last_uslugi_id]=(int)$details_obj->attachment_quantity;
+						 
 						 unset($details_obj->id_for_attachment);
 						
 					 }
 					
 					
-				     $ln = count($united_calculations); 
+				     //print_r($quantity);
 					 
-					 // echo $ln;
-				     for($i=0; $i<$ln; $i++){
-					     // echo $dop_data_row_id."\r\n";
-						 $details_obj->dop_uslugi_id = $united_calculations[$i];
-						 $cur_data=array('quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
-						 // $cur_data=array('type'=>$details_obj->type,'quantity'=>(int)$details_obj->print_details->quantity_details[$i],'union_quantity'=>array_sum($details_obj->print_details->quantity_details));
+				     foreach($quantity as $uslugi_id => $quantity){
+					     // echo $uslugi_id.' '.$quantity."\r\n";
+						 $details_obj->dop_uslugi_id = $uslugi_id;
+						 $cur_data=array('quantity'=>(int)$quantity);
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 					 
 					 if(isset($details_obj->action) && $details_obj->action=='attach'){
 					     // вносим в базу id-шники связанных нанесений 
-					     if(count($last_uslugi_ids)>0) rtCalculators::mark_united_calculatoins($united_calculations);
+					     rtCalculators::mark_united_calculatoins($united_calculations);
 						 unset($details_obj->action);
 					 }
 
@@ -585,10 +614,11 @@
 									   `tz` ='".$details_obj->print_details->comment."',
 									   `price_in` = '".$details_obj->price_in."',
 									   `price_out` ='".$details_obj->price_out."',
+									   `quantity` ='".$cur_data['quantity']."',
 									   `creator_id` ='".$details_obj->creator_id."',
 									   `print_details` ='".cor_data_for_SQL($details_obj->print_details_json)."'
 									    WHERE `id` ='".$details_obj->dop_uslugi_id."'"; 
-				 //echo $query;
+				 // echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
 			
 			}
