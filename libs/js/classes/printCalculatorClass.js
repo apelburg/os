@@ -99,13 +99,13 @@ var printCalculator = {
 				if(dataObj.calculator_type=='auto'){// если калькулятор атоматический 
 				    var newDataObj= {};
 				    for(var prop in dataObj){
-					   alert(prop+'-'+dataObj[prop]);
+					   //alert(prop+'-'+dataObj[prop]);
 					   newDataObj[prop] = dataObj[prop];
 				    }
 				
 				     // отправляем прямой запрос без открытия калькулятора на стороне клиента
 					var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&save_calculator_result=1&details='+JSON.stringify(newDataObj),'section');
-alert(url);
+                    //  alert(url);
 		            printCalculator.send_ajax(url,callback);
 					
                    
