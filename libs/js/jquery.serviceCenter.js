@@ -983,6 +983,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			}else{
 				methods.dataObj['usluga_id'] = obj.parent().find('.service_group').attr('data-id_s').split(',');
 			}
+			// calculator_type
+			methods.dataObj['usluga_id']['calculator_type'] = obj.parent().attr('data-calculator_type');
 
 			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
