@@ -12,7 +12,6 @@
 		</div>
 		<div id="js-main-service_center-variants-div-table">
 			<div id="wraper_classer">
-
 			<table id="js-main-service_center-variants-table">
 				<thead>
 					<tr class="">
@@ -33,9 +32,7 @@
 				</thead>
 				<tbody>
 					<?=$variants_rows;?>
-					
 				</tbody>			
-					
 			</table>
 			</div>
 
