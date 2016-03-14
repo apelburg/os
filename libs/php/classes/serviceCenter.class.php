@@ -110,6 +110,10 @@
 		 */
 		protected function get_service_center_AJAX(){
 			// проверка на наличие номера запроса
+			//http://apelburg.ru.local/os/?page=client_folder&section=rt_position&id=5041&client_id=1894
+			if(isset($_GET['section']) && $_GET['section'] == 'rt_position'){
+				$_GET['query_num'] = $this->get_positions_query_num($_GET['id']);
+			}
 			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
 				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
 				return;
@@ -362,6 +366,18 @@
 				}
 			}	
 			return $arr;
+		}
+		// возвращает query_num
+		private function get_positions_query_num($id){
+			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".$id."' ORDER BY  `sort` ASC ;";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+			$arr = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$arr = $row;
+				}
+			}	
+			return $arr['query_num'];
 		}
 
 		// запрашивает из базы допуски пользователя

@@ -1,16 +1,18 @@
-<!-- <?php echo __FILE__; ?> -- START-->
+<!--<?php echo __FILE__; ?> -- START-->
 
 <!-- стили -->
 <link href="./skins/css/rt_position.css" rel="stylesheet" type="text/css">
 <link href="./skins/css/position.css" rel="stylesheet" type="text/css">
 <link href="./skins/css/forum.css" rel="stylesheet" type="text/css">
 <link href="libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
+<link href="./skins/css/serviceCenter.css" rel="stylesheet" type="text/css">
 
 <!-- библиотеки -->
 <script type="text/javascript" src="libs/js/jquery_ui/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="./libs/js/classes/Base64Class.js"></script>
 <script type="text/javascript" src="../libs/js/jquery.uploadify.min.js"></script>
-
+<!-- сервисцентр -->
+<script type="text/javascript" src="./libs/js/jquery.serviceCenter.js"></script>
 
 
 <!-- старые скрипты -->
@@ -205,4 +207,4 @@
 	</div>
 	<?php echo $forum; ?>
 </div>
-<!-- <?php echo __FILE__; ?> -- END-->
+<!-- <?php echo __FILE__; ?> -- END

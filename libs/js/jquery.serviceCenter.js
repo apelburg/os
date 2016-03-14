@@ -54,14 +54,25 @@ function round_money(num){
  *	@author  	Alexey Kapitonov
  *	@version 	12:23 12.02.2016
  */
-jQuery(document).ready(function($) {
-	// $.SC_createShowWindowButton();
-	//$('#js-win-sv').click();
-});
+
+// запуск из РТ
 jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', function(event) {
 	$.post('', {
 			AJAX: 	'get_service_center',
 			row_id: $(this).parent().parent().attr("row_id")
+		}, function(data, textStatus, xhr) {
+			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
+				$.SC_createWindow(Base64.decode(data['html']));	
+			}				
+			standard_response_handler(data);
+		},'json');
+});
+
+// запуск из Карточки
+jQuery(document).on('click', '.open_service_center', function(event) {
+	$.post('', {
+			AJAX: 	'get_service_center',
+			row_id: $(this).attr("data-row_id")
 		}, function(data, textStatus, xhr) {
 			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
 				$.SC_createWindow(Base64.decode(data['html']));	
@@ -1796,13 +1807,17 @@ $.extend({
 		// установка прелоад
 		window_preload_add();
 		// обновление таблицы РТ
-		$('#scrolled_part_container').load(' #rt_tbl_body',function(){
-			// запускаем РТ по новой
-			// printCalculator;
-			rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
-			// убираем прелоад
-			window_preload_del();
-		});
+		if($('#rt_tbl_body').length>0){
+			$('#scrolled_part_container').load(' #rt_tbl_body',function(){
+				// запускаем РТ по новой
+				// printCalculator;
+				rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
+				// убираем прелоад
+				window_preload_del();
+			});
+		}else{
+			window_reload();
+		}
 	},
 	// блок кнопок окна Тотал
 	SC_createButton: function(){
