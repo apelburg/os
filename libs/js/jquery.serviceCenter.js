@@ -1306,9 +1306,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     		$('#js-main-service_center-variants-table th:last-child').width($('#js-main-service_center-variants-services-div-table').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(1)').innerWidth() - $('#js-main-service_center-variants-services-div-table td:nth-of-type(2)').innerWidth());
 
     		// меняем высоту, если она превышает допустимую
-    		var top_block_height = 190;
+    		var top_block_height = ($(window).innerHeight()) / 3;
+    		if($('#js-main-service_center-variants-table').innerHeight() < top_block_height){
+    			top_block_height = $('#js-main-service_center-variants-table').innerHeight();
+    		}
     		setTimeout(function(){
-				if ($( "#js-main-service_center-variants-div-table" ).height() > top_block_height) {
+				if ($( "#js-main-service_center-variants-div-table" ).height() != top_block_height) {
 					$( "#js-main-service_center-variants-div-table" ).animate({height:top_block_height+'px'},'1500', function(){
 						// $(this).css({'overflowY':'scroll','overflowX':'hidden'});
 					});		
