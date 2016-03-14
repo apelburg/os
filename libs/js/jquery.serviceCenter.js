@@ -851,12 +851,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// собираем информацию по сгруппированным услугам
 			var ind = 0 ;
-			console.log(methods.services_rows)
+			//console.log(methods.services_rows)
 			methods.services_rows.each(function(index, el) {
 				methods.dataObj['usluga_id'][ind] = [];
-				methods.dataObj['usluga_id'][ind++] = $(this).find('.service_group').attr('data-id_s').split(',');
-				// console.log($(this).find('.service_group').attr('data-id_s').split(','))
-				
+				methods.dataObj['usluga_id'][ind] = $(this).find('.service_group').attr('data-id_s').split(',');
+				methods.dataObj['usluga_id'][ind++]['calculator_type'] = $(this).attr('data-calculator_type');
+				// console.log($(this).find('.service_group').attr('data-id_s').split(','));				
 			});
 
 			console.info('добавить вариант из группы >>>',methods.dataObj);
@@ -885,12 +885,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// собираем информацию по сгруппированным услугам
 			var ind = 0 ;
-			console.log(methods.services_rows)
+			// console.log(methods.services_rows)
 			methods.services_rows.each(function(index, el) {
 				methods.dataObj['usluga_id'][ind] = [];
-				methods.dataObj['usluga_id'][ind++] = $(this).find('.service_group').attr('data-id_s').split(',');
-				// console.log($(this).find('.service_group').attr('data-id_s').split(','))
-				
+				methods.dataObj['usluga_id'][ind] = $(this).find('.service_group').attr('data-id_s').split(',');
+				methods.dataObj['usluga_id'][ind++]['calculator_type'] = $(this).attr('data-calculator_type');
+				// console.log($(this).find('.service_group').attr('data-id_s').split(','));				
 			});
 
 			console.info('удалить вариант из группы >>>',methods.dataObj);
@@ -1415,7 +1415,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}					
 				}
 				k=0;
-				console.log(services_arr2)
+				// console.log(services_arr2)
 				for(var key in services_arr2) {
 					var quantity = 0;
 					service[ k ] = [];
@@ -1425,7 +1425,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 					service[ k++ ].quantity = quantity;
 				}
-				console.log(service)
+				// console.log(service)
 			}else{
 				// выводим все
 				methods.services_tbl.find('.service_th.js-service_spacer').removeClass('js-service_spacer');
@@ -1435,11 +1435,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		},
 		// добавляет строки услуг в DOM
 		create_service_row_from_variants:function(service){
-			console.log('create_service_row_from_variants -- > ',service)
+			// console.log('create_service_row_from_variants -- > ',service)
 			// ПЕРЕБОР УСЛУГ
     		for (var i = service.length-1; i >= 0; i--) {
     			// return true;
     			var td = '';
+    			var check_alarm = ''; var alarm_notify = '';
+				var print_details = service[i].print_details;
+
+
     			service[i].discount = Number(service[i].discount)
     			service[i].price_in = Number(service[i].price_in);
     			service[i].price_out = Number(service[i].price_out);
@@ -1448,14 +1452,27 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     			}else{
     				service[i].quantity = Number(service[i].quantity);
     			}
-    			service_row = $('<tr/>',{'class':'service','data-dop_uslugi_id':service[i].id,'data-dop_data_id':service[i].dop_row_id});
+
+
+    			var calculator_type = '';
+    			if(print_details.calculator_type){
+    				calculator_type = print_details.calculator_type;	
+    			}
+
+    			service_row = $('<tr/>',{
+	    			'class':'service',
+	    			'data-calculator_type':calculator_type,
+	    			'data-dop_uslugi_id':service[i].id,
+	    			'data-dop_data_id':service[i].dop_row_id
+	    		});
+    			
+	    		
 						
 				service_row.append( $('<td/>',{text:(i+1)}));
 
 				// иконка будильник
 				var div = $('<div/>',{'class':'alarm_clock'}).css({'float':'left','width':'100%','height':'100%'});
-				var check_alarm = ''; var alarm_notify = '';
-				var print_details = service[i].print_details;
+				
 				
 				if(print_details && print_details.dop_params && print_details.dop_params.coeffs && print_details.dop_params.coeffs.summ){
 					// console.log(print_details.dop_params.coeffs.summ)
@@ -1537,9 +1554,9 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					// console.log(service[i]);
 					service_row.append($('<td/>',{'colspan':'3'}));
 				}
-				if (print_details) {
-						console.log(print_details)
-					};
+				// if (print_details) {
+						// console.log(print_details)
+					// };
 						
 				// колонка комментариев
 				service_row.append($('<td/>',{
