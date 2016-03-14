@@ -68,10 +68,7 @@ var printCalculator = {
 		// ATTACH
 		if(dataObj.action=='attach'){
 			// дейстие - добавление нанесения в объединенный тираж или распределение существующего нанесения
-			// формируем СПЕЦИАЛИЗИРОВАННЫЙ ЗАПРОС НА СЕРВЕР
-			// в запросе должно быть id одной усуги из массива dataObj.usluga_id и id добавляемого dop_data_ids
-			// НА СЕРВЕРЕ
-			// проверяем какой тип калькулятора у данного расчета (если это объединенный тираж выясняем общий тираж)
+			
 			// если Ручной или Держурная услуга просто вызываем калькулятор и затем открываем его с правильним тиражем(объединенный или нет)
 			// если Автоматический надо сделать фоновый перерасчет на основе правильного тиража, если будут ошибки при расчете выкинуть
 			// стандартные окна
@@ -81,6 +78,24 @@ var printCalculator = {
 				if(dataObj.usluga_id.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
 				// список usluga_id, надо передать в калькулятор				
 			}
+			
+
+			if(true/*dataObj.calculator_type=='manual' || dataObj.calculator_type=='fee'*/){// если Ручной или Держурная услуга вызываем калькулятор c новым тиражем
+			    // пересчитываем новый тираж
+				 var quantity=0;
+                 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
+				 
+				 // вызываем калькулятор с новым тиражом
+				 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
+				 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[3],"dop_uslugi_id":4304,"action":dataObj.action,"quantity_details":dataObj.quantity[3]});//dataObj.usluga_id[0]
+			     delete dataObj;
+				
+			}
+			if(dataObj.calculator_type=='auto'){// если калькулятор атоматический прозиводим c новым тиражем
+				
+				
+			}
+			
 		}
 		
 		// DETACH
@@ -161,6 +176,12 @@ var printCalculator = {
 								for(var i in data_AboutPrintsArr.print_details.quantity_details) { printCalculator.dataObj_toEvokeCalculator.quantity += parseInt(data_AboutPrintsArr.print_details.quantity_details[i]); }
 								 printCalculator.currentCalculationData[printCalculator.type][0].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
 							}
+						}
+						
+						// если добавление тиража 
+					    if(data.action=='attach'){
+							printCalculator.currentCalculationData[printCalculator.type][0].action = 'attach';
+							printCalculator.currentCalculationData[printCalculator.type][0].id_for_attachment = data.dop_data_ids;
 						}
 					}
 				}
@@ -2252,9 +2273,9 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    // alert(response);
+		    alert(response);
 			// console.log(response);
-		    location.reload();
+		     //location.reload();
 		}
 		
 	}
