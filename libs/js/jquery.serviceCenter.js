@@ -835,7 +835,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 			methods.dataObj['action'] = 'attach';	// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 			methods.dataObj['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-			methods.dataObj['usluga_id'] = '';		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
 			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
 			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
 			methods.dataObj['art_id'] = [];			// art_id - string	
@@ -846,6 +846,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
 				methods.dataObj['art_id'][index] = $(this).attr('data-art_id') ;
 				i++;
+			});
+
+			var ind = 0 ;
+			console.log(methods.services_rows)
+			methods.services_rows.each(function(index, el) {
+				methods.dataObj['usluga_id'][ind] = [];
+				methods.dataObj['usluga_id'][ind++] = $(this).find('.service_group').attr('data-id_s').split(',');
+				console.log($(this).find('.service_group').attr('data-id_s').split(','))
+				
 			});
 
 			console.info('добавить вариант из группы >>>',methods.dataObj);
@@ -1080,8 +1089,9 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					// если ответ положительный
 					if(methods.confirm == 'yes'){
 						// меняем checkbox
-						change();
 						go_calculator_methods();						
+						change();
+						
 					}
 					delete methods.confirm;						
 				}	
