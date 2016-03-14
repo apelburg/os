@@ -836,7 +836,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		},
 		calculator_add_variant:function(obj){
 			var i = 0,ind2 = 0;
-			methods.dataObjSuper = new Array(); 
+			delete methods.dataObj;
 			methods.dataObj = []; 
 			methods.services_rows.each(function(index, el) {
 
@@ -847,7 +847,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.dataObj[ind2]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
 				methods.dataObj[ind2]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
 				methods.dataObj[ind2]['art_id'] = [];			// art_id - string	
-
 
 				var row = methods.variants_tbody.find('tr#dop_data_'+obj.attr('data-dop_row_id'))
 				methods.dataObj[ind2]['dop_data_ids'][0] = row.attr('data-dop_row_id') ;
@@ -864,13 +863,11 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				
 				ind2++;
 			});
-
-			console.info('добавить вариант из группы >>>', methods.dataObj);
+			// console.info('добавить вариант из группы >>>', methods.dataObj);
 			// вызов калькулятора
 			printCalculator.startCalculator(methods.dataObj);
-
-
 		},
+		
 		calculator_remove_variant:function(){
 			var i = 0,so = 0;
 			methods.dataObjSuper = [];
@@ -912,19 +909,20 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		calculator_add_services:function(){
 
 			var i = 0;
-			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-			methods.dataObj['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-			methods.dataObj['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-			methods.dataObj['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-			methods.dataObj['art_id'] = [];			// art_id - string	
+			methods.dataObj = []; 
+			methods.dataObj[0] = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			methods.dataObj[0]['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			methods.dataObj[0]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			methods.dataObj[0]['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj[0]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			methods.dataObj[0]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+			methods.dataObj[0]['art_id'] = [];			// art_id - string	
 
 			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-				methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
-				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
-				methods.dataObj['art_id'][index] = $(this).attr('data-art_id') ;
+				methods.dataObj[0]['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
+				methods.dataObj[0]['quantity'][index] = $(this).attr('data-quantity') ;
+				methods.dataObj[0]['art_id'][index] = $(this).attr('data-art_id') ;
 				i++;
 			});
 
@@ -962,7 +960,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					return false;
 				}else{
 					if(methods.calculator_type == "union"){
-						methods.dataObj['type'] = methods.calculator_type;	
+						methods.dataObj[0]['type'] = methods.calculator_type;	
 					}
 					
 					delete methods.calculator_type;
@@ -981,32 +979,33 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		// клик по названию услуги в списке
 		calculator_edit_the_service:function(obj){
 			var i = 0;
-			methods.dataObj = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-			methods.dataObj['action'] = 'update'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-			methods.dataObj['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-			methods.dataObj['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-			methods.dataObj['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-			methods.dataObj['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-			methods.dataObj['art_id'] = [];			// art_id - string
+			methods.dataObj = [];
+			methods.dataObj[0] = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			methods.dataObj[0]['action'] = 'update'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+			methods.dataObj[0]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+			methods.dataObj[0]['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+			methods.dataObj[0]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+			methods.dataObj[0]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+			methods.dataObj[0]['art_id'] = [];			// art_id - string
 
 			if(obj.parent().find('.service_group').length == 0){
-				methods.dataObj['usluga_id'] = obj.parent().attr('data-dop_uslugi_id').split(',');
+				methods.dataObj[0]['usluga_id'] = obj.parent().attr('data-dop_uslugi_id').split(',');
 			}else{
-				methods.dataObj['usluga_id'] = obj.parent().find('.service_group').attr('data-id_s').split(',');
+				methods.dataObj[0]['usluga_id'] = obj.parent().find('.service_group').attr('data-id_s').split(',');
 			}
 			// calculator_type
-			methods.dataObj['usluga_id']['calculator_type'] = obj.parent().attr('data-calculator_type');
+			methods.dataObj[0]['usluga_id']['calculator_type'] = obj.parent().attr('data-calculator_type');
 
 			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-				methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
-				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
-				methods.dataObj['art_id'][index] = $(this).attr('data-art_id') ;
+				methods.dataObj[0]['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
+				methods.dataObj[0]['quantity'][index] = $(this).attr('data-quantity') ;
+				methods.dataObj[0]['art_id'][index] = $(this).attr('data-art_id') ;
 				i++;
 			});
 
 			if(i>1){
-				methods.dataObj['type'] = 'union';
+				methods.dataObj[0]['type'] = 'union';
 			}
 
 			// console.info('РЕДАКТИРУЕМ УСЛУГУ >>>',methods.dataObj);
