@@ -8,7 +8,19 @@ body {
 
 
 #info_string_on_query{ background-color: #c7c8ca; color: #fff;}
-
+.open_service_center{
+      padding-left: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    float: left;
+    padding-right: 15px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    cursor: pointer;
+}
+.open_service_center:hover{
+  background-color: #c7c8ca;
+}
 #info_string_on_query ul{ padding: 0; list-style: none; margin: 0}
 #info_string_on_query ul li{
   display: inline-block;

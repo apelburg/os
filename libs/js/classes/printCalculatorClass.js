@@ -1,10 +1,11 @@
 var printCalculator = {
    startCalculator:function (dataObj){
  
-		// dataObj = {action: string value, type: string value, usluga_id: массив value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+		// dataObj = {action: string value, type: string value,art_id: array [1345,3322,2330], usluga_id: массив value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 		//  action [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 		//  type [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
 		//  usluga_id [необязательный] - массив, нужен когда тыкаем по существующему нанесению, либо добавляем в тираж или выводим из тиража
+		//  art_id [необязательный] - массив id-шников артикулов, (может не быть артикула)
 		//  dop_data_ids [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
 		//  quantity [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
 		//  calculator_type [необязательный] - строка, возможные значения - "auto" , "manual", "fee"
@@ -16,7 +17,7 @@ var printCalculator = {
 		dataObj.usluga_id = dataObj.usluga_id ||  false;
 		dataObj.dop_data_ids = dataObj.dop_data_ids ||  false;
 		dataObj.quantity = dataObj.quantity ||  false;
-		
+		dataObj.art_id = dataObj.art_id || [0];
 		
 		// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ id АРТИКУЛА
 		// !!!!!!!!!!!!!!!!!!!   ПОЛУЧИТЬ ДАННАЕ ОБ discount
@@ -47,9 +48,9 @@ var printCalculator = {
                  for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
 			}
 			delete dataObj;
-			
+
 			// НЕДОСТАЕТ - ПОЛУЧИТЬ ДАННыЕ ОБ id АРТИКУЛА чтобы подгрузить правильный калькулятор
-			printCalculator.dataObj_toEvokeCalculator = {"art_id":15431,distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
+			printCalculator.dataObj_toEvokeCalculator = {"art_id":dataObj.art_id[0],distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
 			printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
 		    printCalculator.evoke_calculator();
 
@@ -60,7 +61,7 @@ var printCalculator = {
 			// дейстие - вызов из существующего нанесения
 			// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
 			//alert(2);
-			printCalculator.evoke_calculator_directly({"art_id":15431,"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity});
+			printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity});
 			delete dataObj;
 		}
 		
@@ -78,8 +79,7 @@ var printCalculator = {
 			if(dataObj.usluga_id){
 				if(typeof dataObj.usluga_id != 'array'){ echo_message_js('переменная dataObj.usluga_id должна быть массивом');return;}
 				if(dataObj.usluga_id.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
-				// список usluga_id, надо передать в калькулятор
-				
+				// список usluga_id, надо передать в калькулятор				
 			}
 		}
 		
@@ -410,7 +410,7 @@ var printCalculator = {
 		// отправляем запрос чтобы получить описание параметров дефолтных параметров калькулятора для данного ариткула
 	    var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&grab_calculator_data={"art_id":"'+printCalculator.dataObj_toEvokeCalculator.art_id+'","type":"print","level":"'+printCalculator.level+'"}','section');
 		printCalculator.send_ajax(url,callback);
-		//alert(last_val);
+		//alert(url);
 		function callback(response_calculatorParamsData){
 			// alert(response_calculatorParamsData);
 			// return;
@@ -2252,9 +2252,9 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    alert(response);
+		    // alert(response);
 			// console.log(response);
-		    //  location.reload();
+		    location.reload();
 		}
 		
 	}

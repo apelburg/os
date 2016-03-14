@@ -48,6 +48,22 @@
 		}
 
 		/**
+		 * 	 редактирование в окне комментарии
+		 *
+		 *	 @author  	Alexey Kapitonov
+		 *	 @version 	2:18 14.03.2016 	 
+		 */
+		protected function save_coment_tz_AJAX(){
+			if(isset($_POST['ids']) && count($_POST['ids']) > 0){
+				$query = "UPDATE `".RT_DOP_USLUGI."` SET ";
+				$query .= " `tz` = '".$_POST['value']."' ";
+				$query .= " WHERE `id` IN ('".implode("','", $_POST['ids'])."');";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				// $this->responseClass->addMessage('Скидка на варианты изенена.');
+			}
+		}
+
+		/**
 		 *	сохранение общей скидки
 		 *
 		 *	@author  	Alexey Kapitonov
@@ -94,6 +110,10 @@
 		 */
 		protected function get_service_center_AJAX(){
 			// проверка на наличие номера запроса
+			//http://apelburg.ru.local/os/?page=client_folder&section=rt_position&id=5041&client_id=1894
+			if(isset($_GET['section']) && $_GET['section'] == 'rt_position'){
+				$_GET['query_num'] = $this->get_positions_query_num($_GET['id']);
+			}
 			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
 				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
 				return;
@@ -123,7 +143,7 @@
 			$i = 1;
 			foreach ($this->group_list as $key => $list) {
 				echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'">';
-					echo '<div>Тираж № '.($i++).'</div>';
+					echo '<div>Макет № '.($i++).'</div>';
 				echo '</li>';
 			}
 		}
@@ -346,6 +366,18 @@
 				}
 			}	
 			return $arr;
+		}
+		// возвращает query_num
+		private function get_positions_query_num($id){
+			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".$id."' ORDER BY  `sort` ASC ;";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+			$arr = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$arr = $row;
+				}
+			}	
+			return $arr['query_num'];
 		}
 
 		// запрашивает из базы допуски пользователя

@@ -87,7 +87,7 @@
 						<td><?=$variant['quantity'];?></td>
 						<td class="row_tirage_in_one price_in"><input type="text" value="<?=$variant['price_in'];?>"></td>
 						
-						<td class="percent_nacenki js--calculate_tbl-edit_percent" row_id="<?=$variant['id'];?>" data-val="<?=$variant['discount'];?>" data-real_price_out="<?=$variant['price_out'];?>" data-id="<?=$variant['id'];?>" onclick="rtCalculator.show_discount_window();">
+						<td class="percent_nacenki js--calculate_tbl-edit_percent" row_id="<?=$variant['id'];?>" data-val="<?=$variant['discount'];?>" data-real_price_out="<?=$variant['price_out'];?>" data-id="<?=$variant['id'];?>">
 							<?php
 								// расчет исходящей цены на товар
 								$price_out = $POSITION->round_money(($variant['discount'] != 0 )? (($variant['price_out']/100)*(100 + $variant['discount'])) : $variant['price_out'] );
@@ -153,8 +153,8 @@
 					?>
 					<tr>
 						<th colspan="9" class="type_row_calc_tbl">
-							<div class="add_usl">Добавить услуги к этому варианту</div>
-							<div class="js--get-calculators" onclick="printCalculator.evoke_calculator_directly({art_id:<?=$POSITION->position['art_id'];?>,dop_data_row_id:<?=$variant['id'];?>,quantity:$('.tirage_option_and_date_print:visible .tirage_var').val()});">Добавить нанесение</div>
+							<div class="open_service_center" style="" data-row_id="<?=$variant['id'];?>">Центр услуг</div>
+							
 							<!-- <div class="add_usl all">Добавить услуги ко всем рабочим вариантам</div> -->
 						</th>
 							

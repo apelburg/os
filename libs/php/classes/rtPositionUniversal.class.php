@@ -27,6 +27,7 @@ class rtPositionUniversal extends Position_general_Class
 			$this->getPosition($_GET['query_num'],'query_num');	
 		}else {
 			$this->getPosition((isset($_GET['id']) && (int)$_GET['id']>0)?$_GET['id']:'0','id');
+			$_GET['query_num'] = $this->position['query_num'] ;
 		}
 		
 
