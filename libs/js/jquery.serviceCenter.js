@@ -154,19 +154,23 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						$(this).addClass('checked');
 						// снимаем выделение отовсюду
 						methods.variants_rows.removeClass('tr_checked').find('td:nth-of-type(2).checked').removeClass('checked');
+						
+
 						// получаем id dop_data для данной группы
 						var serv_id = $(this).attr('data-var_id').split(',');
 
 
 						for(var k = 0, length1 = serv_id.length; k < length1; k++){
 							// console.log(methods.variants_tbody.find('tr#dop_data_'+serv_id[k]))
-							methods.variants_tbody.find('tr#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]).addClass('tr_checked').find('td:nth-of-type(2)').addClass('checked');
+							methods.variants_tbody.find('tr#dop_data_'+serv_id[k]).addClass('tr_checked').find('td:nth-of-type(2)').addClass('checked');
 
 						}
 						// обновляем контент услуг относительно выбранных вариантов
 						methods.update_services_content();
 						// инициализируем работу нижней части окна
 						methods.services_init();
+						// поправка главного чекбокса группы
+						methods.checkbox_main_check();
 					}					
 				});
 
@@ -647,6 +651,28 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		// расчет исходящей стоимости относительноdiscount
 		calc_price_width_discount:function (price_out, discount) {
 			 return Number(price_out/100) * (100 + Number(discount));
+		},
+		/**
+		 *	возвращает название группы
+		 *
+		 *	@param 		service_id
+		 *	@return  	string
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:57 14.03.2016
+		 */
+		get_group_name:function(united_calculations){
+			var service_arr = united_calculations.split(',');
+
+			var dop_row_id = [];
+			var r = 0;
+			for(var i in service_arr) {
+				if(methods.depending_on_the_services_and_options[service_arr[i]]){
+					dop_row_id[r++] = methods.depending_on_the_services_and_options[service_arr[i]];	
+				}else{
+					return "";
+				}				
+			}
+			return dop_row_id.join('_');
 		},
 		// пересчёт итого
 		calc_price:function(no_discount){
@@ -1303,6 +1329,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				// 	quantity : 0
 				// ];
 				
+				// выбираем только услуги с группами
 				for (var i = service_arr.length-1; i >= 0; i--) {
 					if(service_arr[i].united_calculations || service_arr[i].united_calculations !== null){
 						service[ k ] = [];
@@ -1351,7 +1378,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 				// перебираем и проверяем принадлежность к группе
 				// расфасовываем по группам
-				var services_arr2 = [];
+				var services_arr2 = [],kk = 0;
 				for (var i = service_arr.length-1; i >= 0; i--) {
 					if(checking_service(service_arr[i])){
 						var key = service_arr[i].united_calculations.split(',').join('_');
@@ -1361,20 +1388,22 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							services_arr2[ key ][k] = [];
 						}
 						services_arr2[ key ][k++] = service_arr[i];	
+						// service[ kk ] = [];
+						// service[ kk++ ] = service_arr[i];
 					}					
 				}
 				k=0;
-				// console.log(services_arr2)
-				for(var ArrVal in services_arr2) {
+				console.log(services_arr2)
+				for(var key in services_arr2) {
 					var quantity = 0;
 					service[ k ] = [];
-					for(var i in services_arr2[ArrVal]) {
-						quantity = Number(services_arr2[ArrVal][i].quantity)+quantity;
-						service[ k ] = services_arr2[ArrVal][i];
+					for(var i in services_arr2[key]) {
+						quantity = Number(services_arr2[key][i].quantity)+quantity;
+						service[ k ] = services_arr2[key][i];
 					}
-					service[ k ].quantity = quantity;
+					service[ k++ ].quantity = quantity;
 				}
-
+				console.log(service)
 			}else{
 				// выводим все
 				methods.services_tbl.find('.service_th.js-service_spacer').removeClass('js-service_spacer');
@@ -1492,7 +1521,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						
 				// колонка комментариев
 				service_row.append($('<td/>',{
-					'class':'comment is_full',
+					'class':'comment'+((service[i].tz=="")?'':' is_full'),
 					click:function(){
 						methods.edit_service_comments($(this));
 					}
@@ -1510,11 +1539,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 						var td = $('<td/>',{
 							'data-id_s':service[i].united_calculations,
+							'data-list_':methods.get_group_name(service[i].united_calculations),
 							'class':'service_group',
 							'on':{
 								mouseenter:function(){
 									// добавляем подсветку вкладки группы
-									$('#list_'+id_group).addClass('led');
+									methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).addClass('led');
 									// добавляем сласс для подсветки строк группы
 									for(var k = 0, length1 = serv_id.length; k < length1; k++){
 										$('#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]+' td').addClass('hover_group_class');
@@ -1522,7 +1552,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 								},
 								mouseleave:function(){
 									// снимаем подсветку вкалдки группы
-									methods.top_menu_div.find('li#list_'+id_group).removeClass('led');
+									methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).removeClass('led');
 									// снимаем подсветку группы
 									for(var k = 0, length1 = serv_id.length; k < length1; k++){
 										$('#dop_data_' + methods.depending_on_the_services_and_options[serv_id[k]]+' td').removeClass('hover_group_class');
@@ -1531,7 +1561,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							},
 							'click':function(){
 								// снимаем подсветку кнопки
-								methods.top_menu_div.find('li#list_'+id_group).click();
+								methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).click();
 							}
 						}).append($('<span/>',{
 							'data-id_s':service[i].united_calculations,
@@ -1760,7 +1790,10 @@ $.extend({
 	// открытие окна Тотал
 	SC_createWindow : function(html){
 		// если окно вызывается впервые
-		if($('#js-main_service_center').length == 0){
+		if($('#js-main_service_center').length > 0){
+			$('#js-main_service_center').dialog('destroy').remove();
+		}
+
 			$('body').append($('<div/>',{
 				"id":'js-main_service_center'
 			}).html(html));
@@ -1790,11 +1823,7 @@ $.extend({
 			// console.log($.div_variants.removeAttr('id'))
 			// инициализируем плагин
 			$('#js-main_service_center').totalCommander();
-		}else{
-			// если окно уже вызывалось - обновляем контент и открываем
-			$('#js-main_service_center').totalCommander('show');
-			// $('#js-main_service_center').totalCommander();
-		}
+		
 
 
 		

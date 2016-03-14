@@ -48,22 +48,6 @@
 		}
 
 		/**
-		 * 	 редактирование в окне комментарии
-		 *
-		 *	 @author  	Alexey Kapitonov
-		 *	 @version 	2:18 14.03.2016 	 
-		 */
-		protected function save_coment_tz_AJAX(){
-			if(isset($_POST['ids']) && count($_POST['ids']) > 0){
-				$query = "UPDATE `".RT_DOP_USLUGI."` SET ";
-				$query .= " `tz` = '".$_POST['value']."' ";
-				$query .= " WHERE `id` IN ('".implode("','", $_POST['ids'])."');";
-				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
-				// $this->responseClass->addMessage('Скидка на варианты изенена.');
-			}
-		}
-
-		/**
 		 *	сохранение общей скидки
 		 *
 		 *	@author  	Alexey Kapitonov
@@ -85,7 +69,22 @@
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 				// $this->responseClass->addMessage('Скидка на услуги изенена.');
 			}
+		}
 
+		/**
+		 *	сохраняет ТЗ
+		 *
+		 *	@param 		Alexey Kapitonov
+		 *	@version 	12:50 14.03.2016
+		 */
+		protected function save_coment_tz_AJAX(){
+			if(isset($_POST['ids']) && count($_POST['ids']) > 0){
+				$query = "UPDATE `".RT_DOP_USLUGI."` SET ";
+				$query .= " `tz` = '".$_POST['value']."' ";
+				$query .= " WHERE `id` IN ('".implode("','", $_POST['ids'])."');";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				// $this->responseClass->addMessage('Скидка на услуги изенена.');
+			}
 		}
 
 		/**
@@ -110,10 +109,6 @@
 		 */
 		protected function get_service_center_AJAX(){
 			// проверка на наличие номера запроса
-			//http://apelburg.ru.local/os/?page=client_folder&section=rt_position&id=5041&client_id=1894
-			if(isset($_GET['section']) && $_GET['section'] == 'rt_position'){
-				$_GET['query_num'] = $this->get_positions_query_num($_GET['id']);
-			}
 			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
 				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
 				return;
@@ -140,10 +135,25 @@
 
 
 		private function group_list(){
+
+			// перебираем все услуги
+			foreach ($this->services_all as $key => $row) {
+				if(trim($row['united_calculations']) != ''){
+					$services_arr = explode(",", $row['united_calculations']);
+					$group_name = $this->get_group_name($services_arr);
+					if(count($services_arr) > 1){
+						$id = "list_".implode('_', explode(",", $group_name));
+						$this->group_list[ $id ]['id'] = $id;
+						$this->group_list[ $id ]['data-var_id'] = $group_name;
+						$this->group_list[ $id ]['data-service_id'] = $row['united_calculations'];
+					}
+				}
+			}
+
 			$i = 1;
 			foreach ($this->group_list as $key => $list) {
-				echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'">';
-					echo '<div>Макет № '.($i++).'</div>';
+				echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'" data-service_id="'.$list['data-service_id'].'">';
+					echo '<div>Тираж № '.($i++).'</div>';
 				echo '</li>';
 			}
 		}
@@ -328,22 +338,39 @@
 				while($row = $result->fetch_assoc()){
 					$arr[] = $row;
 					
-					//
+					// зависимости
 					$this->services_related[$row['id']] = $row['dop_row_id'];
 					$this->services_related_dop[$row['dop_row_id']][] = $row['id'];
-					if(trim($row['united_calculations']) != ''){
-
-						$dop_row_arr = explode(",", $row['united_calculations']);
-						if(count($dop_row_arr) > 1){
-							$c = 'list_'.implode('_', $dop_row_arr);
-							$this->group_list[ $c ]['id'] = implode('_', $dop_row_arr);
-							$this->group_list[ $c ]['data-var_id'] = implode(',', $dop_row_arr);
-						}
-					}
+					// все услуги с которыми работает тотал
+					$this->services_all[] = $row;
 				}
 			}
 			return $arr;
 		}
+
+
+		/**
+		 *	возвращает название группы
+		 *
+		 *	@param 		service_id
+		 *	@return  	string
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:57 14.03.2016
+		 */
+		private function get_group_name($service_arr){
+			$dop_row_id = array();
+			foreach ($service_arr as $key => $id) {
+				if(isset($this->services_related[$id])){
+					$dop_row_id[] = $this->services_related[$id];	
+				}else{
+					return false;
+				}				
+			}
+			return implode(',',$dop_row_id);
+		}
+
+
+
 		// возвращает строку запроса
 		private function get_query($query_num = 0){
 			$query = "SELECT * FROM `".RT_LIST."` WHERE `query_num` = '".$query_num."';";
@@ -366,18 +393,6 @@
 				}
 			}	
 			return $arr;
-		}
-		// возвращает query_num
-		private function get_positions_query_num($id){
-			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".$id."' ORDER BY  `sort` ASC ;";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
-			$arr = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$arr = $row;
-				}
-			}	
-			return $arr['query_num'];
 		}
 
 		// запрашивает из базы допуски пользователя
