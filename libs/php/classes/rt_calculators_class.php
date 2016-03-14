@@ -429,9 +429,9 @@
 			return $json_str; 
          }
 		 static function save_calculatoins_result_router($details_obj){
-		 
-		    //print_r($details_obj);
-			//exit; 
+		    global $mysqli;
+		    // print_r($details_obj);
+			// exit;
 		    if(isset($details_obj->print_details)){
 		        if($details_obj->print_details->calculator_type=='free'){
 					// надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
@@ -467,14 +467,46 @@
 		 
 		    if(isset($details_obj->print_details->distribution_type) && $details_obj->print_details->distribution_type=='union'){ // объединенный тираж
 			     if(isset($details_obj->united_calculations)){// уже существующий расчет обновление
-				     $united_calculations = explode(',',$details_obj->united_calculations);
-				     $ln = count($united_calculations);
+				      $united_calculations = explode(',',$details_obj->united_calculations);
+					 
+					  if(isset($details_obj->action) || $details_obj->action=='attachment'){
+						 //print_r($details_obj);
+						  //exit; 
+			/// $cur_data=array('dop_data_row_id'=>$details_obj->id_for_attachment,'quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
+						
+						 
+						 // добавляем пустую запись в базу (записываем добавляемый расчет)
+						 $query="INSERT INTO `".RT_DOP_USLUGI."` SET 
+						                            `dop_row_id` ='".$details_obj->id_for_attachment."',
+													`glob_type` ='print'"; 
+						 
+						 $mysqli->query($query)or die($mysqli->error);
+				         $last_uslugi_ids = $mysqli->insert_id;
+						 // добавляем id новой записи в общий массив по которому далее сделаем перезапись данных
+						 $united_calculations[] =  $last_uslugi_ids;
+						 $details_obj->print_details->quantity_details[] = 10;
+						 
+						
+						 unset($details_obj->id_for_attachment);
+						
+					 }
+					 
+					
+				     $ln = count($united_calculations); 
+					 
+					 echo $ln;
 				     for($i=0; $i<$ln; $i++){
 					     // echo $dop_data_row_id."\r\n";
 						 $details_obj->dop_uslugi_id = $united_calculations[$i];
 						 $cur_data=array('quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
 						 // $cur_data=array('type'=>$details_obj->type,'quantity'=>(int)$details_obj->print_details->quantity_details[$i],'union_quantity'=>array_sum($details_obj->print_details->quantity_details));
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
+					 }
+					 
+					 if(isset($details_obj->action) || $details_obj->action=='attachment'){
+					     // вносим в базу id-шники связанных нанесений 
+					     if(count($last_uslugi_ids)>0) rtCalculators::mark_united_calculatoins($united_calculations);
+						 unset($details_obj->action);
 					 }
 
 			     }
