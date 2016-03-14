@@ -28,6 +28,7 @@
 						<th>номенклатура</th>
 						<th>тираж</th>
 						<th></th>
+						<th></th>
 					</tr>		
 				</thead>
 				<tbody>
