@@ -1441,9 +1441,25 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 				if (print_details && print_details.dop_params) { // из калькулятора
 					if (print_details.place_type = "Дежурная услуга") {
 
-						service_row.append($('<td/>',{'colspan':'3','text':'Деж'}));
+						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.comment)}));
 					}else{
 						// цвета печати
+						/*	
+
+							Нужна функция(метод) возвращающая Object вида:
+							{
+								colors: '',
+								a_place_print: '',
+								format: ''
+							}
+							id_dop_data и id_uslugi - ЕСТЬ
+
+							service[i].id
+							service[i].dop_row_id
+
+							УТОЧНИТЬ У АНДРЕЯ, ГДЕ, КАК, ПОДЗАПРОС ИЛИ НЕТ, МБ ОН САМ НАПИШЕТ.
+
+						*/
 						var colors = '';
 						service_row.append($('<td/>',{'class':'note_title','text':colors}));
 						// площадь
