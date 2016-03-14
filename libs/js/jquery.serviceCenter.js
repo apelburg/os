@@ -848,12 +848,14 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				i++;
 			});
 
+
+			// собираем информацию по сгруппированным услугам
 			var ind = 0 ;
 			console.log(methods.services_rows)
 			methods.services_rows.each(function(index, el) {
 				methods.dataObj['usluga_id'][ind] = [];
 				methods.dataObj['usluga_id'][ind++] = $(this).find('.service_group').attr('data-id_s').split(',');
-				console.log($(this).find('.service_group').attr('data-id_s').split(','))
+				// console.log($(this).find('.service_group').attr('data-id_s').split(','))
 				
 			});
 
@@ -879,6 +881,16 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
 				methods.dataObj['art_id'][index] = $(this).attr('data-art_id') ;
 				i++;
+			});
+
+			// собираем информацию по сгруппированным услугам
+			var ind = 0 ;
+			console.log(methods.services_rows)
+			methods.services_rows.each(function(index, el) {
+				methods.dataObj['usluga_id'][ind] = [];
+				methods.dataObj['usluga_id'][ind++] = $(this).find('.service_group').attr('data-id_s').split(',');
+				// console.log($(this).find('.service_group').attr('data-id_s').split(','))
+				
 			});
 
 			console.info('удалить вариант из группы >>>',methods.dataObj);
