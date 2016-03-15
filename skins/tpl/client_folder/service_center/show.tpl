@@ -4,9 +4,6 @@
 		<div class="spacer_div"></div>
 		<div id="js-main-service_center-top_menu">
 			<ul>
-				<li class="checked">
-					<div>Артикулы</div>
-				</li>
 				<?=$this->group_list();?>
 			</ul>
 		</div>

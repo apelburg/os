@@ -159,12 +159,37 @@
 				}
 			}
 
-			$i = 1;
-			foreach ($this->group_list as $key => $list) {
-				echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'" data-service_id="'.$list['data-service_id'].'">';
-					echo '<div>Тираж № '.($i++).'</div>';
+			if(isset($_POST['checked_rows']) && count($_POST['checked_rows'])>1){
+				$find_group = false;
+				foreach ($this->group_list as $key => $list) {
+					if($key == 'list_'.implode('_', $_POST['checked_rows'])){
+						$find_group = $key;
+					}
+				}
+				
+				echo '<li '.((!$find_group)?'class="checked"':'').'>';
+				echo '<div>Артикулы</div>';
 				echo '</li>';
+
+				$i = 1;
+				foreach ($this->group_list as $key => $list) {
+					echo '<li id="'.$key.'" '.(($find_group && $find_group==$key )?'class="checked"':'').' data-var_id="'.$list['data-var_id'].'" data-service_id="'.$list['data-service_id'].'">';
+						echo '<div>Тираж № '.($i++).'</div>';
+					echo '</li>';
+				}
+			}else{
+				echo '<li class="checked">';
+				echo '<div>Артикулы</div>';
+				echo '</li>';
+
+				$i = 1;
+				foreach ($this->group_list as $key => $list) {
+					echo '<li id="'.$key.'" data-var_id="'.$list['data-var_id'].'" data-service_id="'.$list['data-service_id'].'">';
+						echo '<div>Тираж № '.($i++).'</div>';
+					echo '</li>';
+				}	
 			}
+			
 		}
 
 
@@ -261,14 +286,21 @@
 				$variant_num = 1;
 				foreach ($position['variants'] as $variant) {
 
-
+					$checked_class = '';
+					$checkbox_checked_class = '';
+					if(isset($_POST['checked_rows']) && in_array($variant['id'], $_POST['checked_rows'])){
+						$checked_class = ' tr_checked';
+						if(count($_POST['checked_rows']) > 1){
+							$checkbox_checked_class = ' checked';
+						}
+					}
 
 					if($this->first_default){
 						if($variant_num == 1){
-							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
+							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="default_var'.$checked_class.'">';		
 						}						
 					}else{
-						$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" '.(($variant['id'] == (int)$_POST['row_id'])?' class="tr_checked default_var"':'').'>';
+						$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="'.(($variant['id'] == (int)$_POST['row_id'])?'default_var':'').$checked_class.'">';
 					}	
 
 						foreach ($variant['services'] as $key => $value) {
@@ -278,7 +310,7 @@
 						}
 						 
 						$html .= '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';
-						$html .= '<td>';
+						$html .= '<td class="'.$checkbox_checked_class.'">';
 							$html .= '<div class="js-psevdo_checkbox"></div>';
 						$html .= '</td>';
 						$html .= '<td>'.$position_num.'.'.$variant_num.'</td>';
