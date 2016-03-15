@@ -1,4 +1,10 @@
 <?php
+
+	/*
+		ВАЖНО!!!
+		1) в услугах сгрупированных по id, id в колонке united_calculations должны храниться по возрастанию
+
+	*/
 	class ServiceCenter  extends aplStdAJAXMethod{
 		private $Query;
 		private $first_default = true;
@@ -95,6 +101,7 @@
 		 *	@version 	11:06 09.03.2016
 		 */
 		protected function delete_services_AJAX(){
+
 			if(isset($_POST['service_ids']) && count($_POST['service_ids']) > 0){
 				$query = "DELETE FROM `".RT_DOP_USLUGI."` WHERE `id` IN ('".implode("','", $_POST['service_ids'])."')";
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);

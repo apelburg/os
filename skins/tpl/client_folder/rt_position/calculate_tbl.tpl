@@ -93,7 +93,7 @@
 								$price_out = $POSITION->round_money(($variant['discount'] != 0 )? (($variant['price_out']/100)*(100 + $variant['discount'])) : $variant['price_out'] );
 							?>
 
-							<span class=""><?=$variant['discount'];?>%</span>
+							<span class="" onClick="$('.open_service_center:visible').click()"><?=$variant['discount'];?>%</span>
 							<?php
 								if($price_out != $variant['price_out']){
 									echo '<span class="greyText">'.$variant['price_out'].'</span>';
@@ -153,7 +153,7 @@
 					?>
 					<tr>
 						<th colspan="9" class="type_row_calc_tbl">
-							<div class="open_service_center" style="" data-row_id="<?=$variant['id'];?>">Центр услуг</div>
+							<div class="open_service_center" style="" data-row_id="<?=$variant['id'];?>" data-query_num="<?=$POSITION->position['query_num'];?>">Центр услуг</div>
 							
 							<!-- <div class="add_usl all">Добавить услуги ко всем рабочим вариантам</div> -->
 						</th>

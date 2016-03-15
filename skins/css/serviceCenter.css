@@ -503,7 +503,8 @@ button#sc_close_window{
 #js-main-service_center-variants-services-div-table table tr.service  td.comment.is_full{
 	background-image: url(../images/img_design/comment_icon.png);
 }
-#js-main-service_center-variants-services-div-table table tr.service  td.service_group{
+#js-main-service_center-variants-services-div-table table tr.service  td.service_group,
+.service_group{
 	background-image: url(../images/img_design/service_group.png);
 	background-repeat: no-repeat;
 	cursor: pointer;
@@ -550,7 +551,7 @@ span.marcker_led {
 }*/
 .js-variant_info:hover div,
 .js-variant_services_json:hover div{
-	/*display: block;*/
+	display: block;
 }
 #js-main-service_center-variants-div-table{
 	height: 220px;
