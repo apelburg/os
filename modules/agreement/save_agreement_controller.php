@@ -1,12 +1,12 @@
 <?php
     // print_r($_POST);
-     echo '<pre>';
+    /* echo '<pre>';
 	print_r($_GET);
 	echo '</pre>';
     echo '<br>';
     print_r($form_data);
 	echo 1;
-	/*
+	
 	 */
 	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
     include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
