@@ -1302,8 +1302,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			// serv_id - объект с id строк услуг
 			var content = $('<table>',{'class':"notify-table"});
 
-
-
 			var tr = $('<tr/>');
 			tr.append($('<th/>',{'text':'позиция','colspan':'2'}))
 				.append($('<th/>',{'text':'артикул'}))
@@ -1415,10 +1413,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			// $( "#js-main-service_center-variants-div-table .ui-resizable-handle" ).css('bottom','-57px');
 
 		},
+		// уничтожает окно
 		hide : function( ) {
     		$('#js-main_service_center').dialog('destroy').remove();
     		this.remove();
 		},
+		// фильтр услуг
 		filter_services_from_variants:function(service_arr){
 
 			// выбираем объекты строк вариантов
@@ -1659,7 +1659,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						},
 						'click':function(){
 							// снимаем подсветку кнопки
-							methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).click();
+							// переходим в группу
+							methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).removeClass('led').click();
 						}
 					}).append($('<span/>',{
 						'data-id_s':service[i].united_calculations,
@@ -1729,6 +1730,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     			methods.services_tbl.find('.service_th').show().after(service_row);
     		}
 		},
+		// обновляет информацию по услугам, относительно выбранных вариантов
 		update_services_content : function( content ) {
     		// подчищаем данные в таблице услуг
     		methods.services_tbl.find('.variant').remove();
@@ -1773,6 +1775,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				// console.log(obj)
 				var link = $('<a/>',{'html':$(this).find('td').eq(7).text()}).bind('click.totalCommander', function(event) {
 					methods.cancel_all_choosen_variants_and_chose_one_row(obj);
+					// если включена вкладка группы
+					if (methods.top_menu_div.find('.checked').index()>0) {
+						// удаляем вкладку группы
+						methods.top_menu_div.find('.checked').removeClass('checked');
+						methods.top_menu_div.find('li').eq(0).addClass('checked');
+					}
 				});
 
 				variant_row.append($('<td/>',{'colspan':'4'}).append(link))
