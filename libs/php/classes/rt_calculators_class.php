@@ -431,7 +431,8 @@
 		 static function save_calculatoins_result_router($details_obj){
 		    global $mysqli;
 		    //print_r($details_obj);
-			//exit;
+			//echo $details_obj->action;
+			//exit; //
 		    if(isset($details_obj->print_details)){
 		        if($details_obj->print_details->calculator_type=='free'){
 					// надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
@@ -461,6 +462,7 @@
 				// но пришлось использовать это
 				$details_obj->print_details_json = self::json_fix_cyr(json_encode($details_obj->print_details)); 
 			}
+			if(isset($details_obj->action)) unset($details_obj->action);
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -530,9 +532,10 @@
 					 }
 					 
 					 if(isset($details_obj->action) && $details_obj->action=='attach'){
+					     unset($details_obj->action);
 					     // вносим в базу id-шники связанных нанесений 
 					     rtCalculators::mark_united_calculatoins($united_calculations);
-						 unset($details_obj->action);
+						 
 					 }
 
 			     }
@@ -571,8 +574,9 @@
 					     }
 					     // echo $dop_data_row_id."\r\n";
 						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
-					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
+					     $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
+					 echo json_encode($last_uslugi_ids);
 				 }
 				 else{// если надо обновить существующий расчет
 				     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
@@ -582,6 +586,8 @@
 		 }
 		 static function save_calculatoins_result_new($cur_data,$details_obj){
 		    global $mysqli;  
+			
+			
 			//echo $dop_data_row_id;
 			
 		   
@@ -633,6 +639,8 @@
 									    WHERE `id` ='".$details_obj->dop_uslugi_id."'"; 
 				 // echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
+				 
+				 return $details_obj->dop_uslugi_id;
 			
 			}
 			

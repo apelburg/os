@@ -29,7 +29,7 @@ var printCalculator = {
 			//printCalculator.discount = Number($('.percent_nacenki.js--calculate_tbl-edit_percent:visible').attr('data-val'));
 			printCalculator.discount = 0;
 			printCalculator.creator_id = $('*[user_id]').attr('user_id');
-			
+
 			// NEW
 			if(dataObj.action=='new'){
 				// дейстие - новое нанесение 
@@ -55,7 +55,7 @@ var printCalculator = {
 				delete dataObj;
 	
 				// НЕДОСТАЕТ - ПОЛУЧИТЬ ДАННыЕ ОБ id АРТИКУЛА чтобы подгрузить правильный калькулятор
-				printCalculator.dataObj_toEvokeCalculator = {"art_id":dataObj.art_id[0],distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity};
+				printCalculator.dataObj_toEvokeCalculator = {"art_id":dataObj.art_id[0],distribution_type:dataObj.type,"dop_data_ids":dataObj.dop_data_ids,"quantity":quantity,"quantity_details":dataObj.quantity,"action":dataObj.action};
 				printCalculator.dataObj_toEvokeCalculator.creator_id =  printCalculator.creator_id;
 				printCalculator.evoke_calculator();
 	
@@ -66,7 +66,7 @@ var printCalculator = {
 				// дейстие - вызов из существующего нанесения
 				// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора и деталей нанесения из которого сделан вызов
 				//alert(2);
-				printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity});
+				printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"dop_data_ids":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"quantity":dataObj.quantity,"action":dataObj.action});
 				delete dataObj;
 			}
 			
@@ -163,7 +163,8 @@ var printCalculator = {
 				
 				
 				printCalculator.currentCalculationData[printCalculator.type][0].dop_uslugi_id =  data_AboutPrintsArr.id;
-			    
+			    if(typeof data.action !== 'undefined')  printCalculator.currentCalculationData[printCalculator.type][0].action = data.action;
+
 
 			    if(typeof printCalculator.currentCalculationData[printCalculator.type].id !== 'undefined')
 				
@@ -203,7 +204,6 @@ var printCalculator = {
 						
 						// если добавление тиража 
 					    if(data.action=='attach'){
-							printCalculator.currentCalculationData[printCalculator.type][0].action = 'attach';
 							printCalculator.currentCalculationData[printCalculator.type][0].id_for_attachment = data.id_for_attachment;
 							printCalculator.currentCalculationData[printCalculator.type][0].attachment_quantity = data.attachment_quantity;
 						}
@@ -622,6 +622,7 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type = printCalculator.dataObj_toEvokeCalculator.distribution_type;
 				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_data_ids = printCalculator.dataObj_toEvokeCalculator.dop_data_ids;
 				
+				printCalculator.currentCalculationData[printCalculator.type].action = printCalculator.dataObj_toEvokeCalculator.action;
 				printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
 				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params = {};
 		        //printCalculator.currentCalculationData[printCalculator.type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
@@ -783,6 +784,7 @@ var printCalculator = {
 				printCalculator.currentCalculationData[type] = currentCalculationData;	
 				printCalculator.currentCalculationData[type].dop_data_row_id = printCalculator.dataObj_toEvokeCalculator.dop_data_row_id;
 			    printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
+				printCalculator.currentCalculationData[type].action = printCalculator.dataObj_toEvokeCalculator.action;
 				printCalculator.currentCalculationData[type].quantity = parseInt(currentCalculationData.print_details.quantity);
 				printCalculator.currentCalculationData[type]['price_in'] = parseFloat(currentCalculationData.price_in);
 				printCalculator.currentCalculationData[type]['price_out'] = parseFloat(currentCalculationData.price_out);
@@ -796,7 +798,7 @@ var printCalculator = {
 					printCalculator.currentCalculationData[type].print_details.comment = printCalculator.currentCalculationData[type].tz;
 					var comment = printCalculator.currentCalculationData[type].tz;
 				}
-				
+				printCalculator.currentCalculationData[type].print_details.commentForClient = Base64.decode(printCalculator.currentCalculationData[type].print_details.commentForClient);
 				
 	           // delete printCalculator.currentCalculationData[printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id];
 				delete printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id;
@@ -817,6 +819,7 @@ var printCalculator = {
 				printCalculator.currentCalculationData[type].print_details.quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
 				printCalculator.currentCalculationData[type].print_details.dop_data_ids = printCalculator.dataObj_toEvokeCalculator.dop_data_ids;
 				printCalculator.currentCalculationData[type].creator_id = printCalculator.dataObj_toEvokeCalculator.creator_id;
+				printCalculator.currentCalculationData[type].action = printCalculator.dataObj_toEvokeCalculator.action;
 				printCalculator.currentCalculationData[type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
 				printCalculator.currentCalculationData[type].quantity = printCalculator.dataObj_toEvokeCalculator.quantity;
 				printCalculator.currentCalculationData[type]['price_in'] = 0;
@@ -883,7 +886,8 @@ var printCalculator = {
 			var textarea = textareaTpl.cloneNode(true);
 			textarea.className = 'commentForClient';
 			textarea.name = 'commentForClient';
-			var commentForClient = Base64.decode(printCalculator.currentCalculationData[type].print_details.commentForClient);
+			
+			var commentForClient = printCalculator.currentCalculationData[type].print_details.commentForClient;
 			textarea.value = commentForClient.replace(/<br \/>/g,"\r");
 
 			textarea.onchange = function(){
@@ -2306,9 +2310,35 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		     alert(response);
+		    // alert(response);
+			// alert(printCalculator.currentCalculationData[printCalculator.type].action);
 			// console.log(response);
-		    //location.reload();
+		    // location.reload();
+			if(printCalculator.currentCalculationData[printCalculator.type].action == 'update'){
+				for(var prop in printCalculator){
+					 //alert(typeof printCalculator[prop]);
+					 if(typeof printCalculator[prop] != 'function') printCalculator[prop] = null;// delete printCalculator[prop];
+				}
+				$("#calculatorDialogBox").remove();
+				$('#js-main_service_center').totalCommander('update_total_window');
+			}
+			if(printCalculator.currentCalculationData[printCalculator.type].action == 'new'){
+				//alert(response);
+				try {  var adsObj = JSON.parse(response); }
+				catch (e) { 
+					alert('неправильный формат данных in printCalculator.saveCalculatorResult() ошибка JSON.parse(response)');
+					return;
+				}
+
+				for(var prop in printCalculator){
+					 //alert(typeof printCalculator[prop]);
+					 if(typeof printCalculator[prop] != 'function') printCalculator[prop] = null;// delete printCalculator[prop];
+				}
+				$("#calculatorDialogBox").remove();
+				//adsObj = ['4550','4551'];
+                $('#js-main_service_center').totalCommander('add_services',adsObj);
+				//location.reload();
+			}
 		}
 		
 	}
