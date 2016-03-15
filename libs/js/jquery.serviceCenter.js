@@ -252,9 +252,17 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		 *	@version 	16:31 11.03.2016
 		 */
 		update_total_window:function(){
+
+			var updater_ids = [],i = 0;
+			methods.variants_tbody.find('tr_checked').each(function(index, el) {
+				updater_ids[i++] = $(this).attr('data-dop_row_id');
+			});
+
+
 			$.post('', {
 			AJAX: 	'update_service_center',
-			row_id: $(this).parent().parent().attr("row_id")
+			row_id: $(this).parent().parent().attr("row_id"),// default_row_id
+			checked_rows: updater_ids
 			}, function(data, textStatus, xhr) {
 				if(data['myFunc'] !== undefined && data['myFunc'] == 'update_SC'){
 					// обновление
@@ -1587,21 +1595,23 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}else{
 						// цвета печати
 						/*	
-
 							Нужна функция(метод) возвращающая Object вида:
 							{
 								colors: '',
 								a_place_print: '',
 								format: ''
 							}
+
 							id_dop_data и id_uslugi - ЕСТЬ
 
 							service[i].id
 							service[i].dop_row_id
 
 							УТОЧНИТЬ У АНДРЕЯ, ГДЕ, КАК, ПОДЗАПРОС ИЛИ НЕТ, МБ ОН САМ НАПИШЕТ.
-
 						*/
+						var myObjNote = [];
+						printCalculator::convert_print_details_for_TotalCom(print_details);
+						
 						var colors = '';
 						service_row.append($('<td/>',{'class':'note_title','text':colors}));
 						// площадь
@@ -1720,9 +1730,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 								methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).click();
 							}
 						}));
-					}					
+					}										
 				}else{
-
 					service_row.append($('<td/>',{
 						click:function(e){
 							methods.delete_service($(this))
@@ -1813,8 +1822,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     				for (var i = service.length-1; i >= 0; i--) {
     					service_arr[service_num] = [];
     					service_arr[service_num++] = service[i];
-    				}
-    				
+    				}  				
     				
     			}
     		});
@@ -1826,8 +1834,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			// console.log('test >>',service)
 			// добавление строк услуг для выбранных вариантов
 			methods.create_service_row_from_variants(service);
-			
-
 			
 			// запоминаем данные услуг
 			methods.services_init();
