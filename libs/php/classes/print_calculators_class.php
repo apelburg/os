@@ -1,4 +1,5 @@
 <?php
+
     class printCalculator{
 	    function __consturct(){
 		}
