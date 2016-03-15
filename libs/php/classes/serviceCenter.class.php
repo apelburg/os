@@ -6,6 +6,7 @@
 		private $group_list_services = array();
 		private $group_list = array();
 		private $services_related_dop = array();
+		private $services_all = array();
 
 		function __construct(){
 			$this->db();
@@ -256,7 +257,7 @@
 				foreach ($position['variants'] as $variant) {
 
 
-					
+
 					if($this->first_default){
 						if($variant_num == 1){
 							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
