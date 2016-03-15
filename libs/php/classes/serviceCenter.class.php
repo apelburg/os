@@ -15,7 +15,7 @@
 		private $services_all = array();
 
 		function __construct(){
-			include_once('print_calculators_class.php');
+			// include_once('printCalculator.php');
 			$this->db();
 
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
@@ -274,7 +274,7 @@
 						foreach ($variant['services'] as $key => $value) {
 							$json = $variant['services'][$key]['print_details'];
 							$variant['services'][$key]['print_details'] = json_decode($json,'true');	
-							$variant['services'][$key]['description'] = printCalculator::convert_print_details_for_TotalCom($json);
+							$variant['services'][$key]['description'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
 						}
 						 
 						$html .= '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';

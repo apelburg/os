@@ -9,7 +9,10 @@
 	include './libs/php/classes/comments_class.php';
 	$comments = new Comments_for_query_class;
 	
+
+
 	// класс центр услуг
+	include_once ('./libs/php/classes/print_calculators_class.php');
 	include_once ('./libs/php/classes/serviceCenter.class.php');
 	new ServiceCenter();
 

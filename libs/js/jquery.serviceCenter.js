@@ -94,7 +94,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
   	
 
 		init : function( options ) {
-			var options = (typeof options === undefined)?'none':options;
 
 			return this.each(function(){
 				var $this = $(this);
@@ -236,8 +235,17 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.show();
 
 				// загрузка контента default
+				console.log(options)
 				if(options != 'update'){
 					methods.variants_tbody.find('.default_var').click();
+				}else{
+					console.log('654654')
+					// обновляем контент услуг относительно выбранных вариантов
+						methods.update_services_content();
+						// инициализируем работу нижней части окна
+						methods.services_init();
+						// поправка главного чекбокса группы
+						methods.checkbox_main_check();
 				}
 
 				// подсчитывает стоимость в окне
@@ -261,7 +269,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			$.post('', {
 			AJAX: 	'update_service_center',
-			row_id: $(this).parent().parent().attr("row_id"),// default_row_id
+			row_id: methods.variants_tbody.find('.default_var').attr("data-dop_row_id"),// default_row_id
 			checked_rows: updater_ids
 			}, function(data, textStatus, xhr) {
 				if(data['myFunc'] !== undefined && data['myFunc'] == 'update_SC'){
@@ -1609,9 +1617,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 							УТОЧНИТЬ У АНДРЕЯ, ГДЕ, КАК, ПОДЗАПРОС ИЛИ НЕТ, МБ ОН САМ НАПИШЕТ.
 						*/
-						var myObjNote = [];
-						printCalculator::convert_print_details_for_TotalCom(print_details);
-						
 						var colors = '';
 						service_row.append($('<td/>',{'class':'note_title','text':colors}));
 						// площадь
