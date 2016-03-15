@@ -13,10 +13,10 @@
 	 *  @param 		adsObj = ['2245','6543'] - id table rows rt_dop_uslugi
 	 *  @example 	$('#js-main_service_center').totalCommander('add_services',adsObj);
 	 */
+
 	/**
 	 *  обновление окна Тотал 
 	 *
-	 *  @param 		adsObj = ['2245','6543'] - id table rows rt_dop_uslugi
 	 *  @example 	$('#js-main_service_center').totalCommander('update_total_window');
 	 */
 
@@ -1610,14 +1610,11 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.comment)}));
 					}else{
 						// место печати
-						var format = '';
-						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.format}));
+						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
 						// цвета
-						var colors = '';
 						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.colors}));
 						// площадь
-						var a_place_print = '';
-						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
+						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.format}));
 					}
 				}else{ // из списка доп услуг
 					service_row.append($('<td/>',{'colspan':'3'}));
