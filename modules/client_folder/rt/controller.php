@@ -195,6 +195,9 @@
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
 						//$extra_data['quantity'] = 250;
 						$print_details = json_decode($extra_data['print_details'],true);
+						
+						 ;
+						 //echo '<pre>'; print_r(printCalculator::convert_print_details_for_TotalCom($extra_data['print_details'])); echo '</pre>';
 						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto' || $print_details['calculator_type'] =='manual')){
 							if($extra_data['quantity']!=$dop_row['quantity']){
 								 $reload['flag'] = true;
