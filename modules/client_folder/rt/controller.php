@@ -117,6 +117,10 @@
 	 // если что реализация сохранена, закомментирована внизу скрипта 
 	  
 	 // echo '<pre>'; print_r($rows[0]); echo '</pre>';
+	  /*if(@$_SESSION['access']['user_id']==18){ 
+		echo '<pre>'; print_r($rows[0]); echo '</pre>';
+      }  */
+	 
 	 
 	 $service_row[0] = array('quantity'=>'','price_in'=>'','price_out'=>'','row_status'=>'','glob_status'=>'');
 	 $glob_counter = 0;
@@ -124,6 +128,7 @@
 	 $svetofor_display_relay_status_all = 'on';
 	 foreach($rows[0] as $key => $row){
 	     $glob_counter++;
+		 
          // Проходим по первому уровню и определям некоторые моменты отображения таблицы, которые будут применены при проходе по второму
 		 // уровню массива, ряды таблицы будут создаваться там
 		 
@@ -163,7 +168,7 @@
 		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>---';
 		 // Проходим в цикле по второму уровню массива($row['dop_data']) на основе которого строится основной шаблон таблицы
 	     foreach($row['dop_data'] as $dop_key => $dop_row){
-		 
+		    $discount_arr = array();
 			/*if(@$_SESSION['access']['user_id']==18){ 
 			    // echo '<pre>'; print_r($dop_row); echo '</pre>';
 	        } */
@@ -210,6 +215,7 @@
 		
 							 } /**/
 						 }
+						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
 						 $summ_in[] = $extra_data['quantity']*$extra_data['price_in'];
 						 $summ_out[] = $extra_data['quantity']*$extra_data['price_out'];
@@ -242,7 +248,7 @@
 					     }
 						 
 						 
-						 
+						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
 						 $summ_in[] = ($extra_data['for_how']=='for_all')? $extra_data['price_in']:$extra_data['quantity']*$extra_data['price_in'];
 						 $summ_out[] = ($extra_data['for_how']=='for_all')? $extra_data['price_out']:$extra_data['quantity']*$extra_data['price_out'];
@@ -268,12 +274,15 @@
 					 
 					 $uslugi_details_trs[] = '<tr><td></td><td></td><td></td><td></td><td class="border_r">ИТОГО:</td><td class="right">'.number_format($uslugi_price_in,'2','.','').'</td><td class="right">'.number_format($uslugi_price_out,'2','.','').'</td></tr>';
 					 $uslugi_details_window = '<div class="uslugi_details_window"><table border="1"><tr class="head border_b"><td>№</td><td width="200" class="left">вид услуги</td><td width="200" class="left">место</td><td width="60">цвет</td><td width="60" class="border_r">площадь</td><td width="60">вх. / шт</td><td width="60">исх. / шт</td></tr>'.implode('',$uslugi_details_trs).'</table></div>';
-					 $uslugi_btn = '<span>'.count($summ_in).'</span>&nbsp;&nbsp;<span>'.count($summ_in).'</span>'.$uslugi_details_window;
+					 //$uslugi_btn = '<span>'.count($summ_in).'</span>&nbsp;&nbsp;<span>'.count($summ_in).'</span>'.$uslugi_details_window;
+					 $uslugi_btn = '<span>'.count($summ_in).'</span>'.$uslugi_details_window;
 				 }
 				 else{// если данных по дополнительным услугам  нет выводим кнопку добавление дополнительных услуг
 				     $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in = $uslugi_summ_out = 0;
-				     $uslugi_btn = '<span>+</span>&nbsp;&nbsp;<span>+</span>';
+				     //$uslugi_btn = '<span>+</span>&nbsp;&nbsp;<span>+</span>';
+					 $uslugi_btn = '<span>+</span>';
 				 }
+				 
 
 
 				 // подсчет сумм в ряду
@@ -333,8 +342,9 @@
 				 $svetofor_tr_display = ($row['svetofor_display']==1 && $dop_row['row_status']=='red')?'hidden':'';
 				 $currency = 'р';
 				 //$quantity_dim = 'шт';<td width="20" class=" left quantity_dim">'.$quantity_dim.'</td>
-				 $discount = $dop_row['discount'];
-				 $discount_str = $discount .'%';
+				 $discount_arr[] = $dop_row['discount'];
+				 $discount = round((float)(array_sum($discount_arr)/count($discount_arr)),2);
+				 $discount_str = number_format($discount,'2','.','') .'%';
 				 //$srock_sdachi = implode('.',array_reverse(explode('-',$dop_row['shipping_date'])));
 				  $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
 				 if($srock_sdachi=='00.00.0000') $srock_sdachi='';
