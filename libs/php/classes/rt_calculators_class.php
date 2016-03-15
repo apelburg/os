@@ -553,11 +553,24 @@
 			 else{ // необъединенный тираж
 			 
 			     if(isset($details_obj->print_details->dop_data_ids)){// распределение по нескольким расчетам
-
+                   // print_r($details_obj);
+					// exit; 
 					 $ln = count($details_obj->print_details->dop_data_ids);
 					 for($i=0; $i<$ln; $i++){
+					     if($details_obj->print_details->calculator_type=='auto'){
+							 //echo (int)$details_obj->print_details->quantity_details[$i];
+							 $YPriceParam = (isset($details_obj->print_details->dop_params->YPriceParam))? count($details_obj->print_details->dop_params->YPriceParam):1;
+	
+							 // получаем новые исходящюю и входящюю цену исходя из нового таража
+							 $new_price_arr = self::change_quantity_and_calculators_price_query((int)$details_obj->print_details->quantity_details[$i],$details_obj->print_details,$YPriceParam); 
+							 // здесь надо обпрботать превышение тиража
+							 //print_r($new_price_arr);
+							 
+							 $details_obj->price_in = $new_price_arr['price_in'];
+							 $details_obj->price_out = $new_price_arr['price_out'];/**/
+					     }
 					     // echo $dop_data_row_id."\r\n";
-						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->quantity);
+						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
 					     rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 				 }
@@ -1118,7 +1131,7 @@
 				$out = array("price_in"=> $new_priceIn,"price_out"=> $new_priceOut);
 				
 				// если тираж был меньше минимального значения в прайсе пересчитываем цены
-				if(isset($lackOfQuantIntPrice) && $lackOfQuantInPrice==true){
+				if(isset($lackOfQuantOutPrice) && $lackOfQuantInPrice==true){
 					$out['price_in'] = $new_priceIn*$minQuantInPrice/$quantity;
 					self::$lackOfQuantity = true;
 					self::$lackOfQuantityDetails[] = array('minQuantity'=>(int)$minQuantInPrice,'print_type'=>$print_details_obj->print_type);

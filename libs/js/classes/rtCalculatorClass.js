@@ -189,8 +189,13 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						   //tds_arr[j].onclick = this.swich_cols;
-						   $(tds_arr[j]).mousedown(function(){ rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide'); })
+						  //alert(1);
+						  tds_arr[j].onclick = function(){rtCalculator.swich_cols(this,'show');}
+						   /*$(tds_arr[j]).mousedown(function(){
+															alert(1);
+															rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide'); 
+															alert(2);
+															});*/
 						   
 					    }
 					}
@@ -302,9 +307,6 @@ var rtCalculator = {
 								}
 								if(tds_arr[j].getAttribute('editable') =='true') tds_arr[j].setAttribute("contenteditable",true);
 								tds_arr[j].style.outline="none";
-							}
-							if(tds_arr[j].getAttribute('discount_fieid') && !block){
-								tds_arr[j].onclick = this.show_discount_window;//(this,'.$dop_key.','.$client_id.')
 							}
 							if(tds_arr[j].getAttribute('expel')){
 								//tds_arr[j].onclick = this.expel_value_from_calculation;

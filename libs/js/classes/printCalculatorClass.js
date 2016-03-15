@@ -113,7 +113,7 @@ var printCalculator = {
 					function callback(response){ 
 						alert(response);
 						// console.log(response);
-						 //location.reload();
+						//location.reload();
 					}
 					
 				}
@@ -2306,9 +2306,9 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    // alert(response);
+		     alert(response);
 			// console.log(response);
-		    location.reload();
+		    //location.reload();
 		}
 		
 	}
@@ -2472,7 +2472,7 @@ var printCalculator = {
 			}
 				
 			//// console.log(printCalculator.dataForProcessing['price']);
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.lackOfQuantOutPrice){
+			if(printCalculator.type =='auto' && printCalculator.currentCalculationData[printCalculator.type].print_details.lackOfQuantOutPrice){
 				var text = "Минимальный тираж для данного вида нанесения - "+printCalculator.currentCalculationData[printCalculator.type].print_details.minQuantOutPrice+"шт стоимость будет расчитана как для минимального тиража"
 				echo_message_js(text,'system_message',4800);
 			}
