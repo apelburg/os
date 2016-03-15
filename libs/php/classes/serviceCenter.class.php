@@ -1,4 +1,10 @@
 <?php
+
+	/*
+		ВАЖНО!!!
+		1) в услугах сгрупированных по id, id в колонке united_calculations должны храниться по возрастанию
+
+	*/
 	class ServiceCenter  extends aplStdAJAXMethod{
 		private $Query;
 		private $first_default = true;
@@ -6,6 +12,7 @@
 		private $group_list_services = array();
 		private $group_list = array();
 		private $services_related_dop = array();
+		private $services_all = array();
 
 		function __construct(){
 			$this->db();
@@ -94,6 +101,7 @@
 		 *	@version 	11:06 09.03.2016
 		 */
 		protected function delete_services_AJAX(){
+
 			if(isset($_POST['service_ids']) && count($_POST['service_ids']) > 0){
 				$query = "DELETE FROM `".RT_DOP_USLUGI."` WHERE `id` IN ('".implode("','", $_POST['service_ids'])."')";
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -254,6 +262,9 @@
 				
 				$variant_num = 1;
 				foreach ($position['variants'] as $variant) {
+
+
+
 					if($this->first_default){
 						if($variant_num == 1){
 							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
@@ -286,7 +297,6 @@
 					$variant_num++;
 				}
 				$position_num++;
-
 				$old_color = $color;
 			}
 			return $html;

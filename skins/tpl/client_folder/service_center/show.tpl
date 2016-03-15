@@ -17,7 +17,6 @@
 					<tr class="">
 						<th></th>
 						<th class="">
-							<input type="checkbox" name="">
 							<div class="js-psevdo_checkbox"></div>
 						</th>
 						<th></th>

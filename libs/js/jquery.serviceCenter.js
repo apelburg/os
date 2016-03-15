@@ -22,8 +22,6 @@
 
 	 
 	 /*
-	     
-
 */
 
 /*
@@ -70,7 +68,7 @@ jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', fun
 
 // запуск из Карточки
 jQuery(document).on('click', '.open_service_center', function(event) {
-	$.post('', {
+	$.post(window.location.href+'&query_num='+$(this).attr("data-query_num"), {
 			AJAX: 	'get_service_center',
 			row_id: $(this).attr("data-row_id")
 		}, function(data, textStatus, xhr) {
@@ -238,7 +236,9 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.show();
 
 				// загрузка контента default
-				methods.variants_tbody.find('.default_var').click();
+				if(options != 'update'){
+					methods.variants_tbody.find('.default_var').click();
+				}
 
 				// подсчитывает стоимость в окне
 				methods.calc_price();
@@ -411,6 +411,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		 *	@version 	11:36 09.03.2016
 		 */
 		delete_services:function(service_ids){
+			var delete_all = 0;
+
 			$.post('', {
 				AJAX:'delete_services',
 				service_ids:service_ids
@@ -472,16 +474,38 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							
 							// вносим изменения в jsonObj в DOM в соответствии с mainObj
 							methods.variants_tbody.find(tr_id+' td.js-variant_services_json div').html(JSON.stringify(methods.mainObj[dop_row_id]['services']));
-
-
+							if (methods.mainObj[dop_row_id]['services'].length == 0) {
+								delete_all = 1;
+							};
 						}
+
+
 					}
+
+					
+
 					// редактируем JSON
 					console.log('массив ID от строк dop_uslugi',service_ids)
 					// обновляем контент услуг относительно выбранных вариантов
 					methods.update_services_content();
 					// инициализируем работу нижней части окна
 					methods.services_init();
+
+					
+					// если мы находимся в группе и в ней были удалены все услуги
+					if (methods.top_menu_div.find('.checked').index()>0 && methods.services_rows.length == 0) {
+						// удаляем вкладку группы
+						methods.top_menu_div.find('.checked').remove();
+						methods.top_menu_div.find('li').eq(0).addClass('checked');
+						// загрузка контента default
+						methods.variants_tbody.find('.default_var').click();
+						
+						// подсчитывает стоимость в окне
+						methods.calc_price();
+						return false;
+					}
+
+					
 				}				
 				
 			},'json');				
@@ -837,6 +861,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		calculator_add_variant:function(obj){
 			var i = 0,ind2 = 0;
 			delete methods.dataObj;
+			
+
 			methods.dataObj = []; 
 			methods.services_rows.each(function(index, el) {
 
@@ -855,18 +881,25 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 				// собираем информацию по сгруппированным услугам
 				var ind = 0 ;
-				//console.log(methods.services_rows)
+				//console.log(methods.services_rows);
 				
 				methods.dataObj[ind2]['usluga_id'] = [];
 				methods.dataObj[ind2]['usluga_id'] = $(this).find('.service_group').attr('data-id_s').split(',');
 				methods.dataObj[ind2]['calculator_type'] = $(this).attr('data-calculator_type');
-				
 				ind2++;
 			});
 			// console.info('добавить вариант из группы >>>', methods.dataObj);
 			// вызов калькулятора
-			printCalculator.startCalculator(methods.dataObj);
+			
+			console.log(JSON.stringify(methods.dataObj),methods.dataObj)
+
+			// printCalculator.startCalculator(methods.dataObj);
 		},
+
+		/*
+			Добрый день, 
+
+		*/
 		
 		calculator_remove_variant:function(){
 			var i = 0,so = 0;
@@ -907,7 +940,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		},
 		// вызов калькулятора на кнопку "Добавить услугу"
 		calculator_add_services:function(){
-
 			var i = 0;
 			methods.dataObj = []; 
 			methods.dataObj[0] = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
@@ -926,10 +958,13 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				i++;
 			});
 
-
-
 			// если выбрано несколько услуг 
 			if(i>1){
+				console.log('заглушка вызова объединенного тиража >> start');
+				methods.calculator_type = "none";
+				console.info('Будет произведён вызов калькулятора для разных макетов!!!');
+				console.log('заглушка вызова объединенного тиража >> end');
+
 				// если ещё не был выбран тип окна
 				if( !methods.calculator_type ){				
 					var html = 'Вы добавляете услугу для нескольких артикулов<br>Печать этих артикулов будет производиться с:';
@@ -994,7 +1029,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.dataObj[0]['usluga_id'] = obj.parent().find('.service_group').attr('data-id_s').split(',');
 			}
 			// calculator_type
-			methods.dataObj[0]['usluga_id']['calculator_type'] = obj.parent().attr('data-calculator_type');
+			methods.dataObj[0]['calculator_type'] = obj.parent().attr('data-calculator_type');
+			methods.dataObj[0]['discount'] = Number(obj.parent().find('.price.discount input').val());
 
 			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
@@ -1022,7 +1058,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				.find('td:nth-of-type(2).checked')
 				.removeClass('checked');
 
-			methods.variants_tbody.find('.default_var').addClass('tr_checked')
+			methods.variants_tbody.find('.default_var').addClass('tr_checked').find('.hover_group_class').removeClass('.hover_group_class')
 
 			methods.checkbox_main.parent().removeClass('checked-before').removeClass('checked');
 			// обновление блока услуг
@@ -1074,7 +1110,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
-				
+				console.log('ставим заглушку');
+				return false;
+
+
 				// если отжали чекбокс
 				if(obj.parent().parent().hasClass('tr_checked') && obj.parent().hasClass('checked')){
 					var html = 'Удалить из связанного тиража '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
@@ -1457,18 +1496,20 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.services_tbl.find('.service_th.js-service_spacer').removeClass('js-service_spacer');
 				var service = service_arr;
 			}
+
+
+			// console.log(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
 		create_service_row_from_variants:function(service){
 			// console.log('create_service_row_from_variants -- > ',service)
 			// ПЕРЕБОР УСЛУГ
-    		for (var i = service.length-1; i >= 0; i--) {
+    		for (var i = service.length-1; i >= 0; i--) {    			
     			// return true;
     			var td = '';
     			var check_alarm = ''; var alarm_notify = '';
 				var print_details = service[i].print_details;
-
 
     			service[i].discount = Number(service[i].discount)
     			service[i].price_in = Number(service[i].price_in);
@@ -1479,9 +1520,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     				service[i].quantity = Number(service[i].quantity);
     			}
 
-
     			var calculator_type = '';
-    			if(print_details.calculator_type){
+    			if(print_details && print_details.calculator_type){
     				calculator_type = print_details.calculator_type;	
     			}
 
@@ -1491,8 +1531,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 	    			'data-dop_uslugi_id':service[i].id,
 	    			'data-dop_data_id':service[i].dop_row_id
 	    		});
-    			
-	    		
 						
 				service_row.append( $('<td/>',{text:(i+1)}));
 
@@ -1541,7 +1579,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
-						
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details && print_details.dop_params) { // из калькулятора
 					if (print_details.place_type = "Дежурная услуга") {
@@ -1582,8 +1619,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				}
 				// if (print_details) {
 						// console.log(print_details)
-					// };
-						
+					// };	
 				// колонка комментариев
 				service_row.append($('<td/>',{
 					'class':'comment'+((service[i].tz=="")?'':' is_full'),
@@ -1693,7 +1729,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
-				
 				// добавляем строки услуг в DOM
     			methods.services_tbl.find('.service_th').show().after(service_row);
     		}

@@ -1456,7 +1456,15 @@ class Services extends Variants
 						$html .= '</td>';
 						
 						// тираж
-						$html .= '<td>';
+						
+						if($variant['united_calculations']!=''){
+							$html .= '<td class="service_group">';
+						}else{
+							$html .= '<td>';
+						}
+
+						
+						
 						if($service_attach['for_how'] == 'for_all'){
 							$html .= '<div class="greyText">';
 								$html .= $quantity;
