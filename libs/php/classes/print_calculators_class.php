@@ -168,14 +168,10 @@
 		    $print_details = (!is_object($print_details))? json_decode($print_details):$print_details;
 			// echo '<pre>'; print_r($print_details); echo '</pre>';//
 			
-				/*  {
-        colors: '',
-        a_place_print: '',
-        format: ''
-       }*/
 			
 			$out_put = array();
-			$out_put['a_place_print'] = 'место нанесения: '.$print_details->place_type;
+			//'место нанесения: '
+			$out_put['a_place_print'] = (isset($print_details->place_type))?$print_details->place_type:'';
 			
 			if(isset($print_details->dop_params->YPriceParam)){
 			    foreach($print_details->dop_params->YPriceParam as $index => $details){
