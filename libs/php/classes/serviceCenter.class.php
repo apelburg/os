@@ -274,7 +274,7 @@
 						foreach ($variant['services'] as $key => $value) {
 							$json = $variant['services'][$key]['print_details'];
 							$variant['services'][$key]['print_details'] = json_decode($json,'true');	
-							$variant['services'][$key]['description'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
+							$variant['services'][$key]['desc'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
 						}
 						 
 						$html .= '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';

@@ -1595,9 +1595,16 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
+
+				// if (service[i].uslugi_id == "0") {
+					console.log(service[i])					
+				// }
 				// ОПИСАНИЕ УСЛУГИ
-				if (print_details && print_details.dop_params) { // из калькулятора
-					if (print_details.place_type = "Дежурная услуга") {
+				if (print_details != null) { // из калькулятора
+					
+					console.log(service[i].uslugi_id);
+
+					if (service[i].uslugi_id == "0") {
 
 						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.comment)}));
 					}else{
@@ -1617,14 +1624,18 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 							УТОЧНИТЬ У АНДРЕЯ, ГДЕ, КАК, ПОДЗАПРОС ИЛИ НЕТ, МБ ОН САМ НАПИШЕТ.
 						*/
-						var colors = '';
-						service_row.append($('<td/>',{'class':'note_title','text':colors}));
-						// площадь
-						var a_place_print = '';
-						service_row.append($('<td/>',{'class':'note_title','text':a_place_print}));
+
+						
+						// console.log(print_details)
 						// место печати
 						var format = '';
-						service_row.append($('<td/>',{'class':'note_title',format}));
+						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.format}));
+						// цвета
+						var colors = '';
+						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.colors}));
+						// площадь
+						var a_place_print = '';
+						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
 					}
 
 					// console.log(service[i]);
