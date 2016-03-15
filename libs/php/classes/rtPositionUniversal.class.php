@@ -1442,7 +1442,13 @@ class Services extends Variants
 									if($service_attach['uslugi_id'] != 0){
 										$html .= @$services_arr[$service_attach['uslugi_id']]['name'];	
 									}else{
-										$html .= '<strong style="color:red">Услуга не определена</strong>';
+										// $html .= $this->printArr($service_attach);
+										$print_datails = json_decode($service_attach['print_details'], true);
+									
+										if(isset($print_datails['print_type'])){
+											$html .= ($print_datails['print_type']);
+										}
+										// $html .= Base64.decode(print_details.comment);
 									}
 	
 								}
