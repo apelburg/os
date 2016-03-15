@@ -1596,37 +1596,13 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}));
 				}
 
-				// if (service[i].uslugi_id == "0") {
-					console.log(service[i])					
-				// }
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
-					
-					console.log(service[i].uslugi_id);
 
 					if (service[i].uslugi_id == "0") {
 
 						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.comment)}));
 					}else{
-						// цвета печати
-						/*	
-							Нужна функция(метод) возвращающая Object вида:
-							{
-								colors: '',
-								a_place_print: '',
-								format: ''
-							}
-
-							id_dop_data и id_uslugi - ЕСТЬ
-
-							service[i].id
-							service[i].dop_row_id
-
-							УТОЧНИТЬ У АНДРЕЯ, ГДЕ, КАК, ПОДЗАПРОС ИЛИ НЕТ, МБ ОН САМ НАПИШЕТ.
-						*/
-
-						
-						// console.log(print_details)
 						// место печати
 						var format = '';
 						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.format}));
@@ -1637,15 +1613,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						var a_place_print = '';
 						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
 					}
-
-					// console.log(service[i]);
 				}else{ // из списка доп услуг
-					// console.log(service[i]);
 					service_row.append($('<td/>',{'colspan':'3'}));
 				}
-				// if (print_details) {
-						// console.log(print_details)
-					// };	
+				
 				// колонка комментариев
 				service_row.append($('<td/>',{
 					'class':'comment'+((service[i].tz=="")?'':' is_full'),
@@ -1656,50 +1627,50 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 				// тираж в услуге
 				if(service[i].united_calculations && service[i].united_calculations !== null){
-						// получаем id dop_data для данной группы
-						var serv_id = service[i].united_calculations.split(',');
-						// вычисляем id кнопки группы
-						var id_group = serv_id.join('_');
+					// получаем id dop_data для данной группы
+					var serv_id = service[i].united_calculations.split(',');
+					// вычисляем id кнопки группы
+					var id_group = serv_id.join('_');
 						
-						// собираем notify с информацией по объединённому тиражу
-						// var content = ;	
+					// собираем notify с информацией по объединённому тиражу
+					// var content = ;	
 
-						var td = $('<td/>',{
-							'data-id_s':service[i].united_calculations,
-							'data-list_':methods.get_group_name(service[i].united_calculations),
-							'class':'service_group',
-							'on':{
-								mouseenter:function(){
-									// добавляем подсветку вкладки группы
-									methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).addClass('led');
-									// добавляем сласс для подсветки строк группы
-									for(var k = 0, length1 = serv_id.length; k < length1; k++){
-										$('#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]+' td').addClass('hover_group_class');
-									}
-								},
-								mouseleave:function(){
-									// снимаем подсветку вкалдки группы
-									methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).removeClass('led');
-									// снимаем подсветку группы
-									for(var k = 0, length1 = serv_id.length; k < length1; k++){
-										$('#dop_data_' + methods.depending_on_the_services_and_options[serv_id[k]]+' td').removeClass('hover_group_class');
-									}
+					var td = $('<td/>',{
+						'data-id_s':service[i].united_calculations,
+						'data-list_':methods.get_group_name(service[i].united_calculations),
+						'class':'service_group',
+						'on':{
+							mouseenter:function(){
+								// добавляем подсветку вкладки группы
+								methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).addClass('led');
+								// добавляем сласс для подсветки строк группы
+								for(var k = 0, length1 = serv_id.length; k < length1; k++){
+									$('#dop_data_'+methods.depending_on_the_services_and_options[serv_id[k]]+' td').addClass('hover_group_class');
 								}
 							},
-							'click':function(){
-								// снимаем подсветку кнопки
-								methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).click();
-							}
-						}).append($('<span/>',{
-							'data-id_s':service[i].united_calculations,
-							'text':service[i].quantity+' шт',
-							'on':{ 
-								mouseenter:function(){
-									// показываем дополнительную информацию
-									$(this).notify(  methods.get_service_notify( $(this).attr('data-id_s').split(',') ),{ position:"top center",className:'total_10px' });
+							mouseleave:function(){
+								// снимаем подсветку вкалдки группы
+								methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).removeClass('led');
+								// снимаем подсветку группы
+								for(var k = 0, length1 = serv_id.length; k < length1; k++){
+									$('#dop_data_' + methods.depending_on_the_services_and_options[serv_id[k]]+' td').removeClass('hover_group_class');
 								}
 							}
-						}))
+						},
+						'click':function(){
+							// снимаем подсветку кнопки
+							methods.top_menu_div.find('li#list_'+$(this).attr('data-list_')).click();
+						}
+					}).append($('<span/>',{
+						'data-id_s':service[i].united_calculations,
+						'text':service[i].quantity+' шт',
+						'on':{ 
+							mouseenter:function(){
+								// показываем дополнительную информацию
+								$(this).notify(  methods.get_service_notify( $(this).attr('data-id_s').split(',') ),{ position:"top center",className:'total_10px' });
+							}
+						}
+					}))
 							
 					service_row.append(td);
 				}else {
