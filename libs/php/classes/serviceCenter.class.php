@@ -15,6 +15,7 @@
 		private $services_all = array();
 
 		function __construct(){
+			// include_once('printCalculator.php');
 			$this->db();
 
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
@@ -196,9 +197,6 @@
 					$this->responseClass->addMessage('редактирование скидки / наценки');
 					break;
 			}
-			
-
-			
 		}
 
 		/**
@@ -268,14 +266,15 @@
 					if($this->first_default){
 						if($variant_num == 1){
 							$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" class="default_var tr_checked">';		
-						}
-						
+						}						
 					}else{
 						$html .= '<tr data-quantity="'.$variant['quantity'].'" data-dop_row_id="'.$variant['id'].'" data-art_id="'.$position['art_id'].'" id="dop_data_'.$variant['id'].'" '.(($variant['id'] == (int)$_POST['row_id'])?' class="tr_checked default_var"':'').'>';
 					}	
 
 						foreach ($variant['services'] as $key => $value) {
-							$variant['services'][$key]['print_details'] = json_decode($variant['services'][$key]['print_details'],'true');	
+							$json = $variant['services'][$key]['print_details'];
+							$variant['services'][$key]['print_details'] = json_decode($json,'true');	
+							$variant['services'][$key]['desc'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
 						}
 						 
 						$html .= '<td class="js-variant_services_json"><div>'.json_encode($variant['services']).'</div></td>';

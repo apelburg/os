@@ -1367,7 +1367,7 @@ class Services extends Variants
 				}
 			}
 		}
-		include_once(ROOT."/libs/php/classes/print_calculators_class.php");
+		// include_once(ROOT."/libs/php/classes/print_calculators_class.php");
 		//foreach ($services_arr as $key => $service) {
 			foreach ($arr as $key2 => $service_attach) {
 				// исключение на ошибку в записи uslugi_id
@@ -1457,8 +1457,8 @@ class Services extends Variants
 						
 						// тираж
 						
-						if($variant['united_calculations']!=''){
-							$html .= '<td class="service_group">';
+						if($service_attach['united_calculations']!=''){
+							$html .= '<td class="service_group"  onClick="$(\'.open_service_center:visible\').click()">';
 						}else{
 							$html .= '<td>';
 						}
