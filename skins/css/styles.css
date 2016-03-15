@@ -1788,9 +1788,9 @@ ul.central_menu li a:hover{
 #showProcessingDetailsBox .calculatorPriceTbl td{ font-size: 11px;border: #DDD  solid 1px; text-align:right; padding: 3px 2px;}
 #showProcessingDetailsBox .calculatorPriceTbl td:first-of-type { text-align:center;}
 #showProcessingDetailsBox .cap{ color:#777;margin-bottom: 2px;}
-#calculatorDialogBox .calculatorMenuCell { float:left; padding:6px 40px; color:#000000; border-left: 1px solid #8b8a89; background-color:#99B52A}
+#calculatorDialogBox .calculatorMenuCell { float:left; padding:6px 40px; color:#FFFFFF; border-left: 1px solid #8b8a89; background-color:#6D6E73}
 #calculatorDialogBox .quantityInfoField { position:absolute; right:17px; top:6px; }
-#calculatorDialogBox .deepGreyBg { background-color:#6D6E73; color:#FFFFFF; } 
+#calculatorDialogBox .deepGreyBg { background-color:#99B52A; color:#000000; } 
 #calculatorDialogBox .menuContainer {margin-bottom: 40px; background-color:#EEEEEE; border: 0px solid #8b8a89; height:30px;width:100%;}
 #calculatorDialogBox .calculatorDistributionTbl { border-collapse:collapse}
 #calculatorDialogBox .calculatorDistributionTbl td { vertical-align:top; font-size: 11px; border-bottom: 1px solid #8b8a89;}
@@ -1829,8 +1829,8 @@ ul.central_menu li a:hover{
 #calculatorDialogBox .dopParametrsTbl td.multi{ width: 40px;  font-size: 9px;}
 #calculatorDialogBox .dopParametrsTbl td.multi input {width: 13px;}
 #calculatorDialogBox .commentsTextArea{ margin: 0 0 20px 50px; width: 570px;}
-#calculatorDialogBox .itogDisplayTbl{ margin:7px 90px 10px 90px; border-collapse:collapse}
-#calculatorDialogBox .itogDisplayTbl td{width: 105px; height:25px; text-align: right; border:#CCC solid 0px; font-size: 16px; font-weight:bold; font-family:Arial, Helvetica, sans-serif}
+#calculatorDialogBox .itogDisplayTbl{ margin:7px 50px 10px 90px; border-collapse:collapse}
+#calculatorDialogBox .itogDisplayTbl td{/*width: 175px;*/ padding:0 8px; height:25px; text-align: right; border:#CCC solid 0px; font-size: 16px; font-weight:bold; font-family:Arial, Helvetica, sans-serif}
 #calculatorDialogBox .itogDisplayTbl tr.head td{ font-size: 11px; font-weight:100; color:#AAA; padding:0 8px;}
 #calculatorDialogBox .itogDisplayTbl td.title{ width: 70px; text-align: left; font-size: 12px; font-weight:100;}
 #calculatorDialogBox .BtnsDiv{margin:2px 0 10px 77px; width: 585px; height:45px; border:#CCC solid 0px;}

@@ -529,6 +529,7 @@ var printCalculator = {
 		for(var type in calcTypes){
 			var btn = btnTpl.cloneNode(true);
 			btn.innerHTML = calcTypes[type].title;
+			btn.id = 'topMenuBtn'+type;
 			btn.setAttribute('calc_type',type);
 		    btn.onclick = function(){ 
 		    	
@@ -564,7 +565,7 @@ var printCalculator = {
 			printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_out]')[0]);
 		}
 		
-		$(dialogBox).dialog({autoOpen: false, position:{ at: "top+25%", of: window } ,title: "Расчет нанесения логотипа "+printCalculator.levelsRU[printCalculator.level],modal:true,width: 680,close: function() {this.remove();}});
+		$(dialogBox).dialog({autoOpen: false, position:{ at: "top+25%", of: window } ,title: "Расчет нанесения логотипа "+printCalculator.levelsRU[printCalculator.level],modal:true,width: 680,close: function() {this.remove();  if(typeof printCalculator.type !== 'undefined'){ delete printCalculator.type;} if(typeof printCalculator.dataObj_toEvokeCalculator !== 'undefined'){ delete printCalculator.dataObj_toEvokeCalculator;}  }});
 		$(dialogBox).dialog("open");
 	}
 	,
@@ -1624,13 +1625,13 @@ var printCalculator = {
 		// alert('out '+price_out+' - in '+price_in);
 		// если полученная цена оказалась равна 0 то значит стоимость не  указана
 	    if(parseFloat(price_out) == 0 || parseFloat(price_in) == 0){
-			
+			//alert(price_out+' '+price_in);
 			var sourse_tbls = ['priceIn_tbl','priceOut_tbl'];
 			for(index in sourse_tbls){
 			    var sourse_tblXindex = sourse_tbls[index]+'Xindex';
 				// alert(printCalculator.currentCalculationData[printCalculator.type].print_details.print_id); 
 				// alert(printCalculator.calculatorParamsObj.print_types[printCalculator.currentCalculationData[printCalculator.type].print_details.print_id][sourse_tbls[index]][0][0]['maxXIndex']);
-				// alert(printCalculator.currentCalculationData[printCalculator.type].print_details[sourse_tblXindex]);
+			    // alert(printCalculator.currentCalculationData[printCalculator.type].print_details[sourse_tblXindex]);
 				// если это последние ряды прайс значит это лимит
 				if(printCalculator.calculatorParamsObj.print_types[printCalculator.currentCalculationData[printCalculator.type].print_details.print_id][sourse_tbls[index]][0][0]['maxXIndex'] == printCalculator.currentCalculationData[printCalculator.type].print_details[sourse_tblXindex]){
 	
@@ -1654,7 +1655,15 @@ var printCalculator = {
 		if(printCalculator.currentCalculationData[printCalculator.type].print_details.lackOfQuantOutPrice){
 			price_in = price_in*printCalculator.currentCalculationData[printCalculator.type].print_details.minQuantInPrice/printCalculator.currentCalculationData[printCalculator.type].quantity;
 		}
+		
+		
+		if(printCalculator.cancelSaveReslut){
+			alert(caution);
+			delete printCalculator.cancelSaveReslut;
+			printCalculator.changeMenu(document.getElementById('topMenuBtnmanual'));
+			printCalculator['load_manual_calc']('manual');
 			
+		}
 		//console.log('>>> YPriceParam.length  --   priceIn_tblXindex  priceOut_tblXindex  --  price_in  price_out <<<');
 		//console.log( printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params.YPriceParam.length + ' -- '+printCalculator.currentCalculationData[printCalculator.type].print_details.priceIn_tblXindex + ' '+ printCalculator.currentCalculationData[printCalculator.type].print_details.priceOut_tblXindex+' -- '+ price_in + ' '+ price_out );
 		
@@ -2297,9 +2306,9 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    alert(response);
+		    // alert(response);
 			// console.log(response);
-		     //location.reload();
+		    location.reload();
 		}
 		
 	}

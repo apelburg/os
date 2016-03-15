@@ -430,8 +430,8 @@
          }
 		 static function save_calculatoins_result_router($details_obj){
 		    global $mysqli;
-		    print_r($details_obj);
-			exit;
+		    //print_r($details_obj);
+			//exit;
 		    if(isset($details_obj->print_details)){
 		        if($details_obj->print_details->calculator_type=='free'){
 					// надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
