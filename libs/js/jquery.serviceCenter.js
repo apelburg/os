@@ -388,6 +388,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						methods.depending_on_the_options_and_services[dop_row_id][methods.depending_on_the_options_and_services[dop_row_id].length] = new_services[dop_row_id][i];
 					}
 				}
+				// обновляем контент услуг относительно выбранных вариантов
+				methods.update_services_content();
+				// инициализируем работу нижней части окна
+				methods.services_init();
+				// поправка главного чекбокса группы
+				methods.checkbox_main_check();
 				// console.log(new_services);
 			},'json');
 		},
@@ -964,7 +970,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			// console.info('добавить вариант из группы >>>', methods.dataObj);
 			// вызов калькулятора
 			
-			console.log(JSON.stringify(methods.dataObj),methods.dataObj)
+			// console.log(JSON.stringify(methods.dataObj),methods.dataObj)
 
 			// printCalculator.startCalculator(methods.dataObj);
 		},
@@ -1015,7 +1021,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		calculator_add_services:function(){
 			var i = 0;
 			methods.dataObj = []; 
-			methods.dataObj[0] = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
+			methods.dataObj[0] = new Array('action','type','usluga_id','dop_data_ids','quantity','art_id'); 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
 			methods.dataObj[0]['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
 			methods.dataObj[0]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
 			methods.dataObj[0]['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
@@ -1072,17 +1078,17 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 					
 					delete methods.calculator_type;
-					console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
 					// вызов калькулятора
+					console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj,JSON.stringify(methods.dataObj));		
 					printCalculator.startCalculator(methods.dataObj);	
 				}
 			}else{
-				console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
 				// вызов калькулятора
+				console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj,JSON.stringify(methods.dataObj));		
 				printCalculator.startCalculator(methods.dataObj);
 			}
 
-					
+			
 		},
 		// клик по названию услуги в списке
 		calculator_edit_the_service:function(obj){
@@ -1577,7 +1583,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			}
 
 			// возвращаем объект со списком услуг
-			console.warn(service)
+			// console.warn(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
@@ -1589,7 +1595,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     			var td = '';
     			var check_alarm = ''; var alarm_notify = '';
 				var print_details = service[i].print_details;
-
     			service[i].discount = Number(service[i].discount)
     			service[i].price_in = Number(service[i].price_in);
     			service[i].price_out = Number(service[i].price_out);
@@ -1598,24 +1603,20 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     			}else{
     				service[i].quantity = Number(service[i].quantity);
     			}
-
     			var calculator_type = '';
     			if(print_details && print_details.calculator_type){
     				calculator_type = print_details.calculator_type;	
     			}
-
     			service_row = $('<tr/>',{
 	    			'class':'service',
 	    			'data-calculator_type':calculator_type,
 	    			'data-dop_uslugi_id':service[i].id,
 	    			'data-dop_data_id':service[i].dop_row_id
-	    		});
-						
+	    		});		
 				service_row.append( $('<td/>',{text:(i+1)}));
 
 				// иконка будильник
 				var div = $('<div/>',{'class':'alarm_clock'}).css({'float':'left','width':'100%','height':'100%'});
-				
 				
 				if(print_details && print_details.dop_params && print_details.dop_params.coeffs && print_details.dop_params.coeffs.summ){
 					// console.log(print_details.dop_params.coeffs.summ)
@@ -1635,7 +1636,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					// console.log(print_details);	
 				}
 				service_row.append($('<td/>').append( div ));
-						
 				// название услуги из калькулятора
 				if(print_details && print_details.print_type){
 					service_row.append($('<td/>',{
@@ -1666,6 +1666,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.commentForClient)}));
 					}else{
+						console.log(service[i]);
 						// место печати
 						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
 						// цвета
@@ -1676,7 +1677,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				}else{ // из списка доп услуг
 					service_row.append($('<td/>',{'colspan':'3'}));
 				}
-				
 				// колонка комментариев
 				service_row.append($('<td/>',{
 					'class':'comment'+((service[i].tz=="")?'':' is_full'),
@@ -1684,7 +1684,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						methods.edit_service_comments($(this));
 					}
 				}));
-
 				// тираж в услуге
 				if(service[i].united_calculations && service[i].united_calculations !== null){
 					// получаем id dop_data для данной группы
@@ -1736,8 +1735,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					service_row.append(td);
 				}else {
 					service_row.append($('<td/>',{'text':service[i].quantity+' шт'}));
-				}
-						
+				}	
 				// цена входящая
 				service_row.append($('<td/>',{'class':'price price_in'}).append($('<div/>',{'html':'<div class="for_one"><span>'+round_money(service[i].price_in)+'</span>р</div>'})).append($('<div/>',{'html':'<div class="for_all"><span>'+round_money(service[i].price_in*Number(service[i].quantity))+'</span>р</div>'})));
 				// цена без скидки
@@ -1760,7 +1758,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}					
 				});
-
 
 				// console.log(service[i])
 				service_row.append($('<td/>',{'class':'price discount'}).append(input).append('%'));

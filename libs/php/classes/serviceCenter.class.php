@@ -50,9 +50,17 @@
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
 			$arr = array();
+			$i = 0;
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
-					$arr[$row['dop_row_id']][] = $row;
+					$arr[$row['dop_row_id']][$i] = $row;
+
+					$json = $row['print_details'];
+					
+
+					$arr[$row['dop_row_id']][$i]['print_details'] = json_decode($json,true);	
+					$arr[$row['dop_row_id']][$i]['desc'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
+
 				}
 			}
 			echo json_encode($arr);
