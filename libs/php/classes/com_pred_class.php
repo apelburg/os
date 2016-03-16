@@ -1044,7 +1044,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							$print_block[] = '<table border="0" style="font-family:arial;font-size:13px;right;margin:15px 0 0 11px;width:100%;border-collapse:collapse;width:350px;table-layout:fixed;">';
 							$print_block[] = '<tr><td valign="top" style="width:90px;">Вид '.(($show_count)?(++$counter2).': ':'').' </td><td style="width:170px;">'.$print_data['block1']['print_type'].'</td></tr>';
 						    if(!isset($print_details_obj->calculator_type) || (isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type != 'free')) $print_block[] = '<tr><td valign="top">Место нанесения: </td><td>'.$print_data['block1']['place_type'].'</td></tr>';
-							if(isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free') $print_block[] = '<tr><td valign="top"></td><td>'.$print_details_obj->commentForClient.'</td></tr>';
+							if(isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free') $print_block[] = '<tr><td valign="top"></td><td>'.base64_decode($print_details_obj->commentForClient).'</td></tr>';
 							
 							if(isset($print_data['block1']['price_data']['y_params'])){
 								 $print_block[] = '<tr><td valign="top">'.$print_data['block1']['price_data']['cap'].': </td><td>'.count($print_data['block1']['price_data']['y_params']).' ('.implode(', ',$print_data['block1']['price_data']['y_params']).')</td></tr>';
