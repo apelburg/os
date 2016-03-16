@@ -118,7 +118,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					methods.mainObj[dop_row_id]['variant'] = jQuery.parseJSON($(this).find('.js-variant_info div').html());
 					methods.mainObj[dop_row_id]['services'] = [];
 					methods.mainObj[dop_row_id]['services'] = jQuery.parseJSON($(this).find('.js-variant_services_json div').html());
-					// console.log(jQuery.parseJSON($(this).find('.js-variant_services_json div').html()))
 				});
 
 				// объект зависимостей услуг от вариантов
@@ -169,50 +168,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				// сохраняем ИТОГО
 				methods.services_itogo_row = methods.services_tbl.find('tr.itogo');
 				methods.services_itogo_row.find('.delete_all_services').click(function(){
-					var delete_service_ids = [];
-					if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
-						var i = 0;
-						// перебираем DOM услуг
-						methods.services_rows.each(function(index, el) {
-							// get group services
-							if($(this).find('.service_group').length > 0){
-								// получаем id группы услуг
-								var service_id_arr = $(this).find('.service_group').attr('data-id_s').split(',');
-								// записываем id для удаления
-								for(var k = 0, length1 = service_id_arr.length; k < length1; k++){
-									delete_service_ids[i] = [];	
-									delete_service_ids[i++] = service_id_arr[k];	
-								}
-								
-								$(this).remove();
-							}else{
-
-							}							
-						});
-						// echo_message_js('Мы в группе. Удалить все прикреплённые связанные услуги');
-					}else{
-						var i = 0;						
-						var group_services_num = 0;
-						// перебираем DOM услуг
-						methods.services_rows.each(function(index, el) {
-							// get no group services
-							if($(this).find('.service_group').length == 0){								
-								delete_service_ids[i] = [];	
-								delete_service_ids[i++] = $(this).attr('data-dop_uslugi_id');	
-								$(this).remove();
-							}else{
-								group_services_num++;
-							}							
-						});
-
-						if(group_services_num > 0){
-							echo_message_js('В варианте расчета имеются связанные услуги, для их удаления пройдите в соответствующий тираж.');	
-						}
-						
-					}
-					console.log(delete_service_ids)
-					methods.delete_services(delete_service_ids);
-					
+					methods.delete_all_services();					
 				})
 				methods.services_itogo_row.find('.price.discount input').bind('keyup', function(event) {
 					methods.save_main_discount($(this).val());
@@ -264,6 +220,95 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			});
 
 		},
+		/**
+		 *	удаление всех услуг для выбранных артикулов
+		 *
+		 *	@param 		Alexey Kapitonov
+		 *	@version 	10:31 16.03.2016
+		 */
+		 delete_all_services:function(){
+		 	// проверка ответ в окне
+			if(!methods.confirm){
+				var title = "Подтверждение";
+				var html = "Вы уверены, что хотите удалить все услуги для выбранных артикулов?";
+				var buttons = [];
+				buttons.push({
+				    text: 'Да',
+				    class:  'button_yes_or_no no',
+				    click: function() {
+				    	methods.confirm = "yes";
+				    	$('#js-alert_union').dialog('destroy').remove();  
+				    	methods.delete_all_services();		    	
+				    }
+				});
+				buttons.push({
+				    text: 'Нет',
+				    class:  'button_yes_or_no yes',
+				    click: function() {
+				    	methods.confirm = "none";
+				    	$('#js-alert_union').dialog('destroy').remove();  
+				    	methods.delete_all_services(); 		    	
+				    }
+				});
+				methods.create_small_dialog(html,title,buttons);						
+				return false;
+			}else{
+				// если ответ положительный
+				if(methods.confirm == 'yes'){
+					// меняем checkbox
+					delete_services();
+
+					
+				}
+				delete methods.confirm;						
+			}
+					
+			function delete_services(){
+				var delete_service_ids = [];
+				if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
+					var i = 0;
+					// перебираем DOM услуг
+					methods.services_rows.each(function(index, el) {
+						// get group services
+						if($(this).find('.service_group').length > 0){
+							// получаем id группы услуг
+							var service_id_arr = $(this).find('.service_group').attr('data-id_s').split(',');
+							// записываем id для удаления
+							for(var k = 0, length1 = service_id_arr.length; k < length1; k++){
+								delete_service_ids[i] = [];	
+								delete_service_ids[i++] = service_id_arr[k];	
+							}
+							
+							$(this).remove();
+						}else{
+
+						}							
+					});
+					// echo_message_js('Мы в группе. Удалить все прикреплённые связанные услуги');
+				}else{
+					var i = 0;						
+					var group_services_num = 0;
+					// перебираем DOM услуг
+					methods.services_rows.each(function(index, el) {
+						// get no group services
+						if($(this).find('.service_group').length == 0){								
+							delete_service_ids[i] = [];	
+							delete_service_ids[i++] = $(this).attr('data-dop_uslugi_id');	
+							$(this).remove();
+						}else{
+							group_services_num++;
+						}							
+					});
+
+					if(group_services_num > 0){
+						echo_message_js('В варианте расчета имеются связанные услуги, для их удаления пройдите в соответствующий тираж.');	
+					}
+							
+				}
+				console.log(delete_service_ids)
+				methods.delete_services(delete_service_ids);
+			}
+		 },
 		/**
 		 *	полное обновление окна
 		 *
@@ -1026,12 +1071,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 					
 					delete methods.calculator_type;
-					console.info('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
+					console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
 					// вызов калькулятора
 					printCalculator.startCalculator(methods.dataObj);	
 				}
 			}else{
-				console.info('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
+				console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj);
 				// вызов калькулятора
 				printCalculator.startCalculator(methods.dataObj);
 			}
@@ -1531,6 +1576,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			}
 
 			// возвращаем объект со списком услуг
+			// console.warn(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
@@ -1617,7 +1663,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 					if (service[i].uslugi_id == "0") {
 
-						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.comment)}));
+						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.commentForClient)}));
 					}else{
 						// место печати
 						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
@@ -1929,41 +1975,29 @@ $.extend({
 			$('#js-main_service_center').totalCommander('hide');
 		}
 
-			$('body').append($('<div/>',{
-				"id":'js-main_service_center'
-			}).html(html));
+		$('body').append($('<div/>',{
+			"id":'js-main_service_center'
+		}).html(html));
 			
-			var title = 'Центр услуг';			
+		var title = 'Центр услуг';			
 			
-			$('#js-main_service_center').dialog({
-			        width: $(window).width()+10,
-			        height: $(window).height(),
-			        modal: true,
-			        title : title,
-			        autoOpen : false,
-			        beforeClose: function( event, ui ) {
-			        	// перезагрузка RT
-			        	$.SC_reload_RT_content();
-			        },
-			        closeOnEscape: false
-			        // buttons: buttons          
-			    }).parent().css({'top':'0px'});
-			
-
-			
-			// добавляем блок кнопок
-			$.SC_createButton();
-			// выравнивем колонку тираж в верхней таблице по нижней
-			
-			// console.log($.div_variants.removeAttr('id'))
-			// инициализируем плагин
-			$('#js-main_service_center').totalCommander();
-		
-
-
-		
-
-		
+		$('#js-main_service_center').dialog({
+			width: $(window).width()+10,
+			height: $(window).height(),
+			modal: true,
+			title : title,
+			autoOpen : false,
+			beforeClose: function( event, ui ) {
+			// перезагрузка RT
+			$.SC_reload_RT_content();
+			},
+			closeOnEscape: false
+			// buttons: buttons          
+		}).parent().css({'top':'0px'});
+					
+		// добавляем блок кнопок
+		$.SC_createButton();
+		$('#js-main_service_center').totalCommander();
 		
 	},
 	// перезагрузка RT
@@ -2034,10 +2068,10 @@ $.extend({
 });
 
 
-// закрытие окна на esc
-$(document).keyup(function (e) {
-    if (e.keyCode == 27) {
-    	$('#js-main_service_center').dialog('destroy').remove();
-    	$.SC_reload_RT_content();
-    }
-});
+// // закрытие окна на esc
+// $(document).keyup(function (e) {
+//     if (e.keyCode == 27) {
+//     	$('#js-main_service_center').dialog('destroy').remove();
+//     	$.SC_reload_RT_content();
+//     }
+// });
