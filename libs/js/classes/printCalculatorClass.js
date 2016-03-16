@@ -282,6 +282,14 @@ var printCalculator = {
 		}	
 	}
 	,
+	cleanOutCalculator:function(){
+		for(var prop in printCalculator){
+			 //alert(typeof printCalculator[prop]);
+			 if(typeof printCalculator[prop] != 'function')  delete printCalculator[prop];
+		}
+		$("#calculatorDialogBox").remove();
+	}
+	,
 	launch_dop_uslugi_panel:function(data_AboutPrintsArr){
 		console.log('>>> launch_dop_uslugi_panel start');
 		console.log(data_AboutPrintsArr);
@@ -433,7 +441,7 @@ var printCalculator = {
 		
 		document.body.appendChild(box);
 		// открываем панель
-		$("#calculatorDopUslugiBox").dialog({autoOpen: false, position:{ at: "top+35%", of: window } ,title: "Печать для этой позиции",modal:true,width: 730,close: function() {$(this).remove();$("#calculatorDopUslugiBox").remove();}});
+		$("#calculatorDopUslugiBox").dialog({autoOpen: false, position:{ at: "top+35%", of: window } ,title: "Печать для этой позиции",modal:true,width: 730,close: function() {$(this).remove(); printCalculator.cleanOutCalculator();}});
 		$("#calculatorDopUslugiBox").dialog("open");
 	}
 	,
@@ -508,6 +516,8 @@ var printCalculator = {
 		console.log('>>> build_print_calculator');
 	   	console.log(printCalculator.calculatorParamsObj);
 		console.log('<<< build_print_calculator');
+		
+		console.log('<<< typeof'+typeof printCalculator.type);
 
 		if(typeof printCalculator.type === 'undefined') printCalculator.type = 'auto';
 		
@@ -551,12 +561,13 @@ var printCalculator = {
 		
 		// контейнер для калькуляторов
 		printCalculator.commonContainer = document.createElement('DIV');
-	    dialogBox.appendChild(printCalculator.commonContainer);		
+	    dialogBox.appendChild(printCalculator.commonContainer);
 		
+		console.log('>>> build_print_calculator2'+printCalculator.type);
 		// загружаем текуший калькулятор
 		printCalculator['load_'+printCalculator.type+'_calc'](printCalculator.type);
 	  
-		
+		console.log('>>> build_print_calculator3');
 		// открываем окно с калькулятором
 		document.body.appendChild(dialogBox);
 		if(printCalculator.type=='manual' || printCalculator.type=='free'){
@@ -565,7 +576,7 @@ var printCalculator = {
 			printCalculator.noneAutoCalcProcessing($('#itogDisplayTbl input[name=price_out]')[0]);
 		}
 		
-		$(dialogBox).dialog({autoOpen: false, position:{ at: "top+25%", of: window } ,title: "Расчет нанесения логотипа "+printCalculator.levelsRU[printCalculator.level],modal:true,width: 680,close: function() {this.remove();  if(typeof printCalculator.type !== 'undefined'){ delete printCalculator.type;} if(typeof printCalculator.dataObj_toEvokeCalculator !== 'undefined'){ delete printCalculator.dataObj_toEvokeCalculator;}  }});
+		$(dialogBox).dialog({autoOpen: false, position:{ at: "top+25%", of: window } ,title: "Расчет нанесения логотипа "+printCalculator.levelsRU[printCalculator.level],modal:true,width: 680,close: function() { this.remove(); printCalculator.cleanOutCalculator(); }});
 		$(dialogBox).dialog("open");
 	}
 	,
@@ -2199,7 +2210,7 @@ var printCalculator = {
 		box.appendChild(total_details);
 		document.body.appendChild(box);
 		
-		$("#showProcessingDetailsBox").dialog({autoOpen: false, position:{ at: "top+35%", of: window } ,title: "Детали расчета",width: 490,close: function() {this.remove();$("#showProcessingDetailsBox").remove();}});
+		$("#showProcessingDetailsBox").dialog({autoOpen: false, position:{ at: "top+35%", of: window } ,title: "Детали расчета",width: 490,close: function() {this.remove();}});
 		$("#showProcessingDetailsBox").dialog("open");
 		 //
         //
@@ -2315,11 +2326,7 @@ var printCalculator = {
 			// console.log(response);
 		    // location.reload();
 			if(printCalculator.currentCalculationData[printCalculator.type].action == 'update'){
-				for(var prop in printCalculator){
-					 //alert(typeof printCalculator[prop]);
-					 if(typeof printCalculator[prop] != 'function') printCalculator[prop] = null;// delete printCalculator[prop];
-				}
-				$("#calculatorDialogBox").remove();
+				printCalculator.cleanOutCalculator();
 				$('#js-main_service_center').totalCommander('update_total_window');
 			}
 			if(printCalculator.currentCalculationData[printCalculator.type].action == 'new'){
@@ -2329,13 +2336,7 @@ var printCalculator = {
 					alert('неправильный формат данных in printCalculator.saveCalculatorResult() ошибка JSON.parse(response)');
 					return;
 				}
-
-				for(var prop in printCalculator){
-					 //alert(typeof printCalculator[prop]);
-					 if(typeof printCalculator[prop] != 'function') printCalculator[prop] = null;// delete printCalculator[prop];
-				}
-				$("#calculatorDialogBox").remove();
-				//adsObj = ['4550','4551'];
+                printCalculator.cleanOutCalculator();
                 $('#js-main_service_center').totalCommander('add_services',adsObj);
 				//location.reload();
 			}
