@@ -109,12 +109,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				
 				methods.services_tbl =		$this.find('#js-main-service_center-variants-services-div-table table');
 
-				// кнопка сбросить все 
-				methods.btn_cancel_all = 	$('#sc_cancel_all');
-				// кнопка Добавить услугу
-				methods.btn_calculators = 	$('#sc_add_service');
-
-
 				// собираем главный объект
 				methods.variants_rows.each(function(index, el) {
 					var dop_row_id = $(this).attr('data-dop_row_id');
@@ -224,19 +218,35 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					methods.save_main_discount($(this).val());
 				});
 
+				methods.services_itogo_row.find('.price.discount input').on('focus',function(){
+					if(Number($(this).val()) == 0){
+						$(this).attr('data-val','0.00').val('')	
+					}						
+				});
+				methods.services_itogo_row.find('.price.discount input').on('blur',function(){
+					if(Number($(this).val()) == 0){
+						$(this).val($(this).attr('data-val'))	
+					}						
+				});
 				// инициализируем работу нижней части окна
 				// methods.services_init();
 
-				// кнопка сбросить всё
-				methods.btn_cancel_all.bind('click.totalCommander', methods.cancel_all_choosen_variants );
-				// добавить услугу
-				methods.btn_calculators.bind('click.totalCommander', methods.calculator_add_services );
+
 
 				methods.show();
 
 				// загрузка контента default
 				console.log(options)
 				if(options != 'update'){
+					// кнопка сбросить все 
+					methods.btn_cancel_all = 	$('#sc_cancel_all');
+					// кнопка Добавить услугу
+					methods.btn_calculators = 	$('#sc_add_service');
+
+					// кнопка сбросить всё
+					methods.btn_cancel_all.bind('click.totalCommander', methods.cancel_all_choosen_variants );
+					// добавить услугу
+					methods.btn_calculators.bind('click.totalCommander', methods.calculator_add_services );
 					console.log('default_var click()')
 					methods.variants_tbody.find('.default_var').click();
 				}else{
@@ -1691,8 +1701,20 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					'data-id':service[i].id,
 					keyup:function(e){
 						methods.save_discount($(this), $(this).attr('data-id'),'service', $(this).val())
-					}
+					},
+					focus:function(){
+						if(Number($(this).val()) == 0){
+							$(this).attr('data-val','0.00').val('')	
+						}						
+					},
+					blur:function(){
+						if(Number($(this).val()) == 0){
+							$(this).val($(this).attr('data-val'))	
+						}
+					}					
 				});
+
+
 				// console.log(service[i])
 				service_row.append($('<td/>',{'class':'price discount'}).append(input).append('%'));
 				// service_row.append($('<td/>',{'class':'price discount','html':'<span>'+round_money(service[i].discount)+'</span>%'}));
@@ -1801,8 +1823,19 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					'data-id':variant.id,
 					keyup:function(e){
 						methods.save_discount($(this),$(this).attr('data-id'),'variant',$(this).val())
-					}
+					},
+					focus:function(){
+						if(Number($(this).val()) == 0){
+							$(this).attr('data-val','0.00').val('')	
+						}						
+					},
+					blur:function(){
+						if(Number($(this).val()) == 0){
+							$(this).val($(this).attr('data-val'))	
+						}
+					}		
 				});
+
 				variant_row.append($('<td/>',{'class':'price discount'}).append(input).append('%'));
 
 				// со скидкой (исходящая)

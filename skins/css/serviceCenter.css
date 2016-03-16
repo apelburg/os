@@ -458,6 +458,11 @@ button#sc_close_window{
 #js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(3){
 	border-right: 1px solid #ebebeb;
 }
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(4){
+	padding-left: 10px;
+    padding-right: 10px;
+    font-size: 10px;
+}
 #js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(3),
 #js-main-service_center-variants-services-div-table table tr.service  td.note_title{
 	padding-left: 10px;
