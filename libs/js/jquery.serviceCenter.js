@@ -385,7 +385,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						methods.depending_on_the_services_and_options[new_services[dop_row_id][i]] = dop_row_id;
 						// объект зависимостей вариантов от услуг
 						console.log(methods.depending_on_the_options_and_services)
-						methods.depending_on_the_options_and_services[dop_row_id][methods.depending_on_the_options_and_services[dop_row_id].length] = new_services[dop_row_id][i];
+						methods.depending_on_the_options_and_services[dop_row_id][methods.depending_on_the_options_and_services[dop_row_id].length] = new_services[dop_row_id][i].id;
 					}
 				}
 				// обновляем контент услуг относительно выбранных вариантов
