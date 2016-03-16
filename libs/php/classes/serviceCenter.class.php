@@ -1,9 +1,15 @@
 <?php
-	/*
-		ВАЖНО!!!
-		1) в услугах сгрупированных по id, id в колонке united_calculations должны храниться по возрастанию
-
-	*/
+	/**
+	 *	This class generate Total Commander window and regulate the work in this window
+	 *  The each methods, whose name ends on _AJAX - represent a methos whose work whith ajax query 
+	 *
+	 *	INPORTANT!!!
+	 *	1) In services grops by id:
+	 *	- id in column by name united_calculations to must be saved in ascending order
+     *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	11:45 16.03.2016
+	 */
 	class ServiceCenter  extends aplStdAJAXMethod{
 		private $Query;
 		private $first_default = true;
@@ -14,7 +20,6 @@
 		private $services_all = array();
 
 		function __construct(){
-			// include_once('printCalculator.php');
 			$this->db();
 
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
@@ -25,14 +30,14 @@
 				$this->_AJAX_($_POST['AJAX']);
 			}
 
-				## данные GET --- НА ВРЕМЯ ОТЛАДКИ !!!
+			## the data GET --- on debag time !!!
 			if(isset($_GET['AJAX'])){
 				$this->_AJAX_($_GET['AJAX']);		
 			}
 		}
 
 		/**
-		 *	возвращает json услуг по id
+		 *	return services json from id
 		 *
 		 *	@param 		$_POST['id_s'] - array()
 		 *	@return  	json
@@ -55,7 +60,7 @@
 		}
 
 		/**
-		 *	сохранение общей скидки
+		 *	update and save main discount
 		 *
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	16:06 09.03.2016
@@ -79,7 +84,7 @@
 		}
 
 		/**
-		 *	сохраняет ТЗ
+		 *	update and save service tz
 		 *
 		 *	@param 		Alexey Kapitonov
 		 *	@version 	12:50 14.03.2016
@@ -95,7 +100,7 @@
 		}
 
 		/**
-		 *	удаление услуги
+		 *	services delete
 		 *
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	11:06 09.03.2016
@@ -110,13 +115,13 @@
 		}
 
 		/**
-		 *	возвращает окно
+		 *	windows html return
 		 *
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	16:10 12.02.2016
 		 */
 		protected function get_service_center_AJAX(){
-			// проверка на наличие номера запроса
+			// checking number query on existence
 			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
 				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
 				return;
@@ -131,7 +136,7 @@
 		}
 
 		/**
-		 *	обновление окна 
+		 *	window update
 		 *
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	16:34 11.03.2016
@@ -144,7 +149,7 @@
 
 		private function group_list(){
 
-			// перебираем все услуги
+			// services bust
 			foreach ($this->services_all as $key => $row) {
 				if(trim($row['united_calculations']) != ''){
 					$services_arr = explode(",", $row['united_calculations']);
@@ -187,14 +192,11 @@
 						echo '<div>Тираж № '.($i++).'</div>';
 					echo '</li>';
 				}	
-			}
-			
+			}			
 		}
 
-
-
 		/**
-		 *	редактирование скидки / наценки
+		 *	discount edit
 		 *
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	14:19 02.03.2016
@@ -224,7 +226,7 @@
 		}
 
 		/**
-		 *	удвляет услугу
+		 *	service delete
 		 *
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	16:50 01.03.2016
@@ -233,21 +235,19 @@
 			$this->responseClass->addMessage('Удаление услуги');
 		}
 
-
-		// возвращает контент для окна
+		/**
+		 *	return windows html comtent
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:18 16.03.2016
+		 */
 		private function get_window_content(){
-			// собираем объект
+			// collect the object
 			$this->get_object_vars();
-
 
 			$html = '<div id="js-service-center">';
 				$variants_rows = $this->variants_print_Html();
-
 				ob_start();
-				// echo '<pre>';
-				// print_r($_SESSION);
-
-				// echo '<pre>';
 				include_once ROOT.'/skins/tpl/client_folder/service_center/show.tpl';
 				$html .= ob_get_contents();
 				ob_get_clean();
@@ -255,12 +255,14 @@
 			return $html;
 		}
 
-		// во
-		private function variants_print_Html(){
-			// echo '<pre>';
-			// print_r($this->Query['positions']);
-			// echo '</pre>';
-				
+		/**
+		 *	get variants html content
+		 *
+		 *	@return  	html
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	12:02 16.03.2016
+		 */
+		private function variants_print_Html(){				
 			$html = '';
 			$position_num = 1;
 			$color_arr = array('rgba(79, 154, 48, 0.2)','rgba(79, 142, 13, 0.37)');
@@ -332,24 +334,34 @@
 			return $html;
 		}
 
-		// собираем объект
+		/**
+		 *	collect variants object
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:19 16.03.2016
+		 */
 		private function get_object_vars(){
-			// получаем строку запроса
+			// get query row
 			$this->Query = $this->get_query( (int)$_GET['query_num'] );
 
-			// получаем строки позиций
+			// get positions rows
 			$this->Query['positions'] = $this->get_positions( (int)$_GET['query_num'] );
 
-			// выбираем id позиций
+			// choose positions id
 			$i = 0; $id_s = '';
 			foreach ($this->Query['positions'] as $positions) {
 				$id_s .= (($i>0)?',':'')."'".$positions['id']."'"; $i++;
 			}
-			// добавляет варианты в объект
+			// add variants in object
 			$this->get_variants_and_services($id_s);
-
 		}
-		// возвращает строки вариантов
+
+		/**
+		 *	add variant rows in main object
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:27 16.03.2016
+		 */
 		private function get_variants_and_services($id_s){
 			$query = "SELECT * FROM `".RT_DOP_DATA."` WHERE `row_id` IN (".$id_s.");";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
@@ -360,14 +372,21 @@
 						$this->first_default = false;
 					}
 					$this->Query['positions'][$row['row_id']]['variants'][$row['id']] = $row;
-					// получаем услуги к варианту (в целях экономии ресрсов получаем сдесь)
+					// get services from variant (get this here becouse to save server resource )
 					$this->Query['positions'][$row['row_id']]['variants'][$row['id']]['services'] = $this->get_services($row['id']);
 				}
 			}	
 			return;
 		}
 
-		// возвращает прикрепленные услуги
+		/**
+		 *  return attached services	
+		 *
+		 *	@param 		id - string
+		 *	@return  	array
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:32 16.03.2016
+		 */
 		private function get_services($id){
 			$query = "SELECT `".RT_DOP_USLUGI."`.*, IFNULL(`".RT_DOP_USLUGI."`.`other_name`, `".OUR_USLUGI_LIST."`.`name`) AS `service_name` FROM `".RT_DOP_USLUGI."` ";
 			$query .= " LEFT JOIN `".OUR_USLUGI_LIST."` ON `".RT_DOP_USLUGI."`.`uslugi_id` = `".OUR_USLUGI_LIST."`.`id`";
@@ -377,12 +396,11 @@
 			$arr = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
-					$arr[] = $row;
-					
-					// зависимости
+					$arr[] = $row;					
+					// depending on
 					$this->services_related[$row['id']] = $row['dop_row_id'];
 					$this->services_related_dop[$row['dop_row_id']][] = $row['id'];
-					// все услуги с которыми работает тотал
+					// get all services with wich we will be working 
 					$this->services_all[] = $row;
 				}
 			}
@@ -391,7 +409,7 @@
 
 
 		/**
-		 *	возвращает название группы
+		 *	get group name
 		 *
 		 *	@param 		service_id
 		 *	@return  	string
@@ -410,9 +428,13 @@
 			return implode(',',$dop_row_id);
 		}
 
-
-
-		// возвращает строку запроса
+		/**
+		 *	get query from database
+		 *
+		 *	@param 		quwey_num - number
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:36 16.03.2016
+		 */
 		private function get_query($query_num = 0){
 			$query = "SELECT * FROM `".RT_LIST."` WHERE `query_num` = '".$query_num."';";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
@@ -423,7 +445,15 @@
 			}	
 			return array();
 		}
-		// возвращает строки позиций
+		
+		/**
+		 *	get position rows from database
+		 *
+		 *	@param 		id - number 
+		 *	@return  	array
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:37 16.03.2016
+		 */
 		private function get_positions($id){
 			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `query_num` = '".$id."' ORDER BY  `sort` ASC ;";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
@@ -436,8 +466,14 @@
 			return $arr;
 		}
 
-		// запрашивает из базы допуски пользователя
-		// необходимо до тех пор, пока при входе в чужой аккаунт меняется только id
+		/**
+		 *	get user acces
+		 *
+		 *	@param 		user_id
+		 *	@return  	user acces - number
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	11:38 16.03.2016
+		 */
 		private function get_user_access_Database_Int($id){
 			$query = "SELECT `access` FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
@@ -447,15 +483,14 @@
 					$int = (int)$row['access'];
 				}
 			}
-			//echo $query;
 			return $int;
 		}
 
 		/**
-		 * 	 рандомный цвет
+		 * 	 color generator
 		 *
 		 *	 @author  	Alexey Kapitonov
-		 *	 @version 	 	 
+		 *	 @version 	11:38 16.03.2016 	 
 		 */
 		public function rand_color() {
 		    return sprintf('#%06X', mt_rand(0, 0xFFFFFF));

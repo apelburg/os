@@ -1576,7 +1576,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			}
 
 			// возвращаем объект со списком услуг
-			// console.warn(service)
+			console.warn(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
