@@ -59,7 +59,7 @@
 		}
 	    $agreement_id = Agreement::add_new_agreement($client_id,$agreement_num,$_GET['agreement_type'],$existent,$standart,$_GET['our_firm_id'],$_GET['requisit_id'],$our_firm['comp_full_name'],$our_firm_acting_manegement_face,$client_firm['comp_full_name'],$client_firm_acting_manegement_face,$date,$expire_date,$short_description);
 	}
-
+ 
 	header('Location:?'.addOrReplaceGetOnURL('section=agreement_editor','agreement_id&existent_agreement_num&existent_agreement_date&existent_agreement_expire_date&existent_agreement_client_agreement').'&agreement_id='.$agreement_id);	
 
 ?>

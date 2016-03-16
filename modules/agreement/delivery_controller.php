@@ -25,7 +25,9 @@
 		 
 		 //$adress = ($adress!='')? $adress:'адрес не указан';
 		 if($adress=='') continue;
-	
+		$adress = str_replace(array("\r\n", "\r", "\n", "\t"), '', $adress);
+	    //$adress = str_replace('\n', '',$adress);
+		//$adress = str_replace('\r', '',$adress);
 	    $addresses .= "<div class='prepayment_row' style='margin:10px 0px 0px 10px;'><a href='?".addOrReplaceGetOnURL("section=short_description")."&address=".urlencode($adress)."'>".$adress."</a></div>";
 	}
 	

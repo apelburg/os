@@ -227,10 +227,17 @@
 					
 					
 					//$production_term_in_days = getWorkingDays($val[0]['date']." 00:00:00",$specifications_arr[$key][0]['shipping_date_time']);
+					
+
+					
 				    $production_term_in_days = $specifications_arr[$key][0]['item_production_term'];
-				    $production_term_in_days_word = (trim((int)$production_term_in_days)==0)? 'ноль' : trim(num_word_transfer((int)$production_term_in_days));
+				    /* ТРАНСФОРМАЦИЯ ЧИСЕЛ В ТЕКСТ НЕ РАБОТАЕТ
+				    $production_term_in_days_word = (trim((int)$production_term_in_days)==0)? 'ноль' : trim(num_word_transfer((int)11));
 					$production_delivery_term =  $production_term_in_days;//.'('. $production_term_in_days_word.')';
-				
+					    if(@$_SESSION['access']['user_id']==18){ 
+							echo  $specifications_arr[$key][0]['item_production_term'].'<br>'; 
+					    } 
+				    */
 				}
 				if($specifications_arr[$key][0]['specification_type'] == 'date'){
 				    $delivery_date_arr = explode(' ',$specifications_arr[$key][0]['shipping_date_time']); 
@@ -349,7 +356,7 @@
 				$content = str_replace('[SPECIFICATION_DATE]',$specificationDate,$content );
 				$content = str_replace('[AGREEMENT_NUM]',$agreement_num,$content );
 				$content = str_replace('[AGREEMENT_DATE]',$agreementDate,$content );
-				$content = str_replace('[PRODUCTION_TERM]',$production_delivery_term,$content );
+				if(isset($production_term_in_days)) $content = str_replace('[PRODUCTION_TERM]',$production_term_in_days,$content );
 				$content = str_replace('[PREPAMENT_TERM]',$prepayment_term,$content );
 				$content = str_replace('[DELIVERY_TERM]','5',$content );
 				$content = str_replace('[DELIVERY_ADDRESS]',$delivery_adderss,$content );
