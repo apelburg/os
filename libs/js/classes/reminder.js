@@ -158,20 +158,27 @@ $(document).on('click', '.leter_div', function(event) {
 
 var warning_messages;
 function get_ui_window(){
+  console.log('get_ui_window')
   // убиваем старые окна
   if($('.reminder_win').length){
-    $('.reminder_win').remove();
+    $('.reminder_win').each(function(index, el) {
+      $(this).find('.dialog_window').remove();
+    });
+    
     $('.dialog_window_minimized ').remove();
-    $('.dialog_window').remove();
+    
+    $('.reminder_win').remove();
+
   }
+
+
   if($('#num_window_yet').length==0){
     $('body').append('<div id="num_window_yet" data-window_num="1" style="position: fixed;bottom: 0px;right: 35px;color: red;background: #fff;padding: 6px 6px 6px 6px;border: 1px solid;border-color: #D3BABA;"></div>');
   }
   
   var col1 = 0;
   var col = 0;
-  $('.dialog_window_minimized').remove();
-  $('.dialog_window').parent().remove();
+  
   $.post('',{
       ajax_reminder:'get_alert_planer',
     }, function(data, textStatus, xhr) {  
