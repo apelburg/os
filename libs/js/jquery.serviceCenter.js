@@ -317,7 +317,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		 *	@version 	16:31 11.03.2016
 		 */
 		update_total_window:function(){
-
+			console.info('Total >> update_total_window')
 			var updater_ids = [],i = 0;
 			methods.variants_tbody.find('.tr_checked').each(function(index, el) {
 				updater_ids[i++] = $(this).attr('data-dop_row_id');
@@ -352,6 +352,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		 *	@version 	16:41 09.03.2016
 		 */
 		add_services:function( id_s ){
+			console.info('Total >> add_services')
 			// запрос информации по услугам
 			$.post('', {
 				AJAX:'get_new_services',
@@ -1020,14 +1021,16 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		// вызов калькулятора на кнопку "Добавить услугу"
 		calculator_add_services:function(){
 			var i = 0;
-			methods.dataObj = []; 
-			methods.dataObj[0] = new Array('action','type','usluga_id','dop_data_ids','quantity','art_id'); 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-			methods.dataObj[0]['action'] = 'new'; 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-			methods.dataObj[0]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-			methods.dataObj[0]['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-			methods.dataObj[0]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-			methods.dataObj[0]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-			methods.dataObj[0]['art_id'] = [];			// art_id - string	
+			methods.dataObj = {
+				0:{
+					action:'new', 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+					type:'', 			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+					usluga_id:{}, 	  	// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+					dop_data_ids:{},  	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+					quantity:{}, 		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+					art_id:{} 			// art_id - string	
+				}
+			}; 
 
 			// собираем id строк вариантов
 			methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
