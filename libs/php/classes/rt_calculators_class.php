@@ -874,7 +874,7 @@
 			
 			if($print == 'true'){
 				// делаем запрос чтобы получить данные о всех расчетах нанесений привязанных к данному ряду
-				$query="SELECT uslugi.print_details print_details, uslugi.id uslugi_row_id, uslugi.discount discount FROM `".RT_DOP_USLUGI."` uslugi INNER JOIN
+				$query="SELECT uslugi.print_details print_details, uslugi.id uslugi_row_id,uslugi.price_in price_in, uslugi.price_out price_out, uslugi.discount discount FROM `".RT_DOP_USLUGI."` uslugi INNER JOIN
 									`".RT_DOP_DATA."` dop_data
 									  ON dop_data.`id` =  uslugi.`dop_row_id`
 									  WHERE uslugi.glob_type ='print' AND dop_data.`id` = '".$dop_data_id."'";
@@ -886,13 +886,20 @@
 							// детали расчета нанесения
 							$print_details_obj = json_decode($row['print_details']);
 							//print_r($print_details_obj->dop_params);echo "\r\n";//
-							$YPriceParam = (isset($print_details_obj->dop_params->YPriceParam))? count($print_details_obj->dop_params->YPriceParam):1;
-							// получаем новые исходящюю и входящюю цену исходя из нового тиража
-							$new_price_arr = self::change_quantity_and_calculators_price_query($quantity,$print_details_obj,$YPriceParam);
-							//print_r($new_price_arr);echo "\r\n";//
-						
+							
+							if(isset($print_details_obj->calculator_type) && ($print_details_obj->calculator_type=='manual' || $print_details_obj->calculator_type=='free')){
+							    $new_price_arr = array("price_in"=>$row['price_in'],"price_out"=>$row['price_out']);
+								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
+							}
+							else{
+								$YPriceParam = (isset($print_details_obj->dop_params->YPriceParam))? count($print_details_obj->dop_params->YPriceParam):1;
+								// получаем новые исходящюю и входящюю цену исходя из нового тиража
+								$new_price_arr = self::change_quantity_and_calculators_price_query($quantity,$print_details_obj,$YPriceParam);
+								//print_r($new_price_arr);echo "\r\n";
+								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
+						    }
 							// сохраняем полученные данные в промежуточный массив
-							$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
+							
 						 }
 						 else $dataArr[]= array('uslugi_row_id' => $row['uslugi_row_id']);
 					}
@@ -901,12 +908,23 @@
 					if(!(self::$needIndividCalculation || self::$outOfLimit)){
 						 if($source=='card') $new_sums_details = array();
 						 foreach($dataArr as $key => $dataVal){
-						 // рассчитываем окончательную стоимость с учетом коэффициентов и надбавок
-							if($quantity != 0) $new_data = self::make_calculations($quantity,$dataVal['new_price_arr'],$dataVal['print_details_obj']->dop_params);
-							else{
-								$new_data["new_price_arr"] = array("price_in"=>0,"price_out"=>0);
-								$new_data["new_summs"] = array("summ_in"=>0,"summ_out"=>0); 
+						    $new_data = array();
+						    //print_r($dataVal['new_price_arr']);echo "\r\n";
+							if(isset($dataVal['print_details_obj']->calculator_type) && ($dataVal['print_details_obj']->calculator_type=='manual' || $dataVal['print_details_obj']->calculator_type=='free')){
+								$new_data["new_price_arr"] = array("price_in"=>$dataVal['new_price_arr']['price_in'],"price_out"=>$dataVal['new_price_arr']['price_out']);
+								$new_data["new_summs"] = array("summ_in"=>($dataVal['new_price_arr']['price_in']*$quantity),"summ_out"=>($dataVal['new_price_arr']['price_out']*$quantity)); 
 							}
+							else{
+								if(isset($dataVal['print_details_obj']->dop_params)){
+									// рассчитываем окончательную стоимость с учетом коэффициентов и надбавок
+									if($quantity != 0) $new_data = self::make_calculations($quantity,$dataVal['new_price_arr'],$dataVal['print_details_obj']->dop_params);
+									else{
+										$new_data["new_price_arr"] = array("price_in"=>0,"price_out"=>0);
+										$new_data["new_summs"] = array("summ_in"=>0,"summ_out"=>0); 
+									}
+								}
+							}
+							
 							// print_r($new_data)."\r";
 							// echo $dataVal['discount']."\r";//
 							

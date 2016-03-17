@@ -788,7 +788,7 @@
 						     while($uslugi_data = $result2_dop->fetch_assoc()){
 							 
 							     $print_details_arr = json_decode($uslugi_data['print_details'],TRUE);
-									  
+								  
 								 // если calculator_type =='free' то непроверяем, isset($print_details_arr["calculator_type"]) 
 								 // для совместимости с предыдущими версиями в которых $print_details_arr["calculator_type"] нет
 								 $revoke = (isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free')?true:false;
@@ -864,7 +864,7 @@
 									  }
 									  if(isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free'){
 									      $uslugi_data['quantity'] = $print_details_arr['quantity'];
-										  $name = $print_details_arr['print_type'].' '.$print_details_arr['commentForClient'];
+										  $name = $print_details_arr['print_type'].' '.base64_decode($print_details_arr['commentForClient']);
 									  }
 									  
 									 // записываем ряд
