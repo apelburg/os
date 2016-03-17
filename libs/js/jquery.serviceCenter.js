@@ -352,7 +352,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		 *	@version 	16:41 09.03.2016
 		 */
 		add_services:function( id_s ){
-			console.info('Total >> add_services')
+			console.info('Total >> add_services');
 			// запрос информации по услугам
 			$.post('', {
 				AJAX:'get_new_services',
@@ -360,8 +360,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			}, function(data, textStatus, xhr) {
 				var new_services = [];
 				new_services = data;
-			
-
 
 				for(var dop_row_id in new_services) {
 					for(var i = 0, length1 = new_services[dop_row_id].length; i < length1; i++){

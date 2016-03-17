@@ -559,15 +559,12 @@
 
 	//always include the default bootstrap style
 	addStyle("bootstrap", {
-<<<<<<< HEAD
 		// html:"<div>"+
 		// 		"<span data-notify-html></span>"+
 		// 		"<div class='buttons'>" +
 		//         	"<button class='notify-no'>X</button>" +
 		//         "</div>" +
 		// 	"</div>",
-=======
->>>>>>> master
 		html:"<div>"+
 				"<span data-notify-html></span>"+
 			"</div>",
