@@ -136,7 +136,7 @@
 			//}
 			
 
-			$origin_file_name = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/long_term.tpl';	
+			$origin_file_name =  ROOT.'/modules/agreement/agreements_templates/long_term.tpl';	
 			$fd_origin = fopen($origin_file_name,'r');
 			$file_content = fread($fd_origin,filesize($origin_file_name));
 			fclose($fd_origin);
@@ -385,8 +385,8 @@
 				//exit;
 			//}
 	
-			if($dateDataObj->data_type=='days') $origin_file_name = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/oferta.tpl';
-			if($dateDataObj->data_type=='date') $origin_file_name = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/oferta_type2_by_date.tpl';
+			if($dateDataObj->data_type=='days') $origin_file_name =  ROOT.'/modules/agreement/agreements_templates/oferta.tpl';
+			if($dateDataObj->data_type=='date') $origin_file_name =  ROOT.'/modules/agreement/agreements_templates/oferta_type2_by_date.tpl';
 			
 			$fd_origin = fopen($origin_file_name,'r');
 			$file_content = fread($fd_origin,filesize($origin_file_name));
@@ -533,7 +533,7 @@
 				$for_pay = strtr($for_pay,$change_word_ending_arr_III);
 				$for_pay = strtr($for_pay,$change_word_ending_arr_IV);
 
-				$delivery_adderss_tpl_path = ($general_data['address'] == 'samo_vivoz')? $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/samo_vivoz.tpl':$_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/nasha_dostavka.tpl';
+				$delivery_adderss_tpl_path = ($general_data['address'] == 'samo_vivoz')?  ROOT.'/modules/agreement/agreements_templates/samo_vivoz.tpl': ROOT.'/modules/agreement/agreements_templates/nasha_dostavka.tpl';
 				$fd = fopen($delivery_adderss_tpl_path,'rb');
 				$delivery_adderss_string = fread($fd,filesize($delivery_adderss_tpl_path));
 				fclose($fd);
@@ -542,7 +542,7 @@
 			   if($general_data['type'] == 'days'){
 				    //$prepayment_term = '<?php include ($_SERVER[\'DOCUMENT_ROOT\'].\'/os/modules/agreement/agreements_templates/\'.$general_data[\'prepayment\'].\'_prepaiment_conditions.tpl\'); ? >';
 					/**/
-					$prepayment_term_tpl_path = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/'.$general_data['prepayment'].'_prepaiment_conditions_oferta.tpl';
+					$prepayment_term_tpl_path =  ROOT.'/modules/agreement/agreements_templates/'.$general_data['prepayment'].'_prepaiment_conditions_oferta.tpl';
 					$fd = fopen($prepayment_term_tpl_path,'rb');
 					$prepayment_term = fread($fd,filesize($prepayment_term_tpl_path));
 					fclose($fd);
@@ -574,7 +574,7 @@
 					$doc = str_replace('[MAKET_SIGN_DATE]',$maket_sign_date,$doc );
 				
 				     
-					$prepayment_term_tpl_path = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/'.$general_data['prepayment'].'_prepaiment_conditions_oferta_by_date.tpl';
+					$prepayment_term_tpl_path =  ROOT.'/modules/agreement/agreements_templates/'.$general_data['prepayment'].'_prepaiment_conditions_oferta_by_date.tpl';
 					$fd = fopen($prepayment_term_tpl_path,'rb');
 					$prepayment_term = fread($fd,filesize($prepayment_term_tpl_path));
 					fclose($fd);
@@ -962,8 +962,8 @@
 				//exit;
 			//}
 	
-			if($dateDataObj->data_type=='days') $origin_file_name = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/specification.tpl';
-			if($dateDataObj->data_type=='date') $origin_file_name = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/specification_type2_by_date.tpl';
+			if($dateDataObj->data_type=='days') $origin_file_name =  ROOT.'/modules/agreement/agreements_templates/specification.tpl';
+			if($dateDataObj->data_type=='date') $origin_file_name =  ROOT.'/modules/agreement/agreements_templates/specification_type2_by_date.tpl';
 			
 			$fd_origin = fopen($origin_file_name,'r');
 			$file_content = fread($fd_origin,filesize($origin_file_name));

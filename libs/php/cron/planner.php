@@ -18,15 +18,15 @@
 	// адрес для ссылки на клиента используемой в тексте письма
 	$href = 'http://www.apelburg.ru/os/?page=client_folder&section=planner&client_id=';
 	
-	include($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/planner_class.php');
-	include($_SERVER['DOCUMENT_ROOT'].'/os/libs/config.php');
+	include( ROOT.'/libs/php/classes/planner_class.php');
+	include( ROOT.'/libs/config.php');
 	
 	////////////////  XXXXXXXXXXXXXXXXXXX   \\\\\\\\\\\\\\\
 	
     /*
 	Planner::get_traced_managers_ids();
 	//echo "<pre>"; print_r(Planner::$traced_managers_ids); echo "</pre>";
-	include($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+	include( ROOT."/libs/php/classes/manager_class.php");
 	
 	foreach(Planner::$traced_managers_ids as $manager_id){
 	    //if($manager_id != 18) continue;
@@ -50,8 +50,8 @@
 	   return $name;
 	}
 	if(count(Planner::$traced_managers_ids)>0){
-	    include($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/mail_class.php');
-		include($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+	    include( ROOT.'/libs/php/classes/mail_class.php');
+		include( ROOT."/libs/php/classes/manager_class.php");
 	
         
 		$to_chief = '4380055@gmail.com'; //  'premier22@yandex.ru' 'e-project1@mail.ru'

@@ -189,7 +189,7 @@
 		// print_r(json_decode($_GET['details']));//
 		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
-		rtCalculators::save_calculatoins_result_router(json_decode($_GET['details']));
+		rtCalculators::save_calculatoins_result_router($_GET['details']);
 		exit;
 	}
 	if(isset($_GET['delete_prints_for_row'])){
