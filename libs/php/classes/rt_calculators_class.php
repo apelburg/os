@@ -473,7 +473,7 @@
 					  $quantity = array();
 					 
 					  if(isset($details_obj->action) && $details_obj->action=='attach'){
-						 // print_r($details_obj);
+						  print_r($details_obj);
 						 $query="SELECT id, quantity FROM `".RT_DOP_USLUGI."` WHERE `id` IN('".implode("','",$united_calculations)."')";
 						 $result = $mysqli->query($query)or die($mysqli->error);
 						 if($result->num_rows>0){
@@ -498,9 +498,10 @@
 							 $new_price_arr = self::change_quantity_and_calculators_price_query($new_quantity,$details_obj->print_details,$YPriceParam); 
                              // здесь надо обпрботать превышение тиража
 							 print_r($new_price_arr);
-							 
-							 $details_obj->price_in = $new_price_arr['price_in'];
-							 $details_obj->price_out = $new_price_arr['price_out'];
+							 $new_data = self::make_calculations((int)$details_obj->print_details->quantity_details[$i],$new_price_arr,$details_obj->print_details->dop_params);
+							  
+							 $details_obj->price_in = $new_data['new_price_arr']['price_in'];
+							 $details_obj->price_out = $new_data['new_price_arr']['price_out'];
 
 						 }
 
@@ -563,14 +564,16 @@
 					     if($details_obj->print_details->calculator_type=='auto'){
 							 //echo (int)$details_obj->print_details->quantity_details[$i];
 							 $YPriceParam = (isset($details_obj->print_details->dop_params->YPriceParam))? count($details_obj->print_details->dop_params->YPriceParam):1;
-	
+	                         //print_r($details_obj->print_details);
 							 // получаем новые исходящюю и входящюю цену исходя из нового таража
 							 $new_price_arr = self::change_quantity_and_calculators_price_query((int)$details_obj->print_details->quantity_details[$i],$details_obj->print_details,$YPriceParam); 
 							 // здесь надо обпрботать превышение тиража
-							 //print_r($new_price_arr);
-							 
-							 $details_obj->price_in = $new_price_arr['price_in'];
-							 $details_obj->price_out = $new_price_arr['price_out'];/**/
+							
+							  $new_data = self::make_calculations((int)$details_obj->print_details->quantity_details[$i],$new_price_arr,$details_obj->print_details->dop_params);
+				
+							  //print_r($new_data);
+							 $details_obj->price_in = $new_data['new_price_arr']['price_in'];
+							 $details_obj->price_out = $new_data['new_price_arr']['price_out'];/**/
 					     }
 					     // echo $dop_data_row_id."\r\n";
 						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
@@ -1155,7 +1158,7 @@
 					if($row['price_type']=='out' && $row['param_val']==$YPriceParam) $new_priceOut = $row[$newOut_Xindex];   
 				}
 				$out = array("price_in"=> $new_priceIn,"price_out"=> $new_priceOut);
-				
+				// print_r($row);
 				// если тираж был меньше минимального значения в прайсе пересчитываем цены
 				if(isset($lackOfQuantOutPrice) && $lackOfQuantInPrice==true){
 					$out['price_in'] = $new_priceIn*$minQuantInPrice/$quantity;

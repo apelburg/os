@@ -303,7 +303,7 @@
 									  }
 									  if(isset($print_details_arr["calculator_type"]) && $print_details_arr["calculator_type"] =='free'){
 									      $uslugi_data['quantity'] = $print_details_arr['quantity'];
-										  $name = $print_details_arr['print_type'].' '.$print_details_arr['commentForClient'];
+										  $name = $print_details_arr['print_type'].' '.base64_decode($print_details_arr['commentForClient']);
 									  }
 									 // записываем ряд
 									 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount']);
