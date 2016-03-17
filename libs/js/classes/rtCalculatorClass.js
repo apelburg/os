@@ -812,7 +812,7 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			alert(response);
+			//alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) {}
@@ -2204,7 +2204,7 @@ var rtCalculator = {
 					content.appendChild(button2);
 					launch_set_window(winId,"Выбор сроков сдачи заказа",content);
 					
-					$('#datepicker').datetimepicker({format:'d.m.Y H:i',dayOfWeekStart: 1,startTime: new Date(0,0,0,15,0,0),minDate: new Date(dataObj['min_allowed_date']), onChangeDateTime: function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val();},closeOnDateSelect:true,
+					$('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,startTime: new Date(0,0,0,15,0,0),minDate: new Date(dataObj['min_allowed_date']), onChangeDateTime: function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val();},closeOnDateSelect:true,
 					   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
 					/*$('#timepicker').datetimepicker({datepicker:false,format:'H:i',closeOnDateSelect:true,
 						  onChangeDateTime:function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val()+':00';},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});*/
@@ -2254,7 +2254,7 @@ var rtCalculator = {
 				 //alert(pickerMaxDate);
 				 launch_set_window(winId,"Установка лимита",content);
 				 
-				 $('#datepicker').datetimepicker({format:'d.m.Y H:i',dayOfWeekStart: 1,minDate:0,maxDate:pickerMaxDate,maxTime:time,
+				 $('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,minDate:0,maxDate:pickerMaxDate,maxTime:time,
 					   onChangeDateTime: function(dp,$input){$('#final_date')[0].value=$input.val();},closeOnDateSelect:true,
 					   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
 			}
