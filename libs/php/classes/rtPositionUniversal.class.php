@@ -655,6 +655,26 @@ class rtPositionUniversal extends Position_general_Class
 		}
 		return $position;
 	}
+
+	static function get_query($query_num){
+		global $mysqli;
+		// чеерез get параметр id мы получаем id 1 из строк запроса
+		// получаем основные хар-ки артикула из таблицы артикулов входящих в запрос
+		$query = "SELECT `".RT_LIST."`.*,DATE_FORMAT(create_time,'%d.%m.%Y %H:%i:%s') as `date_create`
+		  FROM `".RT_LIST."`
+		   WHERE `".RT_LIST."`.`query_num` = '".$query_num."'";
+		// echo $query;
+		$result = $mysqli->query($query) or die($mysqli->error);
+		
+		$position = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$position = $row;
+			}
+		}
+		return $position;
+	}
+
 	// получаем строку РТ(позицию) из базы
 	private function getPositionDatabaseQN($query_num){	
 		// чеерез get параметр id мы получаем id 1 из строк запроса
