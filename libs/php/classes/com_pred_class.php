@@ -1021,9 +1021,10 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							else $size_coeff = false;
 							
 	
-							$new_price_arr['price_in'] = ($u_level['discount'] != 0 )? ($u_level['price_in']/100)*(100 + $u_level['discount']) :  $u_level['price_in'] ;
+							//$new_price_arr['price_in'] = ($u_level['discount'] != 0 )? ($u_level['price_in']/100)*(100 + $u_level['discount']) :  $u_level['price_in'] ;
+							$new_price_arr['price_in'] = $u_level['price_in'];
 							$new_price_arr['price_out'] = ($u_level['discount'] != 0 )? ($u_level['price_out']/100)*(100 + $u_level['discount']) :  $u_level['price_out'] ;
-							//$new_price_arr['price_in'] = $u_level['price_in'];
+							//
 							//$new_price_arr['price_out'] = $u_level['price_out'];
 							
 							if(isset($print_details_obj->dop_params)){
@@ -1301,7 +1302,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							  	$u_level['name'] = $u_level['other_name'];
 							}
 							 
-							 
+							 $u_level['price_out'] = ($u_level['discount'] != 0 )? ($u_level['price_out']/100)*(100 + $u_level['discount']) :  $u_level['price_out'] ;
 						     $print_summ = ($u_level['for_how']=='for_all')? $u_level['price_out'] :$quantity*$u_level['price_out'];
 						     $all_extra_summ += $print_summ;
 							 $itogo_extra_uslugi += $print_summ;

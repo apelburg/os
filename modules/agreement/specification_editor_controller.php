@@ -1,5 +1,6 @@
 <?php 
 
+
     // ПРЕДПОЛАГАЕМ ЧТО ЕСЛИ НЕ БЫЛ ПЕРЕДАН ПАРАМЕТР  $_GET['dateDataObj'] ТО ЭТО ССЫЛКА НА СПЕЦИФИКАЦИЮ
 	// НАДО ПЕРЕДЕЛАТЬ ССЫЛКИ В СПИСКЕ
 	if(isset($_GET['dateDataObj'])) $dateDataObj = json_decode($_GET['dateDataObj']);
@@ -34,7 +35,6 @@
 		
 		if($result)
 		{
-			
 			$tpl = './skins/tpl/agreement/specification_edit_row.tpl';
 			$fd = fopen($tpl,'r');
 			$tpl = fread($fd,filesize($tpl));
@@ -45,8 +45,13 @@
 			$itogo=0;
 			while($row = mysql_fetch_assoc($result))
 			{
+				
+			
+				$row['price'] = ($row['discount'] != 0)? round((float)(($row['price']/100)*(100 + $row['discount'])),2) : (float)$row['price'];	
+				$row['summ'] = round($row['quantity']*$row['price'],2);	 
+				$itogo += $row['summ'];	
 				eval('?>'.$tpl.'<?php ');  
-				$itogo += (float)$row['summ'];		
+				
 			}
 			
 			$rows = ob_get_contents();
@@ -74,8 +79,10 @@
 			$itogo=0;
 			foreach($oferta_data_arr as $row)
 			{
-				eval('?>'.$tpl.'<?php ');  
-				$itogo += (float)$row['summ'];		
+				$row['price'] = ($row['discount'] != 0)? round((float)(($row['price']/100)*(100 + $row['discount'])),2) : (float)$row['price'];	
+				$row['summ'] = round($row['quantity']*$row['price'],2);	 
+				$itogo += $row['summ'];	
+				eval('?>'.$tpl.'<?php ');  	
 			}
 			
 			$rows = ob_get_contents();

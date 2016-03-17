@@ -104,10 +104,6 @@
 			//echo '<pre>data_for_specification --'; print_r($_SESSION['data_for_specification']); echo '-- </pre>'; exit;//
 			include_once(ROOT."/libs/php/classes/agreement_class.php");
 			
-			/*if(@$_SESSION['access']['user_id']==18){ 
-		echo  '111'; 
-  } */
-			
 			$dateDataObj = json_decode($_GET['dateDataObj']);
 	        $specification_num = Agreement::add_items_for_specification($dateDataObj,$spec_num,$_SESSION['data_for_specification'],$client_id,$agreement_id,$agreement['date'],$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$_GET['date'],$_GET['short_description'],urldecode($_GET['address']),$_GET['prepayment']);
 	
@@ -261,6 +257,11 @@
 					fclose($fd);
 					$prepayment_term = str_replace('[PAYMENT_DATE]',$paymnet_date,$prepayment_term );
 					$production_delivery_term ='';
+				}
+				else{// старые спецификации
+				    $prepayment_term = '<?php include ($_SERVER[\'DOCUMENT_ROOT\'].\'/os/modules/agreement/agreements_templates/\'.$specifications_arr[$key][0][\'prepayment\'].\'_prepaiment_conditions.tpl\'); ?>';
+				    $production_delivery_term = $specifications_arr[$key][0]['makets_delivery_term'];
+				
 				}
 				
 				

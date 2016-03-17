@@ -164,7 +164,7 @@
 	    $ids_arr = get_clients_ids_for_user($user_id);
 	    $query = "SELECT*FROM `".PLANNER."` WHERE `client_id` IN ('".implode("','",$ids_arr)."')";
 	 
-	    $query .= " ORDER BY `exec_datetime`";
+	    $query .= " ORDER BY `exec_datetime` DESC";
 	// `status` = 'new'
         ///////////////////       page nav       ///////////////////
 	    $num_row = mysql_query($query,$db);

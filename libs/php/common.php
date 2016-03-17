@@ -895,7 +895,7 @@ if(isset($_SESSION['access']['user_id'])){ // && ($_SESSION['access']['access']=
 	
 	function get_managers_list(){
 	    global $db;
-		$query = "SELECT*FROM `".MANAGERS_TBL."` ORDER BY `name`";
+		$query = "SELECT*FROM `".MANAGERS_TBL."` WHERE `access` = '5' ORDER BY `name`";
 	    $result = mysql_query($query,$db);
 		if(mysql_num_rows($result)>0) while($item = mysql_fetch_assoc($result)){
 		     $manager_arr[] = array('id' => $item['id'],'access' => $item['access'],'name' => $item['name'],'last_name' => $item['last_name'],'email_2' => $item['email_2']);
