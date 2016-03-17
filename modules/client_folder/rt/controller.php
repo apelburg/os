@@ -27,7 +27,7 @@
 		 
 		 $rows = array();
 		 
-		 $query = "SELECT main_tbl.id AS main_id ,main_tbl.type AS main_row_type  ,main_tbl.art_id AS art_id ,main_tbl.art AS art ,main_tbl.name AS item_name ,main_tbl.master_btn AS master_btn , main_tbl.svetofor_display AS svetofor_display ,
+		 $query = "SELECT main_tbl.id AS main_id,main_tbl.rt_row_color AS rt_row_color ,main_tbl.type AS main_row_type  ,main_tbl.art_id AS art_id ,main_tbl.art AS art ,main_tbl.name AS item_name ,main_tbl.master_btn AS master_btn , main_tbl.svetofor_display AS svetofor_display ,
 		 
 		                  dop_data_tbl.id AS dop_data_id , dop_data_tbl.row_id AS dop_t_row_id , dop_data_tbl.quantity AS dop_t_quantity , dop_data_tbl.price_in AS dop_t_price_in , dop_data_tbl.price_out AS dop_t_price_out , dop_data_tbl.discount AS dop_t_discount , dop_data_tbl.row_status AS row_status, dop_data_tbl.glob_status AS glob_status, dop_data_tbl.expel AS expel, dop_data_tbl.shipping_date AS shipping_date,dop_data_tbl.shipping_type AS shipping_type, dop_data_tbl.shipping_time AS shipping_time, dop_data_tbl.status_snab AS status_snab, dop_data_tbl.dop_men_text AS dop_men_text,
 						  
@@ -52,6 +52,7 @@
 				 $multi_dim_arr[$row['main_id']]['art'] = $row['art'];
 				 $multi_dim_arr[$row['main_id']]['name'] = $row['item_name'];
 				 $multi_dim_arr[$row['main_id']]['svetofor_display'] = $row['svetofor_display'];
+				 $multi_dim_arr[$row['main_id']]['rt_row_color'] = $row['rt_row_color'];
 				 
 				 if($row['main_row_type']=='cat'){
 				     $data = RT::getArtRelatedPrintInfo($row['art_id']);
@@ -375,7 +376,7 @@
 			 $dop_details = '';
 			  //echo $row['row_type'].' = ';
 			 if($row['row_type'] == 'cat'){ 
-				 $extra_panel = '<div class="pos_plank cat">
+				 $extra_panel = '<div class="pos_plank cat '.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&section=rt_position&id='.$key.'&client_id='.$client_id.'">'.$row['art'].'</a>
 								   <div class="pos_link_plank">
 									  <div class="catalog">
@@ -392,16 +393,16 @@
 		        if($counter==0 &&  count($row['dop_details'])>0)  $dop_details['allowed_prints'] = $row['dop_details'];
 			 }
 			 else if($row['row_type'] == 'ext'){
-				 $extra_panel = '<div class="pos_plank ext">
+				 $extra_panel = '<div class="pos_plank ext '.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }
 			 else if($row['row_type'] == 'pol'){
-				 $extra_panel = '<div class="pos_plank pol">
+				 $extra_panel = '<div class="pos_plank pol '.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }else{
-			 	$extra_panel = '<div class="pos_plank pol">
+			 	$extra_panel = '<div class="pos_plank pol '.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }

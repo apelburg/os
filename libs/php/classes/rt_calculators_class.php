@@ -566,17 +566,17 @@
 							 $YPriceParam = (isset($details_obj->print_details->dop_params->YPriceParam))? count($details_obj->print_details->dop_params->YPriceParam):1;
 	                         //print_r($details_obj->print_details);
 							 // получаем новые исходящюю и входящюю цену исходя из нового таража
-							 $new_price_arr = self::change_quantity_and_calculators_price_query((int)$details_obj->print_details->quantity_details[$i],$details_obj->print_details,$YPriceParam); 
+							 $new_price_arr = self::change_quantity_and_calculators_price_query((int)$details_obj->print_details->quantity_details->{$i},$details_obj->print_details,$YPriceParam); 
 							 // здесь надо обпрботать превышение тиража
 							
-							  $new_data = self::make_calculations((int)$details_obj->print_details->quantity_details[$i],$new_price_arr,$details_obj->print_details->dop_params);
+							  $new_data = self::make_calculations((int)(int)$details_obj->print_details->quantity_details->{$i},$new_price_arr,$details_obj->print_details->dop_params);
 				
 							  //print_r($new_data);
 							 $details_obj->price_in = $new_data['new_price_arr']['price_in'];
 							 $details_obj->price_out = $new_data['new_price_arr']['price_out'];/**/
 					     }
 					     // echo $dop_data_row_id."\r\n";
-						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids[$i],'quantity'=>(int)$details_obj->print_details->quantity_details[$i]);
+						 $cur_data=array('dop_data_row_id'=>$details_obj->print_details->dop_data_ids->{$i},'quantity'=>(int)$details_obj->print_details->quantity_details->{$i});
 					     $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_obj);
 					 }
 					 echo json_encode($last_uslugi_ids);

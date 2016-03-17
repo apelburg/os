@@ -388,9 +388,11 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 				// обновляем контент услуг относительно выбранных вариантов
-				methods.update_services_content();
+				// methods.update_services_content();
 				// инициализируем работу нижней части окна
-				methods.services_init();
+				// methods.services_init();
+				// обновляем контент услуг относительно выбранных вариантов
+				methods.update_services_content();
 				// поправка главного чекбокса группы
 				methods.checkbox_main_check();
 				// console.log(new_services);
@@ -1796,12 +1798,14 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
+				
 				// добавляем строки услуг в DOM
     			methods.services_tbl.find('.service_th').show().after(service_row);
     		}
 		},
 		// обновляет информацию по услугам, относительно выбранных вариантов
 		update_services_content : function( content ) {
+			console.info('Total >> update_services_content');
     		// подчищаем данные в таблице услуг
     		methods.services_tbl.find('.variant').remove();
     		methods.services_tbl.find('.service').remove();
