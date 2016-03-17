@@ -158,20 +158,27 @@ $(document).on('click', '.leter_div', function(event) {
 
 var warning_messages;
 function get_ui_window(){
+  console.log('get_ui_window')
   // убиваем старые окна
   if($('.reminder_win').length){
-    $('.reminder_win').remove();
+    $('.reminder_win').each(function(index, el) {
+      $(this).find('.dialog_window').remove();
+    });
+    
     $('.dialog_window_minimized ').remove();
-    $('.dialog_window').remove();
+    
+    $('.reminder_win').remove();
+
   }
+
+
   if($('#num_window_yet').length==0){
     $('body').append('<div id="num_window_yet" data-window_num="1" style="position: fixed;bottom: 0px;right: 35px;color: red;background: #fff;padding: 6px 6px 6px 6px;border: 1px solid;border-color: #D3BABA;"></div>');
   }
   
   var col1 = 0;
   var col = 0;
-  $('.dialog_window_minimized').remove();
-  $('.dialog_window').parent().remove();
+  
   $.post('',{
       ajax_reminder:'get_alert_planer',
     }, function(data, textStatus, xhr) {  
@@ -237,7 +244,7 @@ function get_ui_window(){
                           win_warning_type = 'Подтверждение';
                           var plan = (val['plan']!="")?'<div class="quote_t">'+val['plan']+'</div>':'<div class="quote_t_red">план отсутствует</div>';
                           var resultat = (val['result']!="")?'<div class="quote_t">'+val['result']+'</div>':'<div class="quote_t_red">комментарий отсутствует</div>';
-                          var href2 = '<a  target="_blank" href="http://www.apelburg.ru/admin/order_manager/?page=clients&razdel=show_client_folder&sub_razdel=planner&client_id='+val['client_id']+'">&laquo;'+ val['client_name']+'&raquo;</a>';
+                          var href2 = '<a  target="_blank" href="http://www.apelburg.ru/os/?page=client_folder&section=planner&client_id='+val['client_id']+'">&laquo;'+ val['client_name']+'&raquo;</a>';
                           // console.log(val['close_manager_id']+' '+val['close_manager_name']);
                           if(Number(val['close_manager_id'])!=0 && val['close_manager_id']!=val['manager_id']){
                             text += ''+
@@ -402,7 +409,7 @@ function get_ui_one_window(){
                 win_warning_type = 'Подтверждение';
                 var plan = (val['plan']!="")?'<div class="quote_t">'+val['plan']+'</div>':'<div class="quote_t_red">план отсутствует</div>';
                 var resultat = (val['result']!="")?'<div class="quote_t">'+val['result']+'</div>':'<div class="quote_t_red">комментарий отсутствует</div>';
-                var href2 = '<a  target="_blank" href="http://www.apelburg.ru/admin/order_manager/?page=clients&razdel=show_client_folder&sub_razdel=planner&client_id='+val['client_id']+'">&laquo;'+ val['client_name']+'&raquo;</a>';
+                var href2 = '<a  target="_blank" href="http://www.apelburg.ru/os/?page=client_folder&section=planner&client_id='+val['client_id']+'">&laquo;'+ val['client_name']+'&raquo;</a>';
                 text = '';
                 if(Number(val['close_manager_id'])!=0 && val['close_manager_id']!=val['manager_id']){
                             text = ''+
@@ -962,7 +969,7 @@ function add_new_window(cont,title,class_d,client_id,manager_id,type_w,type_wind
       $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar-close").remove();
       $('.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset').css({'width':'98%'});
           //window.open('http://www.apelburg.ru/admin/order_manager/?page=clients&razdel=show_client_folder&sub_razdel=planner&client_id='+client_id+'&subsub_razdel=history','_blank')
-      var href = 'http://www.apelburg.ru/admin/order_manager/?page=clients&razdel=show_client_folder&sub_razdel=planner&client_id='+client_id+'&subsub_razdel=history';
+      var href = 'http://www.apelburg.ru/os/?page=client_folder&section=planner&client_id='+client_id+'&subsub_razdel=history';
       $(this).parents(".ui-dialog:first").find('.okButtonClass').replaceWith('<a data-id="" onclick=\'delete_this_win("'+div_id+'","'+client_id+'","'+event_type+'","'+manager_id+'","'+type_w+'")\' type="button" target="_blank" href="'+href+'" dialogclass="alert" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style=" float: right;margin: 7px 0;"><span class="ui-button-text">   ОК   </span></a>');
     }
   });

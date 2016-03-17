@@ -1022,6 +1022,40 @@
 		
 	}
 	
+	function validate_fieds(element){
+	  //var agreement_exists = document.getElementById('agreement_exists').checked;
+	  //if(!agreement_exists) return;
+	  var validate_error = [];
+	  if(document.getElementById('existent_agreement_num'))  var existent_agreement_num = document.getElementById('existent_agreement_num').value;
+	 if(document.getElementById('existent_client_agreement_num')) var existent_client_agreement_num = document.getElementById('existent_client_agreement_num').value;
+	  if(document.getElementById('existent_agreement_date')) var existent_agreement_date = document.getElementById('existent_agreement_date').value;
+	  if(document.getElementById('existent_agreement_expire_date')) var existent_agreement_expire_date = document.getElementById('existent_agreement_expire_date').value;
+	  
+	  if(typeof element.form.requisit_id === 'undefined') validate_error.push('нет реквизитов клиента');
+	  if(typeof element.form.our_firm_id === 'undefined') validate_error.push('нет реквизитов нашей фирмы');
+	  
+	  if(existent_agreement_num){
+		  var pattern = /^[\d]{1,3}\/[\d]{4}$/;
+		  if(!existent_agreement_num.match(pattern)) validate_error.push('номер существующего (неклиентского) договора должен быть в формате 000/0000, и содержать только цифры');
+		  if(parseInt(existent_agreement_num.slice(0,existent_agreement_num.indexOf('/')))>104) validate_error.push('цифра в номере существующего (неклиентского), перед знаком / не может превышать 104');
+		  if(parseInt(existent_agreement_num.slice(0,existent_agreement_num.indexOf('/')))==0) validate_error.push('цифра в номере существующего (неклиентского), перед знаком / не может быть равна 0');
+	  }
+	  if(existent_client_agreement_num){
+		  var pattern = /^[\d\w\/\-]{3,9}$/;
+		  if(!existent_client_agreement_num.match(pattern)) validate_error.push('номер клиентского договора может должен быть длинной от 3 до 9 символов, содержать только цифры ,/ ,- и символы латиниского алфавита');
+	  }
+	  var pattern = /^\d{2}.\d{2}.\d{4}$/;
+	  if(existent_agreement_date && !existent_agreement_date.match(pattern))  validate_error.push('дата подписания не соответствуюет формату 00.00.0000');
+	  if(existent_agreement_expire_date && !existent_agreement_expire_date.match(pattern))  validate_error.push('дата истечения не соответствуюет формату 00.00.0000');
+		
+
+	  if(validate_error.length > 0){
+		  alert(validate_error.join("\r\n"));
+		  return false;
+	  }
+	  
+    }
+	
 	function get_checked_ids_and_make_request(element){
 	    var valuesArr = getValuesOfCheckedRows('','masterBtn');
 		if(valuesArr.length == 0){
