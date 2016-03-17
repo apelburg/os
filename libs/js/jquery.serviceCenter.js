@@ -1040,10 +1040,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// если выбрано несколько услуг 
 			if(i>1){
-				console.log('заглушка вызова объединенного тиража >> start');
-				methods.calculator_type = "none";
-				console.info('Будет произведён вызов калькулятора для разных макетов!!!');
-				console.log('заглушка вызова объединенного тиража >> end');
+				// console.log('заглушка вызова объединенного тиража >> start');
+				// methods.calculator_type = "none";
+				// console.info('Будет произведён вызов калькулятора для разных макетов!!!');
+				// console.log('заглушка вызова объединенного тиража >> end');
 
 				// если ещё не был выбран тип окна
 				if( !methods.calculator_type ){				
@@ -1190,8 +1190,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
-				console.log('ставим заглушку');
-				return false;
+				// console.log('ставим заглушку');
+				// return false;
 
 
 				// если отжали чекбокс
