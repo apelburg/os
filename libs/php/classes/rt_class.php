@@ -193,6 +193,29 @@
 			if($result->num_rows>0) return true;  
 			return false;  
 		}
+		static function check_calculators_types_by_id($id){
+			global $mysqli;
+
+			$query="SELECT print_details, united_calculations FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$id."'";
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0){
+			     $warning = array();
+			     while($row = $result->fetch_assoc()){
+				    $pd = json_decode($row['print_details'],true);
+					
+					if(!isset($warning['manual_calc_exists']) && $pd['calculator_type']=='manual'){
+					    $warning['manual_calc_exists'] = true;
+					}
+					if(!isset($warning['free_calc_exists']) && $pd['calculator_type']=='free'){
+					    $warning['free_calc_exists'] = true;
+					}
+					if(!isset($warning['united_calculations']) && $row['united_calculations']!=''){
+					    $warning['united_calculations'] = true;
+					}
+				}
+			}
+			return (count($warning)>0)? json_encode(array('warning'=>array('calculators_checking'=>$warning))):'';  
+		}
 		static function shift_rows_down($place_id,$mainCopiedRowId,$shift_counter /* $place_id - куда вставляем, $pos_id - что будем вставлять */){
 		    global $mysqli;
 			

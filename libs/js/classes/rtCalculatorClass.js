@@ -812,15 +812,15 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			//alert(response);
+			 alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
-			catch (e) {}
+			catch (e) { alert('неправильный формат данных in rtCalculator.makeQuantityCalculations() ошибка JSON.parse(response)'); }
 			
 			if(response_obj){
 				
 			
-				if(response_obj.warning || response_obj.warning=='united_calculations_exists'){
+				/*if(response_obj.warning && response_obj.warning=='united_calculations_exists'){
 					// если найдено что позиция имеет услуги входящие в объединенный тираж
 					// выбрасываем confirm()
 					// если получено подтверждение, отправляем запрос на сервер по новой с игнорированием проверки на united_calculations
@@ -834,8 +834,26 @@ var rtCalculator = {
 						cell.innerHTML = rtCalculator.tbl_model[row_id]['quantity'];
 						return;
 					}
+				}*/
+				console.log(response_obj);
+				if(response_obj.warning && response_obj.warning.calculators_checking){
+					
+					for( var prop in response_obj.warning.calculators_checking){
+						if(prop == 'manual_calc_exists'){
+							alert('manual_calc_exists');
+						}
+						if(prop == 'free_calc_exists'){
+							alert('free_calc_exists');
+						}
+						if(prop == 'united_calculations'){
+							alert('united_calculations');
+						}
+					}
+					
+					
+					
 				}
-				if(response_obj.warning || response_obj.warning=='size_exists'){
+				if(response_obj.warning && response_obj.warning=='size_exists'){
 					// если найдено что позиция имеет какие-либо размеры изменение количества должно быть отменено
 					// возвращаем в ячейку прежнее значение
 					//alert(response_obj.warning);
