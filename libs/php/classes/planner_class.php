@@ -202,9 +202,12 @@
 	        
 			$result = $mysqli->query($query) or die($mysqli->error);
 				
-			if($result->num_rows > 0){
+			if($result->num_rows > 0){			
+			   include_once(ROOT."/libs/php/classes/manager_class.php");
+
 			   // не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
 			   include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+
 			   
 			   while($row = $result->fetch_assoc()){
 			      if(!(isset($delayed_remainds[$row['id']]) &&  $cur_time < strtotime($delayed_remainds[$row['id']]))){
@@ -528,10 +531,12 @@
 		}
 		public static function set_approval_result($remainder_user_id,$plan_id,$status,$comment){ // при клике контороллером на кнопку "ОТЛОЖИТЬ"
 		    global $mysqli;
-		    //
+			
+			include_once(ROOT."/libs/php/classes/manager_class.php");
 			// не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
 			include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
-		    $manager = new Manager($remainder_user_id);
+
+			$manager = new Manager($remainder_user_id);
 			
 			
 			$comment = '<div><span class="mini_cap">'.$manager->name.' '.$manager->last_name.'</span><div>'.$comment.'</div></div>'; 

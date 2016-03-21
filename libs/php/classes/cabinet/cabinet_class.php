@@ -5367,7 +5367,7 @@
 				$readonly = ($enable_edit == 0)?' disabled':'';
 
 				
-				include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+				include_once(ROOT."/libs/php/classes/print_calculators_class.php");
 				// запрашиваем информацию по ТЗ и , если нужно
 				if(!isset($this->Service)){ // если нам ничего не известно по строке из CAB_DOP_USLUGI
 					$query = "SELECT * FROM ".CAB_DOP_USLUGI." WHERE `id` = '".$dop_usluga_id."'";

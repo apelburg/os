@@ -3,16 +3,16 @@
     $quick_button = '<div class="quick_button_div"><a href="#11" class="button">&nbsp;</a></div>';
 	$view_button = '<div class="quick_view_button_div"><a href="#11" class="button">&nbsp;</a></div>';
 	
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/art_img_class.php");
-	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/com_pred_class.php");
+	include_once(ROOT."/libs/php/classes/art_img_class.php");
+	include_once(ROOT."/libs/php/classes/com_pred_class.php");
 
 	///////////////////////////////////////// AJAX ////////////////////////////////////////////////////
 	
 	if(isset($_GET['send_kp_by_mail'])){
 	    //echo  $_GET['send_kp_by_mail'];
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+		include_once(ROOT."/libs/php/classes/manager_class.php");
 		$manager = new Manager($user_id);
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+		include_once(ROOT."/libs/php/classes/client_class.php");
 
 	    $kp_id = $_GET['send_kp_by_mail'];
 		$kp_filename = Com_pred::prepare_send_mail($kp_id,$client_id,$user_id);

@@ -80,11 +80,8 @@
 	var coreStyle = {
 		name: "core",
 		html: "<div class=\"" + pluginClassName + "-wrapper\">\n	<div class=\"" + pluginClassName + "-arrow\"></div>\n	<div class=\"" + pluginClassName + "-container\"></div>\n</div>",
-<<<<<<< HEAD
 		css: "." + pluginClassName + "-corner {\n	position: fixed;\n	margin: 5px;\n	z-index: 1050;\n}\n\n." + pluginClassName + "-corner ." + pluginClassName + "-wrapper,\n." + pluginClassName + "-corner ." + pluginClassName + "-container {\n	position: relative;\n	display: block;\n	height: inherit;\n	width: 100%;\n	margin: 3px;\n}\n\n." + pluginClassName + "-wrapper {\n	z-index: 1;\n	position: absolute;\n	display: inline-block;\n	height: 0;\n	width: 0;\n}\n\n." + pluginClassName + "-container {\n	display: none;\n	z-index: 1;\n	position: absolute;\n}\n\n." + pluginClassName + "-hidable {\n	cursor: pointer;\n}\n\n[data-notify-text],[data-notify-html] {\n	position: relative;\n}\n\n." + pluginClassName + "-arrow {\n	position: absolute;\n	z-index: 2;\n	width: 0;\n	height: 0;\n}"
-=======
-		css: "." + pluginClassName + "-corner {\n	position: fixed;\n	margin: 5px;\n	z-index: 1050;\n}\n\n." + pluginClassName + "-corner ." + pluginClassName + "-wrapper,\n." + pluginClassName + "-corner ." + pluginClassName + "-container {\n	position: relative;\n	display: block;\n	height: inherit;\n	width: inherit;\n	margin: 3px;\n}\n\n." + pluginClassName + "-wrapper {\n	z-index: 1;\n	position: absolute;\n	display: inline-block;\n	height: 0;\n	width: 0;\n}\n\n." + pluginClassName + "-container {\n	display: none;\n	z-index: 1;\n	position: absolute;\n}\n\n." + pluginClassName + "-hidable {\n	cursor: pointer;\n}\n\n[data-notify-text],[data-notify-html] {\n	position: relative;\n}\n\n." + pluginClassName + "-arrow {\n	position: absolute;\n	z-index: 2;\n	width: 0;\n	height: 0;\n}"
->>>>>>> origin/master
+
 	};
 
 	var stylePrefixes = {
@@ -562,11 +559,14 @@
 
 	//always include the default bootstrap style
 	addStyle("bootstrap", {
+		// html:"<div>"+
+		// 		"<span data-notify-html></span>"+
+		// 		"<div class='buttons'>" +
+		//         	"<button class='notify-no'>X</button>" +
+		//         "</div>" +
+		// 	"</div>",
 		html:"<div>"+
 				"<span data-notify-html></span>"+
-				"<div class='buttons'>" +
-		        	"<button class='notify-no'>X</button>" +
-		        "</div>" +
 			"</div>",
 		classes: {
 			base: {
@@ -576,6 +576,48 @@
 				"background-color": "#fcf8e3",
 				"border": "1px solid #fbeed5",
 				"border-radius": "4px",
+				"white-space": "nowrap",
+				"padding-left": "25px",
+				"background-repeat": "no-repeat",
+				"background-position": "3px 7px"
+			},
+			total_12px: {
+				"font-weight": "normal",
+				"font-size":"12px",
+				"color":"#fff",
+				"padding": "8px 15px 8px 14px",
+				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
+				"background-color": "#5B5C61",
+				"border": "1px solid #828388",
+				"border-radius": "0px",
+				"white-space": "nowrap",
+				"padding-left": "25px",
+				"background-repeat": "no-repeat",
+				"background-position": "3px 7px"
+			},
+			total_10px: {
+				"font-weight": "normal",
+				"font-size":"12px",
+				"color":"#fff",
+				"padding": "0 3px",
+				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
+				"background-color": "#5B5C61",
+				"border": "1px solid #828388",
+				"border-radius": "0px",
+				"white-space": "nowrap",
+				"background-repeat": "no-repeat",
+				"background-position": "3px 7px"
+			},
+
+			total: {
+				"font-weight": "normal",
+				"font-size":"10px",
+				"color":"#fff",
+				"padding": "8px 15px 8px 14px",
+				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
+				"background-color": "#5B5C61",
+				"border": "1px solid #828388",
+				"border-radius": "0px",
 				"white-space": "nowrap",
 				"padding-left": "25px",
 				"background-repeat": "no-repeat",
@@ -622,8 +664,7 @@
 	});
 
 }));
-<<<<<<< HEAD
-=======
+
 
 // закрытие на rhtcnbr
 $(document).on('click', '.notifyjs-foo-base .notify-no', function() {
@@ -633,5 +674,3 @@ $(document).on('click', '.notifyjs-foo-base .notify-no', function() {
 
 
 
-
->>>>>>> origin/master

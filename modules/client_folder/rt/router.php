@@ -55,19 +55,19 @@
 	
 	if(isset($_GET['setCalcualtorLevel'])){
 	     // print_r($_GET);
-	     require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_class.php");
+	     require_once(ROOT."/libs/php/classes/rt_class.php");
 		 echo RT::setCalcualtorLevel($_GET['query_num'],$_GET['setCalcualtorLevel']);
 		 exit;
 	}
 	
 	if(isset($_POST['getSizesForArticle'])){
-	     require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_class.php");
+	     require_once(ROOT."/libs/php/classes/rt_class.php");
 		 echo RT::getSizesForArticle($_POST['pos_id']);
 		 exit;
 	}
 	
 	if(isset($_GET['getSpecificationsDates'])){
-	     require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
+	     require_once(ROOT."/libs/php/classes/agreement_class.php");
 		 echo Agreement::getSpecificationsDates(json_decode($_GET['getSpecificationsDates']));
 		 exit;
 	}
@@ -103,7 +103,7 @@
 		 exit;
 	}
 	if(isset($_GET['make_com_offer'])){
-		 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/com_pred_class.php");
+		 include_once(ROOT."/libs/php/classes/com_pred_class.php");
 		 
 		 echo  Com_pred::save_to_tbl($_GET['make_com_offer']);
 
@@ -155,7 +155,7 @@
 	}
 	if(isset($_GET['fetch_dop_uslugi_for_row'])){
 
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		$out_put = rtCalculators::fetch_dop_uslugi_for_row($_GET['fetch_dop_uslugi_for_row']);
 		
@@ -163,7 +163,7 @@
 	}
 	if(isset($_GET['fetch_data_for_dop_uslugi_row'])){
 
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		$out_put = rtCalculators::fetch_data_for_dop_uslugi_row($_GET['fetch_data_for_dop_uslugi_row']);
 		
@@ -171,22 +171,30 @@
 	}
 	if(isset($_GET['grab_calculator_data'])){
 		//print_r(json_decode($_GET['grab_calculator_data']));
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		$out_put = rtCalculators::grab_data(json_decode($_GET['grab_calculator_data']));
 		//print_r($out_put);
 		exit;
 	}
-	if(isset($_GET['save_calculator_result'])){
-		//print_r(json_decode($_GET['details']));//
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+	if(isset($_GET['grab_dop_info'])){
+	
+	    include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
-		rtCalculators::save_calculatoins_result(json_decode($_GET['details']));
+		$out_put = rtCalculators::grab_dop_info();
+		echo $out_put;
+		exit;
+	}
+	if(isset($_GET['save_calculator_result'])){
+		// print_r(json_decode($_GET['details']));//
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+		
+		rtCalculators::save_calculatoins_result_router(json_decode($_GET['details']));
 		exit;
 	}
 	if(isset($_GET['delete_prints_for_row'])){
 		//echo  $_GET['usluga_id'].' - '. $_GET['delete_prints_for_row'];
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		$usluga_id = (isset($_GET['usluga_id']))? $_GET['usluga_id'] : FALSE;
 		$all = (isset($_GET['all']))? $_GET['all'] : FALSE;
 		rtCalculators::delete_prints_for_row($_GET['delete_prints_for_row'],$usluga_id,$all);
@@ -202,14 +210,31 @@
 				exit;
 			}
 		}
-		
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		// проверяем не входитят ли услуги расчета в объединеный тираж
+		if(!isset($_GET['ignore_united_calculations_checking'])){
+			if(RT::check_on_united_calculations_existence_by_id($_GET['id'])==true){
+				 echo '{"warning":"united_calculations_exists"}';
+				 exit;
+			}
+		}
+		if(isset($_GET['ignore_united_calculations_checking'])){
+		    // ЧТО В ПРИНЦИПЕ НАДО ПОМЕНЯТЬ ПРИ ТАКОЙ СИТУАЦИИ
+			// - стоимость нанесения в данном расчете и в остальных расчетах где находятся объединенные тиражи
+			// - для этого надо:
+			// - пересчитать услугу с новым тиражом (тираж можно вычислить из print_detials->quantity_detials)
+			// - получится новая цена за штуку, её надо вписать в объединенные расчеты и вписать туда новые данные по количеству
+			// - и потом еще это все надо обновить без перезагрузки
+			// - как это все сделать??? С помощью jquery?
+		    echo 333;
+			exit;
+		}
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		echo rtCalculators::change_quantity_and_calculators($_GET['quantity'],$_GET['id'],$_GET['print'],$_GET['extra'],$_GET['source']);
 		exit;
 	}
 	if(isset($_GET['distribute_print'])){
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
 		rtCalculators::distribute_print($_GET['details']);
 		exit;
@@ -237,6 +262,14 @@
 		        RT::update_new_sort_rt_AJAX();
 				exit;
 			}
+			if($_POST['AJAX']=='change_main_rows_color'){
+				global $mysqli;
+  				$query ="UPDATE `".RT_MAIN_ROWS."` SET 
+  					`rt_row_color` = '".$_POST['val']."'";
+  				$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+  				$result = $mysqli->query($query) or die($mysqli->error);
+			}
+
 		}
 	/////////////////////  END  AJAX  ////////////////////// 
 	

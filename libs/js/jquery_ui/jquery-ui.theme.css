@@ -37,10 +37,11 @@
 	color: #222222;
 }
 .ui-widget-header {
-	border: 1px solid #9dbe8e;
-	background: #9dbe8e url("images/ui-bg_highlight-soft_0_9dbe8e_1x100.png") 50% 50% repeat-x;
-	color: #000;
-	font-weight: bold;
+	border: 1px solid #007036;
+	/*background: #9dbe8e url("images/ui-bg_highlight-soft_0_9dbe8e_1x100.png") 50% 50% repeat-x;*/
+	background: #007036;
+	/*color: #fff;*/
+	/*font-weight: bold;*/
 }
 .ui-widget-header a {
 	color: #000;

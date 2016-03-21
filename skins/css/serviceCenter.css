@@ -1,0 +1,653 @@
+#js-win-sv{
+	cursor: pointer;
+	position:fixed;
+	right:40px;
+	bottom:20px;
+	padding : 5px;
+	width :25px;
+	height :25px;
+	border-radius:25px;
+	color:#fff;
+	font-size:15px;
+	
+	background: url(../images/img_design/b_new.png) no-repeat center;
+    -webkit-background-size: 23px 23px;
+    background-size: 23px 23px;
+    background-color:#db4437;
+}
+.sc-win-buttons{
+	background: #99cc33;
+	border-radius: 5px;
+}
+
+#main_window{
+    background: red;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 1000;
+    float: left;
+    /* width: 500px; */
+    /* height: 150px; */
+    top: 0;
+    left: 0;
+}
+#js-win-sv{
+	cursor: pointer;
+    position: fixed;
+    right: 40px;
+    bottom: 20px;
+    padding: 5px;
+    width: 25px;
+    height: 25px;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 15px;
+    background: url(../images/img_design/b_new.png) no-repeat center;
+    -webkit-background-size: 23px 23px;
+    background-size: 23px 23px;
+    background-color: #db4437;
+}
+
+/* ui-jquery */
+.ui-widget-header {
+    border: 1px solid #007036;
+    background: #007036;/* url("images/ui-bg_highlight-soft_0_9dbe8e_1x100.png") 50% 50% repeat-x;*/
+    color: #000;
+    font-weight: bold;
+}
+.ui-dialog .ui-dialog-title {
+    float: left;
+    margin: .1em 0;
+    white-space: nowrap;
+    width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+    font-weight: normal;
+    line-height: 13px;
+    font-size: 13px;
+}
+#js-SC_buttons button,
+#js-alert_union_buttons button{
+	border-radius: 9px;
+	height: 36px;
+	border:1px solid #999999;
+	background: #92B73E;
+	color: #fff;
+}
+body #js-alert_union_buttons .button_yes_or_no{
+	padding: 3px 45px;
+}
+body #js-alert_union_buttons .button_yes_or_no.no{
+	background:#fff; 
+	color: #999999;
+}
+body #js-alert_union_buttons .save{
+	float: right;
+}
+
+#js-SC_buttons table,
+#js-alert_union_buttons table{
+	width: 100%;
+}
+#js-SC_buttons table td:nth-of-type(1),
+#js-alert_union_buttons table td:nth-of-type(1){
+	text-align: left;
+}
+#js-SC_buttons table td:nth-of-type(2){
+	text-align: center;
+}
+#js-SC_buttons table td:nth-of-type(3),
+#js-alert_union_buttons table td:nth-of-type(2){
+	text-align: right;
+}
+
+button#sc_cancel_all{
+	width: 148px;
+	color: #9E9E9E;
+	background: url('../images/img_design/back_checkbox_btn.png') no-repeat;
+	background-color: #fff;
+	background-position-y: 9px;
+    background-position-x: 9px;
+    padding-left: 25px;
+}
+button#sc_cancel_all.no_click{
+	opacity: 0;
+	cursor: default;
+}
+button#sc_add_service{
+	width: 186px;
+	background-image: url('../images/img_design/calc_btn.png');
+	background-repeat: no-repeat;
+	background-position-y: 9px;
+    background-position-x:15px;
+    padding-left: 35px;
+}
+button#sc_close_window{
+	width: 148px;
+}
+
+#js-main_service_center{
+	padding: 0;
+	font-size: 12px;
+    overflow-x:hidden; 
+}
+#js-main_service_center .spacer_div{
+	border: 1px solid #808080;
+	height: 2px;
+	background-color: #e1e1e1;
+}
+#js-main-service_center-variants-services-div-table table tr.js-service_spacer th{
+	color: #eeeeee;	
+}
+/* меню артикул/тираж */
+#js-main-service_center-top_menu{
+	/*border-top: 1px solid #808080;
+	margin-top: 3px;*/
+	background: #92B73E;
+    color: #fff;
+}
+#js-main-service_center-top_menu ul{
+    list-style: none;
+    padding: 0 11px;
+    margin: 0;
+}
+#js-main-service_center-top_menu ul li {
+    display: -webkit-inline-box;
+    padding: 3px 5px 3px 5px;
+}
+
+#js-main-service_center-top_menu ul li:hover,
+#js-main-service_center-top_menu ul li.led{
+    background-color: #6d9d32;
+    cursor: pointer;
+}
+#js-main-service_center-top_menu ul li div{
+	border: 1px solid transparent;
+	padding: 1px 60px 1px 60px;
+    font-size: 12px;
+}
+#js-main-service_center-top_menu ul li.checked div {
+    border: 1px solid #fff;
+    text-align: center;
+}
+
+/* таблица вариантов */
+#js-main-service_center-variants-table{
+	border-collapse: collapse;
+	width: 100%;
+}
+#js-main-service_center-variants-table input[type="checkbox"]{
+	/*display: block;*/
+}
+#js-main-service_center-variants-table tr{
+	
+}
+#js-main-service_center-variants-table tr th{
+	background-color: #eeeeee;
+	font-size: 10px;
+	color: #5a5c61;
+	font-weight: normal;
+	height: 17px;
+}
+#js-main-service_center-variants-table tr td{
+	background-color: #fff;
+	border-top: 2px solid #fff;
+	border-bottom: 2px solid #fff;
+	cursor: pointer;
+}
+
+#js-main-service_center-variants-table tr th:nth-of-type(1){
+	width: 14px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(2){
+	width: 15px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(2) .js-psevdo_checkbox,
+#js-main-service_center-variants-table tr td:nth-of-type(2) .js-psevdo_checkbox{
+	border: 1px solid #e1e1e1;
+	width: 13px;
+	height: 13px;
+	cursor: pointer;
+	background-color: #fff;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(2).checked .js-psevdo_checkbox,
+#js-main-service_center-variants-table tr td:nth-of-type(2).checked .js-psevdo_checkbox{
+	border: 1px solid #92b73e;
+	width: 13px;
+	height: 13px;
+	cursor: pointer;
+	background-color: #92b73e;
+	background-image: url(../images/img_design/tc_check.png);
+	background-repeat: no-repeat;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(2).checked-before .js-psevdo_checkbox {
+    background: url('../images/img_design/back_checkbox_btn.png') no-repeat;
+	background-color: #fff;
+	background-position: -2px -2px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(2).checked-before .js-psevdo_checkbox::before{
+	margin-left: -4px;
+}
+
+
+#js-main-service_center-variants-table tr th:nth-of-type(3),
+#js-main-service_center-variants-table tr td:nth-of-type(3){
+	width: 23px;
+	text-align: right;
+	color: #959595;
+}
+
+#js-main-service_center-variants-table tr th:nth-of-type(4){
+	text-align: right;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(4){
+	width: 3px;
+	color: #000;
+	text-align: right;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(5){
+	width: 14px;
+	color: #959595;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(5){
+	padding-left: 3px;
+	color: #c2c2c2;
+	font-size: 11px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(6),
+#js-main-service_center-variants-table tr td:nth-of-type(6){
+	width: 90px;
+	padding-left: 25px;
+	text-align: left;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(7),
+#js-main-service_center-variants-table tr td:nth-of-type(7){
+	width: 30px;
+	padding-left: 5px;
+	padding-right: 5px;
+	text-align: center;
+}
+#js-main-service_center-variants-table tr td span.service{
+	border:1px solid #c6e1aa;
+	font-size: 10px;
+	color: #5a5c61;
+	cursor: pointer;
+	padding: 1px 5px;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(8){
+	text-align: left;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(8){
+	text-align: left;
+	color: #000;
+}
+#js-main-service_center-variants-table tr th:nth-of-type(9){
+	text-align: right;
+	padding-right: 11px;
+}
+#js-main-service_center-variants-table tr td:nth-of-type(9){
+	text-align: right;
+	color: #5a5c61;
+	padding-right: 11px;
+}
+#js-main-service_center-variants-table tr td.hover_group_class,
+#js-main-service_center-variants-table tr.tr_checked td{
+	background-color: #ebebeb;
+}
+
+/* блок услуг */
+#js-main-service_center-variants-services-head{
+	background: #92B73E;
+    color: #fff;
+    padding: 5px 15px;
+}
+#js-main-service_center-variants-services-div-table table{
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 11px;
+}
+#js-main-service_center-variants-services-div-table table tr th{
+	background-color: #eeeeee;
+    font-size: 10px;
+    color: #5a5c61;
+    font-weight: normal;
+    height: 17px;
+}
+#js-main-service_center-variants-services-div-table table tr td{
+	background-color: #fff;
+}
+#js-main-service_center-variants-services-div-table table tr th:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr td:nth-of-type(1) {
+	padding-left: 15px;
+}
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(2) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(3) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(4) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(5) div:nth-of-type(1){
+	color: #000;
+	font-weight: bold;
+	font-size: 11px;
+	text-align: right;
+}
+
+#js-main-service_center-variants-services-div-table table tr.service td.service_name:hover{
+	background-color: #eeeeee;
+	cursor: pointer;
+}
+
+
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(2) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(3) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(4) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(5) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(2) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(3) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(4) div:nth-of-type(1),
+#js-main-service_center-variants-services-div-table table tr.service td:nth-last-of-type(5) div:nth-of-type(1){
+	color: #000;
+	font-weight: normal;
+	font-size: 11px;
+	text-align: right;
+}
+
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(2) div:nth-of-type(2),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(3) div:nth-of-type(2),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(4) div:nth-of-type(2),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(5) div:nth-of-type(2){
+	color: #959595;
+	font-size: 11px;
+	text-align: right;
+}
+
+#js-main-service_center-variants-services-div-table table tr.spacer td{
+	height: 16px;
+}
+#js-main-service_center-variants-services-div-table table tr:first-child th:nth-of-type(2),
+#js-main-service_center-variants-services-div-table table tr:first-child th:nth-of-type(3),
+#js-main-service_center-variants-services-div-table table tr:first-child th:nth-of-type(4),
+#js-main-service_center-variants-services-div-table table tr:first-child th:nth-of-type(6) {
+	text-align: right;
+}
+#js-main-service_center-variants-services-div-table table tr th:nth-last-of-type(3),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(3) {
+	text-align: center;
+}
+#js-main-service_center-variants-services-div-table table tr th:nth-last-of-type(2),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(2){
+	width: 100px;
+	border-right: 1px solid #ebebeb;
+	padding-right: 18px;
+}
+#js-main-service_center-variants-services-div-table table tr th:nth-last-of-type(6),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(6) {
+	width: 55px;
+	border-right: 1px solid #ebebeb;
+	text-align: right;
+	padding-right: 11px;
+}
+/*#js-main-service_center-variants-services-div-table table tr th:nth-last-of-type(3),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(3) {
+	width: 80px;
+	padding-left: 30px;
+}*/
+#js-main-service_center-variants-services-div-table table tr th:nth-last-of-type(4) {
+	width: 100px;
+}
+#js-main-service_center-variants-services-div-table table tr th:nth-last-of-type(5) {
+	width: 100px;
+}
+
+/* итого */
+#js-main-service_center-variants-services-div-table table tr.itogo td,
+#js-main-service_center-variants-services-div-table table tr.variant td{
+	background-color: #fff;
+	font-size: 12px;
+}
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(6){
+	font-size: 11px
+}
+#js-main-service_center-variants-services-div-table table tr.variant  td:nth-of-type(2) div{
+	margin-left: -15px;
+}
+#js-main-service_center-variants-services-div-table table tr.variant  td:nth-of-type(2) div span:nth-of-type(1){
+	color: #959595;
+}
+#js-main-service_center-variants-services-div-table table tr.variant  td:nth-of-type(2) div span:nth-of-type(2){
+	color: #c2c2c2;
+}
+/*#js-main-service_center-variants-services-div-table table tr.variant  td:nth-of-type(3){
+	
+}*/
+#js-main-service_center-variants-services-div-table table tr.variant  td:nth-of-type(4){
+	width: 18px;
+    text-align: center;
+    padding-right: 15px;	
+}
+#js-main-service_center-variants-services-div-table table tr.variant  td:nth-of-type(4) span {
+    border: 1px solid #c6e1aa;
+    font-size: 10px;
+    color: #5a5c61;
+    cursor: pointer;
+    padding: 1px 5px;
+}
+#js-main-service_center-variants-services-div-table table tr.itogo td:nth-of-type(1) {
+	font-weight: bold;
+}
+#js-main-service_center-variants-services-div-table table tr.itogo td:nth-last-of-type(3){
+	font-weight: bold;
+}
+#js-main-service_center-variants-services-div-table table tr.itogo td:last-child{
+	cursor: pointer; 
+	background-image: url(../images/img_design/tc_del_service_all.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+	width: 50px
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:last-child{
+	cursor: pointer; 
+	background-image: url(../images/img_design/tc_del_service.gif);
+	background-repeat: no-repeat;
+	background-position: 50%;
+	width: 50px;
+}
+#js-main-service_center-variants-services-div-table table tr td{
+	border-bottom: 1px solid #ebebeb;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(3){
+	border-right: 1px solid #ebebeb;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(4){
+	padding-left: 10px;
+    padding-right: 10px;
+    font-size: 10px;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(3),
+#js-main-service_center-variants-services-div-table table tr.service  td.note_title{
+	padding-left: 10px;
+	padding-right: 10px;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td.note_title{
+	font-size: 10px;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(1) {
+	padding-left: 15px;
+	width: 10px;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-last-of-type(6){
+	border-left: 1px solid #ebebeb;
+	padding-left: 11px;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td:nth-of-type(2){
+	width: 15px
+}
+#js-main-service_center-variants-services-div-table table tr.service  td .alarm_clock{
+	cursor: pointer; 
+	background-image: url(../images/img_design/alarm_clock.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+	width: 17px;
+	padding-left: 0;
+	padding-right: 0;
+	    padding: 17px 0px;
+}
+#js-main-service_center-variants-services-div-table table tr.service  td .alarm_clock.checked{
+	background-image: url(../images/img_design/alarm_clock_checked.png);
+}
+#js-main-service_center-variants-services-div-table table tr.service  td.comment{
+	cursor: pointer; 
+	background-repeat: no-repeat;
+	background-position: 50%;
+	width: 50px;
+	padding-left: 0;
+	padding-right: 0;
+	background-image: url(../images/img_design/comment_icon_empty.png);
+	/*border-left: 1px solid #ebebeb;*/
+}
+#js-main-service_center-variants-services-div-table table tr.service  td.comment.is_full{
+	background-image: url(../images/img_design/comment_icon.png);
+}
+#js-main-service_center-variants-services-div-table table tr.service  td.service_group,
+.service_group{
+	background-image: url(../images/img_design/service_group.png);
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+#js-main-service_center-variants-services-div-table table tr.service_th th:nth-of-type(4),
+#js-main-service_center-variants-services-div-table table tr.service_th th:nth-of-type(5),
+#js-main-service_center-variants-services-div-table table tr.service_th th:nth-of-type(6),
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(7){
+	padding-left: 10px;
+	text-align: left;
+}
+#js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(7) a{
+	cursor: pointer;
+	text-decoration: underline;
+}
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(2),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(4),
+#js-main-service_center-variants-services-div-table table tr td:nth-last-of-type(5){
+	padding-top: 5px;
+	padding-bottom: 5px;
+}    
+
+span.marcker_led {
+	/*position: absolute;*/
+    margin-top: -9px;
+    padding: 2px 1px 2px 0;
+    margin-left: -3px;
+}
+
+.js-variant_info div,
+.js-variant_services_json div{
+	position: absolute;
+     display: none; 
+    background: #ECC7C7;
+    padding: 15px;
+    border: 1px solid #000;
+    float: left;
+    z-index: 9;
+    left: 1%;
+    width: 90%;
+}
+/*.js-variant_info div{
+	left: 10px;
+}*/
+.js-variant_info:hover div,
+.js-variant_services_json:hover div{
+	/*display: block;*/
+}
+#js-main-service_center-variants-div-table{
+	height: 220px;
+}
+#js-main-service_center-variants-div-table #wraper_classer{
+	height: 100%;
+    width: 100%;
+    overflow: auto; 
+}
+
+
+.itogo .price.discount input{
+	font-weight: bold;
+}
+.price.discount input{
+	width: 50px;
+	border:1px solid #fff;
+	text-align: right;
+}
+.price.discount input:focus{
+	outline: none;
+}
+#js-depending_on_the_services_and_options,
+#js-depending_on_the_options_and_services{
+	display: none;
+}
+
+/* таблица подсказок группы*/
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th{
+	font-weight:normal; 
+	background: none;
+	background-image: none;
+	border:none;
+	border-collapse: collapse;
+	color: #ECEDEE;
+	padding:0;
+	margin: 0; 
+	text-shadow:none;
+}
+
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
+	border-bottom: 1px solid #828388;
+	padding: 2px 5px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:last-child td{
+	border-top: 1px solid #828388;
+}
+
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:last-child,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:last-child{
+	border-left: 1px solid #828388;	
+	text-align: right;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-last-of-type(1) td:nth-of-type(1){
+	font-size: 12px;
+	padding: 6px; 
+	text-align: left;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
+	padding: 2px 5px;
+}
+
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:nth-of-type(1) th{
+	font-size: 10px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-of-type(2){
+	font-size: 12px;font-size:10px; 
+	padding-left: 2px;
+	padding-right: 2px;
+	line-height: 16px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr:last-child td{
+	font-size: 12px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:last-child,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:last-child{
+	padding-left: 20px;
+	padding-right: 23px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:first-child,
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:first-child{
+    padding-left: 10px;
+    padding-right: 0px;
+}
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr th:nth-of-type(3),
+#js-main-service_center #js-main-service_center-variants-services-div-table table.notify-table tr td:nth-of-type(4){
+    padding-left: 20px;
+    /*padding-right: 0px;*/
+}

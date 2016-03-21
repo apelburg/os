@@ -133,7 +133,7 @@
 			$data['id'] = $row['client_face_id'];
 			
 			if($data['id']!=0){
-			    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+			    include_once(ROOT."/libs/php/classes/client_class.php");
 			    $data['details'] = Client::get_cont_face_details($data['id']);
 			}
 			
@@ -146,13 +146,52 @@
             $mysqli->query($query) or die($mysqli->error);
 		}
 		static function save_copied_rows_to_buffer($data){
-			RT::save_to_buffer($data,'copied_rows');
+		    //return print_r($data,true);
+		    $result1 = RT::check_on_united_calculations_existence($data);
+			//print_r($out_put,true)
+			
+			$result2 = RT::save_to_buffer($data,'copied_rows');
+			return ($result1)?$result1:$result2;
 		}
 		static function save_to_buffer($data,$type){
 		    if(!isset($_SESSION['rt']['buffer'])) $_SESSION['rt']['buffer'] = array();
 			$_SESSION['rt']['buffer'][$type] = $data;
 			// echo '<pre>'; print_r($_SESSION['rt']['buffer']); echo '</pre>';
 			return 1;
+		}
+		static function check_on_united_calculations_existence($data){
+			global $mysqli;
+			
+			$data = json_decode($data,true);
+			$out_put = array();
+			// выбрираем id-шники dop_row_id
+			foreach($data as $dop_data){
+			    foreach($dop_data as $dop_data_id => $val) $dop_data_ids[] = $dop_data_id;  
+			}
+			
+			// NULL ?
+			// узнаем есть ли услуги входящие в объединенный тираж
+			$query="SELECT*FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` IN('".implode("','",$dop_data_ids)."') AND `united_calculations` <>''";
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0){
+			    // если есть услуги входящие в объединенный тираж собираем id-шники dop_row_id
+				// чтобы графически выделить их на строне клиента
+			    while($row = $result->fetch_assoc()){
+	                $out_put[] = $row['dop_row_id'];
+				}
+			}
+			// чтобы графически выделить их на строне клиента
+			return (count($out_put)>0)? '["united_calculations",'.json_encode($out_put).']':false;  
+		}
+		static function check_on_united_calculations_existence_by_id($id){
+			global $mysqli;
+			
+			// NULL ?
+			// узнаем есть ли услуги входящие в объединенный тираж
+			$query="SELECT*FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$id."' AND `united_calculations` <>''";
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0) return true;  
+			return false;  
 		}
 		static function shift_rows_down($place_id,$mainCopiedRowId,$shift_counter /* $place_id - куда вставляем, $pos_id - что будем вставлять */){
 		    global $mysqli;
@@ -313,6 +352,17 @@
 								// меняем dop_row_id обозначивающий внешний ключ на id вставленного в RT_DOP_DATA ряда и
 								$copied_data['id']='';
 								$copied_data['dop_row_id']= $new_dop_row_id;
+								// если услуга состоит в ОБЪЕДИНЕННОМ ТИРАЖЕ 
+								// ОБРАБАТЫВАЕМ ДАННЫЕ ЧТОБЫ УБРАТЬ ВСЕ МАРКЕРЫ ОТНОСЯЩИЕСЯ К ОБЪЕДИНЕННОМУ ТИРАЖУ
+								if($copied_data['united_calculations']!=''){
+								     $copied_data['united_calculations']= '';
+									 $print_details = json_decode($copied_data['print_details']);
+									 if(isset($print_details->distribution_type)) unset($print_details->distribution_type);
+									 if(isset($print_details->quantity_details)) unset($print_details->quantity_details);
+									 if(isset($print_details->dop_data_ids)) unset($print_details->dop_data_ids);
+									 $copied_data['print_details']= RT::json_fix_cyr(json_encode($print_details));
+									 // $copied_data['print_details']= json_encode($print_details);
+								} 
 								$query6="INSERT INTO `".RT_DOP_USLUGI."` VALUES ('".implode("','",$copied_data)."')"; 
 								//echo $query."\r\n";
 								$mysqli->query($query6)or die($mysqli->error);
@@ -630,8 +680,8 @@
 				$result = $mysqli->query($query)or die($mysqli->error);
 				while($item = $result->fetch_assoc()) $characteristics['materials'][] = $item['material'];
 				
-				require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
-				$characteristics =(count($characteristics)>0)?rtCalculators::json_fix_cyr(json_encode($characteristics)):'';
+				require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+				$characteristics =(count($characteristics)>0)?RT::json_fix_cyr(json_encode($characteristics)):'';
 				
 				//print_r($dop_info);
 				if($dop_info) $data_arr[$key]['dop_info'] = $dop_info[$key];
@@ -701,7 +751,7 @@
 			
 			// -->  START  <-- //
 			if($customer_data){
-				include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/comments_class.php");
+				include_once(ROOT."/libs/php/classes/comments_class.php");
 				$COMMENTS = new Comments_for_query_class;
 	
 				$text = (trim($customer_data['name'])!='')?'Имя: '.$customer_data['name'].'<br>':'';
@@ -788,7 +838,7 @@
 							// шлем оповещение менеджерам на почту
 							//////////////////////////////////
 								// получаем информацию по клиенту
-							 	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+							 	include_once(ROOT."/libs/php/classes/client_class.php");
 			    				$Client = Client::get_client_informationDatabase($client_id);
 			    					
 								// получаем информацию по кураторам + пользователю, который добавил запрос
@@ -818,7 +868,7 @@
 							// шлем оповещение менеджерам на почту (всем кроме того у которого заказ в работе)
 							//////////////////////////////////
 								// получаем информацию по клиенту
-							 	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
+							 	include_once(ROOT."/libs/php/classes/client_class.php");
 			    				$Client = Client::get_client_informationDatabase($client_id);
 
 			    				// получаем информацию по кураторам + пользователю, который добавил запрос
@@ -1114,7 +1164,7 @@
             echo '<br><br><strong>$limit = </strong>'.$limit.'<br>'; 
             
             // подключаем класс для информации из калькулятора
-        	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+        	include_once(ROOT."/libs/php/classes/print_calculators_class.php");
             global $mysqli;
             $user_id = $_SESSION['access']['user_id'];
 
@@ -1562,6 +1612,52 @@ echo $query;
 			echo '{"response":"OK"}';
 			exit;
 		}
+		static function json_fix_cyr($json_str) { 
+			$cyr_chars = array ( 
+			'\u0430' => 'а', '\u0410' => 'А', 
+			'\u0431' => 'б', '\u0411' => 'Б', 
+			'\u0432' => 'в', '\u0412' => 'В', 
+			'\u0433' => 'г', '\u0413' => 'Г', 
+			'\u0434' => 'д', '\u0414' => 'Д', 
+			'\u0435' => 'е', '\u0415' => 'Е', 
+			'\u0451' => 'ё', '\u0401' => 'Ё', 
+			'\u0436' => 'ж', '\u0416' => 'Ж', 
+			'\u0437' => 'з', '\u0417' => 'З', 
+			'\u0438' => 'и', '\u0418' => 'И', 
+			'\u0439' => 'й', '\u0419' => 'Й', 
+			'\u043a' => 'к', '\u041a' => 'К', 
+			'\u043b' => 'л', '\u041b' => 'Л', 
+			'\u043c' => 'м', '\u041c' => 'М', 
+			'\u043d' => 'н', '\u041d' => 'Н', 
+			'\u043e' => 'о', '\u041e' => 'О', 
+			'\u043f' => 'п', '\u041f' => 'П', 
+			'\u0440' => 'р', '\u0420' => 'Р', 
+			'\u0441' => 'с', '\u0421' => 'С', 
+			'\u0442' => 'т', '\u0422' => 'Т', 
+			'\u0443' => 'у', '\u0423' => 'У', 
+			'\u0444' => 'ф', '\u0424' => 'Ф', 
+			'\u0445' => 'х', '\u0425' => 'Х', 
+			'\u0446' => 'ц', '\u0426' => 'Ц', 
+			'\u0447' => 'ч', '\u0427' => 'Ч', 
+			'\u0448' => 'ш', '\u0428' => 'Ш', 
+			'\u0449' => 'щ', '\u0429' => 'Щ', 
+			'\u044a' => 'ъ', '\u042a' => 'Ъ', 
+			'\u044b' => 'ы', '\u042b' => 'Ы', 
+			'\u044c' => 'ь', '\u042c' => 'Ь', 
+			'\u044d' => 'э', '\u042d' => 'Э', 
+			'\u044e' => 'ю', '\u042e' => 'Ю', 
+			'\u044f' => 'я', '\u042f' => 'Я', 
+			
+			'\r' => '',
+			'\n' => '<br />', 
+			'\t' => '' 
+			); 
+
+			foreach ($cyr_chars as $cyr_char_key => $cyr_char) { 
+			    $json_str = str_replace($cyr_char_key, $cyr_char, $json_str); 
+			} 
+			return $json_str; 
+         }
 
 	
     }

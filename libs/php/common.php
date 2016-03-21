@@ -895,7 +895,7 @@ if(isset($_SESSION['access']['user_id'])){ // && ($_SESSION['access']['access']=
 	
 	function get_managers_list(){
 	    global $db;
-		$query = "SELECT*FROM `".MANAGERS_TBL."` ORDER BY `name`";
+		$query = "SELECT*FROM `".MANAGERS_TBL."` WHERE `access` = '5' ORDER BY `name`";
 	    $result = mysql_query($query,$db);
 		if(mysql_num_rows($result)>0) while($item = mysql_fetch_assoc($result)){
 		     $manager_arr[] = array('id' => $item['id'],'access' => $item['access'],'name' => $item['name'],'last_name' => $item['last_name'],'email_2' => $item['email_2']);
@@ -2405,7 +2405,7 @@ WHERE `requisites_id` = '".$id."' AND `acting` =  '1'
 		global $form_data;
 		extract($form_data,EXTR_PREFIX_ALL,"in");
 
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/manager_class.php");
+		include_once(ROOT."/libs/php/classes/manager_class.php");
 	    $manager = new Manager($manager_id); 
 		
 		// проверяем пустое ли поле result если нет тогда оформляем как переписку

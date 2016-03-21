@@ -1,4 +1,5 @@
 <?php
+
     class printCalculator{
 	    function __consturct(){
 		}
@@ -158,6 +159,63 @@
 			//exit; 
 		    return implode(', ',$out_put);
 		}
+		
+		static function convert_print_details_for_TotalCom($print_details){
+		
+		    global $mysqli;
+			
+		    // если данные были переданы ввиде json преобразуем их в объект
+		    $print_details = (!is_object($print_details))? json_decode($print_details):$print_details;
+			// echo '<pre>'; print_r($print_details); echo '</pre>';//
+			
+			
+			$out_put = array();
+			//'место нанесения: '
+			$out_put['a_place_print'] = (isset($print_details->place_type))?$print_details->place_type:'';
+			
+			if(isset($print_details->dop_params->YPriceParam)){
+			    foreach($print_details->dop_params->YPriceParam as $index => $details){
+				    if($details->id!=0) $idsArr[] = $details->id;	
+				}
+				if(isset($idsArr)){
+					$query = "SELECT * FROM `".BASE__CALCULATORS_Y_PRICE_PARAMS."` WHERE id IN('".implode("','",$idsArr)."') ORDER BY percentage";
+					// echo $query;
+					$result = $mysqli->query($query)or die($mysqli->error);
+					if($result->num_rows > 0){
+						while($row = $result->fetch_assoc()) {
+						   $colors[] = $row['value'];
+						}
+						$out_put['colors'] = implode(', ',$colors);
+					}
+				}
+				unset($idsArr);
+			}
+			if(isset($print_details->dop_params->sizes)){
+			    foreach($print_details->dop_params->sizes as $index => $details){
+				         // echo '<pre>22'; print_r($details); echo '</pre>';
+				    if($details->id!=0) $idsArr[] = $details->id;	
+				}
+				if(isset($idsArr)){
+					$query = "SELECT * FROM `".BASE__CALCULATORS_PRINT_TYPES_SIZES_PLACES_REL_TBL."` WHERE id IN('".implode("','",$idsArr)."')";
+					// echo $query;
+					$result = $mysqli->query($query)or die($mysqli->error);
+					if($result->num_rows > 0){
+
+						while($row = $result->fetch_assoc()) {
+						   $out_put['format'] = $row['size'];
+						}
+					}
+					unset($idsArr);
+				
+				}
+			}
+	
+			//echo '<pre>'; print_r($out_put); echo '</pre>';//
+			//echo implode(', ',$out_put);
+			//exit; 
+		    return $out_put;
+		}
+		
 		static function convert_print_details_for_kp($print_details){
 		
 		    global $mysqli;

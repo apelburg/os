@@ -24,14 +24,14 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
         </div>
     <?php
     // комментарии
-    // include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/comments_class.php';
+    // include ROOT.'/libs/php/classes/comments_class.php';
     // $comments = new Comments_for_query_class;
     if(isset($COMMENTS)){
         $comments = $COMMENTS;
     }
 
     // класс работы с базой
-    include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/db_class.php';
+    include ROOT.'/libs/php/classes/db_class.php';
     // класс работы с формами
     // include './libs/php/classes/os_form_class.php';
 
@@ -39,32 +39,30 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
     // include './libs/php/classes/supplier_class.php';
 
     // класс карточки товара
-    include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_position_gen_class.php';
+    include ROOT.'/libs/php/classes/rt_position_gen_class.php';
     
     // отключить после приведения карточки товара к единому виду
         // класс работы с позициями каталога
-        include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_position_catalog_class.php';
+        include ROOT.'/libs/php/classes/rt_position_catalog_class.php';
         // класс работы с позициями не каталога
-        include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_position_no_catalog_class.php';
+        include ROOT.'/libs/php/classes/rt_position_no_catalog_class.php';
     
     // расширение класса карточки товара
-    include_once $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rtPositionUniversal.class.php';
+    include_once ROOT.'/libs/php/classes/rtPositionUniversal.class.php';
     
     // класс работы с менеджерами
-    include $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/manager_class.php';
+    include ROOT.'/libs/php/classes/manager_class.php';
 
     
     $id = (isset($_GET['id']))?$_GET['id']:'none';
 
     
-    $POSITION = new rtPositionUniversal;
-
-    $type_product = $POSITION->position['type'];
+    $QUERY = rtPositionUniversal::get_query($_GET['query_num']);
 
 
 
 
-    include_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/rt_class.php');
+    include_once (ROOT.'/libs/php/classes/rt_class.php');
     $query_num = $_GET['query_num'];
     $cont_face_data = RT::fetch_query_client_face($query_num);
     //print_r($cont_face_data);
@@ -73,7 +71,7 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
 
 
     $CALCULATOR_LEVELS = array('full'=>"Конечники",'ra'=>"Рекламщики");
-    $calculator_level = ($POSITION->position['calculator_level']!='')?$POSITION->position['calculator_level']:'full';
+    $calculator_level = ($QUERY['calculator_level']!='')?$QUERY['calculator_level']:'full';
     $calculator_level_ru = $CALCULATOR_LEVELS[ $calculator_level ];
     ?>
     <script type="text/javascript">
@@ -139,12 +137,12 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
     <div id="info_string_on_query">
         <ul>
             <li style="opacity:0" id="back_to_string_of_claim"></li>
-            <li id="claim_number" data-order="<?=$POSITION->position['id'];?>">
-                <a href="?page=client_folder&query_num=<?=$POSITION->position['query_num'];?>&client_id=<?php echo $client_id; ?>">Запрос № <?=$POSITION->position['query_num'];?></a></li>
-            <li id="claim_date"><span>от <?=$POSITION->position['date_create'];?></span></li>
+            <li id="claim_number" data-order="<?=$QUERY['id'];?>">
+                <a href="?page=client_folder&query_num=<?=$QUERY['query_num'];?>&client_id=<?php echo $client_id; ?>">Запрос № <?=$QUERY['query_num'];?></a></li>
+            <li id="claim_date"><span>от <?=$QUERY['date_create'];?></span></li>
             
-            <li id="query_theme_block"><span>Тема:</span> <input id="query_theme_input" class="query_theme" data-id="<?=$POSITION->position['RT_LIST_ID'];?>" type="text" query_num="<?=$POSITION->position['query_num'];?>" value="<?=$POSITION->position['theme']?>" onclick="fff(this,'Введите тему');"></li>
-            <li style="float:right;height: 100%;width: 40px;"><span data-rt_list_query_num="<?=$POSITION->position['query_num'];?>" class="icon_comment_show white <?php echo Comments_for_query_class::check_the_empty_query_coment_Database($POSITION->position['query_num']); ?> "></span></li>
+            <li id="query_theme_block"><span>Тема:</span> <input id="query_theme_input" class="query_theme" data-id="<?=$QUERY['RT_LIST_ID'];?>" type="text" query_num="<?=$QUERY['query_num'];?>" value="<?=$QUERY['theme']?>" onclick="fff(this,'Введите тему');"></li>
+            <li style="float:right;height: 100%;width: 40px;"><span data-rt_list_query_num="<?=$QUERY['query_num'];?>" class="icon_comment_show white <?php echo Comments_for_query_class::check_the_empty_query_coment_Database($QUERY['query_num']); ?> "></span></li>
             <li style="float:right"><?php  echo $cont_face; ?></li>
             <li style=""><div class="client_faces_select2" sourse="rt" query_num="'.$query_num.'" client_id="'.$client_id.'" onclick="openCloseMenu(event,'calcLevelSwitcher');">Калькулятор: <?php  echo $calculator_level_ru; ?></div>
           <input type="hidden" id="calcLevelStorage" value="<?php  echo $calculator_level; ?>"></li>

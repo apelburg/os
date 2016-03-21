@@ -20,18 +20,18 @@
 	//
 	//
 	//
-    
+
 	function fetch_rows_from_rt($query_num){
 	     global $mysqli;
 		 global $Position_no_catalog;
 		 
 		 $rows = array();
 		 
-		 $query = "SELECT main_tbl.id AS main_id ,main_tbl.type AS main_row_type  ,main_tbl.art_id AS art_id ,main_tbl.art AS art ,main_tbl.name AS item_name ,main_tbl.master_btn AS master_btn , main_tbl.svetofor_display AS svetofor_display ,
+		 $query = "SELECT main_tbl.id AS main_id,main_tbl.rt_row_color AS rt_row_color ,main_tbl.type AS main_row_type  ,main_tbl.art_id AS art_id ,main_tbl.art AS art ,main_tbl.name AS item_name ,main_tbl.master_btn AS master_btn , main_tbl.svetofor_display AS svetofor_display ,
 		 
 		                  dop_data_tbl.id AS dop_data_id , dop_data_tbl.row_id AS dop_t_row_id , dop_data_tbl.quantity AS dop_t_quantity , dop_data_tbl.price_in AS dop_t_price_in , dop_data_tbl.price_out AS dop_t_price_out , dop_data_tbl.discount AS dop_t_discount , dop_data_tbl.row_status AS row_status, dop_data_tbl.glob_status AS glob_status, dop_data_tbl.expel AS expel, dop_data_tbl.shipping_date AS shipping_date,dop_data_tbl.shipping_type AS shipping_type, dop_data_tbl.shipping_time AS shipping_time, dop_data_tbl.status_snab AS status_snab, dop_data_tbl.dop_men_text AS dop_men_text,
 						  
-						  dop_uslugi_tbl.id AS uslgi_t_id ,dop_uslugi_tbl.uslugi_id AS uslgi_t_uslugi_id ,dop_uslugi_tbl.dop_row_id AS uslugi_t_dop_row_id ,dop_uslugi_tbl.type AS uslugi_t_type ,
+						  dop_uslugi_tbl.id AS uslgi_t_id ,dop_uslugi_tbl.other_name AS uslugi_t_other_name ,dop_uslugi_tbl.uslugi_id AS uslgi_t_uslugi_id ,dop_uslugi_tbl.dop_row_id AS uslugi_t_dop_row_id ,dop_uslugi_tbl.type AS uslugi_t_type ,
 		                  dop_uslugi_tbl.glob_type AS uslugi_t_glob_type , dop_uslugi_tbl.quantity AS uslugi_t_quantity , dop_uslugi_tbl.price_in AS uslugi_t_price_in , dop_uslugi_tbl.price_out AS uslugi_t_price_out, dop_uslugi_tbl.discount AS uslugi_t_discount , dop_uslugi_tbl.for_how AS uslugi_t_for_how , dop_uslugi_tbl.print_details AS uslugi_t_print_details 
 		          FROM 
 		          `".RT_MAIN_ROWS."`  main_tbl 
@@ -52,6 +52,7 @@
 				 $multi_dim_arr[$row['main_id']]['art'] = $row['art'];
 				 $multi_dim_arr[$row['main_id']]['name'] = $row['item_name'];
 				 $multi_dim_arr[$row['main_id']]['svetofor_display'] = $row['svetofor_display'];
+				 $multi_dim_arr[$row['main_id']]['rt_row_color'] = $row['rt_row_color'];
 				 
 				 if($row['main_row_type']=='cat'){
 				     $data = RT::getArtRelatedPrintInfo($row['art_id']);
@@ -80,6 +81,7 @@
 						'id' => $row['uslgi_t_id'],
 						'uslugi_id' => $row['uslgi_t_uslugi_id'],
 						'quantity' => $row['uslugi_t_quantity'],
+						'other_name' => $row['uslugi_t_other_name'],
 						'price_in' => $row['uslugi_t_price_in'],
 						'price_out' => $row['uslugi_t_price_out'],
 						'discount' => $row['uslugi_t_discount'],
@@ -99,7 +101,7 @@
 	 $rows = fetch_rows_from_rt($query_num);
 	 
 	 // получаем информацию по площадям нанесения для калькуляторов
-	 require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+	 require_once(ROOT."/libs/php/classes/print_calculators_class.php");
 	 $print_sizes = printCalculator::get_sizes();
 	 $uslugi_arr = printCalculator::get_uslugi();
 
@@ -116,6 +118,10 @@
 	 // если что реализация сохранена, закомментирована внизу скрипта 
 	  
 	 // echo '<pre>'; print_r($rows[0]); echo '</pre>';
+	  /*if(@$_SESSION['access']['user_id']==18){ 
+		echo '<pre>'; print_r($rows[0]); echo '</pre>';
+      }  */
+	 
 	 
 	 $service_row[0] = array('quantity'=>'','price_in'=>'','price_out'=>'','row_status'=>'','glob_status'=>'');
 	 $glob_counter = 0;
@@ -123,6 +129,7 @@
 	 $svetofor_display_relay_status_all = 'on';
 	 foreach($rows[0] as $key => $row){
 	     $glob_counter++;
+		 
          // Проходим по первому уровню и определям некоторые моменты отображения таблицы, которые будут применены при проходе по второму
 		 // уровню массива, ряды таблицы будут создаваться там
 		 
@@ -162,7 +169,7 @@
 		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>---';
 		 // Проходим в цикле по второму уровню массива($row['dop_data']) на основе которого строится основной шаблон таблицы
 	     foreach($row['dop_data'] as $dop_key => $dop_row){
-		 
+		    $discount_arr = array();
 			/*if(@$_SESSION['access']['user_id']==18){ 
 			    // echo '<pre>'; print_r($dop_row); echo '</pre>';
 	        } */
@@ -188,29 +195,36 @@
 					     // если количество в расчете нанесения не равно количеству в колонке тираж товара 
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
 						//$extra_data['quantity'] = 250;
-					    if($extra_data['quantity']!=$dop_row['quantity']){
-						     $reload['flag'] = true;
-						     //echo $dop_row['quantity'];
-						     include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
-		                     $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false');
-							 $json_out_obj =  json_decode($json_out);
-							 
-							 // если расчет не может быть произведен по причине outOfLimit или needIndividCalculation
-							 // сбрасываем количество тиража и нанесения до 1шт.
-							 if(isset($json_out_obj->print->outOfLimit) || isset($json_out_obj->print->needIndividCalculation)){
-							     rtCalculators::change_quantity_and_calculators(1,$dop_key,'true','false');
+						$print_details = json_decode($extra_data['print_details'],true);
+						
+						 ;
+						 //echo '<pre>'; print_r(printCalculator::convert_print_details_for_TotalCom($extra_data['print_details'])); echo '</pre>';
+						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto' || $print_details['calculator_type'] =='manual')){
+							if($extra_data['quantity']!=$dop_row['quantity']){
+								 $reload['flag'] = true;
+								 //echo $dop_row['quantity'];
+								 include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+								 $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false');
+								 $json_out_obj =  json_decode($json_out);
 								 
-								 $query="UPDATE `".RT_DOP_DATA."` SET  `quantity` = '1'  WHERE `id` = '".$dop_key."'";
-			                     $result = $mysqli->query($query)or die($mysqli->error);
-							 }
-							 
-	
-						 } /**/
+								 // если расчет не может быть произведен по причине outOfLimit или needIndividCalculation
+								 // сбрасываем количество тиража и нанесения до 1шт.
+								 if(isset($json_out_obj->print->outOfLimit) || isset($json_out_obj->print->needIndividCalculation)){
+									 rtCalculators::change_quantity_and_calculators(1,$dop_key,'true','false');
+									 
+									 $query="UPDATE `".RT_DOP_DATA."` SET  `quantity` = '1'  WHERE `id` = '".$dop_key."'";
+									 $result = $mysqli->query($query)or die($mysqli->error);
+								 }
+								 
+		
+							 } /**/
+						 }
+						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
 						 $summ_in[] = $extra_data['quantity']*$extra_data['price_in'];
 						 $summ_out[] = $extra_data['quantity']*$extra_data['price_out'];
 						 
-						 $print_details = json_decode($extra_data['print_details'],true);
+						
 						 $YPriceParamCount = (@isset($print_details['dop_params']['YPriceParam']))? count($print_details['dop_params']['YPriceParam']):'';
 						 if(isset($print_details['dop_params']['sizes'][0]['id'])){
 						     if(isset($print_sizes[$print_details['dop_params']['sizes'][0]['id']])) $size = $print_sizes[$print_details['dop_params']['sizes'][0]['id']];
@@ -238,13 +252,17 @@
 					     }
 						 
 						 
-						 
+						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
 						 $summ_in[] = ($extra_data['for_how']=='for_all')? $extra_data['price_in']:$extra_data['quantity']*$extra_data['price_in'];
 						 $summ_out[] = ($extra_data['for_how']=='for_all')? $extra_data['price_out']:$extra_data['quantity']*$extra_data['price_out'];
 						 
 						  if(isset($uslugi_arr[$extra_data['uslugi_id']])) $usluga = $uslugi_arr[$extra_data['uslugi_id']];
 						  else $usluga='';
+						  // поправка по НЕТ В СПИСКЕ
+						  if($extra_data['other_name'] != ""){
+						  	$usluga = $extra_data['other_name'];
+						  }
 						 
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['extra']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$usluga.'</td><td class="small"></td><td class="center"></td><td class="border_r"></td><td class="right">'.(($extra_data['quantity']!=0 && $extra_data['for_how']=='for_one')?$extra_data['price_in']:number_format($extra_data['price_in']/$extra_data['quantity'],'2','.','')).'</td><td class="right">'.(($extra_data['quantity']!=0 && $extra_data['for_how']=='for_one')?$extra_data['price_out']:number_format($extra_data['price_out']/$extra_data['quantity'],'2','.','')).'</td></tr>';
 					 }
@@ -260,12 +278,15 @@
 					 
 					 $uslugi_details_trs[] = '<tr><td></td><td></td><td></td><td></td><td class="border_r">ИТОГО:</td><td class="right">'.number_format($uslugi_price_in,'2','.','').'</td><td class="right">'.number_format($uslugi_price_out,'2','.','').'</td></tr>';
 					 $uslugi_details_window = '<div class="uslugi_details_window"><table border="1"><tr class="head border_b"><td>№</td><td width="200" class="left">вид услуги</td><td width="200" class="left">место</td><td width="60">цвет</td><td width="60" class="border_r">площадь</td><td width="60">вх. / шт</td><td width="60">исх. / шт</td></tr>'.implode('',$uslugi_details_trs).'</table></div>';
+					 //$uslugi_btn = '<span>'.count($summ_in).'</span>&nbsp;&nbsp;<span>'.count($summ_in).'</span>'.$uslugi_details_window;
 					 $uslugi_btn = '<span>'.count($summ_in).'</span>'.$uslugi_details_window;
 				 }
 				 else{// если данных по дополнительным услугам  нет выводим кнопку добавление дополнительных услуг
 				     $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in = $uslugi_summ_out = 0;
-				     $uslugi_btn = '<span>+</span>';
+				     //$uslugi_btn = '<span>+</span>&nbsp;&nbsp;<span>+</span>';
+					 $uslugi_btn = '<span>+</span>';
 				 }
+				 
 
 
 				 // подсчет сумм в ряду
@@ -325,8 +346,9 @@
 				 $svetofor_tr_display = ($row['svetofor_display']==1 && $dop_row['row_status']=='red')?'hidden':'';
 				 $currency = 'р';
 				 //$quantity_dim = 'шт';<td width="20" class=" left quantity_dim">'.$quantity_dim.'</td>
-				 $discount = $dop_row['discount'];
-				 $discount_str = $discount .'%';
+				 $discount_arr[] = $dop_row['discount'];
+				 $discount = round((float)(array_sum($discount_arr)/count($discount_arr)),2);
+				 $discount_str = number_format($discount,'2','.','') .'%';
 				 //$srock_sdachi = implode('.',array_reverse(explode('-',$dop_row['shipping_date'])));
 				  $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
 				 if($srock_sdachi=='00.00.0000') $srock_sdachi='';
@@ -354,7 +376,7 @@
 			 $dop_details = '';
 			  //echo $row['row_type'].' = ';
 			 if($row['row_type'] == 'cat'){ 
-				 $extra_panel = '<div class="pos_plank cat">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank cat js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&section=rt_position&id='.$key.'&client_id='.$client_id.'">'.$row['art'].'</a>
 								   <div class="pos_link_plank">
 									  <div class="catalog">
@@ -371,16 +393,16 @@
 		        if($counter==0 &&  count($row['dop_details'])>0)  $dop_details['allowed_prints'] = $row['dop_details'];
 			 }
 			 else if($row['row_type'] == 'ext'){
-				 $extra_panel = '<div class="pos_plank ext">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }
 			 else if($row['row_type'] == 'pol'){
-				 $extra_panel = '<div class="pos_plank pol">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }else{
-			 	$extra_panel = '<div class="pos_plank pol">
+			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }
@@ -443,7 +465,7 @@
 	 
 	 $rt = '<table class="rt_tbl_head" id="rt_tbl_head" scrolled="head" style="width: 100%;" border="0">
 	          <tr class="w_border cap">
-			      <td width="30">'.((@$_SESSION['access']['user_id']==18 || $_SESSION['access']['user_id']==42)?'<button id="js-rt-resort-lock"></button>':'').'</td>
+			      <td width="30"><button id="js-rt-resort-lock"></button></td>
 			       <td width="35" class="top">
 				      <div class="master_button_container">
 						  <div class="master_button noselect">

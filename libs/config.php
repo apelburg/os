@@ -102,16 +102,16 @@
 	define("CAB_PYMENT_ORDER", "os__cab_PP"); // таблица платёжных поручений по счётам
 	define("CAB_PYMENT_PKO", "os__cab_PKO"); // таблица ПКО
 	define("CAB_TTN", "os__cab_TTN"); // товарно-транспортные накладные
-
-
+	
+	
 	// новая РТ
 	define("RT_LIST", "os__rt_list"); // таблица запросов	
-	define("RT_LIST_COMMENTS","os__rt_list_comments"); // 
-	define("RT_MAIN_ROWS","os__rt_main_rows"); // 
-	define("RT_MAIN_ROWS_GALLERY","os__rt_main_rows_gallery"); // 
-	define("RT_DOP_DATA","os__rt_dop_data"); // 
-	define("RT_DOP_USLUGI","os__rt_dop_uslugi"); // 
-	define("RT_ART_SIZE","os__rt_art_sizes"); // 
+	define("RT_LIST_COMMENTS", "os__rt_list_comments"); // 
+	define("RT_MAIN_ROWS", "os__rt_main_rows"); // 
+	define("RT_MAIN_ROWS_GALLERY", "os__rt_main_rows_gallery"); // 
+	define("RT_DOP_DATA", "os__rt_dop_data"); // 
+	define("RT_DOP_USLUGI", "os__rt_dop_uslugi"); // 
+	define("RT_ART_SIZE", "os__rt_art_sizes"); // 
 
 	// АРХИВ ВАРИАНТОВ В РТ НЕ УЧАВСТВУЕТ
 	define("DOP_USLUGI_HIST", 'os__dop_uslugi_history');
@@ -144,7 +144,7 @@
 	                                   26 => array('name'=>'оазис','link'=>'http://www.oasiscatalog.com/search?q='),
 							           37 => array('name'=>'проект','link'=>'http://www.gifts.ru/search?text='),
 									   59 => array('name'=>'макрос','link'=>'http://cabinet.makroseuro.ru/catalogue/search/?keyword='),
-									  'e_'=> array('name'=>'ебазар','link'=>'http://ebazaar.ru/search/index.php?q='),
+									  'e_'=> array('name'=>'ебазар','link'=>'http://ebazaar.ru/catalog/?q='),
 									  'm_' => array('name'=>'', 'link'=>'#'),
 									  'FF' => array('name'=>'Апельбург', 'link'=>'#')
 									   );
@@ -323,6 +323,4 @@ $suppliers_names_by_prefix_for_get_name = array(
 	'm_' => 'Макрос',
 	'FF' => 'Апельбург'
 );
-
-$title = "ОС";
-
+$title = "Онлайн сервис";
