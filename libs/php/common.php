@@ -13,6 +13,11 @@ if(isset($_SESSION['access']['user_id'])){ // && ($_SESSION['access']['access']=
     if($remainder_user_id == '18'){
        //Planner::check_who_needs_approval($remainder_user_id);
 	   //echo'<pre>';print_r($_SESSION['warnings']); echo'<pre>';
+	   
+	   //Planner::init_warnings(33);
+	   //echo'<pre>';print_r($_SESSION['warnings']); echo'<pre>';
+	   //$clients_ids_arr = Planner::get_related_clients_ids(33);
+	   //echo'<pre>';print_r($clients_ids_arr); echo'<pre>';
 	} 
 	//Planner::set_approval_delay(42,583,24235,3600*3);
 	//Planner::set_approval_result(18,$_POST['plan_id'],$result,$_POST['comment']);
