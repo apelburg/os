@@ -4,7 +4,7 @@
     // не менять  ROOT.'/ на $_SERVER['DOCUMENT_ROOT'] потому что к этому файлу обращается скрипт из крона
 	require_once ( ROOT.'/libs/mysqli.php');
 	require_once ( ROOT.'/libs/mysql.php');
-	require_once ( ROOT.'/libs/php/classes/aplStdClass.php');
+	require_once ( ROOT.'/../libs/php/classes/aplStdClass.php');
 	require_once ( ROOT.'/libs/php/classes/client_class.php');
 	class Planner{
         //     Задачи класса: 
