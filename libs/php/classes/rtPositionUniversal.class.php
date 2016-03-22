@@ -1179,7 +1179,7 @@ class Variants extends rtPositionUniversal
 						if(isset($tab[$i])){
 							foreach ($tab[$i] as $key => $value) {
 								$html .= '<th  style="text-align:left">'.(isset($type_product_arr_from_form[$key]['name_ru'])?$type_product_arr_from_form[$key]['name_ru'].':':'<span style="color:red">имя не найдено</span>').'</th>';
-								$html .= '<td  style="text-align:left" data-type="'.$key.'" class="js--edit_true">'.$value.'</td>';$i++;
+								$html .= '<td  style="text-align:left" data-type="'.$key.'" class="js--edit_true">'.strip_tags($value).'</td>';$i++;
 							}	
 						}else{
 							$html .= '<th></th>';

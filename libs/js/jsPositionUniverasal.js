@@ -275,22 +275,23 @@ function append_click(){
 
               var jsonObj = $.parseJSON($('#js--characteristics-info .js-json_info').html());
 
-              if(jsonObj[name]){
+              if(jsonObj[name] && jsonObj[name] != value){
                 jsonObj[name] = value;
+                var json =  JSON.stringify(jsonObj);
+                $('.js-json_info:visible').html( json );
+                
+                $.post('', {
+                  AJAX:'save_dop_info_json',
+                  json:Base64.encode(json),
+                  row_id:variant_id
+                }, function(data, textStatus, xhr) {
+                  standard_response_handler(data);
+                },'json');
               }
 
-              var json =  JSON.stringify(jsonObj);
-              $('.js-json_info:visible').html( json );
-              $(this).parent().html($(this).val());
-              $.post('', {
-                AJAX:'save_dop_info_json',
-                json:Base64.encode(json),
-                row_id:variant_id
-              }, function(data, textStatus, xhr) {
-                standard_response_handler(data);
-              },'json');
-              // возвращаем прежний вид таблице
               
+              // возвращаем прежний вид таблице
+              $(this).parent().html($(this).val());
             }
 
         })).find('input').focus()
