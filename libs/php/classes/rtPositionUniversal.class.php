@@ -36,6 +36,42 @@ class rtPositionUniversal extends Position_general_Class
 			$this->_AJAX_();
 		}			
 	}
+
+	/**
+	 *	
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	17:51 22.03.2016
+	 */
+	protected function search_and_replace_article_AJAX(){
+		//RT_MAIN_ROWS
+		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` = '".$_POST['art']."'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			
+		$artArr = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$artArr[] = $row;
+			}
+		}
+		if(count($artArr) > 0){
+			foreach ($artArr as $art) {
+				$query = "UPDATE `".RT_MAIN_ROWS."` SET";
+		        $query .= " `art` = '".$art['art']."'";
+		        $query .= " , `art_id` = '".$art['id']."'";
+		        $query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+		        $result = $this->mysqli->query($query) or die($this->mysqli->error);	
+			}
+			
+			$option['timeout'] = '1000';
+			$this->responseClass->addResponseFunction('window_reload',$option);
+			$this->responseClass->addMessage('Артикул успешно обновлён','system_message');		
+		}else{
+			$this->responseClass->addResponseFunction('js_edit_article_replace_back');
+			$this->responseClass->addMessage('Такого артикула нет в каталоге','error_message');		
+		}
+		
+	}
 	/**
 	 *	возвращает статуы
 	 *
