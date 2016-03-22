@@ -31,7 +31,7 @@ window.onunload = function(){// пока с этим не ясно
 }
 print_r.count = 0;
 function print_r(val/* array or object */){
-	var str = scan(val);
+	var str = scan(val)
 	var win = window.open(null,'print_r'+(print_r.count++),'width=300,height=800',true);
 	win.document.write(str);
 	win.document.close();
@@ -110,8 +110,95 @@ var rtCalculator = {
 		
 		var ln = trs_arr.length;
 		for(var i = 0;i < ln;i++){ 
-		    // если ряд не имеет атрибута row_id пропускаем его
-		    if(!trs_arr[i].getAttribute('row_id')) continue;
+			// если ряд не имеет атрибута row_id пропускаем его
+		    if(!trs_arr[i].getAttribute('row_id')){
+					
+				continue;
+		    }
+		    $(trs_arr[i]).find('td.art_name .pos_plank ').on('contextmenu click',function(e) {
+		    	
+		    	if(e.button == 2){
+		    		var obj = $(this);
+		    		var pos_id = $(this).parent().parent().attr('pos_id');
+		    		$("#context-menu").remove();
+		    		event.preventDefault();
+		    		// Создаем меню:
+
+				    $('<div/>', {
+						'class': 'context-menu',
+						'id':'context-menu'
+						// Присваиваем блоку наш css класс контекстного меню:
+					}).css({
+						left: event.pageX+'px',
+						// Задаем позицию меню на X
+						top: event.pageY+'px'
+						// Задаем позицию меню по Y
+					})
+					.appendTo('body') // Присоединяем наше меню к body документа:
+					.append( // Добавляем пункты меню:
+						$('<ul/>').append($('<li/>',{'class':'green',click:function(){
+							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
+							$.post('', {
+								AJAX: 'change_main_rows_color',
+								row_id:pos_id,
+								val:$(this).attr('class')
+
+							}, function(data, textStatus, xhr) {
+							},'json');
+							$("#context-menu").remove();
+						}}))
+						.append($('<li/>',{'class':'yellow',click:function(){
+							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
+							$.post('', {
+								AJAX: 'change_main_rows_color',
+								row_id:pos_id,
+								val:$(this).attr('class')
+
+							}, function(data, textStatus, xhr) {							
+							},'json');
+							$("#context-menu").remove();
+						}}))
+						.append($('<li/>',{'class':'red',click:function(){
+							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
+							$.post('', {
+								AJAX: 'change_main_rows_color',
+								row_id:pos_id,
+								val:$(this).attr('class')
+
+							}, function(data, textStatus, xhr) {
+							},'json');
+							$("#context-menu").remove();
+						}}))
+						.append($('<li/>',{'class':'grey',click:function(){
+							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
+							$.post('', {
+								AJAX: 'change_main_rows_color',
+								row_id:pos_id,
+								val:$(this).attr('class')
+
+							}, function(data, textStatus, xhr) {
+							},'json');
+							$("#context-menu").remove();
+						}}))
+					)
+					.show('fast').css('marginLeft','-60px');
+
+
+					// клик вне элемента
+					$(document).click( function(event){
+				    	if( $(event.target).closest("#context-menu").length ) 
+				    		return;
+				    	$(".context-menu").remove();
+				    	event.stopPropagation();
+				    });
+
+
+
+		    		// document.oncontextmenu = function() {return false;};  
+			        // echo_message_js('сейчас вылетить птичко )))');
+					// return false;
+			    }
+		    });
 			
 			var row_id = trs_arr[i].getAttribute('row_id');
 			
@@ -161,7 +248,8 @@ var rtCalculator = {
 						if(!this.tbl_model[row_id].dop_data)this.tbl_model[row_id].dop_data = {};
 						this.tbl_model[row_id].dop_data.svetofor = tds_arr[j].getAttribute('svetofor');
 					}
-					
+
+
 					/*// если это ряд содержащий абсолютные ссуммы сохраняем постоянные ссылки на его ячейки , чтобы затем вносить в них изменения
 					// КАК ТО НЕ ПОЛУЧИЛОСЬ
 					if(row_id=='total_row'){
@@ -169,8 +257,7 @@ var rtCalculator = {
 					    this.tbl_model['total_row_links'][tds_arr[j].getAttribute('type')] = tds_arr_1[j];
 					}
 					*/
-				}
-				
+				}		
 			}
 		
 		}

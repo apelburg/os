@@ -290,6 +290,14 @@
 		        RT::update_new_sort_rt_AJAX();
 				exit;
 			}
+			if($_POST['AJAX']=='change_main_rows_color'){
+				global $mysqli;
+  				$query ="UPDATE `".RT_MAIN_ROWS."` SET 
+  					`rt_row_color` = '".$_POST['val']."'";
+  				$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+  				$result = $mysqli->query($query) or die($mysqli->error);
+			}
+
 		}
 	/////////////////////  END  AJAX  ////////////////////// 
 	

@@ -252,14 +252,55 @@ $(document).on('click', '#variants_name .variant_name', function(){
   // если есть описание некаталога - копируем его вверх
   if( $('#js--characteristics-info').length > 0){
     $('#js--characteristics-info').html($('.variant_characteristics_and_delivery:visible').html());
+    append_click();
   }
-
 });
+function append_click(){
+  $('#js--characteristics-info .js--edit_true').click(function(event) {
+      var table = $(this).parent().parent();
 
-$(document).ready(function($) {
-  
+      if ($(this).find('input').length == 0) {
+        var val = $(this).html();
+        $(this).html($('<input/>',{
+          'value':val,
+          'type':'text',
+            blur:function(){
+
+              // сохранение 
+              var variant_id = $('#all_variants_menu .variant_name.checked').attr('data-id');
+
+              var value = $(this).val();
+              // console.log($(this).parent())
+              var name = $(this).parent().attr('data-type');
+
+              var jsonObj = $.parseJSON($('#js--characteristics-info .js-json_info').html());
+
+              if(jsonObj[name] && jsonObj[name] != value){
+                jsonObj[name] = value;
+                var json =  JSON.stringify(jsonObj);
+                $('.js-json_info:visible').html( json );
+                
+                $.post('', {
+                  AJAX:'save_dop_info_json',
+                  json:Base64.encode(json),
+                  row_id:variant_id
+                }, function(data, textStatus, xhr) {
+                  standard_response_handler(data);
+                },'json');
+              }
+
+              
+              // возвращаем прежний вид таблице
+              $(this).parent().html($(this).val());
+            }
+
+        })).find('input').focus()
+      };
+    });
+}
+$(document).ready(function($) {  
     $('#js--characteristics-info').html($('.variant_characteristics_and_delivery:visible').html());
-  
+    append_click();
 });
 
 

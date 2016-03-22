@@ -280,7 +280,7 @@ height:200px;
  padding:2px 2px 2px 4px;
  /*position:relative;*/
 }
-.rt_tbl_body .cat{
+/*.rt_tbl_body .cat{
  background-color:#c6e1aa;
 }
 .rt_tbl_body .pol{
@@ -288,7 +288,51 @@ height:200px;
 }
 .rt_tbl_body .ext{
  background-color:#c5e6f1;
+}*/
+#context-menu{
+  float: left;
+  position: absolute;
+  background: red
 }
+#context-menu ul{
+  padding:0;
+  margin: 0;
+  float: left;
+}
+#context-menu ul li{
+  float: left;
+  width: 28px;
+  height: 28px;
+  display: inline-block;  
+}
+#context-menu ul li:hover:before{
+  position: absolute;
+  background: none;
+  content: "";
+  margin-left: -1px;
+  margin-top: -1px;
+  width: 28px;
+  height: 28px;
+  border:1px solid #A8AAA9;
+}
+.rt_tbl_body .grey,
+#context-menu ul li.grey{
+  background: #e3e5e5;
+}
+.rt_tbl_body .yellow,
+#context-menu ul li.yellow{
+  background: #FFFA9A;
+}
+.rt_tbl_body .green,
+#context-menu ul li.green{
+  background: #C5E0AA;
+}
+.rt_tbl_body .red,
+#context-menu ul li.red{
+  background: #F68D90;
+}
+
+
 
 .rt_tbl_body .pos_plank a{
  padding:0 20px 0 0;
@@ -314,6 +358,9 @@ height:200px;
 .rt_tbl_body .r_border{
  border-right:#e3e5e5 solid 1px;
 }
+
+
+
 .rt_tbl_body .calc_btn{   text-align:center;}
 .rt_tbl_body .calc_btn > span{  border:#92b73e solid 1px; color:#000; padding:1px 4px 1px 4px; font-size:11px;cursor:pointer;}
 .rt_tbl_body .calc_btn_no_active > *{  border:#92b73e solid 1px; color:#000; padding:1px 4px 1px 4px; font-size:11px;}
