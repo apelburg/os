@@ -88,6 +88,7 @@ $(document).on('click', '#js--edit_article', function(event) {
         })).find('input').focus()  
   }  
 });
+
 function js_edit_article_replace_back(){
   $('#js--edit_article').html($('#js--edit_article').attr('data-old'))
 }
