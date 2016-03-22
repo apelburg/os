@@ -1168,3 +1168,6 @@ table.calkulate_table span {
 .js-service-other-name:hover{
   text-decoration: none;
 }
+.js-json_info{
+  display: none;
+}

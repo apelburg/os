@@ -93,6 +93,20 @@ class rtPositionUniversal extends Position_general_Class
 	//////////////////////////
 	//	AJAX
 	//////////////////////////
+
+		/**
+		 *	save dop info from not catalogue products
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	14:44 22.03.2016
+		 */
+		protected function save_dop_info_json_AJAX(){
+			
+			$query  = "UPDATE `".RT_DOP_DATA."` SET `no_cat_json` = '".base64_decode($_POST['json'])."' WHERE  `id` = '".(int)$_POST['row_id']."';";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+
+			$this->responseClass->addMessage('Характеристики изделия успешно сохранены','successful_message');	
+		}
 		
 		/**
 		  *	изменение статуса варианта (светофор)
@@ -1155,6 +1169,7 @@ class Variants extends rtPositionUniversal
 		}else{
 			$j_st = 1;
 		}
+
 		$html = '';
 		if(isset($type_product_arr_from_form)){
 			$html .='<table class="table inform_for_variant">';
@@ -1164,7 +1179,7 @@ class Variants extends rtPositionUniversal
 						if(isset($tab[$i])){
 							foreach ($tab[$i] as $key => $value) {
 								$html .= '<th  style="text-align:left">'.(isset($type_product_arr_from_form[$key]['name_ru'])?$type_product_arr_from_form[$key]['name_ru'].':':'<span style="color:red">имя не найдено</span>').'</th>';
-								$html .= '<td  style="text-align:left" data-type="'.$key.'" >'.$value.'</td>';$i++;
+								$html .= '<td  style="text-align:left" data-type="'.$key.'" class="js--edit_true">'.$value.'</td>';$i++;
 							}	
 						}else{
 							$html .= '<th></th>';

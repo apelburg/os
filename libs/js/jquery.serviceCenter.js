@@ -20,7 +20,6 @@
 	 *  @example 	$('#js-main_service_center').totalCommander('update_total_window');
 	 */
 
-	 
 	 /*
 */
 
@@ -57,14 +56,14 @@ function round_money(num){
 // запуск из РТ
 jQuery(document).on('click', '#rt_tbl_body tr td.calc_btn span:first-child', function(event) {
 	$.post('', {
-			AJAX: 	'get_service_center',
-			row_id: $(this).parent().parent().attr("row_id")
-		}, function(data, textStatus, xhr) {
-			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
-				$.SC_createWindow(Base64.decode(data['html']));	
-			}				
-			standard_response_handler(data);
-		},'json');
+		AJAX: 	'get_service_center',
+		row_id: $(this).parent().parent().attr("row_id")
+	}, function(data, textStatus, xhr) {
+		if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
+			$.SC_createWindow(Base64.decode(data['html']));	
+		}				
+		standard_response_handler(data);
+	},'json');
 });
 
 // запуск из Карточки
@@ -88,11 +87,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 (function( $ ){
 
 	var methods = {
-		mainObj : {},		// содержит все варианты
+		mainObj : {},			// содержит все варианты
 		variants_rows : {}, 	// строки вариантов
 		top_menu : {}, 			// меню тиражей
 		checkbox_main : {}, 	// чек управления группой
-  	
 
 		init : function( options ) {
 
