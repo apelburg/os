@@ -376,7 +376,7 @@
 			 $dop_details = '';
 			  //echo $row['row_type'].' = ';
 			 if($row['row_type'] == 'cat'){ 
-				 $extra_panel = '<div class="pos_plank cat '.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank cat js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&section=rt_position&id='.$key.'&client_id='.$client_id.'">'.$row['art'].'</a>
 								   <div class="pos_link_plank">
 									  <div class="catalog">
@@ -393,16 +393,16 @@
 		        if($counter==0 &&  count($row['dop_details'])>0)  $dop_details['allowed_prints'] = $row['dop_details'];
 			 }
 			 else if($row['row_type'] == 'ext'){
-				 $extra_panel = '<div class="pos_plank ext '.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }
 			 else if($row['row_type'] == 'pol'){
-				 $extra_panel = '<div class="pos_plank pol '.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }else{
-			 	$extra_panel = '<div class="pos_plank pol '.$row['rt_row_color'].'">
+			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }

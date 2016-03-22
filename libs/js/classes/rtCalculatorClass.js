@@ -111,20 +111,22 @@ var rtCalculator = {
 		var ln = trs_arr.length;
 		for(var i = 0;i < ln;i++){ 
 			// если ряд не имеет атрибута row_id пропускаем его
-		    if(!trs_arr[i].getAttribute('row_id')){
-					
+		    if(!trs_arr[i].getAttribute('row_id')){					
 				continue;
 		    }
 		    $(trs_arr[i]).find('td.art_name .pos_plank ').on('contextmenu click',function(e) {
 		    	
 		    	if(e.button == 2){
+		    		var lang = new Array('green','yellow','red','blue','violet','grey');
+
 		    		var obj = $(this);
 		    		var pos_id = $(this).parent().parent().attr('pos_id');
 		    		$("#context-menu").remove();
 		    		event.preventDefault();
 		    		// Создаем меню:
 
-				    $('<div/>', {
+
+				    var context = $('<div/>', {
 						'class': 'context-menu',
 						'id':'context-menu'
 						// Присваиваем блоку наш css класс контекстного меню:
@@ -134,53 +136,38 @@ var rtCalculator = {
 						top: event.pageY+'px'
 						// Задаем позицию меню по Y
 					})
-					.appendTo('body') // Присоединяем наше меню к body документа:
-					.append( // Добавляем пункты меню:
-						$('<ul/>').append($('<li/>',{'class':'green',click:function(){
-							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
-							$.post('', {
-								AJAX: 'change_main_rows_color',
-								row_id:pos_id,
-								val:$(this).attr('class')
 
-							}, function(data, textStatus, xhr) {
-							},'json');
-							$("#context-menu").remove();
-						}}))
-						.append($('<li/>',{'class':'yellow',click:function(){
-							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
-							$.post('', {
-								AJAX: 'change_main_rows_color',
-								row_id:pos_id,
-								val:$(this).attr('class')
+					var menu = $('<ul/>');
 
-							}, function(data, textStatus, xhr) {							
-							},'json');
-							$("#context-menu").remove();
-						}}))
-						.append($('<li/>',{'class':'red',click:function(){
-							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
-							$.post('', {
-								AJAX: 'change_main_rows_color',
-								row_id:pos_id,
-								val:$(this).attr('class')
+					for(var t in lang){
+						
+						var element = $('<li/>',{
+							'class':'js-color-'+lang[t],
+							'data-color':lang[t],
+							
+							click:function(){
+								for(var i in lang){
+									if(i!=t){
+										obj.removeClass('js-color-'+lang[i]);
+									}
+								}
+								obj.addClass($(this).attr('class'));
+								var color = $(this).attr('data-color');
+								$.post('', {
+									AJAX: 'change_main_rows_color',
+									row_id:pos_id,
+									val:color
+								}, function(data, textStatus, xhr) {
+								},'json');
 
-							}, function(data, textStatus, xhr) {
-							},'json');
-							$("#context-menu").remove();
-						}}))
-						.append($('<li/>',{'class':'grey',click:function(){
-							obj.removeClass('green').removeClass('grey').removeClass('red').removeClass('yellow').addClass($(this).attr('class'))
-							$.post('', {
-								AJAX: 'change_main_rows_color',
-								row_id:pos_id,
-								val:$(this).attr('class')
+								$(this).parent().parent().remove();
+							}
+						});
+						// Добавляем пункты меню:
+						menu.append(element);
+					}
 
-							}, function(data, textStatus, xhr) {
-							},'json');
-							$("#context-menu").remove();
-						}}))
-					)
+					context.append(menu).appendTo('body') // Присоединяем наше меню к body документа:					
 					.show('fast').css('marginLeft','-60px');
 
 
