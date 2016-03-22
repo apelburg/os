@@ -433,8 +433,8 @@
 			
 			$details_arr = json_decode($_GET['details'],true);
 			$details_obj = json_decode($_GET['details']);
-		    print_r($details_arr);
-			////echo $details_arr['action'];
+		    //print_r($details_arr);
+			//echo $details_arr['action'];
 			//exit; //
 		    if(isset($details_arr['print_details'])){
 		        if($details_arr['print_details']['calculator_type']=='free'){
@@ -877,7 +877,7 @@
 			$out_put['print']['result']='ok';
 			$out_put['extra']['result']='ok';
 			if($source=='rt') $out_put['itog_values'] = array("price_in"=>0,"price_out"=>0,"summ_in"=>0,"summ_out"=>0);
-			if($source=='card') $out_put['new_sums_details']	= array();
+			if($source=='card') $out_put['new_sums_details'] = array();
 			
 			if($print == 'true'){
 				// делаем запрос чтобы получить данные о всех расчетах нанесений привязанных к данному ряду
@@ -902,7 +902,13 @@
 								$YPriceParam = (isset($print_details_obj->dop_params->YPriceParam))? count($print_details_obj->dop_params->YPriceParam):1;
 								// получаем новые исходящюю и входящюю цену исходя из нового тиража
 								$new_price_arr = self::change_quantity_and_calculators_price_query($quantity,$print_details_obj,$YPriceParam);
-								//print_r($new_price_arr);echo "\r\n";
+								// print_r($new_price_arr);echo "\r\n";
+								// если есть метка о превышении лимита или необходимости индивидуального расчета
+								// переводим автоматический калькулятор в ручной, цены присваиваем существовавщие до пересчета
+								if(self::$needIndividCalculation || self::$outOfLimit){
+									$print_details_obj->calculator_type='manual';
+									$new_price_arr = array("price_in"=>$row['price_in'],"price_out"=>$row['price_out']);
+								}
 								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
 						    }
 							// сохраняем полученные данные в промежуточный массив
@@ -912,15 +918,16 @@
 					}
 					
 					// если все в порядке и нет ни каких исключений делаем дальнейшие операции
-					if(!(self::$needIndividCalculation || self::$outOfLimit)){
+					
 						 if($source=='card') $new_sums_details = array();
 						 foreach($dataArr as $key => $dataVal){
 						    $new_data = array();
+							
 						    //print_r($dataVal['new_price_arr']);echo "\r\n";
 							if(isset($dataVal['print_details_obj']->calculator_type) && ($dataVal['print_details_obj']->calculator_type=='manual' || $dataVal['print_details_obj']->calculator_type=='free')){
 								$new_data["new_price_arr"] = array("price_in"=>$dataVal['new_price_arr']['price_in'],"price_out"=>$dataVal['new_price_arr']['price_out']);
 								$new_data["new_summs"] = array("summ_in"=>($dataVal['new_price_arr']['price_in']*$quantity),"summ_out"=>($dataVal['new_price_arr']['price_out']*$quantity)); 
-							}
+							}  
 							else{
 								if(isset($dataVal['print_details_obj']->dop_params)){
 									// рассчитываем окончательную стоимость с учетом коэффициентов и надбавок
@@ -936,12 +943,18 @@
 							// echo $dataVal['discount']."\r";//
 							
 							// перезаписываем новые значения прайсов и X индекса обратно в базу данных
-							$query="UPDATE `".RT_DOP_USLUGI."` 
+						   $query="UPDATE `".RT_DOP_USLUGI."` 
 										  SET 
 										  quantity = '".$quantity."',
 										  price_in = '".$new_data["new_price_arr"]["price_in"]."',
-										  price_out = '".$new_data["new_price_arr"]["price_out"]."'
-										  WHERE id = '".$dataVal['uslugi_row_id']."'";
+										  price_out = '".$new_data["new_price_arr"]["price_out"]."'";
+							if(isset($dataVal['print_details_obj']->calculator_type) && ($dataVal['print_details_obj']->calculator_type=='manual' || $dataVal['print_details_obj']->calculator_type=='free')){
+							
+							   $dataVal['print_details_obj']->need_confirmation = true;
+							   $query.=", print_details = '".self::json_fix_cyr(json_encode($dataVal['print_details_obj']))."'"; 
+							}/**/
+							$query.=" WHERE id = '".$dataVal['uslugi_row_id']."'";
+							//echo $query;
 							$mysqli->query($query)or die($mysqli->error);
 							
 							$new_data["new_price_arr"]["price_out"] = ($dataVal['discount'] != 0 )? (($new_data["new_price_arr"]["price_out"]/100)*(100 + $dataVal['discount'])) : $new_data["new_price_arr"]["price_out"];
@@ -958,7 +971,7 @@
 							   $new_sums_details[$dataVal['uslugi_row_id']] = array('price_in' => $new_data["new_price_arr"]["price_in"],'price_out' => $new_data["new_price_arr"]["price_out"]);
 							}
 						}
-					}
+					
 					
 					// если дошли до этого места значит все нормально
 					// отправляем новые данные обратно клиенту
@@ -1001,31 +1014,32 @@
 
 			}
 			// если по нужным услугам обновление с флагом result == ok, обновляем количество в RT_DOP_DATA
-			if($out_put['print']['result']=='ok' && $out_put['extra']['result']=='ok'){
-				// обновляем количество 
-				if($source=='rt'){
-					$query="SELECT tirage_json FROM `".RT_DOP_DATA."` WHERE `id` = '".$dop_data_id."'";
-					$result = $mysqli->query($query)or die($mysqli->error);
-					if($result->num_rows>0){
-						$row = $result->fetch_assoc();
-						$tirage_json = @json_decode($row['tirage_json'],true);
-						if(is_array($tirage_json) && count($tirage_json)>0){
-							$tirage_json[key($tirage_json)]['tir'] = $quantity;
 			
-							// оставляем только один элемент
-							$tirage_json = json_encode(array( key($tirage_json) => $tirage_json[key($tirage_json)] ));
-						}		
-						else $tirage_json = '{}';
-		
-					}
-					else $tirage_json = '{}';
-			    }
-				
-				$query="UPDATE `".RT_DOP_DATA."` SET  `quantity` = '".$quantity."'";
-				if($source=='rt') $query.=" , `tirage_json` = '".$tirage_json."'";
-				$query.=" WHERE `id` = '".$dop_data_id."'";
+			// обновляем количество 
+			if($source=='rt'){
+				$query="SELECT tirage_json FROM `".RT_DOP_DATA."` WHERE `id` = '".$dop_data_id."'";
 				$result = $mysqli->query($query)or die($mysqli->error);
+				if($result->num_rows>0){
+					$row = $result->fetch_assoc();
+					$tirage_json = @json_decode($row['tirage_json'],true);
+					if(is_array($tirage_json) && count($tirage_json)>0){
+						$tirage_json[key($tirage_json)]['tir'] = $quantity;
+		
+						// оставляем только один элемент
+						$tirage_json = json_encode(array( key($tirage_json) => $tirage_json[key($tirage_json)] ));
+					}		
+					else $tirage_json = '{}';
+	
+				}
+				else $tirage_json = '{}';
 			}
+			
+			$query="UPDATE `".RT_DOP_DATA."` SET  `quantity` = '".$quantity."'";
+			if($source=='rt') $query.=" , `tirage_json` = '".$tirage_json."'";
+			$query.=" WHERE `id` = '".$dop_data_id."'";
+			// echo $query;
+			$result = $mysqli->query($query)or die($mysqli->error);
+			
 			//print_r($out_put);
 			return json_encode($out_put);
 		}

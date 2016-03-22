@@ -812,7 +812,7 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			 alert(response);
+			//alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) { alert('неправильный формат данных in rtCalculator.makeQuantityCalculations() ошибка JSON.parse(response)'); }
@@ -838,18 +838,31 @@ var rtCalculator = {
 				console.log(response_obj);
 				if(response_obj.warning && response_obj.warning.calculators_checking){
 					
+					var notes = [];
 					for( var prop in response_obj.warning.calculators_checking){
+						
 						if(prop == 'manual_calc_exists'){
-							alert('manual_calc_exists');
+							notes.push('Ручной калькулятор');
 						}
 						if(prop == 'free_calc_exists'){
-							alert('free_calc_exists');
+							notes.push('калькулятор Дежурная услуга');
 						}
 						if(prop == 'united_calculations'){
-							alert('united_calculations');
+							notes.push('Объединеные расчеты');
 						}
 					}
-					
+					if(notes.length>0){
+						if(confirm('данный расчет содержит: '+(notes.join(', ')))){
+							// отправляем повторный запрос с маркером ignore_calculators_checking
+							url += '&ignore_calculators_checking=1';
+                            rtCalculator.send_ajax(url,callbackPrintsExists);
+							return;
+						}
+						else{
+							alert('возвращаемся к предыдущему состоянию');
+							return;
+						}
+					}
 					
 					
 				}
@@ -889,12 +902,13 @@ var rtCalculator = {
 				 for(var index in response_obj.print.outOfLimit){
 					 str += (parseInt(index)+1)+'). '+response_obj.print.outOfLimit[index].print_type+', лимит тиража - '+response_obj.print.outOfLimit[index].limitValue+"<br>";  
 				 }
-				 var dialog = $('<div>Такой тираж не может быть установлен!!!<br>Он выше максимального тиража указанного в прайсе для нанесения:<br>'+str+'для этих нанесений требуется индивидуальный расчет</div>');
+				 var dialog = $('<div>Из-за превышения максимального тиража<br>автоматические калькуляторы в следующих расчетах были переведены в ручной режим:<br>'+str+'</div>');
 				 $('body').append(dialog);
-				 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}], close: function( event, ui ) {location.reload();} });
+				 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}]});
 				 $(dialog).dialog('open');
-				 rtCalculator.changes_in_process=false;
-				 return;
+				 response_obj.print.result = 'ok';
+				 // rtCalculator.changes_in_process=false;
+				 // return;
 				
 			}
 			if(response_obj.print && response_obj.print.needIndividCalculation){ 

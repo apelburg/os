@@ -198,7 +198,7 @@
 						
 						 ;
 						 //echo '<pre>'; print_r(printCalculator::convert_print_details_for_TotalCom($extra_data['print_details'])); echo '</pre>';
-						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto' || $print_details['calculator_type'] =='manual')){
+						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto')){
 							if($extra_data['quantity']!=$dop_row['quantity']){
 								 $reload['flag'] = true;
 								 //echo $dop_row['quantity'];
