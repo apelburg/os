@@ -232,6 +232,8 @@
 						 }
 						 else $size='';
 						 
+						 if(isset($print_details['need_confirmation']) && ($print_details['need_confirmation'] =='true')) $row['rt_row_color'] = 'red';
+						 
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
 					 }
 				     $print_exists_flag = '1'; 

@@ -924,6 +924,7 @@ var rtCalculator = {
 						if(prop == 'united_calculations'){
 							notes.push('Объединеные расчеты');
 						}
+						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js-color-red');
 					}
 					if(notes.length>0){
 						if(confirm('данный расчет содержит: '+(notes.join(', ')))){
