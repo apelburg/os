@@ -336,6 +336,12 @@ button#sc_close_window{
 	background-color: #eeeeee;
 	cursor: pointer;
 }
+#js-main-service_center-variants-services-div-table table tr.service td.service_name.alarm_services{
+	background-color: #f68d91;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAMAAABFjsb+AAAA+VBMVEX////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////r1CuUAAAAUnRSTlMAAQQFCQsRFRYaHB8gIiMkJikvNjg5Oj4/QURFT1JTY2Rla21xc3Z3e4SIjI6RkpOXnqKjpqmtr7S6u7/CxMbHy83Q09fZ2tvd3t/k5efu9PX3A7n3swAAALhJREFUeAFVy+VSw0AYRuGDlFLcJbgUJ7gLFCgtTs/9XwyzJDDZ58fuvGfmIzO1cdF8PFis8G+iZm6nncy6Pi1P9gzPpdroJ1jTVTJDt36WgBGdCbuzI7yn3gANqwRK8GLCmHWKbdoHNl2IGi25cjRud/JuJW5H8uxg3M7k0ITIqyy5H6WSUtbu4m3qHuxaK7RxLQNvnrSRS1quhL/vw/osQe+WpvzqutSv++Pzplrlz/y1wff2QFg/7P0mOj6r8AoAAAAASUVORK5CYII=);
+	background-repeat: no-repeat;
+	background-position:right center;
+}
 
 
 #js-main-service_center-variants-services-div-table table tr.variant td:nth-last-of-type(2) div:nth-of-type(1),
