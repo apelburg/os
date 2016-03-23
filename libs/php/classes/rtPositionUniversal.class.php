@@ -50,19 +50,56 @@ class rtPositionUniversal extends Position_general_Class
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
 		// $result = $mysqli->query($query)or die($mysqli->error);
+		
+		$articles_rows = array();
 		$response = array(); 
+		$object = array();
 
 		$i=0;
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
-				// $response[] = $row['company'];
-				$response[$i]['label'] = $row['art'].' '.$row['name'];
-				$response[$i++]['value'] = $row['art'];
-				// $response[$i]['href'] = $_SERVER['REQUEST_URI'].'&client_id='.$row['id'];
-				// $response[$i++]['desc'] = $row['id'];
+				$object[$row['art']]['label'] = $row['art'].' '.$row['name'];
+				$object[$row['art']]['value'] = $row['art'];
+
+				$articles_rows[] = $row['art'];
+				// $response[$i]['label'] = $row['art'].' '.$row['name'];
+				// $response[$i++]['value'] = $row['art'];
+				
 			}
 		}		
-									
+		
+		$query = "SELECT * FROM `".IMAGES_TBL."` WHERE `size` = 'small' AND `art` IN ('".implode("','", $articles_rows)."') GROUP BY art ASC";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+
+				$object[$row['art']]['img'] = $row['name'];
+			}
+		}
+
+		// echo $query.'<pre>';
+		// print_r($object);
+		// echo '</pre>';
+			
+		foreach ($object as $key => $value) {
+			$response[$i]['label'] = $value['label'];
+			$response[$i]['value'] = $value['value'];
+			if(isset($value['img'])){
+				$response[$i++]['img'] = 'img/'.$value['img'];	
+			}else{
+				$response[$i++]['img'] = 'img/no_image.jpg';
+			}
+			
+		}
+
+
+
+
+
+
+
+
+
 		echo json_encode($response);
 		exit;
 	}

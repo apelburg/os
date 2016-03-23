@@ -102,16 +102,32 @@ $(document).on('click', '#js--edit_article', function(event) {
         });
       },
       select: function( event, ui ) {
-      input.val(ui.item.value);
-      input.blur();
+        input.val(ui.item.value).blur();
+      // input.blur();
       }    
     });
 
     input.data( "ui-autocomplete" )._renderItem = function( ul, item ) { // для jquery-ui 1.10+
+      var img = $('<img/>',{
+        'src':'http://www.apelburg.ru/'+item.img
+      }).css({
+        'width':'50px'
+      });
+      var table = $('<table/>');
+      var tr = $('<tr/>');
+      var td1 = $('<td/>').append(img);
+      var td2 = $('<td/>').append(item.label);
+
+      table.append(tr.append(td1).append(td2))
+
+      
+
+
       return $("<li></li>")
       .data("ui-autocomplete-item", item) // для jquery-ui 1.10+
+      .append(table)
       //.append( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
-      .append( item.label )
+      // .append(  )
       .appendTo(ul);
     };
 
