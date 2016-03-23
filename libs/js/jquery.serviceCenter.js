@@ -1665,6 +1665,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
+				console.log(print_details.need_confirmation)
 
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
