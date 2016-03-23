@@ -38,6 +38,36 @@ class rtPositionUniversal extends Position_general_Class
 	}
 
 	/**
+	 *  for change article
+	 *	shearch article autocomlete
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	12:29 23.03.2016
+	 */
+	protected function shearch_article_autocomlete_AJAX(){
+		//RT_MAIN_ROWS
+		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".$_POST['search']."%'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			
+		// $result = $mysqli->query($query)or die($mysqli->error);
+		$response = array(); 
+
+		$i=0;
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				// $response[] = $row['company'];
+				$response[$i]['label'] = $row['art'].' '.$row['name'];
+				$response[$i++]['value'] = $row['art'];
+				// $response[$i]['href'] = $_SERVER['REQUEST_URI'].'&client_id='.$row['id'];
+				// $response[$i++]['desc'] = $row['id'];
+			}
+		}		
+									
+		echo json_encode($response);
+		exit;
+	}
+
+	/**
 	 *	
 	 *
 	 *	@author  	Alexey Kapitonov

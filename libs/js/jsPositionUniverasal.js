@@ -53,39 +53,69 @@ $(document).on('click', '#js--edit_article', function(event) {
   event.preventDefault();
   if($(this).find('input').length == 0){
 
-  var val = $(this).html();
-  $(this).attr('data-old',val);
+    var val = $(this).html();
+    $(this).attr('data-old',val);
 
-        $(this).html($('<input/>',{
-          'value':val,
-          'type':'text',
-            click:function(){
-              event.preventDefault();
+    var input = $('<input/>',{
+      'value':val,
+      'type':'text',
+        click:function(){
+          event.preventDefault();
+        },
+        focus:function(){
+          event.preventDefault();
+        },
+        blur:function(){
+          if($(this).val() == val){
+            js_edit_article_replace_back();
+            return;
+          }
+          // сохранение 
+          var row_id = $(this).parent().attr('data-id');
+          var value = $(this).val();
+            $.post('', {
+              AJAX:'search_and_replace_article',
+              art:value,
+              row_id:row_id
+            }, function(data, textStatus, xhr) {
+              standard_response_handler(data);
+            },'json');
+          // возвращаем прежний вид таблице
+          $(this).parent().html($(this).val());
+        }
+    });
+
+    input.autocomplete({
+      minLength: 2,
+      source: function(request, response){
+        console.log(request)
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+            data:{
+                AJAX: 'shearch_article_autocomlete', // показать 
+                search: request.term // поисковая фраза
             },
-            focus:function(){
-              event.preventDefault();
-            },
-            blur:function(){
-              if($(this).val() == val){
-                js_edit_article_replace_back();
-                return;
-              }
-              // сохранение 
-              var row_id = $(this).parent().attr('data-id');
-              var value = $(this).val();
+          success: function( data ) {
+            response( data );
+          }
+        });
+      },
+      select: function( event, ui ) {
+      input.val(ui.item.value);
+      input.blur();
+      }    
+    });
 
-                $.post('', {
-                  AJAX:'search_and_replace_article',
-                  art:value,
-                  row_id:row_id
-                }, function(data, textStatus, xhr) {
-                  standard_response_handler(data);
-                },'json');
-              // возвращаем прежний вид таблице
-              $(this).parent().html($(this).val());
-            }
+    input.data( "ui-autocomplete" )._renderItem = function( ul, item ) { // для jquery-ui 1.10+
+      return $("<li></li>")
+      .data("ui-autocomplete-item", item) // для jquery-ui 1.10+
+      //.append( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
+      .append( item.label )
+      .appendTo(ul);
+    };
 
-        })).find('input').focus()  
+    $(this).html(input).find('input').focus() 
   }  
 });
 
