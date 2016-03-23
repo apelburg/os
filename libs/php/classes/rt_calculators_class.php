@@ -647,7 +647,7 @@
 				 // echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
 				 
-				 return $details_arr->dop_uslugi_id;
+				 return $details_arr['dop_uslugi_id'];
 			
 			}
 			
