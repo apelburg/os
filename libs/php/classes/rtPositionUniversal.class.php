@@ -116,7 +116,7 @@ class rtPositionUniversal extends Position_general_Class
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
 		$artArr = array();
-		if($result->num_rows > 0){
+		if( $result->num_rows > 0 ){
 			while($row = $result->fetch_assoc()){
 				$artArr[] = $row;
 			}
@@ -1505,6 +1505,23 @@ class Services extends Variants
 				$service_arr[] = $row;
 			}
 		}
+
+		// исключение по тиражу для дежурной услуги
+		foreach ($service_arr as $key => $service) {
+			if($service['uslugi_id']==0 && isset($service['print_details']) && $service['print_details']!=''){
+				$json = json_decode($service['print_details'],true);
+				if(isset($json['quantity'])){
+					$service_arr[$key]['quantity'] = (int)$json['quantity'];
+				}
+			}
+		}
+
+
+
+		// echo '<pre>';
+		// print_r($service_arr);
+		// echo '</pre>';
+			
 		return $service_arr;
 	}
 	

@@ -111,11 +111,12 @@ $(document).on('click', '#js--edit_article', function(event) {
       var img = $('<img/>',{
         'src':'http://www.apelburg.ru/'+item.img
       }).css({
-        'width':'50px'
+        'maxWidth':'50px',
+        'maxHeight':'50px'
       });
       var table = $('<table/>');
       var tr = $('<tr/>');
-      var td1 = $('<td/>').append(img);
+      var td1 = $('<td/>').css({'width':'50px','height':'50px','textAlign':'center'}).append(img);
       var td2 = $('<td/>').append(item.label);
 
       table.append(tr.append(td1).append(td2))
