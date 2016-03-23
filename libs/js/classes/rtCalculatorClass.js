@@ -753,21 +753,26 @@ var rtCalculator = {
 			//rtCalculator.saveQuantityBtn.className = 'rtSaveQuantityBtn';
 		    //rtCalculator.saveQuantityBtn.innerHTML = "save";
 		    //rtCalculator.saveQuantityBtn.onclick = function(){ 
+	   var nextTd = $(cell).next()[0];
+	   
+	   if($(nextTd).find("div.rtSaveQuantityBtn").length == 0){
 			var saveQuantityBtn = document.createElement('DIV');
 			saveQuantityBtn.className = 'rtSaveQuantityBtn';
 		    saveQuantityBtn.innerHTML = "save";
 		    saveQuantityBtn.onclick = function(){ 
 			    //alert(this);
-				$(this).remove();
+				//$(this).remove();
+				this.parentNode.removeChild(this);
 			    //delete rtCalculator.saveQuantityBtn;
 				//////////////////////////////////// card rt //////////////////////////////////// 
 		        // метод может вызываться также из карточки товара созначением - card
 				rtCalculator.makeQuantityCalculations('rt',cell.innerHTML,row_id,printsExists,extraExists,cell);
 			}
 			// соседняя ячека таблицы, кнопку добавляем в неё
-			var nextTd = $(cell).next()[0];
+			
 			//$(nextTd).append(rtCalculator.saveQuantityBtn); 
 			$(nextTd).append(saveQuantityBtn); 
+		}
 		//}		
 	
 		

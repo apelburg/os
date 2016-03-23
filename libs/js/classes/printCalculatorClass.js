@@ -2186,7 +2186,7 @@ var printCalculator = {
 			
 			var ConfirmBtn = document.createElement('DIV');
 			ConfirmBtn.className = 'confirmBtnCalc';
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation) ConfirmBtn.className = 'confirmBtnCalc redbg';
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation) ConfirmBtn.className = 'js--icon-alarm-services';
 			ConfirmBtn.innerHTML = '!'; 
 			ConfirmBtn.onclick =  function(){ printCalculator.makeResultConfirmation(ConfirmBtn);}
 			
