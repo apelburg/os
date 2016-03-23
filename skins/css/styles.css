@@ -1836,6 +1836,11 @@ ul.central_menu li a:hover{
 #calculatorDialogBox .BtnsDiv{margin:2px 0 10px 77px; width: 585px; height:45px; border:#CCC solid 0px;}
 #calculatorDialogBox .showDopInfoBlockBtn{ float:left; border:#CCC solid 1px;border-radius: 30px; padding:10px 25px;cursor:pointer}
 #calculatorDialogBox .ovalBtn {float:right; margin-right: 60px;}
+#calculatorDialogBox .confirmBtnCalc {position: relative;border:#CCC solid 1px;border-radius: 10px; padding:10px 15px; color:#FFFFFF; cursor:pointer; background-color:#DEDEDE; float:right; margin-right: 20px;}
+#calculatorDialogBox .redbg {background-color:#F68D90;}
+#calculatorDialogBox .confirmSpanCalc {position: absolute; top: 37px; display:none; color: #000000;background: #FFFFFF;font-size: 10px;white-space: nowrap; border: 1px solid #AAA; padding: 1px 4px 2px 5px;}
+#calculatorDialogBox .confirmSpanCalcHidden{position: absolute; top: 37px; display:none;}
+#calculatorDialogBox .confirmBtnCalc:hover > span.confirmSpanCalc{display:block;}
 #calculatorDialogBox .saveBtn:hover {background-color:#b8e34b}
 #calculatorDialogBox .distributionSaveBtn { float:right; margin:12px 65px 12px 0 ; color:#FFFFFF;border-radius:30px; border:#CCC solid 1px;padding:10px 25px;cursor:pointer; background-color:#99B52A}
 #calculatorDialogBox .distributionSaveBtn:hover {background-color:#b8e34b}
