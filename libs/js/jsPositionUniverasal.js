@@ -262,7 +262,7 @@ function chenge_price_out(object){
   
   $.post('', {
     // global_change: 'AJAX',
-    AJAX: 'save_discount',
+    AJAX: 'variant_save_discount',
     discount:new_discount,
     price_out:price_out,
     row_id:row_id
@@ -327,6 +327,7 @@ function append_click(){
                 
                 $.post('', {
                   AJAX:'save_dop_info_json',
+                  main_row_id:$('#js--characteristics-info').attr('data-main_row_id'),
                   json:Base64.encode(json),
                   row_id:variant_id
                 }, function(data, textStatus, xhr) {
