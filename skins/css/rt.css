@@ -510,3 +510,4 @@ input.getSizesBtn {
   background: rgb(198, 224, 159);
   cursor: move;
 }
+.rtSaveQuantityBtn{ position:absolute; top:10px; left:-5px; font-family: Arial, Helvetica, sans-serif; font-size:10px; border: 1px solid #CCC; padding:1px 3px 3px 3px; cursor:pointer; color:#FFFFFF;  background-color:#86AE1F;border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px;}
