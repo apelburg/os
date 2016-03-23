@@ -48,6 +48,81 @@ $(document).on('click', '.row_price_out_one.price_out', function(event) {
   }
 });
 
+// вешаем клик на артикул
+$(document).on('click', '#js--edit_article', function(event) {
+  event.preventDefault();
+  if($(this).find('input').length == 0){
+
+    var val = $(this).html();
+    $(this).attr('data-old',val);
+
+    var input = $('<input/>',{
+      'value':val,
+      'type':'text',
+        click:function(){
+          event.preventDefault();
+        },
+        focus:function(){
+          event.preventDefault();
+        },
+        blur:function(){
+          if($(this).val() == val){
+            js_edit_article_replace_back();
+            return;
+          }
+          // сохранение 
+          var row_id = $(this).parent().attr('data-id');
+          var value = $(this).val();
+            $.post('', {
+              AJAX:'search_and_replace_article',
+              art:value,
+              row_id:row_id
+            }, function(data, textStatus, xhr) {
+              standard_response_handler(data);
+            },'json');
+          // возвращаем прежний вид таблице
+          $(this).parent().html($(this).val());
+        }
+    });
+
+    input.autocomplete({
+      minLength: 2,
+      source: function(request, response){
+        console.log(request)
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+            data:{
+                AJAX: 'shearch_article_autocomlete', // показать 
+                search: request.term // поисковая фраза
+            },
+          success: function( data ) {
+            response( data );
+          }
+        });
+      },
+      select: function( event, ui ) {
+      input.val(ui.item.value);
+      input.blur();
+      }    
+    });
+
+    input.data( "ui-autocomplete" )._renderItem = function( ul, item ) { // для jquery-ui 1.10+
+      return $("<li></li>")
+      .data("ui-autocomplete-item", item) // для jquery-ui 1.10+
+      //.append( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
+      .append( item.label )
+      .appendTo(ul);
+    };
+
+    $(this).html(input).find('input').focus() 
+  }  
+});
+
+function js_edit_article_replace_back(){
+  $('#js--edit_article').html($('#js--edit_article').attr('data-old'))
+}
+
 // кнопка переключатель цены в таблице расчета
 $(document).on('click', '.js--button-out_ptice_for_tirage', function(event) {
   event.preventDefault();
@@ -217,7 +292,7 @@ function chenge_price_out(object){
   
   $.post('', {
     // global_change: 'AJAX',
-    AJAX: 'save_discount',
+    AJAX: 'variant_save_discount',
     discount:new_discount,
     price_out:price_out,
     row_id:row_id
@@ -282,6 +357,7 @@ function append_click(){
                 
                 $.post('', {
                   AJAX:'save_dop_info_json',
+                  main_row_id:$('#js--characteristics-info').attr('data-main_row_id'),
                   json:Base64.encode(json),
                   row_id:variant_id
                 }, function(data, textStatus, xhr) {

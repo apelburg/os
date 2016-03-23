@@ -36,6 +36,73 @@ class rtPositionUniversal extends Position_general_Class
 			$this->_AJAX_();
 		}			
 	}
+
+	/**
+	 *  for change article
+	 *	shearch article autocomlete
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	12:29 23.03.2016
+	 */
+	protected function shearch_article_autocomlete_AJAX(){
+		//RT_MAIN_ROWS
+		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".$_POST['search']."%'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			
+		// $result = $mysqli->query($query)or die($mysqli->error);
+		$response = array(); 
+
+		$i=0;
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				// $response[] = $row['company'];
+				$response[$i]['label'] = $row['art'].' '.$row['name'];
+				$response[$i++]['value'] = $row['art'];
+				// $response[$i]['href'] = $_SERVER['REQUEST_URI'].'&client_id='.$row['id'];
+				// $response[$i++]['desc'] = $row['id'];
+			}
+		}		
+									
+		echo json_encode($response);
+		exit;
+	}
+
+	/**
+	 *	
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	17:51 22.03.2016
+	 */
+	protected function search_and_replace_article_AJAX(){
+		//RT_MAIN_ROWS
+		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` = '".$_POST['art']."'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			
+		$artArr = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$artArr[] = $row;
+			}
+		}
+
+		if(count($artArr) > 0){
+			foreach ($artArr as $art) {
+				$query = "UPDATE `".RT_MAIN_ROWS."` SET";
+		        $query .= " `art` = '".$art['art']."'";
+		        $query .= " , `art_id` = '".$art['id']."'";
+		        $query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+		        $result = $this->mysqli->query($query) or die($this->mysqli->error);	
+			}
+			
+			$option['timeout'] = '1000';
+			$this->responseClass->addResponseFunction('window_reload',$option);
+			$this->responseClass->addMessage('Артикул успешно обновлён','system_message');		
+		}else{
+			$this->responseClass->addResponseFunction('js_edit_article_replace_back');
+			$this->responseClass->addMessage('Такого артикула нет в каталоге','error_message');		
+		}
+		
+	}
 	/**
 	 *	возвращает статуы
 	 *
@@ -101,9 +168,105 @@ class rtPositionUniversal extends Position_general_Class
 		 *	@version 	14:44 22.03.2016
 		 */
 		protected function save_dop_info_json_AJAX(){
+			 /*
+                naimenovanie
+                product_dop_text
+                quantity
+            */
+			$this->jsonArr = json_decode(base64_decode($_POST['json']),true);
+			// if($this->user_id == 42){
+			// 	$message = $this->printArr($jsonArr);
+			// 	$this->responseClass->addMessage($message,'system_message');	
+			// 	// return;
+			// }
+
+
 			
-			$query  = "UPDATE `".RT_DOP_DATA."` SET `no_cat_json` = '".base64_decode($_POST['json'])."' WHERE  `id` = '".(int)$_POST['row_id']."';";
+			// запрашиваем данные из RT_MAIN_ROWS
+			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".(int)$_POST['main_row_id']."';";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+			$this->position = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$this->position[] = $row;
+				}
+			}
+
+			foreach ($this->position as $position) {
+				
+				// переписываем название позиции
+				if(isset($this->jsonArr['naimenovanie']) && $this->jsonArr['naimenovanie'] != $position['name']){
+					// пишем вариант
+					$query  = "UPDATE `".RT_MAIN_ROWS."` SET "; 
+					$query .= "`name` = '".$this->jsonArr['naimenovanie']."' ";
+					$query .= " WHERE  `id` = '".(int)$_POST['main_row_id']."';";
+					$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				}
+
+				// считываем варианты для всех позиций
+				$query = "SELECT * FROM `".RT_DOP_DATA."` WHERE `row_id` = '".(int)$_POST['main_row_id']."';";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				$this->position['variants'] = array();
+				if($result->num_rows > 0){
+					while($row = $result->fetch_assoc()){
+						$this->position['variants'][$row['id']] = $row;
+					}
+				}
+
+				// $message = $this->printArr($position);
+				// $this->responseClass->addMessage($message);	
+				$i = 0;
+				foreach ($this->position['variants'] as $key => $variant) {
+					$json = json_decode($variant['no_cat_json'],true);
+
+					$this->position['variants'][$key]['json_encode'] = json_decode($variant['no_cat_json'],true);
+					
+
+					if($json['naimenovanie'] != $this->jsonArr['naimenovanie'] || isset($json['product_dop_text']) && $json['product_dop_text'] != $this->jsonArr['product_dop_text']){
+						if($_POST['row_id'] != $variant['id']){
+							if($json['naimenovanie'] != $this->jsonArr['naimenovanie']){
+								$json['naimenovanie'] = $this->jsonArr['naimenovanie'];
+							}else{
+								$json['product_dop_text'] = $this->jsonArr['product_dop_text'];
+							}
+							$this->position['variants'][$key]['json_new'] = json_encode($json,JSON_UNESCAPED_UNICODE);							
+						}
+						$i++;
+					}
+					if($_POST['row_id'] == $key){
+						$this->position['variants'][$key]['json_new'] = base64_decode($_POST['json']);
+						$i++;	
+					}
+				}
+
+
+
+				// переписываем варианты
+				if ($i>0) {
+					foreach ($this->position['variants'] as $key => $variant) {
+												if(isset($this->position['variants'][$key]['json_new'])){
+							$query  = "UPDATE `".RT_DOP_DATA."` SET "; 
+							$query .= "`no_cat_json` = '".$this->position['variants'][$key]['json_new'] ."' ";
+							$query .= " WHERE  `id` = '".$key."';";
+							// echo $query;
+							$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+						}
+							
+						
+					}
+				}
+
+
+			}
+
+			
+
+			
+				
+			// if($this->user_id != 42){
+				$option['timeout'] = '1000';
+				$this->responseClass->addResponseFunction('window_reload',$option);
+			// }
 
 			$this->responseClass->addMessage('Характеристики изделия успешно сохранены','successful_message');	
 		}
@@ -224,7 +387,7 @@ class rtPositionUniversal extends Position_general_Class
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 		// сохранение наценки / скидки
-		private function save_discount_AJAX(){
+		private function variant_save_discount_AJAX(){
 			$query = "UPDATE ".RT_DOP_DATA." SET ";
 			$query .= "`price_out`='".$_POST['price_out']."'"; 
 			$query .= ", `discount`='".$_POST['discount']."'"; 
@@ -500,7 +663,7 @@ class rtPositionUniversal extends Position_general_Class
 			
 		}else{
 			$html .= '<strong>Характеристики изделия:</strong>';
-			$html .= '<div id="js--characteristics-info">контент описания</div>';
+			$html .= '<div id="js--characteristics-info" data-main_row_id="'.$this->position['id'].'">контент описания</div>';
 			$html .= '<table>';
 				$html .= '<tr>';
 					$html .= '<td>Резерв</td>';
