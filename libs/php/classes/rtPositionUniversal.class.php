@@ -127,6 +127,7 @@ class rtPositionUniversal extends Position_general_Class
 				$query = "UPDATE `".RT_MAIN_ROWS."` SET";
 		        $query .= " `art` = '".$art['art']."'";
 		        $query .= " , `art_id` = '".$art['id']."'";
+		        $query .= " , `name` = '".$art['name']."'";
 		        $query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
 		        $result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			}
