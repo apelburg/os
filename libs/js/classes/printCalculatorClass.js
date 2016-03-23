@@ -2186,15 +2186,14 @@ var printCalculator = {
 			
 			var ConfirmBtn = document.createElement('DIV');
 			ConfirmBtn.className = 'confirmBtnCalc';
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation) ConfirmBtn.className = 'js--icon-alarm-services';
-			ConfirmBtn.innerHTML = '!'; 
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation) ConfirmBtn.className = 'confirmBtnCalc redbg';
 			ConfirmBtn.onclick =  function(){ printCalculator.makeResultConfirmation(ConfirmBtn);}
 			
 			
 			var ConfirmSpan = document.createElement('SPAN');
-			ConfirmSpan.className = 'confirmSpanCalc';
+			ConfirmSpan.className = (printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation)?'confirmSpanCalc':'confirmSpanCalcHidden';
 			ConfirmSpan.innerHTML = 'подтверждаю цены, снять маркер'; 
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation) ConfirmBtn.appendChild(ConfirmSpan);
+			ConfirmBtn.appendChild(ConfirmSpan);
 			BtnsDiv.appendChild(ConfirmBtn);
 			
 			printCalculatorItogDisplay.appendChild(BtnsDiv);
@@ -2205,12 +2204,12 @@ var printCalculator = {
 	makeResultConfirmation:function(btn){
 		if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation){
 			delete printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation;
-			btn.getElementsByTagName('SPAN')[0].className = 'confirmSpanCalcHidden';
+			if(btn.getElementsByTagName('SPAN')[0]) btn.getElementsByTagName('SPAN')[0].className = 'confirmSpanCalcHidden';
 			btn.className = 'confirmBtnCalc';
 		}
 		else{
-			printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation = true;
-			btn.getElementsByTagName('SPAN')[0].className = 'confirmSpanCalc';
+			printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation = 'true';
+			if(btn.getElementsByTagName('SPAN')[0]) btn.getElementsByTagName('SPAN')[0].className = 'confirmSpanCalc';
 			btn.className = 'confirmBtnCalc redbg';
 		}
 	}

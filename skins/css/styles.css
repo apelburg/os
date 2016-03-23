@@ -1836,8 +1836,18 @@ ul.central_menu li a:hover{
 #calculatorDialogBox .BtnsDiv{margin:2px 0 10px 77px; width: 585px; height:45px; border:#CCC solid 0px;}
 #calculatorDialogBox .showDopInfoBlockBtn{ float:left; border:#CCC solid 1px;border-radius: 30px; padding:10px 25px;cursor:pointer}
 #calculatorDialogBox .ovalBtn {float:right; margin-right: 60px;}
-#calculatorDialogBox .confirmBtnCalc {position: relative;border:#CCC solid 1px;border-radius: 10px; padding:10px 15px; color:#FFFFFF; cursor:pointer; background-color:#DEDEDE; float:right; margin-right: 20px;}
-#calculatorDialogBox .redbg {background-color:#F68D90;}
+#calculatorDialogBox .confirmBtnCalc {position: relative;border:#CCC solid 1px;border-radius: 10px; height: 37px; width: 37px; color:#FFFFFF; cursor:pointer; float:right; margin-right: 20px;
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAMAAABFjsb+AAAA+VBMVEX////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////r1CuUAAAAUnRSTlMAAQQFCQsRFRYaHB8gIiMkJikvNjg5Oj4/QURFT1JTY2Rla21xc3Z3e4SIjI6RkpOXnqKjpqmtr7S6u7/CxMbHy83Q09fZ2tvd3t/k5efu9PX3A7n3swAAALhJREFUeAFVy+VSw0AYRuGDlFLcJbgUJ7gLFCgtTs/9XwyzJDDZ58fuvGfmIzO1cdF8PFis8G+iZm6nncy6Pi1P9gzPpdroJ1jTVTJDt36WgBGdCbuzI7yn3gANqwRK8GLCmHWKbdoHNl2IGi25cjRud/JuJW5H8uxg3M7k0ITIqyy5H6WSUtbu4m3qHuxaK7RxLQNvnrSRS1quhL/vw/osQe+WpvzqutSv++Pzplrlz/y1wff2QFg/7P0mOj6r8AoAAAAASUVORK5CYII=);
+	background-position: 50%;
+	background-repeat: no-repeat;
+	background-color: #DEDEDE;
+}
+#calculatorDialogBox .redbg {
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAMAAABFjsb+AAAA+VBMVEX////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////r1CuUAAAAUnRSTlMAAQQFCQsRFRYaHB8gIiMkJikvNjg5Oj4/QURFT1JTY2Rla21xc3Z3e4SIjI6RkpOXnqKjpqmtr7S6u7/CxMbHy83Q09fZ2tvd3t/k5efu9PX3A7n3swAAALhJREFUeAFVy+VSw0AYRuGDlFLcJbgUJ7gLFCgtTs/9XwyzJDDZ58fuvGfmIzO1cdF8PFis8G+iZm6nncy6Pi1P9gzPpdroJ1jTVTJDt36WgBGdCbuzI7yn3gANqwRK8GLCmHWKbdoHNl2IGi25cjRud/JuJW5H8uxg3M7k0ITIqyy5H6WSUtbu4m3qHuxaK7RxLQNvnrSRS1quhL/vw/osQe+WpvzqutSv++Pzplrlz/y1wff2QFg/7P0mOj6r8AoAAAAASUVORK5CYII=);
+	background-position: 50%;
+	background-repeat: no-repeat;
+	background-color: #F68D90;
+}
 #calculatorDialogBox .confirmSpanCalc {position: absolute; top: 37px; display:none; color: #000000;background: #FFFFFF;font-size: 10px;white-space: nowrap; border: 1px solid #AAA; padding: 1px 4px 2px 5px;}
 #calculatorDialogBox .confirmSpanCalcHidden{position: absolute; top: 37px; display:none;}
 #calculatorDialogBox .confirmBtnCalc:hover > span.confirmSpanCalc{display:block;}

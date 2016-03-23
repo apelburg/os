@@ -232,7 +232,11 @@
 						 }
 						 else $size='';
 						 
-						 if(isset($print_details['need_confirmation']) && ($print_details['need_confirmation'] =='true')) $row['rt_row_color'] = 'red';
+						 if(isset($print_details['need_confirmation']) && ($print_details['need_confirmation'] =='true')){
+						      $row['rt_row_color'] = 'red';
+							  $alarm_marker = ' js--icon-alarm-services';
+						 }
+						 else  $alarm_marker = '';
 						 
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
 					 }
@@ -369,7 +373,7 @@
 				 $currency = $uslugi_btn = '';
 				 $item_price_out = $item_summ_in_format = $item_summ_out_format = $print_in_summ_format = $print_out_summ_format = '';
 				 $dop_uslugi_in_summ_format = $dop_uslugi_out_summ_format = $total_summ_in_format = $total_summ_out_format = '';
-				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format = '' ;
+				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format = $alarm_marker = '' ;
 				 
 				  
 			 }
@@ -378,7 +382,7 @@
 			 $dop_details = '';
 			  //echo $row['row_type'].' = ';
 			 if($row['row_type'] == 'cat'){ 
-				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank cat js-color-'.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank cat js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&section=rt_position&id='.$key.'&client_id='.$client_id.'">'.$row['art'].'</a>
 								   <div class="pos_link_plank">
 									  <div class="catalog">
@@ -395,16 +399,16 @@
 		        if($counter==0 &&  count($row['dop_details'])>0)  $dop_details['allowed_prints'] = $row['dop_details'];
 			 }
 			 else if($row['row_type'] == 'ext'){
-				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }
 			 else if($row['row_type'] == 'pol'){
-				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }else{
-			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
+			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
 								 </div>';
 			 }
