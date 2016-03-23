@@ -427,6 +427,7 @@
 			               <td type="dop_details" class="hidden">'.json_encode($dop_details).'</td>
 			               <td width="40" type="svetofor" '.$svetofor_td_attrs.'>'.$svetofor.'</td>
 			               <td width="65" type="quantity" class="quantity right r_border"  editable="true">'.$dop_row['quantity'].'</td>
+						   <td width="1" style="position:relative"><!-- ячейка для кнопки сохранить --></td>
 						   <td width="90" type="item_price_in" editable="true" class="in right">'.$dop_row['price_in'].'</td>
 						   <td width="15" type="item_summ_in" class="currency left" style="position:relative;">'.$currency.'<div class="summ_cell">'.$item_summ_in_format.$currency.'</div></td>
 						   <td width="90" type="item_price_out" editable="'.(($discount!=0)?'false':'true').'" class="out right">'.$item_price_out.'</td>
@@ -485,6 +486,7 @@
 				  <td class="hidden">draft</td>
 				  <td width="40" class="center"><img src="'.HOST.'/skins/images/img_design/rt_svetofor_top_btn_'.$svetofor_display_relay_status_all.'.png" onclick="rtCalculator.svetofor_display_relay(this);"></td>
 				  <td width="65" type="quantity" class="quantity right r_border">тираж</td>
+				  <td width="1" style="position:relative"><!-- колонка для кнопки сохранить --></td>
 				  <td width="90" class="w_border relative"><div class="cap_name" style="left:105px;">сувенир</div><br><div class="cap_subname">входящая</div></td>
 				  <td width="15" class="w_border"></td>
 				  <td width="90" class="w_border"><br><div class="cap_subname">исходящая</div></td>
@@ -516,6 +518,7 @@
 				  <td class="hidden">dop_details</td>
 				  <td width="15"></td>
 				  <td class="quantity r_border"></td>
+				  <td width="1" style="position:relative"><!-- колонка для кнопки сохранить --></td>
 				  <td type="item_summ_in" class="right">'.number_format(@$total['item_summ_in'],'2','.','').'</td>
 				  <td width="15">р</td>
 				  <td type="item_summ_out" class="right">'.number_format(@$total['item_summ_out'],'2','.','').'</td>

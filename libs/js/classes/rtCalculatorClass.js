@@ -733,13 +733,35 @@ var rtCalculator = {
 				extraExists = true;
 			}	
 		}
-        //////////////////////////////////// card rt
-		// метод может вызываться также из карточки товара созначением - card
-		rtCalculator.makeQuantityCalculations('rt',cell.innerHTML,row_id,printsExists,extraExists,cell);
-		
-		
-		
-		
+	    
+		// КНОПКА сохранения изменений в ячейке тиража
+		// если ранее была опраделена ячека в которой происходили изменения тиража но она не равна текущей ячейке
+		// значит пользователь перешел в другую ячеку - удаляем предыдущую кнопку сохранить и стираем её данные
+		if(typeof rtCalculator.saveQuantityTarget !== 'undefined' && rtCalculator.saveQuantityTarget != cell){
+            $(rtCalculator.saveQuantityBtn).remove();
+			delete rtCalculator.saveQuantityBtn;
+		}
+		// если кнопка сохранить отсутсвует - создаем её
+		if(typeof rtCalculator.saveQuantityBtn === 'undefined'){
+
+            rtCalculator.saveQuantityTarget = cell;
+			
+			rtCalculator.saveQuantityBtn = document.createElement('DIV');
+			rtCalculator.saveQuantityBtn.className = 'rtSaveQuantityBtn';
+		    rtCalculator.saveQuantityBtn.innerHTML = "сохранить";
+		    rtCalculator.saveQuantityBtn.onclick = function(){ 
+			    //alert(1);
+				$(rtCalculator.saveQuantityBtn).remove();
+			    delete rtCalculator.saveQuantityBtn;
+				//////////////////////////////////// card rt //////////////////////////////////// 
+		        // метод может вызываться также из карточки товара созначением - card
+				rtCalculator.makeQuantityCalculations('rt',cell.innerHTML,row_id,printsExists,extraExists,cell);
+			}
+			// соседняя ячека таблицы, кнопку добавляем в неё
+			var nextTd = $(cell).next()[0];
+			$(nextTd).append(rtCalculator.saveQuantityBtn); 
+		}		
+	
 	
 		function correctToInt(str){// корректировка значений вводимых пользователем в поле ввода типа Integer
 		    var wrong_input = false;
