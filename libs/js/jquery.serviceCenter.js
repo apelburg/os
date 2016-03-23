@@ -1637,9 +1637,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					// console.log(print_details);	
 				}
 				service_row.append($('<td/>').append( div ));
+				
 				// название услуги из калькулятора
 				if(print_details && print_details.print_type){
-					service_row.append($('<td/>',{
+					var td1 = $('<td/>',{
 						'colspan':'3',
 						'class':'service_name',
 						'text':print_details.print_type,
@@ -1647,8 +1648,13 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						click:function(){
 							methods.calculator_edit_the_service($(this));
 						}
-					}));	
+					});
+					if(print_details.need_confirmation){
+						td1.addClass('alarm_services');
+					}
+					service_row.append(td1);	
 				}else{
+					// старые доп услуги
 					service_row.append($('<td/>',{
 						'colspan':'3',
 						'class':'service_name',
@@ -1662,10 +1668,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
-
 					if (service[i].uslugi_id == "0") {
-
-						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.commentForClient)}));
+						service_row.append($('<td/>',{'colspan':'3','text':(print_details.commentForClient)?Base64.decode(print_details.commentForClient):''}));
 					}else{
 						console.log(service[i]);
 						// место печати
