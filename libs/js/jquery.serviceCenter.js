@@ -1677,12 +1677,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
 					if (service[i].uslugi_id == "0") {
-<<<<<<< HEAD
 						service_row.append($('<td/>',{'colspan':'3','text':(print_details.commentForClient)?Base64.decode(print_details.commentForClient):''}));
-=======
-						console.log(service[i]);
-						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.commentForClient)}));
->>>>>>> 35e7592e53508ede432ca099912637781208cd1f
 					}else{
 						console.log(service[i]);
 						// место печати
