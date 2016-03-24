@@ -278,7 +278,7 @@ height:200px;
 .rt_tbl_body .pos_plank {
  margin-top:-1px;
  padding:2px 2px 2px 4px;
- /*position:relative;*/
+ position:relative;
 }
 /*.rt_tbl_body .cat{
  background-color:#c6e1aa;
@@ -350,7 +350,6 @@ height:200px;
 .rt_tbl_body .pos_plank .pos_link_plank{
  float:right;
  border:#EEE solid 0px;
- position:relative;
 }
 .rt_tbl_body .pos_plank .pos_link_plank div{
  float:right;
@@ -361,9 +360,8 @@ height:200px;
 .rt_tbl_body .pos_plank .pos_link_plank .catalog{ width:23px; text-decoration: underline;}
 .rt_tbl_body .pos_plank .pos_link_plank .catalog:hover{ width:23px; text-decoration: none;}
 .rt_tbl_body .pos_plank .pos_link_plank .supplier{ }
-.rt_tbl_body .pos_link_plank div.confirmCalcTip{position: absolute; top: 20px; left: 5px;display:none; color: #000000;background: #FFFFFF;font-size: 11px;white-space: nowrap; border: 1px solid #AAA; padding: 1px 4px 2px 5px;}
-.rt_tbl_body .pos_link_plank div.confirmCalcLink{/* border: 1px solid #AAA;*/ height: 16px;width: 20px; margin-right: 39px; /*background-color: aqua;*/}
-.rt_tbl_body .pos_link_plank .confirmCalcLink:hover > div.confirmCalcTip{display:block;}
+.rt_tbl_body .pos_plank div.confirmCalcTip{position: absolute; top: -17px; left: 0px;display:none; color: #000000;background: #FFFFFF;font-size: 11px;white-space: nowrap; border: 1px solid #AAA; padding: 1px 4px 2px 5px;}
+.rt_tbl_body .pos_plank:hover > div.confirmCalcTip{display:block;}
 
 .rt_tbl_body .r_border{
  border-right:#e3e5e5 solid 1px;

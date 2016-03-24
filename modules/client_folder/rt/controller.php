@@ -119,7 +119,7 @@
 	  
 	 // echo '<pre>'; print_r($rows[0]); echo '</pre>';
 	  /*if(@$_SESSION['access']['user_id']==18){ 
-		echo '<pre>'; print_r($rows[0]); echo '</pre>';
+		   echo '<pre>'; print_r($rows[0]); echo '</pre>';
       }  */
 	 
 	 
@@ -127,9 +127,11 @@
 	 $glob_counter = 0;
 	 $mst_btn_summ = 0;
 	 $svetofor_display_relay_status_all = 'on';
+	 
 	 foreach($rows[0] as $key => $row){
 	     $glob_counter++;
-		 
+		 $need_confirmation_flag = false;
+		 $alarm_marker=$confirm_calc_tip='';
          // Проходим по первому уровню и определям некоторые моменты отображения таблицы, которые будут применены при проходе по второму
 		 // уровню массива, ряды таблицы будут создаваться там
 		 
@@ -137,7 +139,27 @@
 		 // считаем сколько мастер кнопок нажаты
 		 $mst_btn_summ += $row['master_btn'];
 		 
-		 
+		 // приблуда выясняющая надо ли отображать маркер что есть ли нанесения которые надо подтверждать
+		 if(isset($row['dop_data'])){
+		     foreach($row['dop_data'] as $cnfrm_lev1){
+			     if(isset($cnfrm_lev1['dop_uslugi'])){
+				     foreach($cnfrm_lev1['dop_uslugi'] as $cnfrm_lev2){ 
+					     foreach($cnfrm_lev2 as $cnfrm_lev3){
+						     if(isset($cnfrm_lev3['print_details'])){
+								 $cnfrm_arr = json_decode($cnfrm_lev3['print_details'],true);
+								 if(isset($cnfrm_arr['need_confirmation'])) $need_confirmation_flag = true;
+					         }
+					     }
+				     }
+			     }
+		     }
+		 }
+		 if($need_confirmation_flag){
+			  $row['rt_row_color'] = 'red';
+			  $alarm_marker = ' js--icon-alarm-services';
+			  $confirm_calc_tip = '<div class="confirmCalcTip">проверьте цены, введенные вручную</div>';
+		 }
+
 		 // если товарная позиция имеет больше одного варианта расчета вставляем пустой ряд вверх
 		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>';
 		 if(isset($row['dop_data']) && count($row['dop_data'])>1){
@@ -191,14 +213,13 @@
 				 // 1. определяем данные описывающие варианты нанесения логотипа, они хранятся в $dop_row['dop_uslugi']['print']
 				 if(isset($dop_row['dop_uslugi']['print'])){ // если $dop_row['dop_uslugi']['print'] есть выводим данные о нанесениях 
 					 $row_counter = 0; 
-					 $need_confirmation_flag = false;
+					 
 					 foreach($dop_row['dop_uslugi']['print'] as $extra_data){
 					     // если количество в расчете нанесения не равно количеству в колонке тираж товара 
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
 						//$extra_data['quantity'] = 250;
 						$print_details = json_decode($extra_data['print_details'],true);
-						
-						 ;
+
 						 //echo '<pre>'; print_r(printCalculator::convert_print_details_for_TotalCom($extra_data['print_details'])); echo '</pre>';
 						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto')){
 							if($extra_data['quantity']!=$dop_row['quantity']){
@@ -238,12 +259,6 @@
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
 					 }
 				     $print_exists_flag = '1'; 
-					 
-					 if($need_confirmation_flag){
-						  $row['rt_row_color'] = 'red';
-						  $alarm_marker = ' js--icon-alarm-services';
-					 }
-					 else  $alarm_marker = '';
 				 }
 			
 				 // 2. определяем данные описывающие варианты дополнительных услуг, они хранятся в $dop_row['dop_uslugi']['extra']
@@ -359,7 +374,7 @@
 				 $discount = round((float)(array_sum($discount_arr)/count($discount_arr)),2);
 				 $discount_str = number_format($discount,'2','.','') .'%';
 				 //$srock_sdachi = implode('.',array_reverse(explode('-',$dop_row['shipping_date'])));
-				  $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
+				 $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
 				 if($srock_sdachi=='00.00.0000') $srock_sdachi='';
 				 
 				 $expel_class_main = ($expel['main']=='1')?' red_cell':'';
@@ -376,7 +391,7 @@
 				 $currency = $uslugi_btn = '';
 				 $item_price_out = $item_summ_in_format = $item_summ_out_format = $print_in_summ_format = $print_out_summ_format = '';
 				 $dop_uslugi_in_summ_format = $dop_uslugi_out_summ_format = $total_summ_in_format = $total_summ_out_format = '';
-				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format = $alarm_marker = '' ;
+				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format =  '' ;
 				 
 				  
 			 }
@@ -394,8 +409,8 @@
 									  <div class="supplier">
 										   '.identify_supplier_by_prefix($row['art']).'
 									  </div>
-									  <div class="confirmCalcLink"><div class="confirmCalcTip">проверьте цены, введенные вручную</div></div>
 								   </div>
+								   '.$confirm_calc_tip.'
 								 </div>
 								 <div>'.$row['name'].'</div>
 								 <div><input type="button" class="getSizesBtn" pos_id="'.$key.'" value="Размеры"></div>';
@@ -405,15 +420,19 @@
 			 else if($row['row_type'] == 'ext'){
 				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
+								 '.$confirm_calc_tip.'
 								 </div>';
 			 }
 			 else if($row['row_type'] == 'pol'){
 				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
+								 
+								 '.$confirm_calc_tip.'
 								 </div>';
 			 }else{
 			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
+								 '.$confirm_calc_tip.'
 								 </div>';
 			 }
 			 $block = (isset($dop_row['status_snab']) && ($dop_row['status_snab']=='on_calculation_snab' || $dop_row['status_snab']=='on_recalculation_snab' || $dop_row['status_snab']=='in_calculation'))?1:0;
