@@ -1484,7 +1484,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		},
 		// фильтр услуг
 		filter_services_from_variants:function(service_arr){
-
+			// console.warn(service_arr)
 			// выбираем объекты строк вариантов
 			methods.checked_variants = methods.services_tbl.find('.variant');
 			// ФИЛЬТР УСЛУГ для выгрузки 
@@ -1602,7 +1602,14 @@ jQuery(document).on('click', '.open_service_center', function(event) {
     			if(service[i].for_how == 'for_all'){
     				service[i].quantity = 1;
     			}else{
-    				service[i].quantity = Number(service[i].quantity);
+    				if (service[i].uslugi_id == "0" && print_details.quantity) {
+						service[i].quantity = Number(print_details.quantity);	
+    					// methods.mainObj[dop_row_id]['services']
+    					// service[i].id
+    				}else{
+    					service[i].quantity = Number(service[i].quantity);	
+    				}
+    				
     			}
     			var calculator_type = '';
     			if(print_details && print_details.calculator_type){
@@ -1670,7 +1677,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
 					if (service[i].uslugi_id == "0") {
+<<<<<<< HEAD
 						service_row.append($('<td/>',{'colspan':'3','text':(print_details.commentForClient)?Base64.decode(print_details.commentForClient):''}));
+=======
+						console.log(service[i]);
+						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.commentForClient)}));
+>>>>>>> 35e7592e53508ede432ca099912637781208cd1f
 					}else{
 						console.log(service[i]);
 						// место печати
