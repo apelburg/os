@@ -231,12 +231,14 @@
 		
 		// проверяем какие типы калькуляторов используются в расчетах и не входитят ли услуги расчета в объединеный тираж
 		if(!isset($_GET['ignore_calculators_checking'])){
-		   $out_put = RT::check_calculators_types_by_id($_GET['id']);
+		   $out_put = RT::check_calculators_types_by_id($_GET['id'],$_GET['quantity']);
 		   if($out_put){
 				 echo $out_put;
 				 exit;
 			}
 		}
+		
+		
 		
 		/*// проверяем не входитят ли услуги расчета в объединеный тираж
 		if(!isset($_GET['ignore_united_calculations_checking'])){

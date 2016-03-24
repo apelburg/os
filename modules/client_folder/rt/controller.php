@@ -157,7 +157,7 @@
 		 if($need_confirmation_flag){
 			  $row['rt_row_color'] = 'red';
 			  $alarm_marker = ' js--icon-alarm-services';
-			  $confirm_calc_tip = '<div class="confirmCalcTip">проверьте цены, введенные вручную</div>';
+			  $confirm_calc_tip = '<div class="confirmCalcTip">проверь расчет ручного калькулятора.</div>';
 		 }
 
 		 // если товарная позиция имеет больше одного варианта расчета вставляем пустой ряд вверх

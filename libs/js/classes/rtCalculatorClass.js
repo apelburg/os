@@ -963,24 +963,37 @@ var rtCalculator = {
 						if(prop == 'united_calculations'){
 							notes.push('Объединеные расчеты');
 						}
+						if(prop == 'lackOfQuantity'){
+							notes.push('lackOfQuantity');
+						}
+						if(prop == 'outOfLimit'){
+							notes.push('ОoutOfLimit');
+						}
+						if(prop == 'needIndividCalculation'){
+							notes.push('needIndividCalculation');
+						}
+					}
+				}
+				
+				if(notes.length>0){
+					if(confirm('данный расчет содержит: '+(notes.join(', ')))){
+						// отправляем повторный запрос с маркером ignore_calculators_checking
+						url += '&ignore_calculators_checking=1';
+						rtCalculator.send_ajax(url,callbackPrintsExists);
+						
 						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js-color-red');
 						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js--icon-alarm-services');
+						
+						
+						return;
 					}
-					if(notes.length>0){
-						if(confirm('данный расчет содержит: '+(notes.join(', ')))){
-							// отправляем повторный запрос с маркером ignore_calculators_checking
-							url += '&ignore_calculators_checking=1';
-                            rtCalculator.send_ajax(url,callbackPrintsExists);
-							return;
-						}
-						else{
-							alert('возвращаемся к предыдущему состоянию');
-							return;
-						}
+					else{
+						alert('возвращаемся к предыдущему состоянию');
+						return;
 					}
-					
-					
 				}
+				
+				
 				if(response_obj.warning && response_obj.warning=='size_exists'){
 					// если найдено что позиция имеет какие-либо размеры изменение количества должно быть отменено
 					// возвращаем в ячейку прежнее значение
@@ -991,64 +1004,70 @@ var rtCalculator = {
 						return;
 					}
 				}
+				
+				return;
+				if(response_obj.print && response_obj.print.lackOfQuantity){
+					 var str =''; 
+					 for(var index in response_obj.print.lackOfQuantity){
+						 str += (parseInt(index)+1)+'). '+response_obj.print.lackOfQuantity[index].print_type+', мин тираж - '+response_obj.print.lackOfQuantity[index].minQuantity+"<br>";  
+					 }
+			
+					 var text = 'Тираж меньше минимального тиража для нанесения(ий):<br><br>'+str+'<br>стоимость будет пересчитана как для минимального тиража';
+					 
+					 if(rtCalculator.show_warning_window_timer){
+						 clearTimeout(rtCalculator.show_warning_window_timer);
+						 rtCalculator.show_warning_window_timer = null;
+						 delete rtCalculator.show_warning_window_text;
+					 }
+					 rtCalculator.show_warning_window_text = text;
+					 rtCalculator.show_warning_window_timer = setTimeout(rtCalculator.show_warning_window,1500);
+	
+				}
+				if(response_obj.print && response_obj.print.outOfLimit){
+					 var str ='';  
+					 for(var index in response_obj.print.outOfLimit){
+						 str += (parseInt(index)+1)+'). '+response_obj.print.outOfLimit[index].print_type+', лимит тиража - '+response_obj.print.outOfLimit[index].limitValue+"<br>";  
+					 }
+					 var dialog = $('<div>Из-за превышения максимального тиража<br>автоматические калькуляторы в следующих расчетах были переведены в ручной режим:<br>'+str+'</div>');
+					 $('body').append(dialog);
+					 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}]});
+					 $(dialog).dialog('open');
+					 response_obj.print.result = 'ok';
+					 // rtCalculator.changes_in_process=false;
+					 // return;
+					
+				}
+				if(response_obj.print && response_obj.print.needIndividCalculation){ 
+					 var str ='';  
+					 for(var index in response_obj.print.needIndividCalculation){
+						 str += (parseInt(index)+1)+'). '+response_obj.print.needIndividCalculation[index].print_type+"\r";  
+					 }
+					 var dialog = $('<div>Такой тираж не может быть установлен!!!<br>Потому что имеются нанесения для которых не возможно расчитать цену - для этих нанесений требуется индивидуальный расчет :<br>'+str+'</div>');
+					 $('body').append(dialog);
+					 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}] });
+					 $(dialog).dialog('open');
+					 
+					
+				}
+				
+				// если ответы ok для print и extra значит все нормально изменения сделаны 
+				// вызываем функции производящие изменения в HTML
+				if((response_obj.print && response_obj.print.result == 'ok') && (response_obj.extra && response_obj.extra.result == 'ok')){
+					if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
+					if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
+				}
+				else{
+					// самый лучщий вариант иначе могут быть разные ошибки
+					location.reload();
+				}
+				
+				
+				
 			}
 		
 		    // console.log('-',response_obj);
 			
-			if(response_obj.print && response_obj.print.lackOfQuantity){
-				 var str =''; 
-				 for(var index in response_obj.print.lackOfQuantity){
-					 str += (parseInt(index)+1)+'). '+response_obj.print.lackOfQuantity[index].print_type+', мин тираж - '+response_obj.print.lackOfQuantity[index].minQuantity+"<br>";  
-				 }
 		
-				 var text = 'Тираж меньше минимального тиража для нанесения(ий):<br><br>'+str+'<br>стоимость будет пересчитана как для минимального тиража';
-				 
-				 if(rtCalculator.show_warning_window_timer){
-					 clearTimeout(rtCalculator.show_warning_window_timer);
-					 rtCalculator.show_warning_window_timer = null;
-					 delete rtCalculator.show_warning_window_text;
-				 }
-				 rtCalculator.show_warning_window_text = text;
-				 rtCalculator.show_warning_window_timer = setTimeout(rtCalculator.show_warning_window,1500);
-
-			}
-			if(response_obj.print && response_obj.print.outOfLimit){
-				 var str ='';  
-				 for(var index in response_obj.print.outOfLimit){
-					 str += (parseInt(index)+1)+'). '+response_obj.print.outOfLimit[index].print_type+', лимит тиража - '+response_obj.print.outOfLimit[index].limitValue+"<br>";  
-				 }
-				 var dialog = $('<div>Из-за превышения максимального тиража<br>автоматические калькуляторы в следующих расчетах были переведены в ручной режим:<br>'+str+'</div>');
-				 $('body').append(dialog);
-				 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}]});
-				 $(dialog).dialog('open');
-				 response_obj.print.result = 'ok';
-				 // rtCalculator.changes_in_process=false;
-				 // return;
-				
-			}
-			if(response_obj.print && response_obj.print.needIndividCalculation){ 
-				 var str ='';  
-				 for(var index in response_obj.print.needIndividCalculation){
-					 str += (parseInt(index)+1)+'). '+response_obj.print.needIndividCalculation[index].print_type+"\r";  
-				 }
-				 var dialog = $('<div>Такой тираж не может быть установлен!!!<br>Потому что имеются нанесения для которых не возможно расчитать цену - для этих нанесений требуется индивидуальный расчет :<br>'+str+'</div>');
-				 $('body').append(dialog);
-				 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}] });
-				 $(dialog).dialog('open');
-				 
-				
-			}
-			
-			// если ответы ok для print и extra значит все нормально изменения сделаны 
-			// вызываем функции производящие изменения в HTML
-			if((response_obj.print && response_obj.print.result == 'ok') && (response_obj.extra && response_obj.extra.result == 'ok')){
-			    if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
-			    if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
-			}
-			else{
-				// самый лучщий вариант иначе могут быть разные ошибки
-				location.reload();
-			}
 			
 		}
 		function callbackOnlyQuantity(response){

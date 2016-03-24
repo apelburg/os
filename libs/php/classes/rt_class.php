@@ -193,7 +193,7 @@
 			if($result->num_rows>0) return true;  
 			return false;  
 		}
-		static function check_calculators_types_by_id($id){
+		static function check_calculators_types_by_id($id,$quantity){
 			global $mysqli;
 
 			$query="SELECT print_details, united_calculations FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$id."'";
@@ -211,6 +211,23 @@
 					}
 					if(!isset($warning['united_calculations']) && $row['united_calculations']!=''){
 					    $warning['united_calculations'] = true;
+					}
+					if($pd['calculator_type']=='auto'){
+					    require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+					    $YPriceParam = (isset($details_arr['print_details']['dop_params']['YPriceParam']))? count($details_arr['print_details']['dop_params']['YPriceParam']):1;
+					    $new_price_arr = rtCalculators::change_quantity_and_calculators_price_query($quantity,json_decode($row['print_details']),$YPriceParam);
+						if(rtCalculators::$lackOfQuantity){
+							$warning['lackOfQuantity'] = true;
+							$warning['lackOfQuantityDetails'] = rtCalculators::$lackOfQuantityDetails;
+						}
+						if(rtCalculators::$outOfLimit){
+						    $warning['outOfLimit'] = true;
+						    $warning['outOfLimitDetails'] = rtCalculators::$lackOfQuantityDetails;
+						}
+						if(rtCalculators::$needIndividCalculation){
+						    $warning['needIndividCalculation'] = true;
+						    $warning['needIndividCalculationDetails'] = rtCalculators::$lackOfQuantityDetails;
+					    }
 					}
 				}
 			}
