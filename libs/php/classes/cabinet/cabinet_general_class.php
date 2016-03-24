@@ -363,7 +363,7 @@
 							
 				// $html = 'test';
 				$html = '';	
-				if($_POST['client_id']!='0'){// если клиент приклеплён
+				if($_POST['client_id']!='0' && $_POST['client_id']!='new_client'){// если клиент приклеплён
 					
 					//$html .= $this->wrap_text_in_warning_message_post('Для прикреплённого клиента доступны следующие кураторы:');
 					$message = 'Для выбранного клиента доступны следующие кураторы:';
@@ -671,7 +671,7 @@
 						$client = new Client;	
 					}else{
 
-						$_POST['client_id'] = '0';
+						// $_POST['client_id'] = '0';
 						$_POST['manager_id'] = '0';
 						$this->get_a_list_of_managers_to_be_attached_to_the_request_AJAX();
 						return;

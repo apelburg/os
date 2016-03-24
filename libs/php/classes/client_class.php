@@ -777,9 +777,9 @@ class Client extends aplStdAJAXMethod{
 			    
 			    include_once('mail_class.php');
 			    $mailClass = new Mail;
-			    // $mailClass->add_bcc('kapitonoval2012@gmail.com');
-				// $mailClass->send('kapitonoval2012@gmail.com','os@apelburg.ru','Отказ от клиента',$text);		
-				$mailClass->send('ab@apelburg.ru','os@apelburg.ru','Отказ от клиента',$text);		
+			    // $mailClass->add_bcc('bossnotify@apelburg.ru');
+				// $mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Отказ от клиента',$text);		
+				$mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Отказ от клиента',$text);		
 			} 
 			else {
 			   	// сообщение
@@ -1078,7 +1078,7 @@ class Client extends aplStdAJAXMethod{
 		}
 		$html .= '<form>';
 			foreach ($_POST as $key => $value) {
-				$html .= '<input type="hidden" name="'.$key.'" value="'.$value.'">';
+				$html .= '<input type="hidden" name="'.$key.'" value=\''.$value.'\'>';
 			}
 			$html .= '<table>';
 				$html .= '<tr>';
@@ -1448,7 +1448,20 @@ class Client extends aplStdAJAXMethod{
 		    `company` = '".$this->cor_data_for_SQL($company)."',
 			`dop_info` = '".$this->cor_data_for_SQL($dop_info)."'";					 
 		$result = $mysqli->query($query) or die($mysqli->error);
-		return $mysqli->insert_id;
+
+		$client_id = $mysqli->insert_id;
+		// был создан новый клиент, сообщаем об этом Славе и Белорусычу
+
+		$mailClass = new Mail();
+		$headers = ''; 
+		
+		$manager_info = $this->get_manager_info_by_id($this->user_id);		
+		$message = 'В базу добавлен новый клиент:<br><b>'.$company.'</b><br>
+				   клиента добавил пользователь: '.$manager_info['nickname'].' / '.$manager_info['name'].' '.$manager_info['last_name'].'<br><br>
+				   <a href="http://apelburg.ru/os/?page=clients&section=client_folder&subsection=client_card_table&client_id='.$client_id.'&razdel=show_client_data">ссылка на карточку клиента</a>';
+		$mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Добавлен новый клиент',$message);
+				
+		return $client_id;
 	}
 
 	// получаем форму выбора кураторов для нового клиента
@@ -1512,12 +1525,28 @@ class Client extends aplStdAJAXMethod{
 
 
 		// $html .= $this->print_arr(json_decode($_POST['Json_meneger_arr']));
+		// прикрепляем к запросу менеджера(ов)
 		
+		// echo '<pre>';
+		// 	print_r($_POST);
+		// 	echo '</pre>';	
 		// если клиент не заведен заводим клиента
-		if(!isset($_POST['client_id']) || isset($_POST['client_id']) && $_POST['client_id'] == 'new_client'){
+		if(!isset($_POST['client_id']) || isset($_POST['client_id']) && ($_POST['client_id'] == 'new_client' || $_POST['client_id'] == 0)){
 			$message = 'Клиент успешно заведён, прикреплённые менеджеры увидят запрос';
-			$this->client_id = $this->create_new_client($_POST['company'], $_POST['dop_info']);
+			if(!isset($_POST['company']) || !isset($_POST['dop_info'])){
+				$this->get_form_the_create_client_AJAX($_POST['AJAX']);
+				return;
+			}else{
+				$this->client_id = $this->create_new_client($_POST['company'], $_POST['dop_info']);
+			
+			
+				$this->attach_for_query_many_managers($managers_arr,$this->client_id);
+				$message  .= '<br>'.$this->client_id;	
+			}
+			
+
 		}else{
+
 			// случай для редактирования списка админом
 			$message = 'Список прикреплённых менеджеров успешно изменён';
 			$this->client_id = (int)$_POST['client_id'];
@@ -1537,8 +1566,7 @@ class Client extends aplStdAJAXMethod{
 		// 	$this->attach_relate_manager($this->client_id, $user_id);
 		// }
 		
-		// прикрепляем к запросу менеджера(ов)
-		$this->attach_for_query_many_managers($managers_arr,$this->client_id);
+		
 		
 		// оповещение группы менеджеров о новом запросе
 		$mail_message = "";
@@ -2427,11 +2455,11 @@ class Client extends aplStdAJAXMethod{
 		$headers = ''; 
 		$manager_info = $this->get_manager_info_by_id($user_id);		
 		$message = 'В базу добавлен новый клиент:<br><b>'.$company.'</b><br>
-				   поставщика добавил пользователь: '.$manager_info['nickname'].' / '.$manager_info['name'].' '.$manager_info['last_name'].'<br><br>
+				   клиента добавил пользователь: '.$manager_info['nickname'].' / '.$manager_info['name'].' '.$manager_info['last_name'].'<br><br>
 				   <a href="http://apelburg.ru/os/?page=clients&section=client_folder&subsection=client_card_table&client_id='.$client_id.'&razdel=show_client_data">ссылка на карточку клиента</a>';
 		/**/
 		//$mail->sendMail(2,'apelburg.m7@gmail.com','Новый клиент',$message,$headers);		
-		$mailClass->send('kapitonoval2012@gmail.com','os@apelburg.ru','Новый клиент',$message);		
+		$mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Новый клиент',$message);		
 		return $client_id;
 	}		
 	private function cor_data_for_SQL($data){
