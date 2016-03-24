@@ -191,6 +191,7 @@
 				 // 1. определяем данные описывающие варианты нанесения логотипа, они хранятся в $dop_row['dop_uslugi']['print']
 				 if(isset($dop_row['dop_uslugi']['print'])){ // если $dop_row['dop_uslugi']['print'] есть выводим данные о нанесениях 
 					 $row_counter = 0; 
+					 $need_confirmation_flag = false;
 					 foreach($dop_row['dop_uslugi']['print'] as $extra_data){
 					     // если количество в расчете нанесения не равно количеству в колонке тираж товара 
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
@@ -232,15 +233,17 @@
 						 }
 						 else $size='';
 						 
-						 if(isset($print_details['need_confirmation']) && ($print_details['need_confirmation'] =='true')){
-						      $row['rt_row_color'] = 'red';
-							  $alarm_marker = ' js--icon-alarm-services';
-						 }
-						 else  $alarm_marker = '';
+						 if(isset($print_details['need_confirmation']))  $need_confirmation_flag = true;
 						 
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
 					 }
 				     $print_exists_flag = '1'; 
+					 
+					 if($need_confirmation_flag){
+						  $row['rt_row_color'] = 'red';
+						  $alarm_marker = ' js--icon-alarm-services';
+					 }
+					 else  $alarm_marker = '';
 				 }
 			
 				 // 2. определяем данные описывающие варианты дополнительных услуг, они хранятся в $dop_row['dop_uslugi']['extra']
@@ -391,6 +394,7 @@
 									  <div class="supplier">
 										   '.identify_supplier_by_prefix($row['art']).'
 									  </div>
+									  <div class="confirmCalcLink"><div class="confirmCalcTip">проверьте цены, введенные вручную</div></div>
 								   </div>
 								 </div>
 								 <div>'.$row['name'].'</div>

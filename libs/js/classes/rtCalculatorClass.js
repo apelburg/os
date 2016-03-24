@@ -964,6 +964,7 @@ var rtCalculator = {
 							notes.push('Объединеные расчеты');
 						}
 						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js-color-red');
+						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js--icon-alarm-services');
 					}
 					if(notes.length>0){
 						if(confirm('данный расчет содержит: '+(notes.join(', ')))){
