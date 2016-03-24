@@ -81,7 +81,7 @@
 			    	// $('#general_form_for_create_product .pad:hidden').remove();
 				    $.post('', serialize, function(data, textStatus, xhr) {
 				    	if(data['response'] != 'false'){
-				    		obj.dialog( "destroy" );
+				    		obj.dialog( "destroy" ).remove();
 				    	}				    		
 						standard_response_handler(data);
 					},'json');				    	
