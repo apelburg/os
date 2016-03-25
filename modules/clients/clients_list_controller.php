@@ -115,8 +115,16 @@
 	    header('location:?'.addOrReplaceGetOnURL('','filter_by_letter'));
 	    exit;
 	}
+
+	$limit_str =(0)?" LIMIT ".$one_page_itmes_num*($num_page-1).", ".$one_page_itmes_num:'';
 	
-	$alphabet_plank[] = (isset($alphabet_tpl[0]) || isset($alphabet_tpl[1]))? '|<a href="?'.addOrReplaceGetOnURL('','filter_by_letter').'" class="'.(!isset($_GET['filter_by_letter'])?'active_letter_filter':'').'">все</a>|':'';
+	$clients_data = get_clients_list($range,$order,$filters,$search,$limit_str);
+	if(is_array($clients_data) && count($clients_data['data'])>0){
+		$rr = ' ('.count($clients_data['data']).')';
+	}else{
+		$rr = '';
+	}
+	$alphabet_plank[] = (isset($alphabet_tpl[0]) || isset($alphabet_tpl[1]))? '|<a href="?'.addOrReplaceGetOnURL('','filter_by_letter').'" class="'.(!isset($_GET['filter_by_letter'])?'active_letter_filter':'').'">все'.($rr).'</a>|':'';
 	$alphabet_plank[] = (isset($alphabet_tpl[0]))? '<td class="left">|'.implode('|',$alphabet_tpl[0]).'|<a class="lang_range '.((isset($_GET['filter_by_letter']) && $_GET['filter_by_letter'] == 'а-я')?'active_letter_filter':'').'" href="?'.addOrReplaceGetOnURL('filter_by_letter=а-я','').'">рус</a>|</td>':'<td></td>';
 	$alphabet_plank[] =  (isset($alphabet_tpl[1]))? '<td class="right">|'.implode('|',$alphabet_tpl[1]).'|<a class="lang_range '.((isset($_GET['filter_by_letter']) && $_GET['filter_by_letter'] == 'a-z')?'active_letter_filter':'').'" href="?'.addOrReplaceGetOnURL('filter_by_letter=a-z','').'">eng</a>|</td>':'<td></td>';
 
@@ -132,9 +140,7 @@
 	//$one_page_itmes_num =  isset($_GET['one_page_itmes_num'])? $_GET['one_page_itmes_num'] : 51 ;
 	//////////////////////////////////////////////////////////////
 	
-	$limit_str =(0)?" LIMIT ".$one_page_itmes_num*($num_page-1).", ".$one_page_itmes_num:'';
 	
-	$clients_data = get_clients_list($range,$order,$filters,$search,$limit_str);
 	
 	
 	 // echo '<pre>';print_r($clients_data);echo '</pre>'; 
