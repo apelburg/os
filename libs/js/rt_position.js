@@ -908,15 +908,6 @@ $(document).on('keyup','.tirage_and_price_for_one .percent_nacenki span.edit_spa
 
 
 
-// ИЗМЕНЕНИЕ тиража ИЗ ОБЩЕГО input варианта
-$(document).on('keyup','#edit_variants_content .tirage_var',function(){
-	chenge_the_general_input();
-});
-
-// ИЗМЕНЕНИЕ запаса ИЗ ОБЩЕГО input варианта
-$(document).on('keyup','#edit_variants_content .dop_tirage_var',function(){
-	chenge_the_general_input();
-});
 
 // запрещаем ввод в общее поле информации
 function disabled_general_quantyti_input( flag ){
@@ -1635,6 +1626,27 @@ $(document).on('keyup','.val_tirage, .val_tirage_dop', function(){
 		$('.tirage_option_and_date_print:visible .tirage_buttons').append(btn);
 	}
 });
+
+// ИЗМЕНЕНИЕ тиража ИЗ ОБЩЕГО input варианта
+$(document).on('keyup','#edit_variants_content .tirage_var,#edit_variants_content .dop_tirage_var',function(){
+	if ($('#tir_save_btn').length == 0) {
+		var btn = $('<span/>',{
+				'class':'',
+				'html':'save',
+				'id':'tir_save_btn',
+				click:function(){
+					chenge_the_general_input();
+				}
+			}).css({
+					'background':'#86AE1F',
+					'padding':'5px 8px',
+					'cursor':'pointer',
+					'color':'#fff'
+				})
+		$('.tirage_option_and_date_print:visible .tirage_buttons').append(btn);
+	}
+});
+
 
 
 function update_data_size_tbl(object){
