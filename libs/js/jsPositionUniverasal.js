@@ -48,13 +48,56 @@ $(document).on('click', '.row_price_out_one.price_out', function(event) {
   }
 });
 
-// вешаем клик на артикул
-$(document).on('click', '#js--edit_article', function(event) {
+// вешаем редактор описания (названия) каталожного товара
+$(document).on('click', '#js--edit-description', function(event) {
   event.preventDefault();
   if($(this).find('input').length == 0){
 
     var val = $(this).html();
     $(this).attr('data-old',val);
+
+    var width_input = $(this).innerWidth();
+
+    var input = $('<input/>',{
+      'value':val,
+      'type':'text',
+        click:function(){
+          event.preventDefault();
+        },
+        focus:function(){
+          event.preventDefault();
+        },
+        blur:function(){
+          if($(this).val() == val){
+            js_edit_description_replace_back();
+            return;
+          }
+          // сохранение 
+          var row_id = $(this).parent().attr('data-id');
+          var value = $(this).val();
+            $.post('', {
+              AJAX:'update_article_description_name',
+              name:Base64.encode(value),
+              row_id:row_id
+            }, function(data, textStatus, xhr) {
+              standard_response_handler(data);
+            },'json');
+          // возвращаем прежний вид таблице
+          $(this).parent().html($(this).val());
+        }
+    }).css({'width':width_input});
+
+    $(this).html(input).find('input').focus() 
+  }  
+});
+// вешаем клик на артикул
+$(document).on('click', '#js--edit-article', function(event) {
+  event.preventDefault();
+  if($(this).find('input').length == 0){
+
+    var val = $(this).html();
+    $(this).attr('data-old',val);
+    var width_input = $(this).innerWidth();
 
     var input = $('<input/>',{
       'value':val,
@@ -83,7 +126,7 @@ $(document).on('click', '#js--edit_article', function(event) {
           // возвращаем прежний вид таблице
           $(this).parent().html($(this).val());
         }
-    });
+    }).css({'width':width_input});
 
     input.autocomplete({
       minLength: 2,
@@ -102,16 +145,33 @@ $(document).on('click', '#js--edit_article', function(event) {
         });
       },
       select: function( event, ui ) {
-      input.val(ui.item.value);
-      input.blur();
+        input.val(ui.item.value).blur();
+      // input.blur();
       }    
     });
 
     input.data( "ui-autocomplete" )._renderItem = function( ul, item ) { // для jquery-ui 1.10+
+      var img = $('<img/>',{
+        'src':'http://www.apelburg.ru/'+item.img
+      }).css({
+        'maxWidth':'50px',
+        'maxHeight':'50px'
+      });
+      var table = $('<table/>');
+      var tr = $('<tr/>');
+      var td1 = $('<td/>').css({'width':'50px','height':'50px','textAlign':'center'}).append(img);
+      var td2 = $('<td/>').append(item.label);
+
+      table.append(tr.append(td1).append(td2))
+
+      
+
+
       return $("<li></li>")
       .data("ui-autocomplete-item", item) // для jquery-ui 1.10+
+      .append(table)
       //.append( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
-      .append( item.label )
+      // .append(  )
       .appendTo(ul);
     };
 
@@ -120,8 +180,12 @@ $(document).on('click', '#js--edit_article', function(event) {
 });
 
 function js_edit_article_replace_back(){
-  $('#js--edit_article').html($('#js--edit_article').attr('data-old'))
+  $('#js--edit-article').html($('#js--edit-article').attr('data-old'))
 }
+function js_edit_description_replace_back(){
+  $('#js--edit-description').html($('#js--edit-description').attr('data-old'))
+}
+
 
 // кнопка переключатель цены в таблице расчета
 $(document).on('click', '.js--button-out_ptice_for_tirage', function(event) {
