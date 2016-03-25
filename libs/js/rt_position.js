@@ -1487,11 +1487,6 @@ function recalculate_services(){
 	// recalculate_table_price_Itogo();
 }
 
-$(document).on('keyup', '.val_tirage_dop', function(event) {
-	event.preventDefault();
-	save_all_table_size();
-});
-
 /**
  *	обработчик ответа на запрос на изменение тиража в РТ
  *  изменяет данные в расчётной таблице
@@ -1615,29 +1610,57 @@ function export_gen_input_in_size_tbl(){
 
 // колькуляция и сохранение изменённых данных от тираже в таблице размеров
 $(document).on('keyup','.val_tirage, .val_tirage_dop', function(){
+	event.preventDefault();
+	
+	object = $(this);
+
+	if ($('#tir_save_btn').length == 0) {
+		var btn = $('<span/>',{
+				'class':'',
+				'html':'save',
+				'id':'tir_save_btn',
+				click:function(){
+					if(object.hasClass('val_tirage_dop')){
+						save_all_table_size();						
+					}
+					update_data_size_tbl(object);
+					$(this).remove();
+				}
+			}).css({
+					'background':'#86AE1F',
+					'padding':'5px 8px',
+					'cursor':'pointer',
+					'color':'#fff'
+				})
+		$('.tirage_option_and_date_print:visible .tirage_buttons').append(btn);
+	}
+});
+
+
+function update_data_size_tbl(object){
 	// console.log($(this).parent('div').html());
 	var id = '#'+$('#variants_name .variant_name.checked ').attr('data-cont_id');
 	// $(id+' .size_card').
 
 	// определяем максимальный тираж по данному размеру
-	var max_tirage = Number($(this).parent().parent().find('.ostatok_free').html());
+	var max_tirage = Number(object.parent().parent().find('.ostatok_free').html());
 	// запоминаем введённые данные
-	var save_val = Number($(this).val());
+	var save_val = Number(object.val());
 	// если введенные данные меньше нуля
-	if(save_val<0){$(this).val(0);}
+	if(save_val<0){object.val(0);}
 
-	if($(this).attr('class') == 'val_tirage'){// редактируется тираж для размера
+	if(object.attr('class') == 'val_tirage'){// редактируется тираж для размера
 		// если считаем под резерв
 		if($(id+' .size_card .btn_var_std[name="reserve"]').hasClass('checked')){
 			// определяем введённый запас
-			var zapas = Number($(this).parent().parent().find('.val_tirage_dop').val());
+			var zapas = Number(object.parent().parent().find('.val_tirage_dop').val());
 			// определяем общее количество введенного в поле товара: сумму запаса и тиража
 			var general_tirage_this_size = save_val + zapas;
 			// определяем максимальный тираж по данному размеру сувенира
 			max_tirage_size = max_tirage - zapas;
 			// проверяем на привышения тиража по заданному размеру, 
 			// если надо правим на максимально возможную цифру
-			if(general_tirage_this_size > max_tirage){$(this).val(max_tirage_size);}
+			if(general_tirage_this_size > max_tirage){object.val(max_tirage_size);}
 		}
 		// определяем адрес общего поля тиража
 		var id = '#'+$('.variant_name.checked').attr('data-cont_id')+' .tirage_var';
@@ -1645,14 +1668,14 @@ $(document).on('keyup','.val_tirage, .val_tirage_dop', function(){
 		// если считаем под резерв
 		if($(id+' .size_card .btn_var_std[name="reserve"]').hasClass('checked')){
 			// определяем введённый тираж
-			var tirage = Number($(this).parent().parent().find('.val_tirage').val());
+			var tirage = Number(object.parent().parent().find('.val_tirage').val());
 			// определяем общее количество введенного в поле товара: сумму запаса и тиража
 			var general_tirage_this_size = save_val + tirage;
 			// определяем максимальный тираж по данному размеру сувенира
 			max_tirage_size = max_tirage - tirage;
 			// проверяем на привышения тиража по заданному размеру, 
 			// если надо правим на максимально возможную цифру
-			if(general_tirage_this_size > max_tirage){$(this).val(max_tirage_size);}
+			if(general_tirage_this_size > max_tirage){object.val(max_tirage_size);}
 		}
 		// определяем адрес общего поля запаса
 		var id = '#'+$('.variant_name.checked').attr('data-cont_id')+' .dop_tirage_var';	
@@ -1665,34 +1688,22 @@ $(document).on('keyup','.val_tirage, .val_tirage_dop', function(){
 	
 	// подсчитываем сумму всех полей редактируемого типа (тираж или запас)
 	var summ = 0;
-	$('#'+$('.variant_name.checked').attr('data-cont_id')+' .'+$(this).attr('class')).each(function(index, el) {
+	$('#'+$('.variant_name.checked').attr('data-cont_id')+' .'+object.attr('class')).each(function(index, el) {
 		summ += Number($(this).val());
 	});
 	// выводим сумму в input общего тиража
 	$(id).val(summ);
 
 	// вносим изменения тиража в таблицу
-	if($(this).attr('class') == 'val_tirage'){
+	if(object.attr('class') == 'val_tirage'){
 		recalkulate_table(summ);	
 	}
 	
 
-	// отправляем запрос на изменение данных в базе по отредактированному размеру
-	// save_all_table_size();
-	// $.post('', {
-	// 	global_change: 'AJAX',
-	// 	change_name: 'size_in_var',
-	// 	val:$(this).val(),
-	// 	key:$(this).attr('data-id_size'),
-	// 	dop:$(this).attr('data-dop'),
-	// 	id: $(this).attr('data-var_id')
-	// }, function(data, textStatus, xhr) {
-	// 	console.log(data);
-	// });
 
 	// пересчёт таблицы цен
 	calkulate_table_calc();
-});
+}
 
 
 // переключение сервисных кнопок под резерв и под заказ
