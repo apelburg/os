@@ -1486,7 +1486,7 @@ function recalculate_services(){
  *	@version 18.12.2015
  */
 function response_rtCalculator_makeQuantityCalculations(cell,row_id,response_obj){
-	console.log(response_obj);
+	console.log(cell,row_id,response_obj);
 	
 	// при отрицательном отклике - выкидываем оповещение
 	if(response_obj['extra']['result'] != 'ok' || response_obj['print']['result'] != 'ok'){
@@ -1524,12 +1524,13 @@ function response_rtCalculator_makeQuantityCalculations(cell,row_id,response_obj
 		}
 		// пересчёт услуг в расчетной таблице 
 		recalculate_services();
-		recalculate_table_price_Itogo();
+		recalculate_table_price_Itogo();		
 		window.location.href = window.location.href;
-	}
-	
+	}	
 }
-
+function response_rtCalculator_makeQuantityCalculationsCancel(){
+	window.location.href = window.location.href;	
+}
 
 /**
  *	пересчитывает стоимость товара относительно изменённого тиража
