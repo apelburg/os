@@ -979,7 +979,8 @@ var rtCalculator = {
 					 $(dialog).dialog({
 									  modal: true, 
 									  width: 500,
-									  minHeight : 200 , 
+									  minHeight : 200 ,
+									  closeOnEscape: false,
 									  close: function() {
 										  // возвращаемся к предыдущему состоянию
 										 // $(this).dialog("close");
@@ -1007,11 +1008,24 @@ var rtCalculator = {
 											   click: function(){
 												       // возвращаемся к предыдущему состоянию
 													   $(this).dialog("close");
-													   //cell.innerHTML = response_obj.old_quantity;
-													   cell.innerHTML = rtCalculator.tbl_model[row_id]['quantity'];
+													   if(source=='rt'){
+													        //cell.innerHTML = response_obj.old_quantity;
+													        cell.innerHTML = rtCalculator.tbl_model[row_id]['quantity'];
+													   }
+													   if(source=='card'){
+														    response_rtCalculator_makeQuantityCalculationsCancel();
+													   }
 												   }}]
 									});
 					 $(dialog).dialog('open');
+					 $('.ui-dialog-titlebar-close').click(function(){ 
+													   if(source=='rt'){
+													        cell.innerHTML = rtCalculator.tbl_model[row_id]['quantity'];
+													   }
+													   if(source=='card'){
+														    response_rtCalculator_makeQuantityCalculationsCancel();
+													   }
+											       });
 					 
 					 return;
 				}
