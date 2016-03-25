@@ -324,7 +324,7 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 				$checked = false;
 				$html = '';				
 				$html .= '<ul>';
-				
+								
 				//////////////////////////
 				//	изображения из карточки артикула
 				//////////////////////////
