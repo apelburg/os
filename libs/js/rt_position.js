@@ -1525,6 +1525,7 @@ function response_rtCalculator_makeQuantityCalculations(cell,row_id,response_obj
 		// пересчёт услуг в расчетной таблице 
 		recalculate_services();
 		recalculate_table_price_Itogo();
+		window.location.href = window.location.href;
 	}
 	
 }
