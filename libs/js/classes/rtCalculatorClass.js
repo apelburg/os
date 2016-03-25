@@ -975,24 +975,42 @@ var rtCalculator = {
 					}
 				}
 				
-				if(notes.length>0){
-					if(confirm('данный расчет содержит: '+(notes.join(', ')))){
-						// отправляем повторный запрос с маркером ignore_calculators_checking
-						url += '&ignore_calculators_checking=1';
-						rtCalculator.send_ajax(url,callbackPrintsExists);
-						
-						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js-color-red');
-						$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js--icon-alarm-services');
-						
-						
-						return;
-					}
-					else{
-						alert('возвращаемся к предыдущему состоянию');
-						return;
-					}
-				}
+				if(notes && notes.length>0){
 				
+					 ///var dialog = $('<div>Внимание :<br>'+ notes.join(', ')+'</div>');
+					 var dialog = $('<div>проверь расчет ручного калькулятора.</div>');
+					 
+					 $('body').append(dialog);
+					 $(dialog).dialog({
+									  modal: true, 
+									  width: 500,
+									  minHeight : 200 , 
+									  close: function() {
+										  // возвращаемся к предыдущему состоянию
+										  $(this).dialog("close");
+										  cell.innerHTML = response_obj.old_quantity;
+									  },
+									  buttons: [{text: "Да",
+												click: function(){
+														// отправляем повторный запрос с маркером ignore_calculators_checking
+														$(this).dialog("close");
+														url += '&ignore_calculators_checking=1';
+														rtCalculator.send_ajax(url,callbackPrintsExists);
+														$(cell).parents('tr')
+														$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js-color-red');
+														$($(cell).parents('tr')).find( "div.pos_plank" ).addClass('js--icon-alarm-services');
+													}},
+											   {text: "Отмена",
+											   click: function(){
+												       // возвращаемся к предыдущему состоянию
+													   $(this).dialog("close");
+													   cell.innerHTML = response_obj.old_quantity;
+												   }}]
+									});
+					 $(dialog).dialog('open');
+					 
+					 return;
+				}
 				
 				if(response_obj.warning && response_obj.warning=='size_exists'){
 					// если найдено что позиция имеет какие-либо размеры изменение количества должно быть отменено
@@ -1004,9 +1022,10 @@ var rtCalculator = {
 						return;
 					}
 				}
-				
+				if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
+
 				return;
-				if(response_obj.print && response_obj.print.lackOfQuantity){
+				/*if(response_obj.print && response_obj.print.lackOfQuantity){
 					 var str =''; 
 					 for(var index in response_obj.print.lackOfQuantity){
 						 str += (parseInt(index)+1)+'). '+response_obj.print.lackOfQuantity[index].print_type+', мин тираж - '+response_obj.print.lackOfQuantity[index].minQuantity+"<br>";  
@@ -1059,16 +1078,8 @@ var rtCalculator = {
 				else{
 					// самый лучщий вариант иначе могут быть разные ошибки
 					location.reload();
-				}
-				
-				
-				
+				}*/	
 			}
-		
-		    // console.log('-',response_obj);
-			
-		
-			
 		}
 		function callbackOnlyQuantity(response){
 			
@@ -1094,8 +1105,6 @@ var rtCalculator = {
 	}
 	,
 	quantityCalculationsResponseFull:function(cell,row_id,response_obj){
-	       console.log(response_obj);
-			
 		    
 		    rtCalculator.save_previos_data(cell);
 			// Вносим изменения в hmlt
