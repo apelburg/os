@@ -141,6 +141,25 @@ class rtPositionUniversal extends Position_general_Class
 		}
 		
 	}
+
+	/**
+	 *	save description name
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	13:25 25.03.2016
+	 */
+	protected function update_article_description_name_AJAX(){
+		
+		$query = "UPDATE `".RT_MAIN_ROWS."` SET";
+		$query .= " `name` = '".base64_decode($_POST['name'])."'";
+		$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		
+		// $this->responseClass->addResponseFunction('js_edit_description_replace_back');
+		$this->responseClass->addMessage('Описание сохранено','successful_message');		
+		
+		
+	}
 	/**
 	 *	возвращает статуы
 	 *
