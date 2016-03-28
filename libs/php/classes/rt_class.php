@@ -217,7 +217,25 @@
 					    $warning['free_calc_exists'] = true;
 					}
 					if(!isset($warning['united_calculations']) && $row['united_calculations']!=''){
+					    // это объединенный тираж, если калькулятор auto
+						// нам необходимо определить общий тираж для все тиражей связанных с этим чтобы 
+						// проверить не будет ли он превышать максимально возможный тираж
 					    $warning['united_calculations'] = true;
+						
+						$query2="SELECT dop_data.quantity quantity FROM
+			                            `".RT_DOP_DATA."` dop_data INNER JOIN
+										`".RT_DOP_USLUGI."` uslugi 
+										  ON  dop_data.id = uslugi.dop_row_id
+										  WHERE  uslugi.id IN(".(implode(",",explode(",",$row['united_calculations']))).") AND dop_data.id <> '".$id."'";
+
+
+	
+                        $result2 = $mysqli->query($query2) or die($mysqli->error);
+						if($result2->num_rows>0){
+			                while($row2 = $result2->fetch_assoc()){
+							    $new_quantity+=$row2['quantity'];
+							}
+						}
 					}
 					if($pd['calculator_type']=='auto'){
 					    require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
@@ -229,11 +247,11 @@
 						}
 						if(rtCalculators::$outOfLimit){
 						    $warning['outOfLimit'] = true;
-						    $warning['outOfLimitDetails'] = rtCalculators::$lackOfQuantityDetails;
+						    $warning['outOfLimitDetails'] = rtCalculators::$outOfLimitDetails;
 						}
 						if(rtCalculators::$needIndividCalculation){
 						    $warning['needIndividCalculation'] = true;
-						    $warning['needIndividCalculationDetails'] = rtCalculators::$lackOfQuantityDetails;
+						    $warning['needIndividCalculationDetails'] = rtCalculators::$needIndividCalculationDetails;
 					    }
 					}
 				}
