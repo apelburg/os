@@ -130,12 +130,12 @@
 		 */
 		protected function get_service_center_AJAX(){
 			// checking number query on existence
-			if(!isset($_GET['query_num'])){
-				if(!isset($_POST['query_num'])){
-					$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
-					return;	
-				}				
-			}
+			// if(!isset($_GET['query_num'])){
+			// 	if(!isset($_POST['query_num'])){
+			// 		$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
+			// 		return;	
+			// 	}				
+			// }
 
 			$this->responseClass->options['width'] = '100%';
 			$this->responseClass->options['height'] = '100%';
