@@ -130,9 +130,11 @@
 		 */
 		protected function get_service_center_AJAX(){
 			// checking number query on existence
-			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
-				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
-				return;
+			if(!isset($_GET['query_num'])){
+				if(!isset($_POST['query_num'])){
+					$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
+					return;	
+				}				
 			}
 
 			$this->responseClass->options['width'] = '100%';
@@ -350,10 +352,10 @@
 		 */
 		private function get_object_vars(){
 			// get query row
-			$this->Query = $this->get_query( (int)$_GET['query_num'] );
+			$this->Query = $this->get_query();
 
 			// get positions rows
-			$this->Query['positions'] = $this->get_positions( (int)$_GET['query_num'] );
+			$this->Query['positions'] = $this->get_positions( $this->Query['query_num'] );
 
 			// choose positions id
 			$i = 0; $id_s = '';
@@ -439,12 +441,32 @@
 		/**
 		 *	get query from database
 		 *
-		 *	@param 		quwey_num - number
+		 *	@param 		query_num - number
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	11:36 16.03.2016
 		 */
 		private function get_query($query_num = 0){
-			$query = "SELECT * FROM `".RT_LIST."` WHERE `query_num` = '".$query_num."';";
+			if($query_num > 0){
+
+				$query = "SELECT * FROM `".RT_LIST."` WHERE `query_num` = '".(int)$query_num."';";
+
+			}else if(isset($_GET['query_num'])){
+				return $this->get_query((int)$_GET['query_num']);
+			}else if(isset($_GET['section']) && $_GET['section'] == 'rt_position'){
+				isset($_GET['query_num']);
+
+				$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".(int)$_GET['id']."';";
+				
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				if($result->num_rows > 0){
+					while($row = $result->fetch_assoc()){
+						return $this->get_query((int)$row['query_num']);
+					}
+				}	
+			}
+			
+			
+
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
