@@ -1529,7 +1529,7 @@ function response_rtCalculator_makeQuantityCalculations(cell,row_id,response_obj
 	}	
 }
 function response_rtCalculator_makeQuantityCalculationsCancel(){
-	window.location.href = window.location.href;	
+	window_reload();
 }
 
 /**
