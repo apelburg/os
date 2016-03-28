@@ -67,7 +67,7 @@ class rtPositionUniversal extends Position_general_Class
 				
 			}
 		}		
-		
+									
 		$query = "SELECT * FROM `".IMAGES_TBL."` WHERE `size` = 'small' AND `art` IN ('".implode("','", $articles_rows)."') GROUP BY art ASC";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		if($result->num_rows > 0){
@@ -139,6 +139,25 @@ class rtPositionUniversal extends Position_general_Class
 			$this->responseClass->addResponseFunction('js_edit_article_replace_back');
 			$this->responseClass->addMessage('Такого артикула нет в каталоге','error_message');		
 		}
+		
+	}
+
+	/**
+	 *	save description name
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	13:25 25.03.2016
+	 */
+	protected function update_article_description_name_AJAX(){
+		
+		$query = "UPDATE `".RT_MAIN_ROWS."` SET";
+		$query .= " `name` = '".base64_decode($_POST['name'])."'";
+		$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		
+		// $this->responseClass->addResponseFunction('js_edit_description_replace_back');
+		$this->responseClass->addMessage('Описание сохранено','successful_message');		
+		
 		
 	}
 	/**
@@ -1580,7 +1599,7 @@ class Services extends Variants
 				}
 			}
 		}
-		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/print_calculators_class.php");
+		// include_once(ROOT."/libs/php/classes/print_calculators_class.php");
 		//foreach ($services_arr as $key => $service) {
 			foreach ($arr as $key2 => $service_attach) {
 				// исключение на ошибку в записи uslugi_id
@@ -1590,6 +1609,7 @@ class Services extends Variants
 					// 	$service_attach['uslugi_id']
 					// }						
 				//}
+
 				// if($service_attach['uslugi_id']==$key){
 					$quantity = ($service_attach['for_how']=="for_all")?1:$service_attach['quantity'];
 					// цена за штуку
@@ -1622,8 +1642,9 @@ class Services extends Variants
 					$td_calculator_price_out='';
 					if(@$services_arr[$service_attach['uslugi_id']]['parent_id'] == 6){
 						$calc_tr_class = 'calculator_row';
-						$calc_class = ' service-calculator';
-						$calc_button = '<div class="getCalculatorMethod" onclick="printCalculator.evoke_calculator_directly({art_id:'.$art_id.',dop_data_row_id:'.$variant['id'].',dop_uslugi_id:'.$service_attach['id'].'});"></div>';
+						// $calc_class = ' service-calculator';
+						// $calc_button = '<div class="getCalculatorMethod" onclick="printCalculator.evoke_calculator_directly({art_id:'.$art_id.',dop_data_row_id:'.$variant['id'].',dop_uslugi_id:'.$service_attach['id'].'});"></div>';
+						
 						$calc_info = '';
 						$calculator_price_out = 'readonly';
 						$td_calculator_price_out = ' onclick="edit_calcPriceOut_readoly()" ';
@@ -1633,12 +1654,22 @@ class Services extends Variants
 					
 					// ТЗ кнопки
 					$buttons_tz = (trim($service_attach['tz'])=='')?'<span class="tz_text_new"></span>':'<span class="tz_text_edit"></span>';
+					
+					$json = json_decode($service_attach['print_details'],true);
+					$cl = '';
+					if(isset($json['need_confirmation']) && ($json['need_confirmation'] == true || $json['print_details']['need_confirmation'] == 1)){
+						$cl = ' class="alarm_services"';
+					}
+
+
+
+
 					$html .= '<tr id="editable_from_rtClass_'.$variant['id'].'_'.$service_attach['id'].'" class="calculate calculate_usl '.$calc_tr_class.'" data-dop_uslugi_id="'.$service_attach['id'].'" data-our_uslugi_id="'.@$services_arr[$service_attach['uslugi_id']]['id'].'" data-our_uslugi_parent_id="'.@trim($services_arr[$service_attach['uslugi_id']]['parent_id']).'"  data-for_how="'.@trim($services_arr[$service_attach['uslugi_id']]['for_how']).'">';
-						$html .= '<td title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
+						$html .= '<td'.$cl.' title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
 							// класс для услуги "НЕТ В СПИСКЕ"
 							if($service_attach['uslugi_id'] == 103){
 								$calc_class .=  ' js-service-other-name';
-							}
+							}	
 							$html .= '<div class="'.$calc_class.'" data-id="'.$service_attach['uslugi_id'].'" >';
 								// кнопка для вызхова калькулятора
 								$html .= $calc_button;

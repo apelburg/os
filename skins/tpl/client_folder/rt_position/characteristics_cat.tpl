@@ -11,11 +11,11 @@
 															echo '<a target="_blank" href="'.$supplier_link.'">Поставщик</a>&nbsp;&nbsp; ';
 														}
 														echo $link_of_the_site;?></div>
-													<div class="cell"  id="js--edit_article" data-id="<?=$this->position['id'];?>"><?php echo $this->position['art']; ?></div>
+													<div class="cell"  id="js--edit-article" data-id="<?=$this->position['id'];?>"><?php echo $this->position['art']; ?></div>
 												</div>
 												<div class="row">
 													<div class="cell">Номенклатура</div>
-													<div class="cell"><?php echo $this->position['name']; ?></div>
+													<div class="cell" id="js--edit-description" data-id="<?=$this->position['id'];?>"><?php echo $this->position['name']; ?></div>
 												</div>
 												<div class="row">
 													<div class="cell">Бренд</div>
