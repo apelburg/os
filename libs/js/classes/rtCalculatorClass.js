@@ -263,7 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						   $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');})
+						  $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 						   
 					    }
 					}
@@ -1486,9 +1486,8 @@ var rtCalculator = {
 	  
 		if(cell.nodeName=='SPAN') cell = cell.parentNode;
 		var name =  cell.getAttribute("swiched_cols");
-	
 		
-		//var tds_arr = rtCalculator.head_tbl.getElementsByTagName('td');
+		//var tds_arr = rtCalculator.body_tbl.getElementsByTagName('td');
 		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
 		function relay(tds_arr,name,action){
