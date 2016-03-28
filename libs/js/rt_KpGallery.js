@@ -20,7 +20,7 @@
         'width': 250,
         'swf'      	: '../libs/php/uploadify.swf',
         'uploader' 	: '',
-        'multi'     : true,
+        'multi'     : false,
         'onUploadSuccess' : function(file, data) {
             // alert('The file ' + file.name + ' uploaded successfully.');
             // подключаем стандартный обработчик ответа
