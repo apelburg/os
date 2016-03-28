@@ -1646,7 +1646,7 @@ class Services extends Variants
 
 
 					$html .= '<tr id="editable_from_rtClass_'.$variant['id'].'_'.$service_attach['id'].'" class="calculate calculate_usl '.$calc_tr_class.'" data-dop_uslugi_id="'.$service_attach['id'].'" data-our_uslugi_id="'.@$services_arr[$service_attach['uslugi_id']]['id'].'" data-our_uslugi_parent_id="'.@trim($services_arr[$service_attach['uslugi_id']]['parent_id']).'"  data-for_how="'.@trim($services_arr[$service_attach['uslugi_id']]['for_how']).'">';
-						$html .= '<td'.$cl.' onClick="$(\'.open_service_center:visible\').click()" title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
+						$html .= '<td'.$cl.' data-service_id="'.$service_attach['id'].'" title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
 							// класс для услуги "НЕТ В СПИСКЕ"
 							if($service_attach['uslugi_id'] == 103){
 								$calc_class .=  ' js-service-other-name';

@@ -55,8 +55,7 @@
 				while($row = $result->fetch_assoc()){
 					$arr[$row['dop_row_id']][$i] = $row;
 
-					$json = $row['print_details'];
-					
+					$json = $row['print_details'];					
 
 					$arr[$row['dop_row_id']][$i]['print_details'] = json_decode($json,true);	
 					$arr[$row['dop_row_id']][$i]['desc'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
