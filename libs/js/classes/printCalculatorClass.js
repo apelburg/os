@@ -1525,7 +1525,7 @@ var printCalculator = {
 		var labelCommon = document.createElement('LABEL');
 		labelCommon.className = 'select_label'; 
 		var option = document.createElement('OPTION');
-		option.innerHTML = 'Выбрать';
+		option.innerHTML = 'стандартно';
 		option.setAttribute("item_id",0);
 		commonSelect.appendChild(option);
 		
@@ -2167,12 +2167,14 @@ var printCalculator = {
 				if(printCalculator.type == 'auto'){
 					showDopInfoBtn.innerHTML = 'Включить вкладку прайс';
 				    showDopInfoBtn.onclick =  printCalculator.showProcessingDetails;
+					
+					BtnsDiv.appendChild(showDopInfoBtn);
 				}
-				if(printCalculator.type == 'free'){
+				/*if(printCalculator.type == 'free'){
 					showDopInfoBtn.innerHTML = 'Вспомогательная информация';
 				    showDopInfoBtn.onclick =  printCalculator.showDopInfoBlock;
-				}
-				BtnsDiv.appendChild(showDopInfoBtn);
+				}*/
+				
 				
 			}
 
@@ -2321,7 +2323,7 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		     alert(response);
+		    // alert(response);
 			// alert(printCalculator.currentCalculationData[printCalculator.type].action);
 			// console.log(response);
 		    // location.reload();
@@ -2376,14 +2378,14 @@ var printCalculator = {
 		for( var i = 0; i < ln; i++){
 			var value = selectsArr[i].options[selectsArr[i].selectedIndex].value;
 			var item_id = selectsArr[i].options[selectsArr[i].selectedIndex].getAttribute('item_id');
-			// если value != 0(0 равно вспомогательное значение "Выбрать"), значит выбор в селекте сделан 
+			// если value != 0(0 равно вспомогательное значение "стандартно"), значит выбор в селекте сделан 
 			// добавляем его в dataForProcessing
 			if(value && value != 0){
 				if(typeof CMYKsArr[i] !== 'undefined') printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params.YPriceParam.push({'id':item_id,'coeff':value,'cmyk':CMYKsArr[i].innerHTML}); 
 				else   printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params.YPriceParam.push({'id':item_id,'coeff':value}); 
 				CMYKsArr[i].className = 'YPriceParamCMYK';
 			}
-			// если value == 0(0 равно вспомогательное значение "Выбрать"), значит выбор в селекте не сделан
+			// если value == 0(0 равно вспомогательное значение "стандартно"), значит выбор в селекте не сделан
 			// удаляем этот селект
 			// if(value == 0) selectsArr[i].parentNode.parentNode.removeChild(selectsArr[i].parentNode);
 			if(value == 0 && selectsArr.length>1){

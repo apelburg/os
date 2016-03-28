@@ -144,7 +144,7 @@ var rtCalculator = {
 						var element = $('<li/>',{
 							'class':'js-color-'+lang[t],
 							'data-color':lang[t],
-							
+
 							click:function(){
 								for(var i in lang){
 									if(i!=t){
@@ -263,13 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						  //alert(1);
-						  tds_arr[j].onclick = function(){rtCalculator.swich_cols(this,'show');}
-						   /*$(tds_arr[j]).mousedown(function(){
-															alert(1);
-															rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide'); 
-															alert(2);
-															});*/
+						   $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');})
 						   
 					    }
 					}
@@ -733,35 +727,13 @@ var rtCalculator = {
 				extraExists = true;
 			}	
 		}
-	    
-		// КНОПКА сохранения изменений в ячейке тиража
-		// если ранее была опраделена ячека в которой происходили изменения тиража но она не равна текущей ячейке
-		// значит пользователь перешел в другую ячеку - удаляем предыдущую кнопку сохранить и стираем её данные
-		if(typeof rtCalculator.saveQuantityTarget !== 'undefined' && rtCalculator.saveQuantityTarget != cell){
-            $(rtCalculator.saveQuantityBtn).remove();
-			delete rtCalculator.saveQuantityBtn;
-		}
-		// если кнопка сохранить отсутсвует - создаем её
-		if(typeof rtCalculator.saveQuantityBtn === 'undefined'){
-
-            rtCalculator.saveQuantityTarget = cell;
-			
-			rtCalculator.saveQuantityBtn = document.createElement('DIV');
-			rtCalculator.saveQuantityBtn.className = 'rtSaveQuantityBtn';
-		    rtCalculator.saveQuantityBtn.innerHTML = "сохранить";
-		    rtCalculator.saveQuantityBtn.onclick = function(){ 
-			    //alert(1);
-				$(rtCalculator.saveQuantityBtn).remove();
-			    delete rtCalculator.saveQuantityBtn;
-				//////////////////////////////////// card rt //////////////////////////////////// 
-		        // метод может вызываться также из карточки товара созначением - card
-				rtCalculator.makeQuantityCalculations('rt',cell.innerHTML,row_id,printsExists,extraExists,cell);
-			}
-			// соседняя ячека таблицы, кнопку добавляем в неё
-			var nextTd = $(cell).next()[0];
-			$(nextTd).append(rtCalculator.saveQuantityBtn); 
-		}		
-	
+        //////////////////////////////////// card rt
+		// метод может вызываться также из карточки товара созначением - card
+		rtCalculator.makeQuantityCalculations('rt',cell.innerHTML,row_id,printsExists,extraExists,cell);
+		
+		
+		
+		
 	
 		function correctToInt(str){// корректировка значений вводимых пользователем в поле ввода типа Integer
 		    var wrong_input = false;
@@ -1514,12 +1486,10 @@ var rtCalculator = {
 	  
 		if(cell.nodeName=='SPAN') cell = cell.parentNode;
 		var name =  cell.getAttribute("swiched_cols");
+	
 		
 		//var tds_arr = rtCalculator.head_tbl.getElementsByTagName('td');
-		var trs_arr = ($(rtCalculator.head_tbl).children('tbody').length>0)? $(rtCalculator.head_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.head_tbl).children('tr').children('td');
-		relay(tds_arr,name,action);
-		//var tds_arr = rtCalculator.body_tbl.getElementsByTagName('td');
-		var trs_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
+		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
 		function relay(tds_arr,name,action){
 			for(var j in tds_arr){
