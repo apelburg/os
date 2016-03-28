@@ -129,7 +129,13 @@ class rtPositionUniversal extends Position_general_Class
 		        $query .= " , `art_id` = '".$art['id']."'";
 		        $query .= " , `name` = '".$art['name']."'";
 		        $query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
-		        $result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		        // смена стоимости
+		        $query = "UPDATE `".RT_DOP_DATA."` SET";
+				$query .= "  `price_out` = '".$this->get_priceArt($art['id'])."'";		
+				$query .= " WHERE `row_id` = '".(int)$_POST['row_id']."'";        
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			}
 			
 			$option['timeout'] = '1000';
@@ -140,6 +146,26 @@ class rtPositionUniversal extends Position_general_Class
 			$this->responseClass->addMessage('Такого артикула нет в каталоге','error_message');		
 		}
 		
+	}
+
+	/**
+	 *	return article price
+	 *
+	 *	@param 		art_id row
+	 *	@return  	price money
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	13:10 28.03.2016
+	 */
+	private function get_priceArt($id){
+		$price = 0;
+		$query = "SELECT * FROM `".BASE_DOP_PARAMS_TBL."` WHERE `art_id` = '".$id."' GROUP BY `price`";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$price = $row['price'];
+			}
+		}
+		return $price; 
 	}
 
 	/**
@@ -1665,7 +1691,7 @@ class Services extends Variants
 
 
 					$html .= '<tr id="editable_from_rtClass_'.$variant['id'].'_'.$service_attach['id'].'" class="calculate calculate_usl '.$calc_tr_class.'" data-dop_uslugi_id="'.$service_attach['id'].'" data-our_uslugi_id="'.@$services_arr[$service_attach['uslugi_id']]['id'].'" data-our_uslugi_parent_id="'.@trim($services_arr[$service_attach['uslugi_id']]['parent_id']).'"  data-for_how="'.@trim($services_arr[$service_attach['uslugi_id']]['for_how']).'">';
-						$html .= '<td'.$cl.' title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
+						$html .= '<td'.$cl.' data-service_id="'.$service_attach['id'].'" title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
 							// класс для услуги "НЕТ В СПИСКЕ"
 							if($service_attach['uslugi_id'] == 103){
 								$calc_class .=  ' js-service-other-name';
