@@ -111,7 +111,7 @@ var printCalculator = {
                    
 
 					function callback(response){ 
-						alert(response);
+						// alert(response);
 						// console.log(response);
 						//location.reload();
 					}
@@ -2348,7 +2348,7 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		     alert(response);
+		    // alert(response);
 			// alert(printCalculator.currentCalculationData[printCalculator.type].action);
 			// console.log(response);
 		    // location.reload();
