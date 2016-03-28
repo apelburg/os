@@ -55,7 +55,8 @@
 				while($row = $result->fetch_assoc()){
 					$arr[$row['dop_row_id']][$i] = $row;
 
-					$json = $row['print_details'];					
+					$json = $row['print_details'];
+					
 
 					$arr[$row['dop_row_id']][$i]['print_details'] = json_decode($json,true);	
 					$arr[$row['dop_row_id']][$i]['desc'] = printCalculator::convert_print_details_for_TotalCom(($json == "")?"{}":$json);
@@ -129,10 +130,12 @@
 		 */
 		protected function get_service_center_AJAX(){
 			// checking number query on existence
-			if(!isset($_GET['query_num']) || $_GET['query_num'] ==''){
-				$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
-				return;
-			}
+			// if(!isset($_GET['query_num'])){
+			// 	if(!isset($_POST['query_num'])){
+			// 		$this->responseClass->addMessage('Системе необходимо находиться внутри запроса.');
+			// 		return;	
+			// 	}				
+			// }
 
 			$this->responseClass->options['width'] = '100%';
 			$this->responseClass->options['height'] = '100%';

@@ -80,6 +80,11 @@
     color: #B3B3B3;
     border-color: #f68d91;
 }
+#order_art_edit .alarm_services:hover .greyText{
+    font-size: 11px;
+    color: #B3B3B3;
+    border-color: transparent;
+}
 
 .calkulate_table tr td .for_in,
 .calkulate_table tr td .for_out{

@@ -202,20 +202,24 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					methods.btn_cancel_all.bind('click.totalCommander', methods.cancel_all_choosen_variants );
 					// добавить услугу
 					methods.btn_calculators.bind('click.totalCommander', methods.calculator_add_services );
-					console.log('default_var click()')
+					// console.log('default_var click()')
 					methods.variants_tbody.find('.default_var').click();
 
 					// если нужно вызвать калькулятор
-					if( options.get_calc && options.get_calc.length > 0){
+					// console.log(options)
+					if(options &&  options.get_calc && options.get_calc.length > 0){
+						// console.log(options)
 						var ref = options.get_calc, ref2;
-						for(var i = 0, length1 = ref.length; i < length1; i++){
-							ref2 = methods.services_rows;
-							for(var k = 0, length1 = ref2.length; k < length1; k++){
-								if($(this).attr('data-dop_uslugi_id') == ref[i]){
-									$(this).find('.service_name alarm_services').click();
+						ref2 = methods.services_rows;
+						methods.services_rows.each(function(index, el) {
+
+							for(var i = 0, length1 = ref.length; i < length1; i++){
+								console.log($(this).attr('data-dop_uslugi_id'),ref[i])
+								if(Number($(this).attr('data-dop_uslugi_id')) == Number(ref[i])){
+									$(this).find('.service_name.alarm_services').click();
 								}
 							}
-						}
+						});
 					}
 				}else{
 					console.log('654654')
