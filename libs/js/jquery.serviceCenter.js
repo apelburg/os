@@ -191,7 +191,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.show();
 
 				// загрузка контента default
-				console.log(options)
+				// console.log(options)
 				if(options != 'update'){
 					// кнопка сбросить все 
 					methods.btn_cancel_all = 	$('#sc_cancel_all');
@@ -202,8 +202,25 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					methods.btn_cancel_all.bind('click.totalCommander', methods.cancel_all_choosen_variants );
 					// добавить услугу
 					methods.btn_calculators.bind('click.totalCommander', methods.calculator_add_services );
-					console.log('default_var click()')
+					// console.log('default_var click()')
 					methods.variants_tbody.find('.default_var').click();
+
+					// если нужно вызвать калькулятор
+					// console.log(options)
+					if(options &&  options.get_calc && options.get_calc.length > 0){
+						// console.log(options)
+						var ref = options.get_calc, ref2;
+						ref2 = methods.services_rows;
+						methods.services_rows.each(function(index, el) {
+
+							for(var i = 0, length1 = ref.length; i < length1; i++){
+								console.log($(this).attr('data-dop_uslugi_id'),ref[i])
+								if(Number($(this).attr('data-dop_uslugi_id')) == Number(ref[i])){
+									$(this).find('.service_name.alarm_services').click();
+								}
+							}
+						});
+					}
 				}else{
 					console.log('654654')
 					// обновляем контент услуг относительно выбранных вариантов
@@ -1644,9 +1661,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					// console.log(print_details);	
 				}
 				service_row.append($('<td/>').append( div ));
+				
 				// название услуги из калькулятора
 				if(print_details && print_details.print_type){
-					service_row.append($('<td/>',{
+					var td1 = $('<td/>',{
 						'colspan':'3',
 						'class':'service_name',
 						'text':print_details.print_type,
@@ -1654,8 +1672,13 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						click:function(){
 							methods.calculator_edit_the_service($(this));
 						}
-					}));	
+					});
+					if(print_details.need_confirmation){
+						td1.addClass('alarm_services');
+					}
+					service_row.append(td1);	
 				}else{
+					// старые доп услуги
 					service_row.append($('<td/>',{
 						'colspan':'3',
 						'class':'service_name',
@@ -1666,13 +1689,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
+				console.log(print_details.need_confirmation)
 
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
-
 					if (service[i].uslugi_id == "0") {
-						console.log(service[i]);
-						service_row.append($('<td/>',{'colspan':'3','text':Base64.decode(print_details.commentForClient)}));
+						service_row.append($('<td/>',{'colspan':'3','text':(print_details.commentForClient)?Base64.decode(print_details.commentForClient):''}));
 					}else{
 						console.log(service[i]);
 						// место печати
@@ -2006,7 +2028,38 @@ $.extend({
 		// добавляем блок кнопок
 		$.SC_createButton();
 		$('#js-main_service_center').totalCommander();
+	},
+	SC_create_w_and_calc: function(html,service_id){
+		// если окно вызывается впервые
+		if($('#js-main_service_center').length > 0){
+			$('#js-main_service_center').totalCommander('hide');
+		}
+
+		$('body').append($('<div/>',{
+			"id":'js-main_service_center'
+		}).html(html));
+			
+		var title = 'Центр услуг';			
+			
+		$('#js-main_service_center').dialog({
+			width: $(window).width()+10,
+			height: $(window).height(),
+			modal: true,
+			title : title,
+			autoOpen : false,
+			beforeClose: function( event, ui ) {
+			// перезагрузка RT
+			$.SC_reload_RT_content();
+			},
+			closeOnEscape: false
+			// buttons: buttons          
+		}).parent().css({'top':'0px'});
 		
+		// добавляем блок кнопок
+		$.SC_createButton();
+		var options = [];
+		options.get_calc = service_id;
+		$('#js-main_service_center').totalCommander(options);
 	},
 	// перезагрузка RT
 	SC_reload_RT_content : function(){
@@ -2075,6 +2128,24 @@ $.extend({
 
 });
 
+$(document).on('click', '.alarm_services', function(event) {
+	event.preventDefault();
+	var service_id, variant_id, query_num,service_button;
+	service_id = 	$(this).attr('data-service_id').split(',');
+	service_btn = $('.open_service_center:visible');
+	variant_id =  service_btn.attr('data-row_id');
+	query_num =   service_btn.attr('data-query_num');
+
+	$.post(window.location.href+'&query_num='+$(this).attr("data-query_num"), {
+			AJAX: 	'get_service_center',
+			row_id: variant_id
+		}, function(data, textStatus, xhr) {
+			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
+				$.SC_create_w_and_calc(Base64.decode(data['html']),service_id);	
+			}				
+			standard_response_handler(data);
+		},'json');
+});
 
 // // закрытие окна на esc
 // $(document).keyup(function (e) {
