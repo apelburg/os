@@ -501,7 +501,7 @@
 							 // получаем новые исходящюю и входящюю цену исходя из нового таража
 							 $new_price_arr = self::change_quantity_and_calculators_price_query($new_quantity,$details_obj->print_details,$YPriceParam); 
                              // здесь надо обпрботать превышение тиража
-							 print_r($new_price_arr);
+							 //print_r($new_price_arr);
 							 $new_data = self::make_calculations((int)$details_arr['print_details']['quantity_details'][$i],$new_price_arr,$details_obj->print_details->dop_params);
 							  
 							 $details_arr['price_in'] = $new_data['new_price_arr']['price_in'];
@@ -523,6 +523,10 @@
 						 $quantity[$last_uslugi_id]=(int)$details_arr['attachment_quantity'];
 						 
 						 unset($details_arr['id_for_attachment']);
+						 if(isset($details_arr['print_details']['distribution_type'])){
+						       unset($details_arr['print_details']['distribution_type']);
+							   $details_arr['print_details_json'] = self::json_fix_cyr(json_encode($details_arr['print_details'])); 
+						  }
 						
 					 }
 					
@@ -552,6 +556,12 @@
 					     // echo $dop_data_row_id."\r\n";
 						 $cur_data=array('dop_data_row_id'=>$details_arr['print_details']['dop_data_ids'][$i],'quantity'=>(int)$details_arr['print_details']['quantity_details'][$i]);
 						 //$cur_data=array('dop_data_row_id'=>$details_arr['print_details']['dop_data_ids'][$i],'distribution_type'=>$details_arr['print_details']['distribution_type,'quantity'=>(int)$details_arr['print_details']['quantity_details'][$i],'union_quantity'=>array_sum($details_arr['print_details']['quantity_details']));
+						 
+						 if(isset($details_arr['print_details']['distribution_type'])){
+						     unset($details_arr['print_details']['distribution_type']);
+							 $details_arr['print_details_json'] = self::json_fix_cyr(json_encode($details_arr['print_details'])); 
+						 }
+						 
 					     $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 					 }
 					 // вносим в базу id-шники связанных нанесений 
@@ -902,9 +912,9 @@
 								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
 							}
 							else{
+							    $quantity_for_calculation = $quantity;
 							    // если это объединенный тираж расчитываем общее количество 
 								if($row['united_calculations']!=''){
-								    $quantity_for_calculation = $quantity;
 									$query2="SELECT dop_data.quantity quantity FROM
 											`".RT_DOP_DATA."` dop_data INNER JOIN
 											`".RT_DOP_USLUGI."` uslugi 

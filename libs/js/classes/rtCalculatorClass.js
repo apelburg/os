@@ -1732,7 +1732,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){ /* alert(response); // */ rtCalculator.handler_for_copy_row_response(response); close_processing_timer(); closeAllMenuWindows(); }
+		function callback(response){ /* alert(response); // rtCalculator.handler_for_copy_row_response(response); close_processing_timer();*/  closeAllMenuWindows(); }
 	}
 	,
 	copy_row:function(e){ 
@@ -1751,7 +1751,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){/* alert(response); // */  rtCalculator.handler_for_copy_row_response(response);close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
+		function callback(response){/* alert(response); //  rtCalculator.handler_for_copy_row_response(response);*/ close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 		}
 	}
 	,
@@ -1836,7 +1836,7 @@ var rtCalculator = {
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('insert_copied_rows=1&query_num='+query_num+((typeof place_id != 'undefined')?'&place_id='+place_id:''));
 		rtCalculator.send_ajax(url,callback);
 		function callback(response){ 
-		
+		    alert(response);
             close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
@@ -1871,7 +1871,7 @@ var rtCalculator = {
 			 // определяем какие ряды были выделены (какие Мастер Кнопки были нажаты)
 			if(!(idsArr = rtCalculator.get_active_main_rows())){
 				if(type && type == 'prints') var target = 'нанесения';
-				else if(type && type == 'uslugi') var target = 'доп услуги';
+				else if(type && type == 'uslugi') var target = 'услуги';
 				else if(type && type == 'printsAndUslugi') var target = 'нанесения и доп услуги';
 				else var target = 'ряды';
 				echo_message_js('не возможно удалить '+target+', вы не выбрали ни одной позиции','system_message',2000);
@@ -1908,7 +1908,7 @@ var rtCalculator = {
 			if(response_obj.warning && response_obj.warning.united_calculations){
 				alert(22);
 					 ///var dialog = $('<div>Внимание :<br>'+ notes.join(', ')+'</div>');
-					 var dialog = $('<div>удаляемые расчеты содержат объединенные тиражи</div>');
+					 var dialog = $('<div>удаляемые ряды содержат объединенные тиражи</div>');
 					 
 					 $('body').append(dialog);
 					 $(dialog).dialog({
