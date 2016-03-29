@@ -258,6 +258,23 @@
 			}
 			return (count($warning)>0)? json_encode(array('warning'=>array('calculators_checking'=>$warning),'old_quantity'=>$old_quantity)):'';  
 		}
+		static function check_on_united_calculations($id){
+			global $mysqli;
+
+			$query="SELECT uslugi.united_calculations united_calculations FROM
+			                            `".RT_DOP_DATA."` dop_data INNER JOIN
+										`".RT_DOP_USLUGI."` uslugi 
+										  ON  dop_data.id = uslugi.dop_row_id
+										  WHERE  dop_data.row_id = '".$id."'";
+			
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0){
+			     while($row = $result->fetch_assoc()){
+					if($row['united_calculations']!='') return true;
+				 }
+			}
+			return false;  
+		}
 		static function shift_rows_down($place_id,$mainCopiedRowId,$shift_counter /* $place_id - куда вставляем, $pos_id - что будем вставлять */){
 		    global $mysqli;
 			

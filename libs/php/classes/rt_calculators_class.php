@@ -433,8 +433,9 @@
 			
 			$details_arr = json_decode($_GET['details'],true);
 			$details_obj = json_decode($_GET['details']);
-		    print_r($details_arr);
-			////echo $details_arr['action'];
+		    //print_r($details_arr);
+			
+			//echo $details_arr['action'];
 			//exit; //
 		    if(isset($details_arr['print_details'])){
 		        if($details_arr['print_details']['calculator_type']=='free'){
@@ -555,6 +556,8 @@
 					 }
 					 // вносим в базу id-шники связанных нанесений 
 					 if(count($last_uslugi_ids)>0) rtCalculators::mark_united_calculatoins($last_uslugi_ids);
+					 echo json_encode($last_uslugi_ids);
+					 
 				 }
 			 }
 			 else{ // необъединенный тираж
@@ -950,6 +953,7 @@
 								    $print_details_obj->dop_data_ids = (array)$print_details_obj->dop_data_ids;
 									$print_details_obj->quantity_details = (array)$print_details_obj->quantity_details;
 									foreach($print_details_obj->dop_data_ids as $index => $value){
+									echo $print_details_obj->quantity_details[$index]."--";
 									    if($value==$dop_data_id) $print_details_obj->quantity_details[$index] =$quantity;
 									}
 								}
