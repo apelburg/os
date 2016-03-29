@@ -1836,6 +1836,21 @@ ul.central_menu li a:hover{
 #calculatorDialogBox .BtnsDiv{margin:2px 0 10px 77px; width: 585px; height:45px; border:#CCC solid 0px;}
 #calculatorDialogBox .showDopInfoBlockBtn{ float:left; border:#CCC solid 1px;border-radius: 30px; padding:10px 25px;cursor:pointer}
 #calculatorDialogBox .ovalBtn {float:right; margin-right: 60px;}
+#calculatorDialogBox .confirmBtnCalc {position: relative;border:#CCC solid 1px;border-radius: 10px; height: 37px; width: 37px; color:#FFFFFF; cursor:pointer; float:right; margin-right: 20px;
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAMAAABFjsb+AAAA+VBMVEX////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////r1CuUAAAAUnRSTlMAAQQFCQsRFRYaHB8gIiMkJikvNjg5Oj4/QURFT1JTY2Rla21xc3Z3e4SIjI6RkpOXnqKjpqmtr7S6u7/CxMbHy83Q09fZ2tvd3t/k5efu9PX3A7n3swAAALhJREFUeAFVy+VSw0AYRuGDlFLcJbgUJ7gLFCgtTs/9XwyzJDDZ58fuvGfmIzO1cdF8PFis8G+iZm6nncy6Pi1P9gzPpdroJ1jTVTJDt36WgBGdCbuzI7yn3gANqwRK8GLCmHWKbdoHNl2IGi25cjRud/JuJW5H8uxg3M7k0ITIqyy5H6WSUtbu4m3qHuxaK7RxLQNvnrSRS1quhL/vw/osQe+WpvzqutSv++Pzplrlz/y1wff2QFg/7P0mOj6r8AoAAAAASUVORK5CYII=);
+	background-position: 50%;
+	background-repeat: no-repeat;
+	background-color: #DEDEDE;
+}
+#calculatorDialogBox .redbg {
+background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAMAAABFjsb+AAAA+VBMVEX////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////r1CuUAAAAUnRSTlMAAQQFCQsRFRYaHB8gIiMkJikvNjg5Oj4/QURFT1JTY2Rla21xc3Z3e4SIjI6RkpOXnqKjpqmtr7S6u7/CxMbHy83Q09fZ2tvd3t/k5efu9PX3A7n3swAAALhJREFUeAFVy+VSw0AYRuGDlFLcJbgUJ7gLFCgtTs/9XwyzJDDZ58fuvGfmIzO1cdF8PFis8G+iZm6nncy6Pi1P9gzPpdroJ1jTVTJDt36WgBGdCbuzI7yn3gANqwRK8GLCmHWKbdoHNl2IGi25cjRud/JuJW5H8uxg3M7k0ITIqyy5H6WSUtbu4m3qHuxaK7RxLQNvnrSRS1quhL/vw/osQe+WpvzqutSv++Pzplrlz/y1wff2QFg/7P0mOj6r8AoAAAAASUVORK5CYII=);
+	background-position: 50%;
+	background-repeat: no-repeat;
+	background-color: #F68D90;
+}
+#calculatorDialogBox .confirmSpanCalc {position: absolute; top: 37px; display:none; color: #000000;background: #FFFFFF;font-size: 10px;white-space: nowrap; border: 1px solid #AAA; padding: 1px 4px 2px 5px;}
+#calculatorDialogBox .confirmSpanCalcHidden{position: absolute; top: 37px; display:none;}
+#calculatorDialogBox .confirmBtnCalc:hover > span.confirmSpanCalc{display:block;}
 #calculatorDialogBox .saveBtn:hover {background-color:#b8e34b}
 #calculatorDialogBox .distributionSaveBtn { float:right; margin:12px 65px 12px 0 ; color:#FFFFFF;border-radius:30px; border:#CCC solid 1px;padding:10px 25px;cursor:pointer; background-color:#99B52A}
 #calculatorDialogBox .distributionSaveBtn:hover {background-color:#b8e34b}
@@ -2904,4 +2919,20 @@ div#type_product_cirilic_name_form{
 .notify-no:hover{
   border:1px solid rgba(0, 0, 0, 0.56);
   border-radius: 5px;
+}
+a.someABtn.save_to_pdf{
+  background: url(../images/img_design/icon_pdf.png);
+  background-repeat: no-repeat;
+  border-radius: 0 17px 0 0;
+  height: 26px;
+  float: left;
+}
+a.someABtn.save_to_doc{
+  background: url(../images/img_design/icon_doc.png);
+    background-repeat: no-repeat;
+    border-radius: 0;
+    height: 26px;
+    float: left;
+    margin-left: 20px;
+    width: 1px;
 }
