@@ -433,8 +433,8 @@
 			
 			$details_arr = json_decode($_GET['details'],true);
 			$details_obj = json_decode($_GET['details']);
-		    //print_r($details_arr);
-			//echo $details_arr['action'];
+		    print_r($details_arr);
+			////echo $details_arr['action'];
 			//exit; //
 		    if(isset($details_arr['print_details'])){
 		        if($details_arr['print_details']['calculator_type']=='free'){
