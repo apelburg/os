@@ -1,7 +1,7 @@
 <?php 
 
   /*if(@$_SESSION['access']['user_id']==18){ 
-		echo  '111'; 
+		echo  '111'; echo '<pre>'; print_r(); echo '</pre>';
   } */
 
  class Com_pred{
