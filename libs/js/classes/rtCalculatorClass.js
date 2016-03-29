@@ -263,13 +263,8 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						  //alert(1);
-						  tds_arr[j].onclick = function(){rtCalculator.swich_cols(this,'show');}
-						   /*$(tds_arr[j]).mousedown(function(){
-															alert(1);
-															rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide'); 
-															alert(2);
-															});*/
+						  
+						 $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 						   
 					    }
 					}
@@ -1563,11 +1558,7 @@ var rtCalculator = {
 		if(cell.nodeName=='SPAN') cell = cell.parentNode;
 		var name =  cell.getAttribute("swiched_cols");
 		
-		//var tds_arr = rtCalculator.head_tbl.getElementsByTagName('td');
-		var trs_arr = ($(rtCalculator.head_tbl).children('tbody').length>0)? $(rtCalculator.head_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.head_tbl).children('tr').children('td');
-		relay(tds_arr,name,action);
-		//var tds_arr = rtCalculator.body_tbl.getElementsByTagName('td');
-		var trs_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
+		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
 		function relay(tds_arr,name,action){
 			for(var j in tds_arr){
