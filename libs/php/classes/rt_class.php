@@ -623,16 +623,15 @@
 									  $result2 = $mysqli->query($query2)or die($mysqli->error);
 									  if($result2->num_rows>0){
 									      // по циклу не проходим а просто редактируем один раз общиее поле print_details
-									      $row2 = $result->fetch_assoc();
+									      $row2 = $result2->fetch_assoc();
 										  
 										  $print_details_arr = json_decode($row2['print_details'],true);
 										  
 										  if($result2->num_rows==1){
+										       echo "$result2->num_rows==1";
 										      // если связанный тираж только один удалеяем из него все атрибуты объединенного тиража 
-											  if(isset($print_details_arr['quantity_details'])){
-												  unset($print_details_arr['quantity_details']);
-												  unset($print_details_arr['dop_data_ids']);
-											  }
+											  if(isset($print_details_arr['quantity_details']))unset($print_details_arr['quantity_details']);
+											  if(isset($print_details_arr['dop_data_ids']))unset($print_details_arr['dop_data_ids']);
 										  }
 										  if($result2->num_rows>1){  
 											  if(isset($print_details_arr['quantity_details'])){
@@ -645,9 +644,9 @@
 												  }
 											  }
 										  }
-
-                                          $print_details_arr['need_confirmation']="true";
-										  echo print_r($print_details_arr);
+										  //  print_r($print_details_arr);
+                                          // echo RT::json_fix_cyr(json_encode($print_details_arr));
+                                          $print_details_arr['need_confirmation']=true;
 										  
 										  require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 				      

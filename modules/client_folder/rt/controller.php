@@ -188,7 +188,7 @@
 		 $counter=0;
 		
 		  
-		  echo '<pre>'; print_r($row['dop_data']); echo '</pre>---';
+		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>---';
 		 // Проходим в цикле по второму уровню массива($row['dop_data']) на основе которого строится основной шаблон таблицы
 	     foreach($row['dop_data'] as $dop_key => $dop_row){
 		    $discount_arr = array();
