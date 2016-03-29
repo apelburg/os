@@ -1607,6 +1607,9 @@ var rtCalculator = {
 		if(cell.nodeName=='SPAN') cell = cell.parentNode;
 		var name =  cell.getAttribute("swiched_cols");
 		
+		var tds_arr = ($(rtCalculator.head_tbl).children('tbody').length>0)? $(rtCalculator.head_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.head_tbl).children('tr').children('td');
+		relay(tds_arr,name,action);
+		
 		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
 		function relay(tds_arr,name,action){
