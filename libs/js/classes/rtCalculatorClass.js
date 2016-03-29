@@ -263,9 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						  
-						 $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
-						   
+						    $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 					    }
 					}
 			    }	
@@ -976,15 +974,6 @@ var rtCalculator = {
 									  width: 500,
 									  minHeight : 200 ,
 									  closeOnEscape: false,
-									  close: function() {
-										  // возвращаемся к предыдущему состоянию
-										 // $(this).dialog("close");
-										 // cell.innerHTML = response_obj.old_quantity;
-									  },
-									  click: function() {
-										  alert(1);
-										 $( this ).dialog( "close" );
-									  },
 									  buttons: [{text: "Да",
 												click: function(){
 														// отправляем повторный запрос с маркером ignore_calculators_checking
@@ -1558,8 +1547,12 @@ var rtCalculator = {
 		if(cell.nodeName=='SPAN') cell = cell.parentNode;
 		var name =  cell.getAttribute("swiched_cols");
 		
+		var tds_arr = ($(rtCalculator.head_tbl).children('tbody').length>0)? $(rtCalculator.head_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.head_tbl).children('tr').children('td');
+		relay(tds_arr,name,action);
+		
 		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
+		
 		function relay(tds_arr,name,action){
 			for(var j in tds_arr){
 				if(tds_arr[j].getAttribute){
@@ -1896,8 +1889,8 @@ var rtCalculator = {
 		
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('deleting='+JSON.stringify(idsArr)+((typeof type !== 'undefined')?'&type='+type:''));
-		rtCalculator.send_ajax(url,callback);
-		function callback(response){ 
+		rtCalculator.send_ajax(url,callbackForDeleting);
+		function callbackForDeleting(response){ 
 		    /* console.log(response); //  */
 			alert(response); 
 
@@ -1905,12 +1898,43 @@ var rtCalculator = {
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
-			var data = JSON.parse(response);
 			
+			try {  var response_obj = JSON.parse(response); }
+			catch (e) { 
+				alert('неправильный формат данных in calculatorClass.deleting() ошибка JSON.parse(response)');
+				return;
+			}
 			
+			if(response_obj.warning && response_obj.warning.united_calculations){
+				alert(22);
+					 ///var dialog = $('<div>Внимание :<br>'+ notes.join(', ')+'</div>');
+					 var dialog = $('<div>удаляемые расчеты содержат объединенные тиражи</div>');
+					 
+					 $('body').append(dialog);
+					 $(dialog).dialog({
+									  modal: true, 
+									  width: 500,
+									  minHeight : 200 ,
+									  closeOnEscape: false,
+									  buttons: [{text: "Да",
+												click: function(){
+														// отправляем повторный запрос с маркером ignore_calculators_checking
+														$(this).dialog("close");
+														url += '&ignore_calculators_checking=1';
+														rtCalculator.send_ajax(url,callbackForDeleting);
+													}},
+											   {text: "Отмена",
+											   click: function(){
+													   $(this).dialog("close");
+												   }}]
+									});
+					 $(dialog).dialog('open');
+					 
+					 return;
+			}
 			
 			// alert(data[0],data[1]);
-			if(data[0]==0){
+			if(response_obj[0]==0){
 				alert(data[1]);
 				return;
 			}

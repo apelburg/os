@@ -154,8 +154,8 @@
 		 // нам надо вырезать все данные об удаляемых нанесениях из данных объединенных тиражей в которые они входят
 		 
 		 $idsArr = json_decode($_GET['deleting'],true);
-		 print_r($idsArr);
-		  //// exit;
+		 // print_r($idsArr);
+		 // exit;
 	     // проверяем какие типы калькуляторов используются в расчетах и не входитят ли услуги расчета в объединеный тираж
 		if(!isset($_GET['ignore_calculators_checking'])){
 			 $warnings =  array();
@@ -164,10 +164,11 @@
 				 if($result) $warnings[] = $id;
 			 }
 		     if(count($warnings)>0){
-			    echo json_encode(array("warnings"=>array("united_calculations"=>$warnings)));
+			     echo json_encode(array("warning"=>array("united_calculations"=>$warnings)));
+				 exit;
 			 }
 		 }
-		 exit;
+
 		 if($_GET['type']== 'rows') echo RT::delete_rows(json_decode($_GET['deleting']),@$_GET['query_num']);
 		 if($_GET['type']== 'prints' || $_GET['type']== 'uslugi' || $_GET['type']== 'printsAndUslugi' )  echo RT::deletePrintsAndUslugi(json_decode($_GET['deleting']), $_GET['type']);
 		 

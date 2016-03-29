@@ -953,7 +953,7 @@
 								    $print_details_obj->dop_data_ids = (array)$print_details_obj->dop_data_ids;
 									$print_details_obj->quantity_details = (array)$print_details_obj->quantity_details;
 									foreach($print_details_obj->dop_data_ids as $index => $value){
-									echo $print_details_obj->quantity_details[$index]."--";
+									    // echo $print_details_obj->quantity_details[$index]."--";
 									    if($value==$dop_data_id) $print_details_obj->quantity_details[$index] =$quantity;
 									}
 								}

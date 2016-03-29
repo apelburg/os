@@ -258,14 +258,14 @@
 			}
 			return (count($warning)>0)? json_encode(array('warning'=>array('calculators_checking'=>$warning),'old_quantity'=>$old_quantity)):'';  
 		}
-		static function check_on_united_calculations($id){
+		static function check_on_united_calculations($main_row_id){
 			global $mysqli;
 
 			$query="SELECT uslugi.united_calculations united_calculations FROM
 			                            `".RT_DOP_DATA."` dop_data INNER JOIN
 										`".RT_DOP_USLUGI."` uslugi 
 										  ON  dop_data.id = uslugi.dop_row_id
-										  WHERE  dop_data.row_id = '".$id."'";
+										  WHERE  dop_data.row_id = '".$main_row_id."'";
 			
             $result = $mysqli->query($query) or die($mysqli->error);
 			if($result->num_rows>0){
@@ -600,6 +600,65 @@
 				
 				// удаляем ряды из таблицы RT_DOP_USLUGI 
 				if(isset($dopRowIdsArr)){
+				
+				    // проверяем содержат ли расчеты объединенные тиражи
+					
+					foreach($dopRowIdsArr as $dopRowId){
+					
+					    $query="SELECT id, united_calculations FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` ='".$dopRowId."'";
+						$result = $mysqli->query($query)or die($mysqli->error);
+						if($result->num_rows>0){
+							 while($row = $result->fetch_assoc()){
+								 if($row['united_calculations']!=''){
+								      // если оказалось что  расчет входит в объединенный тираж
+									  // надо удалить его данные из всех остальных расчетов этого тиража 
+									  // данные которые надо удалить или отредактировать
+									  // - id из united_calculations
+									  // - print_details->quantity_details, $print_details->dop_data_ids
+									  // - если это был ручной калькулятор перевести его в автоматический и убрать need_confirmation
+								      $united_calculations_ids = explode(",",$row['united_calculations']);
+									  $united_calculations_ids = array_diff($united_calculations_ids,array($row['id']));
+
+									  $query2="SELECT united_calculations, print_details FROM `".RT_DOP_USLUGI."` WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+									  $result2 = $mysqli->query($query2)or die($mysqli->error);
+									  if($result2->num_rows>0){
+									      // по циклу не проходим а просто редактируем один раз общиее поле print_details
+									      $row2 = $result->fetch_assoc();
+										  
+										  $print_details_arr = json_decode($row2['print_details'],true);
+										  
+										  if($result2->num_rows==1){
+										      // если связанный тираж только один удалеяем из него все атрибуты объединенного тиража 
+											  if(isset($print_details_arr['quantity_details'])){
+												  unset($print_details_arr['quantity_details']);
+												  unset($print_details_arr['dop_data_ids']);
+											  }
+										  }
+										  if($result2->num_rows>1){  
+											  if(isset($print_details_arr['quantity_details'])){
+												  foreach($print_details_arr['dop_data_ids'] as $index => $value){
+												  echo "$value==$dopRowId";
+													  if($value==$dopRowId){
+														  unset($print_details_arr['quantity_details'][$index]);
+														  unset($print_details_arr['dop_data_ids'][$index]);
+													  }
+												  }
+											  }
+										  }
+
+                                          $print_details_arr['need_confirmation']="true";
+										  echo print_r($print_details_arr);
+										  
+										  require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+				      
+										  $query3="UPDATE `".RT_DOP_USLUGI."` SET print_details = '".RT::json_fix_cyr(json_encode($print_details_arr))."', united_calculations='".(($result2->num_rows>1)?implode(",",$united_calculations_ids):'')."' WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+										  $mysqli->query($query3)or die($mysqli->error);
+									  }
+								 }
+							 }
+						 }
+					}
+					
 					$query="DELETE FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` IN('".implode("','",$dopRowIdsArr)."')";
 					// echo $query."\r\n";
 					$result = $mysqli->query($query)or die($mysqli->error);
