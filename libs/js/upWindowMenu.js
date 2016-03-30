@@ -223,31 +223,10 @@
 		a.setAttribute('type','prints');
 		a.href = '#';
 		a.onclick = rtCalculator.deleting;
-		a.appendChild(document.createTextNode('Удалить нанесения'));
+		a.appendChild(document.createTextNode('Удалить услуги'));
 		innerDiv.appendChild(a);
 		div.appendChild(innerDiv);
 		
-		
-		var innerDiv = document.createElement('div');
-		innerDiv.className = "link1";
-		var a = document.createElement('a');
-		a.setAttribute('type','uslugi');
-		a.href = '#';
-		a.onclick = rtCalculator.deleting;
-		a.appendChild(document.createTextNode('Удалить дополнительные услуги'));
-		innerDiv.appendChild(a);
-		div.appendChild(innerDiv);
-		
-		
-		var innerDiv = document.createElement('div');
-		innerDiv.className = "link1";
-		var a = document.createElement('a');
-		a.setAttribute('type','printsAndUslugi');
-		a.href = '#';
-		a.onclick = rtCalculator.deleting;
-		a.appendChild(document.createTextNode('Удалить нанесения и доп. услуги'));
-		innerDiv.appendChild(a);
-		div.appendChild(innerDiv);
 		
 		var innerDiv = document.createElement('div');
 		innerDiv.className = "link1";
@@ -1197,30 +1176,7 @@
 		a.setAttribute('pos_id',pos_id);
 		a.href = '#';
 		a.onclick = rtCalculator.deleting;
-		a.appendChild(document.createTextNode('Удалить нанесения'));
-		innerDiv.appendChild(a);
-		div.appendChild(innerDiv);
-		
-		
-		var innerDiv = document.createElement('div');
-		innerDiv.className = "link1";
-		var a = document.createElement('a');
-		a.setAttribute('type','uslugi');
-		a.setAttribute('pos_id',pos_id);
-		a.href = '#';
-		a.onclick = rtCalculator.deleting;
-		a.appendChild(document.createTextNode('Удалить дополнительные услуги'));
-		innerDiv.appendChild(a);
-		div.appendChild(innerDiv);
-		
-		var innerDiv = document.createElement('div');
-		innerDiv.className = "link1";
-		var a = document.createElement('a');
-		a.setAttribute('type','printsAndUslugi');
-		a.setAttribute('pos_id',pos_id);
-		a.href = '#';
-		a.onclick = rtCalculator.deleting;
-		a.appendChild(document.createTextNode('Удалить нанесения и доп. услуги'));
+		a.appendChild(document.createTextNode('Удалить услуги'));
 		innerDiv.appendChild(a);
 		div.appendChild(innerDiv);
 
