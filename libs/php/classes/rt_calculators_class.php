@@ -473,7 +473,8 @@
 		 
 		    if(isset($details_arr['print_details']['distribution_type']) && $details_arr['print_details']['distribution_type']=='union'){ // объединенный тираж
 
-			     if(isset($details_arr['united_calculations'])){// уже существующий расчет обновление
+			     if(isset($details_arr['united_calculations']) && $details_arr['united_calculations']!=""){// уже существующий расчет обновление
+				 echo $details_arr['united_calculations'];
 				      $united_calculations = explode(',',$details_arr['united_calculations']);
 					  $quantity = array();
 					  if(isset($details_arr['action']) && $details_arr['action']=='attach'){
@@ -543,6 +544,7 @@
 					 else{// обычное обновление
 					 
 						 $query="SELECT id, quantity FROM `".RT_DOP_USLUGI."` WHERE `id` IN('".implode("','",$united_calculations)."')";
+						 echo $query;
 						 $result = $mysqli->query($query)or die($mysqli->error);
 						 if($result->num_rows>0){
 						     $cur_data = array();

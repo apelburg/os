@@ -241,6 +241,11 @@
 		
 							 } /**/
 						 }
+						 
+						 if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='free')){
+						     $extra_data['price_in'] = ($extra_data['price_in']*(int)$print_details['quantity'])/$extra_data['quantity'];
+							 $extra_data['price_out'] = ($extra_data['price_out']*(int)$print_details['quantity'])/$extra_data['quantity'];
+						 }
 						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
 						 $summ_in[] = $extra_data['quantity']*$extra_data['price_in'];
