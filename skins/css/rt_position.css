@@ -523,6 +523,10 @@ body {
   background: #f1f1f1;
   cursor: pointer;
 }
+.variant_info .row .cell table tr td.alarm_services:hover{
+  background-color: rgba(208, 66, 66, 0.28);
+}
+
 .variant_info .row .cell table tr td:nth-of-type(1) .greyText{
   border-color: transparent;
 }
