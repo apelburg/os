@@ -119,7 +119,7 @@
 	  
 	 // echo '<pre>'; print_r($rows[0]); echo '</pre>';
 	  /*if(@$_SESSION['access']['user_id']==18){ 
-		echo '<pre>'; print_r($rows[0]); echo '</pre>';
+		   echo '<pre>'; print_r($rows[0]); echo '</pre>';
       }  */
 	 
 	 
@@ -187,7 +187,6 @@
 		 }
 		 $counter=0;
 		
-		  
 		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>---';
 		 // Проходим в цикле по второму уровню массива($row['dop_data']) на основе которого строится основной шаблон таблицы
 	     foreach($row['dop_data'] as $dop_key => $dop_row){
@@ -240,6 +239,11 @@
 								 
 		
 							 } /**/
+						 }
+						 
+						 if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='free')){
+						     $extra_data['price_in'] = ($extra_data['price_in']*(int)$print_details['quantity'])/$extra_data['quantity'];
+							 $extra_data['price_out'] = ($extra_data['price_out']*(int)$print_details['quantity'])/$extra_data['quantity'];
 						 }
 						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
@@ -374,7 +378,7 @@
 				 $discount = round((float)(array_sum($discount_arr)/count($discount_arr)),2);
 				 $discount_str = number_format($discount,'2','.','') .'%';
 				 //$srock_sdachi = implode('.',array_reverse(explode('-',$dop_row['shipping_date'])));
-				  $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
+				 $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
 				 if($srock_sdachi=='00.00.0000') $srock_sdachi='';
 				 
 				 $expel_class_main = ($expel['main']=='1')?' red_cell':'';
@@ -391,7 +395,7 @@
 				 $currency = $uslugi_btn = '';
 				 $item_price_out = $item_summ_in_format = $item_summ_out_format = $print_in_summ_format = $print_out_summ_format = '';
 				 $dop_uslugi_in_summ_format = $dop_uslugi_out_summ_format = $total_summ_in_format = $total_summ_out_format = '';
-				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format = '' ;
+				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format =  '' ;
 				 
 				  
 			 }
