@@ -148,7 +148,7 @@ var printCalculator = {
 			// alert(url);
 			printCalculator.send_ajax(url,callback);
 			function callback(response){ 
-			    alert(response);				
+			    // alert(response);				
 				
 				var data_AboutPrintsArr = JSON.parse(response);
 				
@@ -2348,7 +2348,7 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		    alert(response);
+		    // alert(response);
 			// alert(printCalculator.currentCalculationData[printCalculator.type].action);
 			// console.log(response);
 		    // location.reload();
