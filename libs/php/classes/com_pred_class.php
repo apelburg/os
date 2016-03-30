@@ -357,6 +357,7 @@
 			$row = $result->fetch_assoc();
 			return $row['theme'];
 		}
+
 	   static function fetch_kp_rows($kp_id){
 	       global $mysqli;
 		   // выбираем из базы данных строки соответствующие данному КП
@@ -919,7 +920,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 				// примечание - у позиции может быть любое количество расчетов( а каждый расчет в свою очередь может содержать
 				//  любое количество нанесений и доп услуг)
 				foreach($pos_level['dop_data'] as $r_key => $r_level){ 
-				
+					
 				    if($pos_level['row_type']!='cat' && isset($r_level['details'])){
 				       $pos_name = $r_level['details'];
 				    }
@@ -998,17 +999,25 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 						   
 							
 						    if($u_level['print_details']=='') continue;
+
 							$print_details_obj = json_decode($u_level['print_details']);
 							if($print_details_obj == NULL) continue;
+
 							$print_details_arr = json_decode($u_level['print_details'],TRUE);
 							
-							  /*if(@$_SESSION['access']['user_id']==18){ 
-									echo '<pre>';print_r($print_details_arr);echo '</pre>';
-							  }
-							 */
+							// if(@$_SESSION['access']['user_id']==42){ 
+							// 	echo '<pre>';
+							// 	print_r($u_level);
+							// 	echo '</pre>';
+							// }
+							 
 							//$quantity = (isset($print_details_obj->calculator_type) && $print_details_obj->calculator_type == 'free')?$u_level['quantity']:$quantity;
 							$quantity = (isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type'] == 'free')?$u_level['quantity']:$quantity;
 							
+							if(isset($print_details_arr['quantity']) && (int)$print_details_arr['quantity'] > 0 && $print_details_arr['quantity'] != $quantity){
+								$quantity = $print_details_arr['quantity'];
+							}
+
 							if(isset($print_details_arr['dop_params']['sizes'])){
 							    if($print_details_arr['dop_params']['sizes'][0]['type'] == 'coeff'){
 								    $size_coeff = (isset($print_details_arr['dop_params']['sizes'][0]['val']) && $print_details_arr['dop_params']['sizes'][0]['val']!=0)?$print_details_arr['dop_params']['sizes'][0]['val']: 1 ;
@@ -1169,8 +1178,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 									  </tr>
 									 </table>';
 							}
-							else{	
-								
+							else{									
 								$print_block[] = '<table style="font-family:arial;font-size:13px;right;margin:0 0 5px 0;width:100%;border-collapse:collapse;width:350px;table-layout:_fixed;" border="0">
 									  <tr>
 										<td align="right" style="width:250px;color:#888;">1шт.</td>
@@ -1178,7 +1186,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 										<td align="left" style="width:30px;">руб.</td>
 									  </tr>
 									  <tr>
-										<td align="right" style="color:#888;">тираж: '.$quantity.' шт. </td>
+										<td align="right" style="color:#888;"  data-quantity="'.@$u_level['quantity'].'">тираж: '.$quantity.' шт. </td>
 										<td align="right" style="padding:0 5px;"><nobr><span id="metod_display_setting_'.$counter2.'2_0"  style="display:'.(($display_setting_2==0)?'inline-block':'none').'">'.number_format($print_block_summ1,2,',',' ').'</span><span id="metod_display_setting_'.$counter2.'2_1" style="display:'.(($display_setting_2==1)?'inline-block':'none').'">'.number_format($print_block_summ2,2,',',' ').'</span><span id="metod_display_setting_'.$counter2.'2_2" style="display:'.(($display_setting_2==2)?'inline-block':'none').'">'.number_format($print_block_summ3,2,',',' ').'</span></nobr></td>
 										<td align="left">руб.</td>
 										'.((isset($print_details_obj->distribution_type) && $print_details_obj->distribution_type == 'union')?'<tr><td valign="top" colspan="3" style="color:#FF0000;">Стоимость оказываемых услуг указана за комплекс работ и может быть пересмотрена при изменении условий оказываемых услуг.</td></tr>':'').
