@@ -129,7 +129,13 @@ class rtPositionUniversal extends Position_general_Class
 		        $query .= " , `art_id` = '".$art['id']."'";
 		        $query .= " , `name` = '".$art['name']."'";
 		        $query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
-		        $result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		        // смена стоимости
+		        $query = "UPDATE `".RT_DOP_DATA."` SET";
+				$query .= "  `price_out` = '".$this->get_priceArt($art['id'])."'";		
+				$query .= " WHERE `row_id` = '".(int)$_POST['row_id']."'";        
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			}
 			
 			$option['timeout'] = '1000';
@@ -139,6 +145,45 @@ class rtPositionUniversal extends Position_general_Class
 			$this->responseClass->addResponseFunction('js_edit_article_replace_back');
 			$this->responseClass->addMessage('Такого артикула нет в каталоге','error_message');		
 		}
+		
+	}
+
+	/**
+	 *	return article price
+	 *
+	 *	@param 		art_id row
+	 *	@return  	price money
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	13:10 28.03.2016
+	 */
+	private function get_priceArt($id){
+		$price = 0;
+		$query = "SELECT * FROM `".BASE_DOP_PARAMS_TBL."` WHERE `art_id` = '".$id."' GROUP BY `price`";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$price = $row['price'];
+			}
+		}
+		return $price; 
+	}
+
+	/**
+	 *	save description name
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	13:25 25.03.2016
+	 */
+	protected function update_article_description_name_AJAX(){
+		
+		$query = "UPDATE `".RT_MAIN_ROWS."` SET";
+		$query .= " `name` = '".base64_decode($_POST['name'])."'";
+		$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		
+		// $this->responseClass->addResponseFunction('js_edit_description_replace_back');
+		$this->responseClass->addMessage('Описание сохранено','successful_message');		
+		
 		
 	}
 	/**

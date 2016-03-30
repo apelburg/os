@@ -263,13 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						  //alert(1);
-						  tds_arr[j].onclick = function(){rtCalculator.swich_cols(this,'show');}
-						   /*$(tds_arr[j]).mousedown(function(){
-															alert(1);
-															rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide'); 
-															alert(2);
-															});*/
+						   $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 						   
 					    }
 					}
@@ -925,7 +919,7 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			//alert(response);
+			// alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) { alert('неправильный формат данных in rtCalculator.makeQuantityCalculations() ошибка JSON.parse(response)'); }
@@ -955,15 +949,19 @@ var rtCalculator = {
 						}
 						if(prop == 'outOfLimit'){
 							var str ='';
+<<<<<<< HEAD
 							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].minQuantity+"<br>";  
+=======
+							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
+								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
 							}
 							notes.push('<br>Из-за превышения максимального тиража<br>автоматические калькуляторы в следующих расчетах будут переведены в ручной режим:<br>'+str);
 						}
 						if(prop == 'needIndividCalculation'){
 							var str ='';
-							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
-								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+"<br>";  
+							for(var index in response_obj.warning.calculators_checking.needIndividCalculationDetails){
+								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.needIndividCalculationDetails[index].print_type+"<br>";  
 							}
 							notes.push('Такой тираж не может быть установлен!!!<br>Потому что имеются нанесения для которых не возможно расчитать цену<br> - для этих нанесений требуется индивидуальный расчет :<br>'+str);
 						}
@@ -1613,11 +1611,10 @@ var rtCalculator = {
 		if(cell.nodeName=='SPAN') cell = cell.parentNode;
 		var name =  cell.getAttribute("swiched_cols");
 		
-		//var tds_arr = rtCalculator.head_tbl.getElementsByTagName('td');
-		var trs_arr = ($(rtCalculator.head_tbl).children('tbody').length>0)? $(rtCalculator.head_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.head_tbl).children('tr').children('td');
+		var tds_arr = ($(rtCalculator.head_tbl).children('tbody').length>0)? $(rtCalculator.head_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.head_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
-		//var tds_arr = rtCalculator.body_tbl.getElementsByTagName('td');
-		var trs_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
+		
+		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
 		function relay(tds_arr,name,action){
 			for(var j in tds_arr){

@@ -2920,3 +2920,19 @@ div#type_product_cirilic_name_form{
   border:1px solid rgba(0, 0, 0, 0.56);
   border-radius: 5px;
 }
+a.someABtn.save_to_pdf{
+  background: url(../images/img_design/icon_pdf.png);
+  background-repeat: no-repeat;
+  border-radius: 0 17px 0 0;
+  height: 26px;
+  float: left;
+}
+a.someABtn.save_to_doc{
+  background: url(../images/img_design/icon_doc.png);
+    background-repeat: no-repeat;
+    border-radius: 0;
+    height: 26px;
+    float: left;
+    margin-left: 20px;
+    width: 1px;
+}
