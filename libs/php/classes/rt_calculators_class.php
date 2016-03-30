@@ -472,10 +472,10 @@
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		 
 		    if(isset($details_arr['print_details']['distribution_type']) && $details_arr['print_details']['distribution_type']=='union'){ // объединенный тираж
+
 			     if(isset($details_arr['united_calculations'])){// уже существующий расчет обновление
 				      $united_calculations = explode(',',$details_arr['united_calculations']);
 					  $quantity = array();
-					 
 					  if(isset($details_arr['action']) && $details_arr['action']=='attach'){
 						  print_r($details_arr);
 						 $query="SELECT id, quantity FROM `".RT_DOP_USLUGI."` WHERE `id` IN('".implode("','",$united_calculations)."')";
@@ -522,31 +522,38 @@
 						 array_push($united_calculations, $last_uslugi_id);
 						 $quantity[$last_uslugi_id]=(int)$details_arr['attachment_quantity'];
 						 
-						 unset($details_arr['id_for_attachment']);
-						 if(isset($details_arr['print_details']['distribution_type'])){
-						       unset($details_arr['print_details']['distribution_type']);
-							   $details_arr['print_details_json'] = self::json_fix_cyr(json_encode($details_arr['print_details'])); 
-						  }
-						
-					 }
-					
-					
-				     //print_r($quantity);
-					 
-				     foreach($quantity as $uslugi_id => $quantity){
-					     // echo $uslugi_id.' '.$quantity."\r\n";
-						 $details_arr['dop_uslugi_id'] = $uslugi_id;
-						 $cur_data=array('quantity'=>(int)$quantity);
-					     rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
-					 }
-					 
-					 if(isset($details_arr['action']) && $details_arr['action']=='attach'){
-					     unset($details_arr['action']);
-					     // вносим в базу id-шники связанных нанесений 
-					     rtCalculators::mark_united_calculatoins($united_calculations);
+						 unset($details_arr['id_for_attachment']);	
+						 echo 5;	
 						 
+						  
+						 foreach($quantity as $uslugi_id => $quantity){
+							 // echo $uslugi_id.' '.$quantity."\r\n";
+							 $details_arr['dop_uslugi_id'] = $uslugi_id;
+							 $cur_data=array('quantity'=>(int)$quantity);
+							 rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
+						 }
+						 
+						 if(isset($details_arr['action']) && $details_arr['action']=='attach'){
+							 unset($details_arr['action']);
+							 // вносим в базу id-шники связанных нанесений 
+							 rtCalculators::mark_united_calculatoins($united_calculations);
+							 
+						 }				
 					 }
-
+					 else{// обычное обновление
+					 
+						 $query="SELECT id, quantity FROM `".RT_DOP_USLUGI."` WHERE `id` IN('".implode("','",$united_calculations)."')";
+						 $result = $mysqli->query($query)or die($mysqli->error);
+						 if($result->num_rows>0){
+						     $cur_data = array();
+				             while($row = $result->fetch_assoc()){
+							     $cur_data['quantity']=$row['quantity'];
+								 $details_arr['dop_uslugi_id']=$row['id'];
+								 $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
+							 }
+					     }
+						echo json_encode($last_uslugi_ids);
+					 }
 			     }
 				 else if(isset($details_arr['print_details']['dop_data_ids'])){// новый расчет
 				     $last_uslugi_ids = array();
@@ -556,11 +563,6 @@
 					     // echo $dop_data_row_id."\r\n";
 						 $cur_data=array('dop_data_row_id'=>$details_arr['print_details']['dop_data_ids'][$i],'quantity'=>(int)$details_arr['print_details']['quantity_details'][$i]);
 						 //$cur_data=array('dop_data_row_id'=>$details_arr['print_details']['dop_data_ids'][$i],'distribution_type'=>$details_arr['print_details']['distribution_type,'quantity'=>(int)$details_arr['print_details']['quantity_details'][$i],'union_quantity'=>array_sum($details_arr['print_details']['quantity_details']));
-						 
-						 if(isset($details_arr['print_details']['distribution_type'])){
-						     unset($details_arr['print_details']['distribution_type']);
-							 $details_arr['print_details_json'] = self::json_fix_cyr(json_encode($details_arr['print_details'])); 
-						 }
 						 
 					     $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 					 }
@@ -657,7 +659,7 @@
 									   `creator_id` ='".$details_arr['creator_id']."',
 									   `print_details` ='".cor_data_for_SQL($details_arr['print_details_json'])."'
 									    WHERE `id` ='".$details_arr['dop_uslugi_id']."'"; 
-				 // echo $query;
+				  echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
 				 
 				 return $details_arr['dop_uslugi_id'];
