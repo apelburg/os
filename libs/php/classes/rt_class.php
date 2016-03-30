@@ -193,6 +193,53 @@
 			if($result->num_rows>0) return true;  
 			return false;  
 		}
+		static function check_calculators_types_by_id($id,$new_quantity){
+			global $mysqli;
+
+            $query="SELECT dop_data.quantity old_quantity, uslugi.print_details print_details, uslugi.united_calculations united_calculations FROM
+			                            `".RT_DOP_DATA."` dop_data INNER JOIN
+										`".RT_DOP_USLUGI."` uslugi 
+										  ON  dop_data.id = uslugi.dop_row_id
+										  WHERE  dop_data.id = '".$id."'";
+
+			//$query="SELECT dop.print_details, dop.united_calculations FROM `".RT_DOP_USLUGI."` FROM `".RT_DOP_USLUGI."` dop  WHERE `dop_row_id` = '".$id."'";
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0){
+			     $warning = array();
+			     while($row = $result->fetch_assoc()){
+				    $old_quantity = $row['old_quantity'];
+				    $pd = json_decode($row['print_details'],true);
+					
+					if(!isset($warning['manual_calc_exists']) && $pd['calculator_type']=='manual'){
+					    $warning['manual_calc_exists'] = true;
+					}
+					if(!isset($warning['free_calc_exists']) && $pd['calculator_type']=='free'){
+					    $warning['free_calc_exists'] = true;
+					}
+					if(!isset($warning['united_calculations']) && $row['united_calculations']!=''){
+					    $warning['united_calculations'] = true;
+					}
+					if($pd['calculator_type']=='auto'){
+					    require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+					    $YPriceParam = (isset($details_arr['print_details']['dop_params']['YPriceParam']))? count($details_arr['print_details']['dop_params']['YPriceParam']):1;
+					    $new_price_arr = rtCalculators::change_quantity_and_calculators_price_query($new_quantity,json_decode($row['print_details']),$YPriceParam);
+						if(rtCalculators::$lackOfQuantity){
+							$warning['lackOfQuantity'] = true;
+							$warning['lackOfQuantityDetails'] = rtCalculators::$lackOfQuantityDetails;
+						}
+						if(rtCalculators::$outOfLimit){
+						    $warning['outOfLimit'] = true;
+						    $warning['outOfLimitDetails'] = rtCalculators::$lackOfQuantityDetails;
+						}
+						if(rtCalculators::$needIndividCalculation){
+						    $warning['needIndividCalculation'] = true;
+						    $warning['needIndividCalculationDetails'] = rtCalculators::$lackOfQuantityDetails;
+					    }
+					}
+				}
+			}
+			return (count($warning)>0)? json_encode(array('warning'=>array('calculators_checking'=>$warning),'old_quantity'=>$old_quantity)):'';  
+		}
 		static function shift_rows_down($place_id,$mainCopiedRowId,$shift_counter /* $place_id - куда вставляем, $pos_id - что будем вставлять */){
 		    global $mysqli;
 			

@@ -111,7 +111,7 @@ var printCalculator = {
                    
 
 					function callback(response){ 
-						alert(response);
+						// alert(response);
 						// console.log(response);
 						//location.reload();
 					}
@@ -2182,10 +2182,35 @@ var printCalculator = {
 			saveBtn.className = 'ovalBtn';
 			saveBtn.innerHTML = 'Сохранить расчет';
 			saveBtn.onclick =  printCalculator.saveCalculatorResult;
-			
 			BtnsDiv.appendChild(saveBtn);
+			
+			var ConfirmBtn = document.createElement('DIV');
+			ConfirmBtn.className = 'confirmBtnCalc';
+			if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation) ConfirmBtn.className = 'confirmBtnCalc redbg';
+			ConfirmBtn.onclick =  function(){ printCalculator.makeResultConfirmation(ConfirmBtn);}
+			
+			
+			var ConfirmSpan = document.createElement('SPAN');
+			ConfirmSpan.className = (printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation)?'confirmSpanCalc':'confirmSpanCalcHidden';
+			ConfirmSpan.innerHTML = 'подтверждаю цены, снять маркер'; 
+			ConfirmBtn.appendChild(ConfirmSpan);
+			BtnsDiv.appendChild(ConfirmBtn);
+			
 			printCalculatorItogDisplay.appendChild(BtnsDiv);
 			printCalculator.currentCalculationData[printCalculator.type].mainCalculatorBox.appendChild(printCalculatorItogDisplay);
+		}
+	}
+	,
+	makeResultConfirmation:function(btn){
+		if(printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation){
+			delete printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation;
+			if(btn.getElementsByTagName('SPAN')[0]) btn.getElementsByTagName('SPAN')[0].className = 'confirmSpanCalcHidden';
+			btn.className = 'confirmBtnCalc';
+		}
+		else{
+			printCalculator.currentCalculationData[printCalculator.type].print_details.need_confirmation = 'true';
+			if(btn.getElementsByTagName('SPAN')[0]) btn.getElementsByTagName('SPAN')[0].className = 'confirmSpanCalc';
+			btn.className = 'confirmBtnCalc redbg';
 		}
 	}
 	,

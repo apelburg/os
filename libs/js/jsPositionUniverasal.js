@@ -47,7 +47,8 @@ $(document).on('click', '.row_price_out_one.price_out', function(event) {
     echo_message_js(message,'system_message',800);
   }
 });
-// вешаем клик на артикул
+
+// вешаем редактор описания (названия) каталожного товара
 $(document).on('click', '#js--edit-description', function(event) {
   event.preventDefault();
   if($(this).find('input').length == 0){

@@ -127,9 +127,11 @@
 	 $glob_counter = 0;
 	 $mst_btn_summ = 0;
 	 $svetofor_display_relay_status_all = 'on';
+	 
 	 foreach($rows[0] as $key => $row){
 	     $glob_counter++;
-		 
+		 $need_confirmation_flag = false;
+		 $alarm_marker=$confirm_calc_tip='';
          // Проходим по первому уровню и определям некоторые моменты отображения таблицы, которые будут применены при проходе по второму
 		 // уровню массива, ряды таблицы будут создаваться там
 		 
@@ -137,7 +139,27 @@
 		 // считаем сколько мастер кнопок нажаты
 		 $mst_btn_summ += $row['master_btn'];
 		 
-		 
+		 // приблуда выясняющая надо ли отображать маркер что есть ли нанесения которые надо подтверждать
+		 if(isset($row['dop_data'])){
+		     foreach($row['dop_data'] as $cnfrm_lev1){
+			     if(isset($cnfrm_lev1['dop_uslugi'])){
+				     foreach($cnfrm_lev1['dop_uslugi'] as $cnfrm_lev2){ 
+					     foreach($cnfrm_lev2 as $cnfrm_lev3){
+						     if(isset($cnfrm_lev3['print_details'])){
+								 $cnfrm_arr = json_decode($cnfrm_lev3['print_details'],true);
+								 if(isset($cnfrm_arr['need_confirmation'])) $need_confirmation_flag = true;
+					         }
+					     }
+				     }
+			     }
+		     }
+		 }
+		 if($need_confirmation_flag){
+			  $row['rt_row_color'] = 'red';
+			  $alarm_marker = ' js--icon-alarm-services';
+			  $confirm_calc_tip = '<div class="confirmCalcTip">проверьте цены, введенные вручную</div>';
+		 }
+
 		 // если товарная позиция имеет больше одного варианта расчета вставляем пустой ряд вверх
 		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>';
 		 if(isset($row['dop_data']) && count($row['dop_data'])>1){
@@ -191,15 +213,15 @@
 				 // 1. определяем данные описывающие варианты нанесения логотипа, они хранятся в $dop_row['dop_uslugi']['print']
 				 if(isset($dop_row['dop_uslugi']['print'])){ // если $dop_row['dop_uslugi']['print'] есть выводим данные о нанесениях 
 					 $row_counter = 0; 
+					 
 					 foreach($dop_row['dop_uslugi']['print'] as $extra_data){
 					     // если количество в расчете нанесения не равно количеству в колонке тираж товара 
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
 						//$extra_data['quantity'] = 250;
 						$print_details = json_decode($extra_data['print_details'],true);
-						
-						 ;
+
 						 //echo '<pre>'; print_r(printCalculator::convert_print_details_for_TotalCom($extra_data['print_details'])); echo '</pre>';
-						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto' || $print_details['calculator_type'] =='manual')){
+						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto')){
 							if($extra_data['quantity']!=$dop_row['quantity']){
 								 $reload['flag'] = true;
 								 //echo $dop_row['quantity'];
@@ -231,6 +253,8 @@
 							 else $size='';
 						 }
 						 else $size='';
+						 
+						 if(isset($print_details['need_confirmation']))  $need_confirmation_flag = true;
 						 
 						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
 					 }
@@ -376,7 +400,7 @@
 			 $dop_details = '';
 			  //echo $row['row_type'].' = ';
 			 if($row['row_type'] == 'cat'){ 
-				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank cat js-color-'.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank cat js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&section=rt_position&id='.$key.'&client_id='.$client_id.'">'.$row['art'].'</a>
 								   <div class="pos_link_plank">
 									  <div class="catalog">
@@ -386,6 +410,7 @@
 										   '.identify_supplier_by_prefix($row['art']).'
 									  </div>
 								   </div>
+								   '.$confirm_calc_tip.'
 								 </div>
 								 <div>'.$row['name'].'</div>
 								 <div><input type="button" class="getSizesBtn" pos_id="'.$key.'" value="Размеры"></div>';
@@ -393,17 +418,21 @@
 		        if($counter==0 &&  count($row['dop_details'])>0)  $dop_details['allowed_prints'] = $row['dop_details'];
 			 }
 			 else if($row['row_type'] == 'ext'){
-				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank ext js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
+								 '.$confirm_calc_tip.'
 								 </div>';
 			 }
 			 else if($row['row_type'] == 'pol'){
-				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
+				 $extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
+								 
+								 '.$confirm_calc_tip.'
 								 </div>';
 			 }else{
-			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].'">
+			 	$extra_panel = '<div data-color="'.$row['rt_row_color'].'" class="pos_plank pol js-color-'.$row['rt_row_color'].''.$alarm_marker.'">
 								   <a href="?page=client_folder&client_id='.$_GET['client_id'].'&section=rt_position&id='.$key.'">'.$row['name'].'</a>
+								 '.$confirm_calc_tip.'
 								 </div>';
 			 }
 			 $block = (isset($dop_row['status_snab']) && ($dop_row['status_snab']=='on_calculation_snab' || $dop_row['status_snab']=='on_recalculation_snab' || $dop_row['status_snab']=='in_calculation'))?1:0;
@@ -486,7 +515,7 @@
 				  <td class="hidden">draft</td>
 				  <td width="40" class="center"><img src="'.HOST.'/skins/images/img_design/rt_svetofor_top_btn_'.$svetofor_display_relay_status_all.'.png" onclick="rtCalculator.svetofor_display_relay(this);"></td>
 				  <td width="65" type="quantity" class="quantity right r_border">тираж</td>
-				  <td width="1" style="position:relative"><!-- колонка для кнопки сохранить --></td>
+				  <td width="1" style="position:relative"><!-- ячейка для кнопки сохранить --></td>
 				  <td width="90" class="w_border relative"><div class="cap_name" style="left:105px;">сувенир</div><br><div class="cap_subname">входящая</div></td>
 				  <td width="15" class="w_border"></td>
 				  <td width="90" class="w_border"><br><div class="cap_subname">исходящая</div></td>
@@ -518,7 +547,7 @@
 				  <td class="hidden">dop_details</td>
 				  <td width="15"></td>
 				  <td class="quantity r_border"></td>
-				  <td width="1" style="position:relative"><!-- колонка для кнопки сохранить --></td>
+				  <td width="1" style="position:relative"><!-- ячейка для кнопки сохранить --></td>
 				  <td type="item_summ_in" class="right">'.number_format(@$total['item_summ_in'],'2','.','').'</td>
 				  <td width="15">р</td>
 				  <td type="item_summ_out" class="right">'.number_format(@$total['item_summ_out'],'2','.','').'</td>

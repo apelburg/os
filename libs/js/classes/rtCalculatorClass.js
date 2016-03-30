@@ -949,6 +949,10 @@ var rtCalculator = {
 						}
 						if(prop == 'outOfLimit'){
 							var str ='';
+
+							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
+								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].minQuantity+"<br>";  
+
 							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
 							}
