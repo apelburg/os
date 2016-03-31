@@ -492,8 +492,7 @@
 							  // надо сначала получить данные о тиражах уже существующих нанесений
 							  // суммировать с тиражом данного нанесения 
 							  // произвести перерасчет стоимости нанесения
-							  // если тираж привысит максимальный вернуть об этом ответ на сторону клиента
-							  // для вывода окна предупреждения и открытия ручного калькулятора
+							  // если тираж привысит максимальный вернуть перевести калькулятор в ручной
 							  $new_quantity = array_sum($quantity)+$details_arr['attachment_quantity'];
 							  echo ' - '.$new_quantity.' - ';
 						 
@@ -531,7 +530,7 @@
 							 // echo $uslugi_id.' '.$quantity."\r\n";
 							 $details_arr['dop_uslugi_id'] = $uslugi_id;
 							 $cur_data=array('quantity'=>(int)$quantity);
-							 rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
+							 $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 						 }
 						 
 						 if(isset($details_arr['action']) && $details_arr['action']=='attach'){
@@ -539,7 +538,28 @@
 							 // вносим в базу id-шники связанных нанесений 
 							 rtCalculators::mark_united_calculatoins($united_calculations);
 							 
-						 }				
+						 }
+						 echo json_encode($last_uslugi_ids);
+				
+					 }
+					 if(isset($details_arr['action']) && $details_arr['action']=='detach'){
+						 // извлекаем  расчет из объединенного тиража
+						 echo 'detach';
+						 // если это автоматический калькулятор
+						 // 1. надо сначала получить сумму тиражей объединенных расчетов (ОБР) за минусом извлекаемого расчета
+						 // 2. пересчитать стоимость по прайсу исходя из нового общего тиража
+						 // 3. внести изменения в данные объединенного тиража всё тоже что мы делаем при удалении строки с расчетом из ОБР
+						 // 4. у выводимого тиража удаляем все атрибуты ОБР, если от ОБР остается один тираж то у него тоже удаляем все атрибуты ОБР
+						 
+						 // выполняем все необходимые действия с помощью универсального метода
+						 // используемого также при удалении рядов из РТ
+						 
+						 require_once(ROOT."/libs/php/classes/rt_class.php");
+						 
+						 RT::check_and_edit_united_calculations($dopRowIdsArr);
+						 
+									 
+						 
 					 }
 					 else{// обычное обновление
 					 
@@ -564,8 +584,7 @@
 					 for($i=0; $i<$ln; $i++){
 					     // echo $dop_data_row_id."\r\n";
 						 $cur_data=array('dop_data_row_id'=>$details_arr['print_details']['dop_data_ids'][$i],'quantity'=>(int)$details_arr['print_details']['quantity_details'][$i]);
-						 //$cur_data=array('dop_data_row_id'=>$details_arr['print_details']['dop_data_ids'][$i],'distribution_type'=>$details_arr['print_details']['distribution_type,'quantity'=>(int)$details_arr['print_details']['quantity_details'][$i],'union_quantity'=>array_sum($details_arr['print_details']['quantity_details']));
-						 
+					
 					     $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 					 }
 					 // вносим в базу id-шники связанных нанесений 
