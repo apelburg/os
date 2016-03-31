@@ -603,6 +603,7 @@
 					 echo json_encode($last_uslugi_ids);
 				 }
 				 else{// если надо обновить существующий расчет
+				     $cur_data=array('quantity'=>$details_arr['quantity']);
 				     rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 				 }
 			 }
