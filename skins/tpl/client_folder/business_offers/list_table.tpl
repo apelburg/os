@@ -1,8 +1,39 @@
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/classes/Base64Class.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/classes/kpManagerClass.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/tableDataManager.js"></script>
+
+
+<script type="text/javascript" src="http://markswindoll.github.io/js/FileSaver.js"></script>
+<script type="text/javascript" src="http://markswindoll.github.io/jquery-word-export/jquery.wordexport.js"></script>
+
 <script type="text/javascript">
    tableDataManager.url = '?page=client_folder&section=business_offers&change_comment=1&client_id=<?php echo $client_id; ?>';
+
+
+   function downloadWord(){
+
+        function formatDate(d) {
+                
+            var dd = d.getDate()
+            if ( dd < 10 ) dd = '0' + dd
+            var mm = d.getMonth()+1
+            if ( mm < 10 ) mm = '0' + mm
+
+            var yy = d.getFullYear() % 100
+            if ( yy < 10 ) yy = '0' + yy
+
+            
+            
+            return dd+'.'+mm+'.'+yy
+        }
+
+        var d = new Date();
+        // var n = d.toTimeString();
+        // alert(  )  // '30.01.11'
+
+        var time = '_'+("0" + d.getHours()).slice(-2)+'_'+("0" + d.getMinutes()).slice(-2);
+        $('#kpBlankConteiner').wordExport('Apl_KP_'+formatDate(d)+time);
+   }
 </script>
 <?php
 if (isset($_GET['query_num']) && (int)$_GET['query_num']) {  

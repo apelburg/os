@@ -212,11 +212,9 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						var ref = options.get_calc, ref2;
 						ref2 = methods.services_rows;
 						methods.services_rows.each(function(index, el) {
-
 							for(var i = 0, length1 = ref.length; i < length1; i++){
-								console.log($(this).attr('data-dop_uslugi_id'),ref[i])
 								if(Number($(this).attr('data-dop_uslugi_id')) == Number(ref[i])){
-									$(this).find('.service_name.alarm_services').click();
+									$(this).find('.service_name').click();
 								}
 							}
 						});
@@ -321,7 +319,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 							
 				}
-				console.log(delete_service_ids)
 				methods.delete_services(delete_service_ids);
 			}
 		 },
@@ -395,10 +392,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 						// устанваливаем зависимости
 						// объект зависимостей услуг от вариантов
-						console.log(methods.depending_on_the_services_and_options)
 						methods.depending_on_the_services_and_options[new_services[dop_row_id][i]] = dop_row_id;
 						// объект зависимостей вариантов от услуг
-						console.log(methods.depending_on_the_options_and_services)
 						methods.depending_on_the_options_and_services[dop_row_id][methods.depending_on_the_options_and_services[dop_row_id].length] = new_services[dop_row_id][i].id;
 					}
 				}
@@ -425,10 +420,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		 *	@version 	12:27 09.03.2016
 		 */
 		edit_service_json:function(id, row_type, key, value){
-			console.warn( id, row_type, key, value );
+			// console.log( id, row_type, key, value );
 			switch (row_type) {
 				case 'service':
-					console.log(id,id.length)
+					// console.log(id,id.length)
 					// перебираем отправленную к нам группу строк по услугам (по их id)
 					for(var i = 0, length1 = id.length; i < length1; i++){
 						// будем копать в строках 
@@ -441,7 +436,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						var flag = false;
 						// перебираем соответствия (должно быть найдено одно!)
 						for(var k = 0, length2 = methods.mainObj[dop_row_id]['services'].length; k < length2; k++){
-							console.log(methods.mainObj[dop_row_id]['services'][k], id[i])
+							// console.log(methods.mainObj[dop_row_id]['services'][k], id[i])
 							if (methods.mainObj[dop_row_id]['services'][k].id == id[i]) {
 								index = k; flag = true;
 							}
@@ -520,7 +515,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					// перебираем отправленную к нам группу строк по услугам (по их id)
 					for(var i = 0, length1 = service_ids.length; i < length1; i++){
 						// будем копать в строках
-						console.log(methods.depending_on_the_services_and_options[service_ids[i]],methods.depending_on_the_services_and_options) 
+						// console.log(methods.depending_on_the_services_and_options[service_ids[i]],methods.depending_on_the_services_and_options) 
 						var tr_id = '#dop_data_'+methods.depending_on_the_services_and_options[service_ids[i]];
 						// места хранения JSON
 						// var variantObjJson = methods.variants_tbody.find(tr_id+' td.js-variant_info div');
@@ -531,7 +526,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						// перебираем соответствия (должно быть найдено одно!)
 						for(var k in methods.mainObj[dop_row_id]['services']) {
 						// for(var k = 0, length2 = methods.mainObj[dop_row_id]['services'].length; k < length2; k++){
-							console.log(methods.mainObj[dop_row_id]['services'][k], service_ids[i])
+							// console.log(methods.mainObj[dop_row_id]['services'][k], service_ids[i])
 							// num++;
 							if (methods.mainObj[dop_row_id]['services'][k].id == service_ids[i]) {
 								index1 = k; flag = true;
@@ -549,7 +544,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							// редактируем количество услуг в варианте
 							// console.log(methods.variants_tbody.find(tr_id+' td:nth-of-type(7) span'))
 							methods.variants_tbody.find(tr_id+' td:nth-of-type(7) span').html(num);
-							console.log(num)
+							// console.log(num)
 							// удаляем зависимости
 							// 1
 							delete methods.depending_on_the_services_and_options[service_ids[i]];
@@ -565,7 +560,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							}
 
 
-							console.log('methods.services_rows.length >>> ', methods.services_rows.length)
+							// console.log('methods.services_rows.length >>> ', methods.services_rows.length)
 							
 							// вносим изменения в jsonObj в DOM в соответствии с mainObj
 							methods.variants_tbody.find(tr_id+' td.js-variant_services_json div').html(JSON.stringify(methods.mainObj[dop_row_id]['services']));
@@ -580,7 +575,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					
 
 					// редактируем JSON
-					console.log('массив ID от строк dop_uslugi',service_ids)
+					// console.log('массив ID от строк dop_uslugi',service_ids)
 					// обновляем контент услуг относительно выбранных вариантов
 					methods.update_services_content();
 					// инициализируем работу нижней части окна
@@ -696,7 +691,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			// подсчитывает стоимость в окне
 			methods.calc_price('discount');
 			
-			console.warn('ДЕЛАТЬ ТУТ >>> ',methods.change_obj);
+			console.log('ДЕЛАТЬ ТУТ >>> ',methods.change_obj);
 			// echo_message_js('1) Пишем запрос сохранения общей скидки для всех строк');
 			// echo_message_js('2) описать изменения json в верхней таблице, ведь оттуда берутся данные и при перезагрузке они вернуться к неверному значению');
 			
@@ -1097,12 +1092,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					
 					delete methods.calculator_type;
 					// вызов калькулятора
-					console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj,JSON.stringify(methods.dataObj));		
+					console.log('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj,JSON.stringify(methods.dataObj));		
 					printCalculator.startCalculator(methods.dataObj);	
 				}
 			}else{
 				// вызов калькулятора
-				console.warn('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj,JSON.stringify(methods.dataObj));		
+				console.log('ДОБАВЛЯЕМ НОВУЮ УСЛУГУ >>>',methods.dataObj,JSON.stringify(methods.dataObj));		
 				printCalculator.startCalculator(methods.dataObj);
 			}
 
@@ -1207,8 +1202,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
-				// console.log('ставим заглушку');
-				// return false;
+				console.log('ставим заглушку');
+				return false;
 
 
 				// если отжали чекбокс
@@ -1501,7 +1496,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		},
 		// фильтр услуг
 		filter_services_from_variants:function(service_arr){
-			// console.warn(service_arr)
+			// console.log(service_arr)
 			// выбираем объекты строк вариантов
 			methods.checked_variants = methods.services_tbl.find('.variant');
 			// ФИЛЬТР УСЛУГ для выгрузки 
@@ -1601,7 +1596,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			}
 
 			// возвращаем объект со списком услуг
-			// console.warn(service)
+			// console.log(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
@@ -2054,11 +2049,12 @@ $.extend({
 			closeOnEscape: false
 			// buttons: buttons          
 		}).parent().css({'top':'0px'});
-					
+		
 		// добавляем блок кнопок
 		$.SC_createButton();
 		var options = [];
 		options.get_calc = service_id;
+		console.log(options)
 		$('#js-main_service_center').totalCommander(options);
 	},
 	// перезагрузка RT
@@ -2128,7 +2124,7 @@ $.extend({
 
 });
 
-$(document).on('click', '.alarm_services', function(event) {
+$(document).on('click', '.get_calculator_services', function(event) {
 	event.preventDefault();
 	var service_id, variant_id, query_num,service_button;
 	service_id = 	$(this).attr('data-service_id').split(',');
@@ -2136,11 +2132,12 @@ $(document).on('click', '.alarm_services', function(event) {
 	variant_id =  service_btn.attr('data-row_id');
 	query_num =   service_btn.attr('data-query_num');
 
-	$.post(window.location.href+'&query_num='+$(this).attr("data-query_num"), {
+	$.post(window.location.href+'&query_num='+$('#claim_number').attr("data-query_num"), {
 			AJAX: 	'get_service_center',
 			row_id: variant_id
 		}, function(data, textStatus, xhr) {
 			if(data['myFunc'] !== undefined && data['myFunc'] == 'show_SC'){
+				console.log(service_id)
 				$.SC_create_w_and_calc(Base64.decode(data['html']),service_id);	
 			}				
 			standard_response_handler(data);
