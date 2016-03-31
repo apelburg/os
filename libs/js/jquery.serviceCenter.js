@@ -1036,6 +1036,24 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			// вызов калькулятора
 			printCalculator.startCalculator(methods.dataObj);
 		},
+		// проверяем не принадлежат ли выбранные строки вариантов из одной позиции
+		check_checkboxies_belonse_to_many:function(){
+			var flag = true;
+
+			var group_arr = {};
+			methods.variants_tbody.find('.tr_checked').each(function(index, el) {
+				var v = methods.depending_on_the_variants_and_position[Number($(this).attr('data-dop_row_id'))]
+				if(group_arr[v]){
+					flag = false;
+				}else{
+					group_arr[v] = 1;
+				}
+				
+			});
+			return flag;
+		},
+
+
 		// вызов калькулятора на кнопку "Добавить услугу"
 		calculator_add_services:function(){
 			var i = 0;
@@ -1070,16 +1088,45 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					var html = 'Вы добавляете услугу для нескольких артикулов<br>Печать этих артикулов будет производиться с:';
 					var title = 'Уточните условие';	
 					var buttons = [];
-					buttons.push({
-					    text: 'одного макета',
-					    class:'',
-					    id:  '',
-					    click: function() {
-					    	methods.calculator_type = "union";
-					    	methods.calculator_add_services();
-					    	$('#js-alert_union').dialog('destroy').remove();  		    	
-					    }
-					});
+
+					// проверка на принадлежность выбранных вариантов к одной и той же позиции
+					if(methods.check_checkboxies_belonse_to_many()){
+						buttons.push({
+						    text: 'одного макета',
+						    class:'',
+						    id:  '',
+						    click: function() {
+						    	methods.calculator_type = "union";
+							    methods.calculator_add_services();
+							    $('#js-alert_union').dialog('destroy').remove();  						    	
+						    }
+						});
+					}else{
+						buttons.push({
+						    text: 'одного макета',
+						    class:'button_yes_or_no no',
+						    id:  '',
+						    click: function() {
+							    $('#js-alert_union').dialog('destroy').remove();  	
+
+							    var html1 = 'В связанные тиражи запрещено добавлять варианты из уже выбранны позиций(артикулов)';
+								var title1 = 'Внимание!!!';	
+								// methods.go_calculator_methods = methods.calculator_add_variant;		
+								var buttons1 = [];
+								buttons1.push({
+								    text: 'Закрыть',
+								    class:  'button_yes_or_close no',
+								    click: function() {
+								    	delete methods.confirm;	
+								    	$('#js-alert_union').dialog('destroy').remove();  		    	
+								    }
+								});		
+								methods.create_small_dialog(html1,title1,buttons1);
+
+						    }
+						});
+					}
+					
 					buttons.push({
 					    text: 'разных макетов',
 					    id:   '',
