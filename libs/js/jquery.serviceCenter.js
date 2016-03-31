@@ -1202,8 +1202,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
-				console.log('ставим заглушку');
-				return false;
+				// console.log('ставим заглушку');
+				// return false;
 
 
 				// если отжали чекбокс
