@@ -80,7 +80,7 @@
 	<div id="info_string_on_query" user_id="<?php echo $user_id; ?>">
 		<ul>
 			<li style="opacity:0" id="back_to_string_of_claim"></li>
-			<li id="claim_number" data-order="<?=$POSITION->position['id'];?>">
+			<li id="claim_number" data-query_num="<?=$POSITION->position['query_num'];?>" data-order="<?=$POSITION->position['id'];?>">
 				<a href="?page=client_folder&query_num=<?=$POSITION->position['query_num'];?>&client_id=<?php echo $client_id; ?>">Запрос № <?=$POSITION->position['query_num'];?></a></li>
 			<li id="claim_date"><span>от <?=$POSITION->position['date_create'];?></span></li>
 			

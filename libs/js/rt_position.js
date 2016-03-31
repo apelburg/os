@@ -1638,6 +1638,7 @@ $(document).on('keyup','#edit_variants_content .tirage_var,#edit_variants_conten
 				'id':'tir_save_btn',
 				click:function(){
 					chenge_the_general_input();
+					$(this).remove();
 				}
 			}).css({
 					'background':'#86AE1F',

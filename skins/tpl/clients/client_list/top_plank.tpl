@@ -32,7 +32,7 @@
 <div class="options_bar noselect">
     <table class="alphabet_plank">
        <tr>
-           <td class="left" style="width:40px;">
+           <td class="left" style="width:90px;">
             
             <?php echo implode('',$alphabet_plank); ?>
            

@@ -263,7 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						    $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
+							$(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 					    }
 					}
 			    }	
@@ -948,6 +948,15 @@ var rtCalculator = {
 						}
 						if(prop == 'outOfLimit'){
 							var str ='';
+<<<<<<< HEAD
+							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
+								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
+=======
+
+							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
+								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].minQuantity+"<br>";  
+>>>>>>> master
+							}
 							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
 							}

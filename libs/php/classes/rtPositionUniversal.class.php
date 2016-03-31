@@ -129,7 +129,13 @@ class rtPositionUniversal extends Position_general_Class
 		        $query .= " , `art_id` = '".$art['id']."'";
 		        $query .= " , `name` = '".$art['name']."'";
 		        $query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
-		        $result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		        // смена стоимости
+		        $query = "UPDATE `".RT_DOP_DATA."` SET";
+				$query .= "  `price_out` = '".$this->get_priceArt($art['id'])."'";		
+				$query .= " WHERE `row_id` = '".(int)$_POST['row_id']."'";        
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			}
 			
 			$option['timeout'] = '1000';
@@ -143,6 +149,29 @@ class rtPositionUniversal extends Position_general_Class
 	}
 
 	/**
+<<<<<<< HEAD
+=======
+	 *	return article price
+	 *
+	 *	@param 		art_id row
+	 *	@return  	price money
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	13:10 28.03.2016
+	 */
+	private function get_priceArt($id){
+		$price = 0;
+		$query = "SELECT * FROM `".BASE_DOP_PARAMS_TBL."` WHERE `art_id` = '".$id."' GROUP BY `price`";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$price = $row['price'];
+			}
+		}
+		return $price; 
+	}
+
+	/**
+>>>>>>> master
 	 *	save description name
 	 *
 	 *	@author  	Alexey Kapitonov
@@ -1549,7 +1578,7 @@ class Services extends Variants
 	// $pause - флаг запрета редактирования
 	// названия группы услуги
 	// public function uslugi_template_cat_Html($arr=array(), $NO_show_head = 0, $status_snab='', $pause=0, $edit_true=true){
-	public function htmlTemplate($arr,$variant, $edit_true = true,$art_id){
+	public function htmlTemplate($arr,$variant, $edit_true = true, $art_id){
 		// запрос прав пользователя
 		$this->user_access();
 		// определяем редакторов для полей (html тегов)
@@ -1656,9 +1685,9 @@ class Services extends Variants
 					$buttons_tz = (trim($service_attach['tz'])=='')?'<span class="tz_text_new"></span>':'<span class="tz_text_edit"></span>';
 					
 					$json = json_decode($service_attach['print_details'],true);
-					$cl = '';
+					$cl = ' class="get_calculator_services"';
 					if(isset($json['need_confirmation']) && ($json['need_confirmation'] == true || $json['print_details']['need_confirmation'] == 1)){
-						$cl = ' class="alarm_services"';
+						$cl = ' class="get_calculator_services alarm_services"';
 					}
 
 
