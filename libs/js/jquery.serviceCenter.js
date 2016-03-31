@@ -978,12 +978,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.dataObj[ind2]['calculator_type'] = $(this).attr('data-calculator_type');
 				ind2++;
 			});
-			// console.info('добавить вариант из группы >>>', methods.dataObj);
+			console.info('добавить вариант из группы >>>', methods.dataObj);
 			// вызов калькулятора
 			
 			// console.log(JSON.stringify(methods.dataObj),methods.dataObj)
 
-			// printCalculator.startCalculator(methods.dataObj);
+			printCalculator.startCalculator(methods.dataObj);
 		},
 
 		/*
