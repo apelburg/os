@@ -656,7 +656,16 @@
 								  $row2 = $result2->fetch_assoc();
 								  
 								  $print_details_arr = json_decode($row2['print_details'],true);
+								  $print_details_obj = json_decode($row2['print_details']);
 								  
+								  $new_quantity = 0;
+								  
+								  foreach($print_details_arr['dop_data_ids'] as $index => $value){
+									  // echo $print_details_obj->quantity_details[$index]."--";
+									  if($value!=$dopRowId) $new_quantity += $print_details_arr['quantity_details'][$index];
+								  }
+							      // echo $new_quantity;
+							  
 								  if($result2->num_rows==1){
 									  // если связанный тираж только один удалеяем из него все атрибуты объединенного тиража 
 									  if(isset($print_details_arr['quantity_details']))unset($print_details_arr['quantity_details']);
@@ -673,11 +682,28 @@
 										  }
 									  }
 								  }
+								  
+								  
+								  require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+
+								  $YPriceParam = (isset($print_details_arr['dop_params']['YPriceParam']))? count($print_details_arr['dop_params']['YPriceParam']):1;
+							  
+								  // получаем новые исходящюю и входящюю цену исходя из нового таража
+								  $new_price_arr = rtCalculators::change_quantity_and_calculators_price_query($new_quantity,$print_details_obj,$YPriceParam); 
+								  // здесь надо обпрботать превышение тиража
+								  //print_r($new_price_arr);
+								  $new_data = rtCalculators::make_calculations($new_quantity,$new_price_arr,$print_details_obj->dop_params);
+								  
+								  $print_details_arr['price_in'] = $new_data['new_price_arr']['price_in'];
+								  $print_details_arr['price_out'] = $new_data['new_price_arr']['price_out'];
+								  
+								  
+								  
 								  //  print_r($print_details_arr);
 								  // echo RT::json_fix_cyr(json_encode($print_details_arr));
 								  $print_details_arr['need_confirmation']=true;
 			  
-								  $query3="UPDATE `".RT_DOP_USLUGI."` SET print_details = '".RT::json_fix_cyr(json_encode($print_details_arr))."', united_calculations='".(($result2->num_rows>1)?implode(",",$united_calculations_ids):'')."' WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+								  $query3="UPDATE `".RT_DOP_USLUGI."` SET price_in = '".$print_details_arr['price_in']."',price_out = '".$print_details_arr['price_out']."', print_details = '".RT::json_fix_cyr(json_encode($print_details_arr))."', united_calculations='".(($result2->num_rows>1)?implode(",",$united_calculations_ids):'')."' WHERE id IN(".(implode(",",$united_calculations_ids)).")";
 								  $mysqli->query($query3)or die($mysqli->error);
 							  }
 						 }
