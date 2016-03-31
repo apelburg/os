@@ -76,14 +76,17 @@
 	background: #92B73E;
 	color: #fff;
 }
-body #js-alert_union_buttons .button_yes_or_no{
+body #js-alert_union_buttons .button_yes_or_no,
+body #js-alert_union_buttons .button_yes_or_close{
 	padding: 3px 45px;
 }
-body #js-alert_union_buttons .button_yes_or_no.no{
+body #js-alert_union_buttons .button_yes_or_no.no,
+body #js-alert_union_buttons .button_yes_or_close.no{
 	background:#fff; 
 	color: #999999;
 }
-body #js-alert_union_buttons .save{
+body #js-alert_union_buttons .save,
+body #js-alert_union_buttons .button_yes_or_close{
 	float: right;
 }
 
@@ -258,7 +261,7 @@ button#sc_close_window{
 }
 #js-main-service_center-variants-table tr th:nth-of-type(6),
 #js-main-service_center-variants-table tr td:nth-of-type(6){
-	width: 90px;
+	width: 150px;
 	padding-left: 25px;
 	text-align: left;
 }
@@ -587,7 +590,9 @@ span.marcker_led {
 	outline: none;
 }
 #js-depending_on_the_services_and_options,
-#js-depending_on_the_options_and_services{
+#js-depending_on_the_options_and_services,
+#js-depending_on_the_variants_and_position,
+#js-depending_on_the_position_and_variants{
 	display: none;
 }
 

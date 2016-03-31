@@ -263,8 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						   $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
-						   
+							$(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 					    }
 					}
 			    }	
@@ -949,9 +948,14 @@ var rtCalculator = {
 						}
 						if(prop == 'outOfLimit'){
 							var str ='';
+<<<<<<< HEAD
+							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
+								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
+=======
 
 							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].minQuantity+"<br>";  
+>>>>>>> master
 							}
 							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
@@ -979,15 +983,6 @@ var rtCalculator = {
 									  width: 500,
 									  minHeight : 200 ,
 									  closeOnEscape: false,
-									  close: function() {
-										  // возвращаемся к предыдущему состоянию
-										 // $(this).dialog("close");
-										 // cell.innerHTML = response_obj.old_quantity;
-									  },
-									  click: function() {
-										  alert(1);
-										 $( this ).dialog( "close" );
-									  },
 									  buttons: [{text: "Да",
 												click: function(){
 														// отправляем повторный запрос с маркером ignore_calculators_checking
@@ -1038,64 +1033,14 @@ var rtCalculator = {
 						return;
 					}
 				}
-				if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
+				// rtCalculator.quantityCalculationsResponseFull($($("tr[row_id="+id+"]")[0]).find( "td[type=quantity]" )[0],id,response_obj[id]);
+				if(source=='rt'){
+					if(response_obj.united_calculations) location.reload();
+					else rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj); 
+				}
 				if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
 
 				return;
-				/*if(response_obj.print && response_obj.print.lackOfQuantity){
-					 var str =''; 
-					 for(var index in response_obj.print.lackOfQuantity){
-						 str += (parseInt(index)+1)+'). '+response_obj.print.lackOfQuantity[index].print_type+', мин тираж - '+response_obj.print.lackOfQuantity[index].minQuantity+"<br>";  
-					 }
-			
-					 var text = 'Тираж меньше минимального тиража для нанесения(ий):<br><br>'+str+'<br>стоимость будет пересчитана как для минимального тиража';
-					 
-					 if(rtCalculator.show_warning_window_timer){
-						 clearTimeout(rtCalculator.show_warning_window_timer);
-						 rtCalculator.show_warning_window_timer = null;
-						 delete rtCalculator.show_warning_window_text;
-					 }
-					 rtCalculator.show_warning_window_text = text;
-					 rtCalculator.show_warning_window_timer = setTimeout(rtCalculator.show_warning_window,1500);
-	
-				}
-				if(response_obj.print && response_obj.print.outOfLimit){
-					 var str ='';  
-					 for(var index in response_obj.print.outOfLimit){
-						 str += (parseInt(index)+1)+'). '+response_obj.print.outOfLimit[index].print_type+', лимит тиража - '+response_obj.print.outOfLimit[index].limitValue+"<br>";  
-					 }
-					 var dialog = $('<div>Из-за превышения максимального тиража<br>автоматические калькуляторы в следующих расчетах были переведены в ручной режим:<br>'+str+'</div>');
-					 $('body').append(dialog);
-					 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}]});
-					 $(dialog).dialog('open');
-					 response_obj.print.result = 'ok';
-					 // rtCalculator.changes_in_process=false;
-					 // return;
-					
-				}
-				if(response_obj.print && response_obj.print.needIndividCalculation){ 
-					 var str ='';  
-					 for(var index in response_obj.print.needIndividCalculation){
-						 str += (parseInt(index)+1)+'). '+response_obj.print.needIndividCalculation[index].print_type+"\r";  
-					 }
-					 var dialog = $('<div>Такой тираж не может быть установлен!!!<br>Потому что имеются нанесения для которых не возможно расчитать цену - для этих нанесений требуется индивидуальный расчет :<br>'+str+'</div>');
-					 $('body').append(dialog);
-					 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}] });
-					 $(dialog).dialog('open');
-					 
-					
-				}
-				
-				// если ответы ok для print и extra значит все нормально изменения сделаны 
-				// вызываем функции производящие изменения в HTML
-				if((response_obj.print && response_obj.print.result == 'ok') && (response_obj.extra && response_obj.extra.result == 'ok')){
-					if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
-					if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
-				}
-				else{
-					// самый лучщий вариант иначе могут быть разные ошибки
-					location.reload();
-				}*/	
 			}
 		}
 		function callbackOnlyQuantity(response){
@@ -1616,6 +1561,7 @@ var rtCalculator = {
 		
 		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
+		
 		function relay(tds_arr,name,action){
 			for(var j in tds_arr){
 				if(tds_arr[j].getAttribute){
@@ -1795,7 +1741,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){ /* alert(response); // */ rtCalculator.handler_for_copy_row_response(response); close_processing_timer(); closeAllMenuWindows(); }
+		function callback(response){ /* alert(response); // rtCalculator.handler_for_copy_row_response(response); close_processing_timer();*/  closeAllMenuWindows(); }
 	}
 	,
 	copy_row:function(e){ 
@@ -1814,7 +1760,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){/* alert(response); // */  rtCalculator.handler_for_copy_row_response(response);close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
+		function callback(response){/* alert(response); //  rtCalculator.handler_for_copy_row_response(response);*/ close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 		}
 	}
 	,
@@ -1899,7 +1845,7 @@ var rtCalculator = {
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('insert_copied_rows=1&query_num='+query_num+((typeof place_id != 'undefined')?'&place_id='+place_id:''));
 		rtCalculator.send_ajax(url,callback);
 		function callback(response){ 
-		
+		    // alert(response);
             close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
@@ -1915,7 +1861,7 @@ var rtCalculator = {
 	}
 	,
 	deleting:function(e){ 
-	   
+	    
 	    e = e|| window.event;
 		var cell = e.target || e.srcElement;
 		
@@ -1934,7 +1880,7 @@ var rtCalculator = {
 			 // определяем какие ряды были выделены (какие Мастер Кнопки были нажаты)
 			if(!(idsArr = rtCalculator.get_active_main_rows())){
 				if(type && type == 'prints') var target = 'нанесения';
-				else if(type && type == 'uslugi') var target = 'доп услуги';
+				else if(type && type == 'uslugi') var target = 'услуги';
 				else if(type && type == 'printsAndUslugi') var target = 'нанесения и доп услуги';
 				else var target = 'ряды';
 				echo_message_js('не возможно удалить '+target+', вы не выбрали ни одной позиции','system_message',2000);
@@ -1943,27 +1889,86 @@ var rtCalculator = {
 			} 
 		}
 		
-		if(!confirm('программа удалит '+((pos_id)?'выбранную вами строку':'выбранные вами строки'))){
-			closeAllMenuWindows();
-			return;
-		}
+		var dialog = $('<div>программа удалит '+((pos_id)?'выбранную вами строку':'выбранные вами строки')+'</div>');
+					 
+		$('body').append(dialog);
+		$(dialog).dialog({
+						  modal: true, 
+						  width: 500,
+						  minHeight : 200 ,
+						  closeOnEscape: false,
+						  buttons: [{text: "Да",
+									click: function(){
+											$(this).dialog("close");
+										    closeAllMenuWindows();
+											rtCalculator.deletingStep2(idsArr,type);
+										}},
+								   {text: "Отмена",
+								   click: function(){
+										   $(this).dialog("close");
+										   closeAllMenuWindows();
+			                               return;
+									   }}]
+						});
+		$(dialog).dialog('open');	
+	}
+	,
+	deletingStep2:function(idsArr,type){ 
 		// alert(idsArr.join(';'));
 		show_processing_timer();
 		
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('deleting='+JSON.stringify(idsArr)+((typeof type !== 'undefined')?'&type='+type:''));
-		rtCalculator.send_ajax(url,callback);
-		function callback(response){ 
-		    /* console.log(response); // 
-			alert(response);  */
+		rtCalculator.send_ajax(url,callbackForDeleting);
+		
+		function callbackForDeleting(response){ 
+		
+		    /* console.log(response);   */
+			// alert(response); 
 
             close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
-			var data = JSON.parse(response);
+			
+			try {  var response_obj = JSON.parse(response); }
+			catch (e) { 
+				alert('неправильный формат данных in calculatorClass.deleting() ошибка JSON.parse(response)');
+				return;
+			}
+			
+			if(response_obj.warning && response_obj.warning.united_calculations){
+
+					 ///var dialog = $('<div>Внимание :<br>'+ notes.join(', ')+'</div>');
+					 var dialog = $('<div>удаляемые ряды содержат объединенные тиражи</div>');
+					 
+					 $('body').append(dialog);
+					 $(dialog).dialog({
+									  modal: true, 
+									  width: 500,
+									  minHeight : 200 ,
+									  closeOnEscape: false,
+									  buttons: [{text: "Да",
+												click: function(){
+														// отправляем повторный запрос с маркером ignore_calculators_checking
+														$(this).dialog("close");
+														show_processing_timer();
+														url += '&ignore_calculators_checking=1';
+														rtCalculator.send_ajax(url,callbackForDeleting);
+														
+													}},
+											   {text: "Отмена",
+											   click: function(){
+													   $(this).dialog("close");
+												   }}]
+									});
+					 $(dialog).dialog('open');
+					 
+					 return;
+			}
+			
 			// alert(data[0],data[1]);
-			if(data[0]==0){
+			if(response_obj[0]==0){
 				alert(data[1]);
 				return;
 			}
