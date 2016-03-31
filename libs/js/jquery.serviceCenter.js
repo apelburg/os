@@ -1198,6 +1198,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			methods.update_services_content();
 			
 		},
+		// проверка на включение чекбоксов в группы
+		checking_checkbox_group: function(){
+			
+		},
 		// клик по чекбоксу в строке
 		checkbox_change: function(obj){
 
