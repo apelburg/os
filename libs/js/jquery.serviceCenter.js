@@ -992,20 +992,21 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		*/
 		
 		calculator_remove_variant:function(){
+			console.log(564)
 			var i = 0,so = 0;
 			methods.dataObjSuper = [];
 			// собираем информацию по сгруппированным услугам
 			var ind = 0 ;
 			methods.dataObj = []; 
-			methods.services_rows.each(function(index, el) {
-				
-									// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-				methods.dataObj[so]['action'] = 'detach'; 	// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-				methods.dataObj[so]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-				methods.dataObj[so]['usluga_id'] = '';		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-				methods.dataObj[so]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-				methods.dataObj[so]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-				methods.dataObj[so]['art_id'] = [];			// art_id - string	
+			methods.services_rows.each(function(index, el) {				
+				methods.dataObj[so] = {
+					action:'detach', 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+					type:'', 				// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+					usluga_id:{}, 	  		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+					dop_data_ids:{},  		// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+					quantity:{}, 			// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+					art_id:{} 				// art_id - string	
+				}
 
 				// собираем id строк вариантов
 				methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
@@ -1205,12 +1206,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				// console.log('ставим заглушку');
 				// return false;
 
-
+				console.log(654)
 				// если отжали чекбокс
 				if(obj.parent().parent().hasClass('tr_checked') && obj.parent().hasClass('checked')){
 					var html = 'Удалить из связанного тиража '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
 					var title = 'Уточните условие';	
-					var go_calculator_methods = methods.calculator_remove_variant;		
+					var go_calculator_methods = function(){
+						methods.calculator_remove_variant();
+					}
+					// var go_calculator_methods = methods.calculator_remove_variant;		
 				}else{
 					var html = 'Добавить в связанный тираж '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
 					var title = 'Уточните условие';	
@@ -1224,6 +1228,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					    text: 'Да',
 					    class:  'button_yes_or_no yes',
 					    click: function() {
+
 					    	methods.confirm = "yes";
 					    	methods.checkbox_change(obj);
 					    	$('#js-alert_union').dialog('destroy').remove();  		    	
