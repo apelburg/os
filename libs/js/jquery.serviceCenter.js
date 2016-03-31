@@ -992,7 +992,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		*/
 		
 		calculator_remove_variant:function(){
-			console.log(564)
+			// console.log(564)
 			var i = 0,so = 0;
 			methods.dataObjSuper = [];
 			// собираем информацию по сгруппированным услугам
@@ -1211,10 +1211,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				if(obj.parent().parent().hasClass('tr_checked') && obj.parent().hasClass('checked')){
 					var html = 'Удалить из связанного тиража '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
 					var title = 'Уточните условие';	
-					var go_calculator_methods = function(){
-						methods.calculator_remove_variant();
-					}
-					// var go_calculator_methods = methods.calculator_remove_variant;		
+					var go_calculator_methods = methods.calculator_remove_variant;		
 				}else{
 					var html = 'Добавить в связанный тираж '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
 					var title = 'Уточните условие';	
