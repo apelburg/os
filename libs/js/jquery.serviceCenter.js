@@ -1109,7 +1109,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						    click: function() {
 							    $('#js-alert_union').dialog('destroy').remove();  	
 
-							    var html1 = 'В связанные тиражи запрещено добавлять варианты из уже выбранны позиций(артикулов)';
+							    var html1 = 'В связанные тиражи запрещено добавлять варианты из уже выбранныx позиций(артикулов)';
 								var title1 = 'Внимание!!!';	
 								// methods.go_calculator_methods = methods.calculator_add_variant;		
 								var buttons1 = [];
@@ -1355,7 +1355,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						    }
 						});	
 					}else{
-						var html = 'В связанные тиражи запрещено добавлять варианты из уже выбранны позиций(артикулов)';
+						var html = 'В связанные тиражи запрещено добавлять варианты из уже выбранныx позиций(артикулов)';
 						var title = 'Внимание!!!';	
 						// methods.go_calculator_methods = methods.calculator_add_variant;		
 
