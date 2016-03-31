@@ -1052,10 +1052,10 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// если выбрано несколько услуг 
 			if(i>1){
-				console.log('заглушка вызова объединенного тиража >> start');
-				methods.calculator_type = "none";
-				console.info('Будет произведён вызов калькулятора для разных макетов!!!');
-				console.log('заглушка вызова объединенного тиража >> end');
+				// console.log('заглушка вызова объединенного тиража >> start');
+				// methods.calculator_type = "none";
+				// console.info('Будет произведён вызов калькулятора для разных макетов!!!');
+				// console.log('заглушка вызова объединенного тиража >> end');
 
 				// если ещё не был выбран тип окна
 				if( !methods.calculator_type ){				
