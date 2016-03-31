@@ -258,7 +258,7 @@ button#sc_close_window{
 }
 #js-main-service_center-variants-table tr th:nth-of-type(6),
 #js-main-service_center-variants-table tr td:nth-of-type(6){
-	width: 90px;
+	width: 120px;
 	padding-left: 25px;
 	text-align: left;
 }
