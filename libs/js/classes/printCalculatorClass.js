@@ -102,16 +102,18 @@ var printCalculator = {
 					   //alert(prop+'-'+dataObj[prop]);
 					   newDataObj[prop] = dataObj[prop];
 				    }
-				
+				    newDataObj.attachment_quantity = newDataObj.quantity[0];
+					newDataObj.id_for_attachment = newDataObj.dop_data_ids[0];
+					
 				     // отправляем прямой запрос без открытия калькулятора на стороне клиента
 					var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&save_calculator_result=1&details='+JSON.stringify(newDataObj),'section');
-                    //  alert(url);
+                    alert(url);
 		            printCalculator.send_ajax(url,callback);
 					
                    
 
 					function callback(response){ 
-						// alert(response);
+						 alert(response);
 						// console.log(response);
 						//location.reload();
 					}

@@ -431,12 +431,28 @@
 		 static function save_calculatoins_result_router($details){
 		    global $mysqli;
 			
-			$details_arr = json_decode($_GET['details'],true);
-			$details_obj = json_decode($_GET['details']);
-		    //print_r($details_arr);
+			$details_arr = json_decode($details,true);
+			$details_obj = json_decode($details);
 			
-			//echo $details_arr['action'];
-			//exit; //
+			if(isset($details_arr['action']) && ($details_arr['action']=='attach' || $details_arr['action']=='detach')){
+			     // при action='attach' || action='detach' с клиента не передается объект содержащий данные об услуге, поэтому 
+				 // эти данные надо получить 
+				
+				 // берем первой услуги из массива и по ней получаем объект print_details
+				 
+				 $query="SELECT * FROM `".RT_DOP_USLUGI."` WHERE `id` = '".$details_arr['usluga_id'][0]."'";
+				 $result = $mysqli->query($query)or die($mysqli->error);
+				 $row = $result->fetch_assoc();
+				 $row['print_details'] = json_decode($row['print_details'],true);
+			     $details_arr = $details_arr+$row;
+				
+				 $details_obj = json_decode(json_encode($details_arr));
+			}
+			
+			
+		    // print_r($details_arr);
+			// echo $details_arr['action'];
+			// exit;
 		    if(isset($details_arr['print_details'])){
 		        if($details_arr['print_details']['calculator_type']=='free'){
 					// надо убирать из таблицы RT_DOP_USLUGI поле uslugi_id потому что его может не быть 
@@ -466,19 +482,18 @@
 				// но пришлось использовать это
 				$details_arr['print_details_json'] = self::json_fix_cyr(json_encode($details_arr['print_details'])); 
 			}
-			if(isset($details_arr['action'])) unset($details_arr['action']);
+			
 
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		 
-		    if(isset($details_arr['print_details']['distribution_type']) && $details_arr['print_details']['distribution_type']=='union'){ // объединенный тираж
-
+		    if(isset($details_arr['print_details']['distribution_type']) && $details_arr['print_details']['distribution_type']=='union'){ // объединенный тираж				 
 			     if(isset($details_arr['united_calculations']) && $details_arr['united_calculations']!=""){// уже существующий расчет обновление
-				 echo $details_arr['united_calculations'];
+			
 				      $united_calculations = explode(',',$details_arr['united_calculations']);
 					  $quantity = array();
 					  if(isset($details_arr['action']) && $details_arr['action']=='attach'){
-						  print_r($details_arr);
+						 // print_r($details_arr);
 						 $query="SELECT id, quantity FROM `".RT_DOP_USLUGI."` WHERE `id` IN('".implode("','",$united_calculations)."')";
 						 $result = $mysqli->query($query)or die($mysqli->error);
 						 if($result->num_rows>0){
@@ -493,19 +508,19 @@
 							  // суммировать с тиражом данного нанесения 
 							  // произвести перерасчет стоимости нанесения
 							  // если тираж привысит максимальный вернуть перевести калькулятор в ручной
-							  $new_quantity = array_sum($quantity)+$details_arr['attachment_quantity'];
-							  echo ' - '.$new_quantity.' - ';
+							  $new_quantity = array_sum($quantity)+(int)$details_arr['attachment_quantity'];
+							  //echo ' - '.$new_quantity.' - ';
 						 
-						     $YPriceParam = (isset($details_arr['print_details']['dop_params']['YPriceParam']))? count($details_arr['print_details']['dop_params']['YPriceParam']):1;
+						      $YPriceParam = (isset($details_arr['print_details']['dop_params']['YPriceParam']))? count($details_arr['print_details']['dop_params']['YPriceParam']):1;
 							 
-							 // получаем новые исходящюю и входящюю цену исходя из нового таража
-							 $new_price_arr = self::change_quantity_and_calculators_price_query($new_quantity,$details_obj->print_details,$YPriceParam); 
-                             // здесь надо обпрботать превышение тиража
-							 //print_r($new_price_arr);
-							 $new_data = self::make_calculations((int)$details_arr['print_details']['quantity_details'][$i],$new_price_arr,$details_obj->print_details->dop_params);
+							  // получаем новые исходящюю и входящюю цену исходя из нового таража
+							  $new_price_arr = self::change_quantity_and_calculators_price_query($new_quantity,$details_obj->print_details,$YPriceParam); 
+                              // здесь надо обпрботать превышение тиража
+							  //print_r($new_price_arr);
+							  $new_data = self::make_calculations($new_quantity,$new_price_arr,$details_obj->print_details->dop_params);
 							  
-							 $details_arr['price_in'] = $new_data['new_price_arr']['price_in'];
-							 $details_arr['price_out'] = $new_data['new_price_arr']['price_out'];
+							  $details_arr['price_in'] = $new_data['new_price_arr']['price_in'];
+							  $details_arr['price_out'] = $new_data['new_price_arr']['price_out'];
 
 						 }
 
@@ -519,13 +534,13 @@
 						 // добавляем id новой записи в общий массив по которому далее сделаем перезапись данных
 						
 						 //print_r($details_arr['print_details']['quantity_details']);
-						 array_push($united_calculations, $last_uslugi_id);
-						 $quantity[$last_uslugi_id]=(int)$details_arr['attachment_quantity'];
+						 array_push($united_calculations,(int)$last_uslugi_id);
+						 $quantity[(int)$last_uslugi_id]=(int)$details_arr['attachment_quantity'];
 						 
 						 unset($details_arr['id_for_attachment']);	
-						 echo 5;	
+						 unset($details_arr['attachment_quantity']);
+					     unset($details_arr['action']);
 						 
-						  
 						 foreach($quantity as $uslugi_id => $quantity){
 							 // echo $uslugi_id.' '.$quantity."\r\n";
 							 $details_arr['dop_uslugi_id'] = $uslugi_id;
@@ -533,14 +548,14 @@
 							 $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 						 }
 						 
-						 if(isset($details_arr['action']) && $details_arr['action']=='attach'){
-							 unset($details_arr['action']);
+						print_r($united_calculations);
 							 // вносим в базу id-шники связанных нанесений 
 							 rtCalculators::mark_united_calculatoins($united_calculations);
 							 
-						 }
+						 
+						 
 						 echo json_encode($last_uslugi_ids);
-				
+				    
 					 }
 					 if(isset($details_arr['action']) && $details_arr['action']=='detach'){
 						 // извлекаем  расчет из объединенного тиража
@@ -553,6 +568,7 @@
 						 
 						 // выполняем все необходимые действия с помощью универсального метода
 						 // используемого также при удалении рядов из РТ
+						 unset($details_arr['action']);
 						 
 						 require_once(ROOT."/libs/php/classes/rt_class.php");
 						 
@@ -681,7 +697,7 @@
 									   `creator_id` ='".$details_arr['creator_id']."',
 									   `print_details` ='".cor_data_for_SQL($details_arr['print_details_json'])."'
 									    WHERE `id` ='".$details_arr['dop_uslugi_id']."'"; 
-				  echo $query;
+				  // echo $query;
 				 $mysqli->query($query)or die($mysqli->error);
 				 
 				 return $details_arr['dop_uslugi_id'];
