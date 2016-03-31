@@ -76,14 +76,17 @@
 	background: #92B73E;
 	color: #fff;
 }
-body #js-alert_union_buttons .button_yes_or_no{
+body #js-alert_union_buttons .button_yes_or_no,
+body #js-alert_union_buttons .button_yes_or_close{
 	padding: 3px 45px;
 }
-body #js-alert_union_buttons .button_yes_or_no.no{
+body #js-alert_union_buttons .button_yes_or_no.no,
+body #js-alert_union_buttons .button_yes_or_close.no{
 	background:#fff; 
 	color: #999999;
 }
-body #js-alert_union_buttons .save{
+body #js-alert_union_buttons .save,
+body #js-alert_union_buttons .button_yes_or_close{
 	float: right;
 }
 

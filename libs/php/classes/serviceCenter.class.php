@@ -19,6 +19,9 @@
 		private $services_related_dop = array();
 		private $services_all = array();
 
+		private $grop_pos_var_arr = array();
+		private $grop_var_pos_arr = array();
+		
 		function __construct(){
 			$this->db();
 
@@ -275,6 +278,7 @@
 		private function variants_print_Html(){				
 			$html = '';
 			$position_num = 1;
+
 			$color_arr = array('rgba(79, 154, 48, 0.2)','rgba(79, 142, 13, 0.37)');
 			$color = $color_arr[1]; $old_color = '';
 
@@ -287,8 +291,7 @@
 								$color = $color_1;		
 							}
 						}
-					}
-
+					}					
 					$color_style = 'style="background-color:'.$color.'"';	
 				}else{
 					$color_style = '';
@@ -296,6 +299,11 @@
 				
 				$variant_num = 1;
 				foreach ($position['variants'] as $variant) {
+					
+					// собираем информацию по принадлежности вариантов к позициям
+					$this->grop_pos_var_arr[$position_num-1][] = $variant['id'];
+					$this->grop_var_pos_arr[$variant['id']] = $position_num-1;
+
 
 					$checked_class = '';
 					$checkbox_checked_class = '';
@@ -333,7 +341,7 @@
 						$html .= '<td><span>'.$variant['quantity'].'</span> шт</td>';
 						$html .= '<td><span class="marcker_led"  '.$color_style.'>&nbsp;</span></td>';
 						$my_variant = $variant;
-						unset($my_variant['services']);
+						unset($my_variant['services']);						
 						$html .= '<td class="js-variant_info"><div>'.json_encode($my_variant).'</div></td>';
 					$html .= '</tr>';
 					$variant_num++;

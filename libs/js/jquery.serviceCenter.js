@@ -123,6 +123,13 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.depending_on_the_services_and_options = jQuery.parseJSON($this.find('#js-depending_on_the_services_and_options').html());
 				// объект зависимостей вариантов от услуг
 				methods.depending_on_the_options_and_services = jQuery.parseJSON($this.find('#js-depending_on_the_options_and_services').html());
+				// объект зависимостей вариантов от позиций
+				methods.depending_on_the_variants_and_position = jQuery.parseJSON($this.find('#js-depending_on_the_variants_and_position').html());
+				// объект зависимостей позиций от вариантов
+				methods.depending_on_the_position_and_variants = jQuery.parseJSON($this.find('#js-depending_on_the_position_and_variants').html());
+
+
+
 
 				// events chose variants rows
 				methods.checkbox_main.bind("click.totalCommander", methods.checkbox_main_click );
@@ -1198,40 +1205,71 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			methods.update_services_content();
 			
 		},
-		// проверка на включение чекбоксов в группы
-		checking_checkbox_group: function(){
+		// проверка на принадлежность выбранного варианта к уже выбранному артикулу
+		checking_checkbox_group: function(var_id){
+			// определяем номер позиции(артикула) в котором находится отмеченный вариант
+			var add_v_id = methods.depending_on_the_variants_and_position[Number(var_id.attr('data-dop_row_id'))];
+
+			// выбираем id выриантов принадлежащих к группе
+			var v_arr = methods.top_menu_div.find('li.checked').attr('data-var_id').split(',');
 			
+			var depending = {},k=0,flag = true;
+			// определяем задействованные в группе позиции(артикулы)
+			for(var i = 0, length1 = v_arr.length; i < length1; i++){
+				if(add_v_id == methods.depending_on_the_variants_and_position[v_arr[i]]){
+					flag = false;
+				}
+			}
+			return flag;
 		},
+		// меняем checkbox
+		checkbox_is_changed_event:function(obj){
+			// если ответ положительный
+			if(methods.confirm == 'yes'){
+				// меняем checkbox
+				methods.go_calculator_methods(obj.parent().parent());						
+				methods.checkbox_is_changed(obj);						
+			}
+			delete methods.confirm;	
+		},
+		// изменение checkbox
+		checkbox_is_changed:function(obj){
+			// мы в артикулах
+			// отработка чекбокс
+			if(obj.parent().parent().hasClass('tr_checked') && obj.parent().hasClass('checked')){
+				obj.parent().removeClass('checked').parent().removeClass('tr_checked');
+			}else{
+				obj.parent().addClass('checked').parent().addClass('tr_checked');
+				// перебираем остальные (отключение еподсветки без чекбокса)
+				methods.variants_rows.each(function(index, el) {
+					if($(this).hasClass('tr_checked') && !$(this).find('td').eq(1).hasClass('checked')){
+						$(this).removeClass('tr_checked');
+					}
+				});
+			}
+			// поправка главного чекбокса группы
+			methods.checkbox_main_check();
+		},
+
 		// клик по чекбоксу в строке
 		checkbox_change: function(obj){
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
-				// console.log('ставим заглушку');
-				// return false;
-
-				console.log(654)
+				var buttons = [];
+					
 				// если отжали чекбокс
 				if(obj.parent().parent().hasClass('tr_checked') && obj.parent().hasClass('checked')){
 					var html = 'Удалить из связанного тиража '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
 					var title = 'Уточните условие';	
-					var go_calculator_methods = methods.calculator_remove_variant;		
-				}else{
-					var html = 'Добавить в связанный тираж '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
-					var title = 'Уточните условие';	
-					var go_calculator_methods = methods.calculator_add_variant;	
-				}						
-				// проверка ответ в окне
-				if(!methods.confirm){
-					
-					var buttons = [];
+					methods.go_calculator_methods = methods.calculator_remove_variant;		
 					buttons.push({
 					    text: 'Да',
 					    class:  'button_yes_or_no yes',
 					    click: function() {
 
 					    	methods.confirm = "yes";
-					    	methods.checkbox_change(obj);
+					    	methods.checkbox_is_changed_event(obj);
 					    	$('#js-alert_union').dialog('destroy').remove();  		    	
 					    }
 					});
@@ -1240,43 +1278,61 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					    class:  'button_yes_or_no no',
 					    click: function() {
 					    	methods.confirm = "none";
-					    	methods.checkbox_change(obj);
+					    	methods.checkbox_is_changed_event(obj);
 					    	$('#js-alert_union').dialog('destroy').remove();  		    	
 					    }
 					});
+				}else{
+					if(methods.checking_checkbox_group(obj.parent().parent())){
+						var html = 'Добавить в связанный тираж '+methods.top_menu_div.find('li.checked div').html()+' эту позицию<br>и пересчитать стоимость печати?';
+						var title = 'Внимание!!!';	
+						methods.go_calculator_methods = methods.calculator_add_variant;	
+
+						buttons.push({
+						    text: 'Да',
+						    class:  'button_yes_or_no yes',
+						    click: function() {
+
+						    	methods.confirm = "yes";
+						    	methods.checkbox_is_changed_event(obj);
+						    	$('#js-alert_union').dialog('destroy').remove();  		    	
+						    }
+						});
+						buttons.push({
+						    text: 'Нет',
+						    class:  'button_yes_or_no no',
+						    click: function() {
+						    	methods.confirm = "none";
+						    	methods.checkbox_is_changed_event(obj);
+						    	$('#js-alert_union').dialog('destroy').remove();  		    	
+						    }
+						});	
+					}else{
+						var html = 'В связанные тиражи запрещено добавлять варианты из уже выбранны позиций(артикулов)';
+						var title = 'Внимание!!!';	
+						// methods.go_calculator_methods = methods.calculator_add_variant;		
+
+						buttons.push({
+						    text: 'Закрыть',
+						    class:  'button_yes_or_close no',
+						    click: function() {
+						    	delete methods.confirm;	
+						    	$('#js-alert_union').dialog('destroy').remove();  		    	
+						    }
+						});	
+					}
+				}
+
+				// проверка ответ в окне
+				if(html){
+					
+					
 					methods.create_small_dialog(html,title,buttons);						
 					return false;
-				}else{
-					// если ответ положительный
-					if(methods.confirm == 'yes'){
-						// меняем checkbox
-						go_calculator_methods(obj.parent().parent());						
-						change();
-						
-					}
-					delete methods.confirm;						
-				}	
+				}
 								
 			}else{
-				change();
-			}
-			
-			function change(){
-				// мы в артикулах
-				// отработка чекбокс
-				if(obj.parent().parent().hasClass('tr_checked') && obj.parent().hasClass('checked')){
-					obj.parent().removeClass('checked').parent().removeClass('tr_checked');
-				}else{
-					obj.parent().addClass('checked').parent().addClass('tr_checked');
-					// перебираем остальные (отключение еподсветки без чекбокса)
-					methods.variants_rows.each(function(index, el) {
-						if($(this).hasClass('tr_checked') && !$(this).find('td').eq(1).hasClass('checked')){
-							$(this).removeClass('tr_checked');
-						}
-					});
-				}
-				// поправка главного чекбокса группы
-				methods.checkbox_main_check();
+				methods.checkbox_is_changed(obj);
 			}
 		},
 		// проверка и правка главного чекбокса
@@ -1690,14 +1746,14 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						}
 					}));
 				}
-				console.log(print_details.need_confirmation)
+				// console.log(print_details.need_confirmation)
 
 				// ОПИСАНИЕ УСЛУГИ
 				if (print_details != null) { // из калькулятора
 					if (service[i].uslugi_id == "0") {
 						service_row.append($('<td/>',{'colspan':'3','text':(print_details.commentForClient)?Base64.decode(print_details.commentForClient):''}));
 					}else{
-						console.log(service[i]);
+						// console.log(service[i]);
 						// место печати
 						service_row.append($('<td/>',{'class':'note_title','text':service[i].desc.a_place_print}));
 						// цвета
@@ -1833,7 +1889,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 		},
 		// обновляет информацию по услугам, относительно выбранных вариантов
 		update_services_content : function( content ) {
-			console.info('Total >> update_services_content');
+			//console.info('Total >> update_services_content');
     		// подчищаем данные в таблице услуг
     		methods.services_tbl.find('.variant').remove();
     		methods.services_tbl.find('.service').remove();
