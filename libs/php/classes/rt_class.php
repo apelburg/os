@@ -661,6 +661,7 @@
 									  // если связанный тираж только один удалеяем из него все атрибуты объединенного тиража 
 									  if(isset($print_details_arr['quantity_details']))unset($print_details_arr['quantity_details']);
 									  if(isset($print_details_arr['dop_data_ids']))unset($print_details_arr['dop_data_ids']);
+									  if(isset($print_details_arr['distribution_type']))unset($print_details_arr['distribution_type']);
 								  }
 								  if($result2->num_rows>1){  
 									  if(isset($print_details_arr['quantity_details'])){

@@ -904,7 +904,7 @@ var rtCalculator = {
 		return true;//parseInt(str);
     }
 	,
-	makeQuantityCalculations(source,quantity,row_id,printsExists,extraExists,cell){
+	makeQuantityCalculations:function(source,quantity,row_id,printsExists,extraExists,cell){
 	    if(printsExists || extraExists){// если есть нанесение или доп услуги то нужно отправлять запрос на сервер для обсчета нанесений в соответсвии с новым тиражом
 		    var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&change_quantity_and_calculators=1&quantity='+quantity+'&id='+row_id+'&print='+printsExists+'&extra='+extraExists+'&source='+source,'section');
 			//alert(url);
@@ -918,7 +918,7 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			alert(response);
+			// alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) { alert('неправильный формат данных in rtCalculator.makeQuantityCalculations() ошибка JSON.parse(response)'); }
@@ -1836,7 +1836,7 @@ var rtCalculator = {
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('insert_copied_rows=1&query_num='+query_num+((typeof place_id != 'undefined')?'&place_id='+place_id:''));
 		rtCalculator.send_ajax(url,callback);
 		function callback(response){ 
-		    alert(response);
+		    // alert(response);
             close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
@@ -1880,19 +1880,42 @@ var rtCalculator = {
 			} 
 		}
 		
-		if(!confirm('программа удалит '+((pos_id)?'выбранную вами строку':'выбранные вами строки'))){
-			closeAllMenuWindows();
-			return;
-		}
+		var dialog = $('<div>программа удалит '+((pos_id)?'выбранную вами строку':'выбранные вами строки')+'</div>');
+					 
+		$('body').append(dialog);
+		$(dialog).dialog({
+						  modal: true, 
+						  width: 500,
+						  minHeight : 200 ,
+						  closeOnEscape: false,
+						  buttons: [{text: "Да",
+									click: function(){
+											$(this).dialog("close");
+										    closeAllMenuWindows();
+											rtCalculator.deletingStep2(idsArr,type);
+										}},
+								   {text: "Отмена",
+								   click: function(){
+										   $(this).dialog("close");
+										   closeAllMenuWindows();
+			                               return;
+									   }}]
+						});
+		$(dialog).dialog('open');	
+	}
+	,
+	deletingStep2:function(idsArr,type){ 
 		// alert(idsArr.join(';'));
 		show_processing_timer();
 		
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('deleting='+JSON.stringify(idsArr)+((typeof type !== 'undefined')?'&type='+type:''));
 		rtCalculator.send_ajax(url,callbackForDeleting);
+		
 		function callbackForDeleting(response){ 
-		    /* console.log(response); //  */
-			alert(response); 
+		
+		    /* console.log(response);   */
+			// alert(response); 
 
             close_processing_timer(); 
 			closeAllMenuWindows();
@@ -1906,7 +1929,7 @@ var rtCalculator = {
 			}
 			
 			if(response_obj.warning && response_obj.warning.united_calculations){
-				alert(22);
+
 					 ///var dialog = $('<div>Внимание :<br>'+ notes.join(', ')+'</div>');
 					 var dialog = $('<div>удаляемые ряды содержат объединенные тиражи</div>');
 					 
@@ -1920,8 +1943,10 @@ var rtCalculator = {
 												click: function(){
 														// отправляем повторный запрос с маркером ignore_calculators_checking
 														$(this).dialog("close");
+														show_processing_timer();
 														url += '&ignore_calculators_checking=1';
 														rtCalculator.send_ajax(url,callbackForDeleting);
+														
 													}},
 											   {text: "Отмена",
 											   click: function(){
@@ -1938,7 +1963,7 @@ var rtCalculator = {
 				alert(data[1]);
 				return;
 			}
-			//location.reload();
+			location.reload();
 		}
 	}
 	,

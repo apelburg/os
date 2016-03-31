@@ -148,7 +148,7 @@ var printCalculator = {
 			// alert(url);
 			printCalculator.send_ajax(url,callback);
 			function callback(response){ 
-			    alert(response);				
+			    // alert(response);				
 				
 				var data_AboutPrintsArr = JSON.parse(response);
 				
@@ -2348,9 +2348,9 @@ var printCalculator = {
 		printCalculator.send_ajax(url,callback);
 
 		function callback(response){ 
-		     alert(response);
+		    // alert(response);
 			// alert(printCalculator.currentCalculationData[printCalculator.type].action);
-			// console.log(response);
+		    // console.log('сохранение калькулятора',response);
 		    // location.reload();
 			if(printCalculator.currentCalculationData[printCalculator.type].action == 'update'){
 				printCalculator.cleanOutCalculator();
@@ -2364,7 +2364,7 @@ var printCalculator = {
 					return;
 				}
                 printCalculator.cleanOutCalculator();
-                $('#js-main_service_center').totalCommander('add_services',adsObj);
+                $('#js-main_service_center').totalCommander('update_total_window',adsObj);
 				//location.reload();
 			}
 		}
