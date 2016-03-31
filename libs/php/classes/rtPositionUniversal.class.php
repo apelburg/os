@@ -1575,7 +1575,7 @@ class Services extends Variants
 	// $pause - флаг запрета редактирования
 	// названия группы услуги
 	// public function uslugi_template_cat_Html($arr=array(), $NO_show_head = 0, $status_snab='', $pause=0, $edit_true=true){
-	public function htmlTemplate($arr,$variant, $edit_true = true,$art_id){
+	public function htmlTemplate($arr,$variant, $edit_true = true, $art_id){
 		// запрос прав пользователя
 		$this->user_access();
 		// определяем редакторов для полей (html тегов)
@@ -1682,20 +1682,21 @@ class Services extends Variants
 					$buttons_tz = (trim($service_attach['tz'])=='')?'<span class="tz_text_new"></span>':'<span class="tz_text_edit"></span>';
 					
 					$json = json_decode($service_attach['print_details'],true);
-					$cl = '';
+					$cl = ' class="get_calculator_services"';
 					if(isset($json['need_confirmation']) && ($json['need_confirmation'] == true || $json['print_details']['need_confirmation'] == 1)){
-						$cl = ' class="alarm_services"';
+						$cl = ' class="get_calculator_services alarm_services"';
 					}
 
 
 
 
 					$html .= '<tr id="editable_from_rtClass_'.$variant['id'].'_'.$service_attach['id'].'" class="calculate calculate_usl '.$calc_tr_class.'" data-dop_uslugi_id="'.$service_attach['id'].'" data-our_uslugi_id="'.@$services_arr[$service_attach['uslugi_id']]['id'].'" data-our_uslugi_parent_id="'.@trim($services_arr[$service_attach['uslugi_id']]['parent_id']).'"  data-for_how="'.@trim($services_arr[$service_attach['uslugi_id']]['for_how']).'">';
-						$html .= '<td'.$cl.' data-service_id="'.$service_attach['id'].'" title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
+						$html .= '<td'.$cl.' data-query_num="this" data-service_id="'.$service_attach['id'].'" title="'.@$services_arr[$service_attach['uslugi_id']]['note'].'">';
 							// класс для услуги "НЕТ В СПИСКЕ"
 							if($service_attach['uslugi_id'] == 103){
 								$calc_class .=  ' js-service-other-name';
 							}	
+								
 							$html .= '<div class="'.$calc_class.'" data-id="'.$service_attach['uslugi_id'].'" >';
 								// кнопка для вызхова калькулятора
 								$html .= $calc_button;
