@@ -1184,7 +1184,7 @@ table.calkulate_table span {
 .js-json_info{
   display: none;
 }
-#create_new_position{
+#back_to_query{
       background: url(../images/img_design/Back.png);
     background-color: #CD2328;
     text-align: right;
