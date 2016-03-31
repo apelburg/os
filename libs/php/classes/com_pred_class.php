@@ -1031,8 +1031,17 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 							
 							$new_price_arr['price_in'] = $u_level['price_in'];
 							$new_price_arr['price_out'] = ($u_level['discount'] != 0 )? ($u_level['price_out']/100)*(100 + $u_level['discount']) :  $u_level['price_out'] ;
-						
 							
+							/**
+							 *	боремся с копейками
+							 * 
+							 *	@author  	Alexey Kapitonov
+							 *	@version 	11:52 31.03.2016
+							 */
+							$new_price_arr['price_in'] = round($new_price_arr['price_in'],2);
+							$new_price_arr['price_out'] = round($new_price_arr['price_out'],2);
+							
+
 							if(isset($print_details_obj->dop_params)){
 							    include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 							    $calculations = rtCalculators::make_calculations($quantity,$new_price_arr,$print_details_obj->dop_params);
@@ -1186,7 +1195,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 										<td align="left" style="width:30px;">руб.</td>
 									  </tr>
 									  <tr>
-										<td align="right" style="color:#888;"  data-quantity="'.@$u_level['quantity'].'">тираж: '.$quantity.' шт. </td>
+										<td align="right" style="color:#888;"  data-quantity="'.@$u_level['quantity'].'"  data-price_out="'.@$u_level['price_out'].'" data-pp="'.$print_block_price2.'" data-pp1="'.round($print_block_price2,2).'"  data-pp2="'.(round($print_block_price2,2)*$quantity).'">тираж: '.$quantity.' шт. </td>
 										<td align="right" style="padding:0 5px;"><nobr><span id="metod_display_setting_'.$counter2.'2_0"  style="display:'.(($display_setting_2==0)?'inline-block':'none').'">'.number_format($print_block_summ1,2,',',' ').'</span><span id="metod_display_setting_'.$counter2.'2_1" style="display:'.(($display_setting_2==1)?'inline-block':'none').'">'.number_format($print_block_summ2,2,',',' ').'</span><span id="metod_display_setting_'.$counter2.'2_2" style="display:'.(($display_setting_2==2)?'inline-block':'none').'">'.number_format($print_block_summ3,2,',',' ').'</span></nobr></td>
 										<td align="left">руб.</td>
 										'.((isset($print_details_obj->distribution_type) && $print_details_obj->distribution_type == 'union')?'<tr><td valign="top" colspan="3" style="color:#FF0000;">Стоимость оказываемых услуг указана за комплекс работ и может быть пересмотрена при изменении условий оказываемых услуг.</td></tr>':'').
