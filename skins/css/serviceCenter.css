@@ -590,6 +590,8 @@ span.marcker_led {
 	outline: none;
 }
 #js-depending_on_the_services_and_options,
+#js-depending_on_the_options_and_services,
+#js-depending_on_the_variants_and_position,
 #js-depending_on_the_options_and_services{
 	display: none;
 }
