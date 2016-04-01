@@ -463,7 +463,7 @@
 									 $copied_data['print_details']= RT::json_fix_cyr(json_encode($print_details));
 								} 
 								$query6="INSERT INTO `".RT_DOP_USLUGI."` VALUES ('".implode("','",$copied_data)."')"; 
-								echo $query6."\r\n";
+								// echo $query6."\r\n";
 								$mysqli->query($query6)or die($mysqli->error);
 							}
 						}

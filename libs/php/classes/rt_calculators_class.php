@@ -981,41 +981,10 @@
 									$print_details_obj->calculator_type='manual';
 									$new_price_arr = array("price_in"=>$row['price_in'],"price_out"=>$row['price_out']);
 								}
-								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
+								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount'],'united_calculations' => $row['united_calculations']);
 								
 							
 						    }
-							/////////////////////////////////////////////////////////////////////////////////////
-							// если это был объединенный тираж:
-							// если это был калькулятор auto - если тираж не превысил максимально возможный и не нужен индивидуальный 
-							// расчет - записываем новые значения прайсов, иначе также еще переводим калькуляторы в режим 
-							// ручного калькулятора и записываем метку need_confirmation
-							// если это был калькулятор не auto - записываем метку need_confirmation
-							
-							if($row['united_calculations']!=''){
-							
-							    $out_put['united_calculations'] = true;
-								
-							    if((isset($print_details_obj->calculator_type) && ($print_details_obj->calculator_type=='manual' || $print_details_obj->calculator_type=='free')) || (self::$needIndividCalculation || self::$outOfLimit)){
-									$print_details_obj->need_confirmation = true;
-								}
-								if(isset($print_details_obj->quantity_details)){
-								    $print_details_obj->dop_data_ids = (array)$print_details_obj->dop_data_ids;
-									$print_details_obj->quantity_details = (array)$print_details_obj->quantity_details;
-									foreach($print_details_obj->dop_data_ids as $index => $value){
-									    // echo $print_details_obj->quantity_details[$index]."--";
-									    if($value==$dop_data_id) $print_details_obj->quantity_details[$index] =$quantity;
-									}
-								}
-								
-						        $query3="UPDATE `".RT_DOP_USLUGI."` 
-										  SET 
-										  price_in = '".$new_price_arr["price_in"]."',
-										  price_out = '".$new_price_arr["price_out"]."'";   
-							    $query3.=", print_details = '".self::json_fix_cyr(json_encode($print_details_obj))."'"; 
-								$query3.=" WHERE id IN(".(implode(",",explode(",",$row['united_calculations']))).")";
-								$mysqli->query($query3)or die($mysqli->error);
-							}
 						 }
 						 else $dataArr[]= array('uslugi_row_id' => $row['uslugi_row_id']);
 					}
@@ -1045,8 +1014,46 @@
 							// print_r($new_data)."\r";
 							// echo $dataVal['discount']."\r";//
 							
-							// перезаписываем новые значения прайсов и X индекса обратно в базу данных
-						   $query="UPDATE `".RT_DOP_USLUGI."` 
+							
+							/////////////////////////////////////////////////////////////////////////////////////
+							// перезаписываем новые значения прайсов и X индекса обратно в базу данных         //
+							/////////////////////////////////////////////////////////////////////////////////////
+
+							if($dataVal['united_calculations']!=''){
+								/////////////////////////////////////////////////////////////////////////////////////
+								// если это был объединенный тираж:
+								// если это был калькулятор auto - если тираж не превысил максимально возможный и не нужен индивидуальный 
+								// расчет - записываем новые значения прайсов, иначе также еще переводим калькуляторы в режим 
+								// ручного калькулятора и записываем метку need_confirmation
+								// если это был калькулятор не auto - записываем метку need_confirmation
+							
+							    $out_put['united_calculations'] = true;
+								
+							    if((isset($dataVal['print_details_obj']->calculator_type) && ($dataVal['print_details_obj']->calculator_type=='manual' || $dataVal['print_details_obj']->calculator_type=='free')) || (self::$needIndividCalculation || self::$outOfLimit)){
+									$dataVal['print_details_obj']->need_confirmation = true;
+								}
+								if(isset($dataVal['print_details_obj']->quantity_details)){
+								    $dataVal['print_details_obj']->dop_data_ids = (array)$dataVal['print_details_obj']->dop_data_ids;
+									$dataVal['print_details_obj']->quantity_details = (array)$dataVal['print_details_obj']->quantity_details;
+									foreach($dataVal['print_details_obj']->dop_data_ids as $index => $value){
+									    // echo $print_details_obj->quantity_details[$index]."--";
+									    if($value==$dop_data_id) $dataVal['print_details_obj']->quantity_details[$index] =$quantity;
+									}
+								}
+								
+						        $query3="UPDATE `".RT_DOP_USLUGI."` 
+										  SET 
+										  price_in = '".$new_data["new_price_arr"]["price_in"]."',
+										  price_out = '".$new_data["new_price_arr"]["price_out"]."'";   
+							    $query3.=", print_details = '".self::json_fix_cyr(json_encode($dataVal['print_details_obj']))."'"; 
+								$query3.=" WHERE id IN(".(implode(",",explode(",",$dataVal['united_calculations']))).")";
+								$mysqli->query($query3)or die($mysqli->error);
+							}
+							
+							
+							
+							// обычный тираж (не объединенный)
+							$query="UPDATE `".RT_DOP_USLUGI."` 
 										  SET 
 										  quantity = '".$quantity."',
 										  price_in = '".$new_data["new_price_arr"]["price_in"]."',
@@ -1059,6 +1066,8 @@
 							$query.=" WHERE id = '".$dataVal['uslugi_row_id']."'";
 							//echo $query;
 							$mysqli->query($query)or die($mysqli->error);
+								
+						
 							
 							$new_data["new_price_arr"]["price_out"] = ($dataVal['discount'] != 0 )? (($new_data["new_price_arr"]["price_out"]/100)*(100 + $dataVal['discount'])) : $new_data["new_price_arr"]["price_out"];
 							$new_data["new_summs"]["summ_out"] = ($dataVal['discount'] != 0 )? (($new_data["new_summs"]["summ_out"]/100)*(100 + $dataVal['discount'])) : $new_data["new_summs"]["summ_out"];

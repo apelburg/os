@@ -918,7 +918,7 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			// alert(response);
+			 alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) { alert('неправильный формат данных in rtCalculator.makeQuantityCalculations() ошибка JSON.parse(response)'); }
@@ -1841,10 +1841,15 @@ var rtCalculator = {
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
-			var data = JSON.parse(response);
+			
+			try {  var response_obj = JSON.parse(response); }
+			catch (e) { 
+				alert('неправильный формат данных in calculatorClass.insert_copied_rows() ошибка JSON.parse(response)');
+				return;
+			}
 			// alert(data[0]);
-			if(data[0]==0){
-				echo_message_js(data[1],'system_message',2400);
+			if(response_obj[0]==0){
+				echo_message_js(response_obj[1],'system_message',2400);
 				return;
 			}/**/
 			location.reload();
