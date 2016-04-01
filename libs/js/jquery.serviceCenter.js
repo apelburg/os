@@ -1637,7 +1637,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 
-    			// console.log(methods.checked_variants_id)
+    			console.warn(methods.checked_variants_id)
 
 				// получаем группы
 				k = 0;
@@ -1650,6 +1650,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				function checking_service(service){
 					var g = true;
 					var sirvices_rel  = service.united_calculations.split(',')
+					
+					// проверяем контрольную сумму группированных услуг и выделенных вариантов
+					var i = 0;
+					for(var ArrVal in methods.checked_variants_id) {
+						i++;
+					}
+					if(sirvices_rel.length != i){
+						return false;
+					}
 					for(var ArrVal in methods.checked_variants_id) {
 						// console.log('methods.checked_variants_id[ArrVal]',methods.checked_variants_id[ArrVal],sirvices_rel)
 						
@@ -1657,8 +1666,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							g = false;
 							var flag = true;
 
+							// перебираем все услуги сгруппирпованные к проверяемой
 							for(var i = 0, length1 = sirvices_rel.length; i < length1; i++){
+								
+
 								if(flag == true){
+									
 									if(methods.checked_variants_id[ArrVal]){
 										for(var is = 0, length2 = methods.checked_variants_id[ArrVal].length; is < length2; is++){
 											if(methods.checked_variants_id[ArrVal][is] == sirvices_rel[i]){
