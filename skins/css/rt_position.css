@@ -518,17 +518,19 @@ body {
   background-position: 4px 2px;
   cursor: pointer;
 }
-.variant_info .row .cell table tr td:nth-of-type(1){text-align: left; padding-left: 15px}
-.variant_info .row .cell table tr td:nth-of-type(1):hover{
+.variant_info .row .cell table tr td:nth-of-type(1){text-align: left; padding-left: 15px; padding-right: 50px;}
+.variant_info .row .cell table tr td.get_calculator_services:hover{
   background: #f1f1f1;
   cursor: pointer;
+  border:1px solid #fff;
 }
-.variant_info .row .cell table tr td.alarm_services:hover{
-  background-color: rgba(208, 66, 66, 0.28);
+.variant_info .row .cell table tr td.get_calculator_services.alarm_services:hover{
+  /*background-color: rgba(208, 66, 66, 0.28);*/
 }
 
 .variant_info .row .cell table tr td:nth-of-type(1) .greyText{
   border-color: transparent;
+  padding: 0;
 }
 /* image block */
 #articulusImagesBigImg .showImagegallery, #galleryWindowInArtPages .showImagegallery {
@@ -1181,4 +1183,12 @@ table.calkulate_table span {
 }
 .js-json_info{
   display: none;
+}
+#back_to_query{
+      background: url(../images/img_design/Back.png);
+    background-color: #CD2328;
+    text-align: right;
+    padding-left: 45px;
+    padding-right: 30px;
+    background-repeat: no-repeat;
 }

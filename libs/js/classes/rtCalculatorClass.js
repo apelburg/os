@@ -905,7 +905,7 @@ var rtCalculator = {
 		return true;//parseInt(str);
     }
 	,
-	makeQuantityCalculations(source,quantity,row_id,printsExists,extraExists,cell){
+	makeQuantityCalculations:function(source,quantity,row_id,printsExists,extraExists,cell){
 	    if(printsExists || extraExists){// если есть нанесение или доп услуги то нужно отправлять запрос на сервер для обсчета нанесений в соответсвии с новым тиражом
 		    var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&change_quantity_and_calculators=1&quantity='+quantity+'&id='+row_id+'&print='+printsExists+'&extra='+extraExists+'&source='+source,'section');
 			//alert(url);
@@ -952,7 +952,7 @@ var rtCalculator = {
 
 							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].minQuantity+"<br>";  
-
+							}
 							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
 							}
