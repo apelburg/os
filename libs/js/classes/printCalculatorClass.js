@@ -2295,18 +2295,18 @@ var printCalculator = {
 				echo_message_js("Заполните поле \"Название услуги\"",'system_message',3800);
 				unfilled = true;
 			}
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.comment.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
-				echo_message_js("Заполните поле \"Bнутренний комментарий\"",'system_message',3800);
-				unfilled = true;
-			}
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.commentForClient.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
-				echo_message_js("Заполните поле \"Подробное описание для клиента\"",'system_message',3800);
-				unfilled = true;
-			}
-			if(printCalculator.currentCalculationData[printCalculator.type].print_details.supplier.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
-				echo_message_js("Заполните поле \"Поставщик\"",'system_message',3800);
-				unfilled = true;
-			}
+			//if(printCalculator.currentCalculationData[printCalculator.type].print_details.comment.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				//echo_message_js("Заполните поле \"Bнутренний комментарий\"",'system_message',3800);
+				//unfilled = true;
+			//}
+			//if(printCalculator.currentCalculationData[printCalculator.type].print_details.commentForClient.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				//echo_message_js("Заполните поле \"Подробное описание для клиента\"",'system_message',3800);
+				//unfilled = true;
+			//}
+			//if(printCalculator.currentCalculationData[printCalculator.type].print_details.supplier.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
+				//echo_message_js("Заполните поле \"Поставщик\"",'system_message',3800);
+				//unfilled = true;
+			//}
 			if(typeof printCalculator.currentCalculationData[printCalculator.type].quantity == 'string' && printCalculator.currentCalculationData[printCalculator.type].quantity.replace(/^\s\s*/, '').replace(/\s\s*$/, '')==''){
 				echo_message_js("Заполните поле \"Тираж\"",'system_message',3800);
 				unfilled = true;
