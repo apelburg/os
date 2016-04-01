@@ -41,7 +41,6 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
 <script type="text/javascript" src="libs/js/common.js"></script>
 <script type="text/javascript" src="libs/js/geometry.js"></script>
 <script type="text/javascript" src="libs/js/upWindowMenu.js"></script>
-<script type="text/javascript" src="libs/js/sample.js"></script>
 <script type="text/javascript" src="libs/js/standard_response_handler.js"></script>
 <title><?=$title;?></title>
 </head>
@@ -53,8 +52,10 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
             <td>
                 <div>
                     <?php 
-                    echo get_worked_link_for_cabinet();
-                   ?>
+                        echo get_worked_link_for_cabinet();
+                    ?>
+                    <a href="?page=invoice" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
+
                     <a href="?page=clients&section=clients_list" class="<?php if($page=='clients')echo'selected'; ?>">Клиенты</a>
                 
                     <a href="?page=suppliers&section=suppliers_list" class="<?php if($page=='suppliers')echo'selected'; ?>">Поставщики</a>
@@ -64,6 +65,7 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                     <!-- <a href="?page=orders" class="<?php if($page=='orders')echo'selected'; ?>">Заказы</a>
                 
                     <a href="?page=documents" class="<?php if($page=='documents')echo'selected'; ?>">Документы</a>-->
+
                 
                     <!--<a href="?page=samples&sample_page=start" class="<?php if($page=='samples')echo'selected'; ?>">Образцы</a>
                 
