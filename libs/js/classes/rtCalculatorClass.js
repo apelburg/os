@@ -2257,9 +2257,9 @@ var rtCalculator = {
 			
 		}
 		
-		//console.log('--СПФ--',idsObj);
-		//console.log('--СПФ--',dopIdsArr);
-		//console.log('--СПФ--',unitedCalculationsIds);
+		console.log('--СПФ--',idsObj);
+		console.log('--СПФ--',dopIdsArr);
+		console.log('--СПФ--',unitedCalculationsIds);
 		
 		// проверяем сколько зеленых кнопок светофора были нажаты и в итоге были учтены
 		var nothing = true; // если вообще ни однин светофор не был суперзеленым
