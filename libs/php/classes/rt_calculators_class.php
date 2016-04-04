@@ -537,10 +537,16 @@
 						 array_push($united_calculations,(int)$last_uslugi_id);
 						 $quantity[(int)$last_uslugi_id]=(int)$details_arr['attachment_quantity'];
 						 
+						 array_push($details_arr['print_details']['quantity_details'],$details_arr['attachment_quantity']);
+						 array_push($details_arr['print_details']['dop_data_ids'],$details_arr['id_for_attachment']);
+						 
 						 unset($details_arr['id_for_attachment']);	
 						 unset($details_arr['attachment_quantity']);
 					     unset($details_arr['action']);
 						 
+						 $details_arr['print_details_json'] = self::json_fix_cyr(json_encode($details_arr['print_details'])); 
+
+						 $last_uslugi_ids = array();
 						 foreach($quantity as $uslugi_id => $quantity){
 							 // echo $uslugi_id.' '.$quantity."\r\n";
 							 $details_arr['dop_uslugi_id'] = $uslugi_id;
@@ -548,9 +554,9 @@
 							 $last_uslugi_ids[] = rtCalculators::save_calculatoins_result_new($cur_data,$details_arr);
 						 }
 						 
-						print_r($united_calculations);
-							 // вносим в базу id-шники связанных нанесений 
-							 rtCalculators::mark_united_calculatoins($united_calculations);
+						 //print_r($united_calculations);
+						 // вносим в базу id-шники связанных нанесений 
+						 rtCalculators::mark_united_calculatoins($united_calculations);
 							 
 						 
 						 
@@ -560,6 +566,7 @@
 					 if(isset($details_arr['action']) && $details_arr['action']=='detach'){
 						 // извлекаем  расчет из объединенного тиража
 						 echo 'detach';
+						 exit;
 						 // если это автоматический калькулятор
 						 // 1. надо сначала получить сумму тиражей объединенных расчетов (ОБР) за минусом извлекаемого расчета
 						 // 2. пересчитать стоимость по прайсу исходя из нового общего тиража
@@ -949,7 +956,7 @@
 							
 							if(isset($print_details_obj->calculator_type) && ($print_details_obj->calculator_type=='manual' || $print_details_obj->calculator_type=='free')){
 							    $new_price_arr = array("price_in"=>$row['price_in'],"price_out"=>$row['price_out']);
-								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount']);
+								$dataArr[]= array('new_price_arr' => $new_price_arr,'print_details_obj' => $print_details_obj,'uslugi_row_id' => $row['uslugi_row_id'],'discount' => $row['discount'],'united_calculations' => $row['united_calculations']);
 							}
 							else{
 							    $quantity_for_calculation = $quantity;
@@ -1019,7 +1026,7 @@
 							// перезаписываем новые значения прайсов и X индекса обратно в базу данных         //
 							/////////////////////////////////////////////////////////////////////////////////////
 
-							if($dataVal['united_calculations']!=''){
+							if(isset($dataVal['united_calculations']) && $dataVal['united_calculations']!=''){
 								/////////////////////////////////////////////////////////////////////////////////////
 								// если это был объединенный тираж:
 								// если это был калькулятор auto - если тираж не превысил максимально возможный и не нужен индивидуальный 

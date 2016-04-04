@@ -918,7 +918,7 @@ var rtCalculator = {
 						
 		function callbackPrintsExists(response){
 			
-			 alert(response);
+			// alert(response);
 			
 			try {  var response_obj = JSON.parse(response); }
 			catch (e) { alert('неправильный формат данных in rtCalculator.makeQuantityCalculations() ошибка JSON.parse(response)'); }
