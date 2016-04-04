@@ -82,8 +82,8 @@ $(document).on('dblclick', '#rt-gallery-images li', function(event) {
 	if($(this).hasClass('checked')){
 		$(this).removeClass('checked');
 	}else{
-		if($('#rt-gallery-images li.checked').length >= 4){
-			var message = 'В КП не получиться загрузить более четырёх изображений';
+		if($('#rt-gallery-images li.checked').length >= 3){
+			var message = 'В КП не получиться загрузить более трёх изображений';
 
 			echo_message_js(message, 'system_message' ,25000);
 			return false;

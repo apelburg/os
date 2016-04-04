@@ -72,6 +72,7 @@ var printCalculator = {
 			
 			// ATTACH
 			if(dataObj.action=='attach'){
+				alert('в разработке 2');
 				// дейстие - добавление нанесения в объединенный тираж или распределение существующего нанесения
 				
 				// если Ручной или Держурная услуга просто вызываем калькулятор и затем открываем его с правильним тиражем(объединенный или нет)
@@ -91,7 +92,7 @@ var printCalculator = {
 					 
 					 // вызываем калькулятор с новым тиражом
 					 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
-					 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"id_for_attachment":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"action":dataObj.action,"attachment_quantity":dataObj.quantity[0]});//dataObj.usluga_id[0]
+					 // printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"id_for_attachment":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"action":dataObj.action,"attachment_quantity":dataObj.quantity[0]});//dataObj.usluga_id[0]
 					 
 					
 				}
@@ -102,16 +103,18 @@ var printCalculator = {
 					   //alert(prop+'-'+dataObj[prop]);
 					   newDataObj[prop] = dataObj[prop];
 				    }
-				
+				    newDataObj.attachment_quantity = newDataObj.quantity[0];
+					newDataObj.id_for_attachment = newDataObj.dop_data_ids[0];
+					
 				     // отправляем прямой запрос без открытия калькулятора на стороне клиента
 					var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&save_calculator_result=1&details='+JSON.stringify(newDataObj),'section');
-                    //  alert(url);
+                    alert(url);
 		            printCalculator.send_ajax(url,callback);
 					
                    
 
 					function callback(response){ 
-						// alert(response);
+						 alert(response);
 						// console.log(response);
 						//location.reload();
 					}
@@ -123,14 +126,22 @@ var printCalculator = {
 			
 			// DETACH
 			if(dataObj.action=='detach'){
-				// дейстие - новое нанесение 
+				alert('в разработке');
+				
+				if(dataObj.usluga_id.length > 0){ echo_message_js('Ошибка, параметр dataObj.usluga_id должен содержать одно значение');return;}
+				// удаление расчета из объединенного тиража 
 				// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
 					
-				if(dataObj.type && dataObj.type=='union'){
-					 // тип - объединенный тираж 
-					 // внести в объект калькулятора метку о том что тираж сборный
-					 // внести в объект массив содержащий id расчетов включенных в тираж
-					 // сложить тиражы всех расчетов входящив в объединенный тираж и передать в калькулятор
+				if(dataObj.calculator_type=='manual' || dataObj.calculator_type=='fee'){// если Ручной или Держурная услуга вызываем калькулятор c новым тиражем
+					// пересчитываем новый тираж
+					 var quantity=0;
+					 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
+					 
+					 // вызываем калькулятор с новым тиражом
+					 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
+					 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"id_for_attachment":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"action":dataObj.action,"attachment_quantity":dataObj.quantity[0]});//dataObj.usluga_id[0]
+					 
+					
 				}
 			}
 			
@@ -148,7 +159,7 @@ var printCalculator = {
 			// alert(url);
 			printCalculator.send_ajax(url,callback);
 			function callback(response){ 
-			    //alert(response);				
+			    // alert(response);				
 				
 				var data_AboutPrintsArr = JSON.parse(response);
 				
@@ -2350,7 +2361,7 @@ var printCalculator = {
 		function callback(response){ 
 		    // alert(response);
 			// alert(printCalculator.currentCalculationData[printCalculator.type].action);
-			// console.log(response);
+		    // console.log('сохранение калькулятора',response);
 		    // location.reload();
 			if(printCalculator.currentCalculationData[printCalculator.type].action == 'update'){
 				printCalculator.cleanOutCalculator();
@@ -2364,7 +2375,7 @@ var printCalculator = {
 					return;
 				}
                 printCalculator.cleanOutCalculator();
-                $('#js-main_service_center').totalCommander('add_services',adsObj);
+                $('#js-main_service_center').totalCommander('update_total_window',adsObj);
 				//location.reload();
 			}
 		}
