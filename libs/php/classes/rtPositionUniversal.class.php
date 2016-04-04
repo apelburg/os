@@ -149,6 +149,8 @@ class rtPositionUniversal extends Position_general_Class
 	}
 
 	/**
+<<<<<<< HEAD
+=======
 	 *	return article price
 	 *
 	 *	@param 		art_id row
@@ -169,6 +171,7 @@ class rtPositionUniversal extends Position_general_Class
 	}
 
 	/**
+>>>>>>> master
 	 *	save description name
 	 *
 	 *	@author  	Alexey Kapitonov
