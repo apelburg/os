@@ -1026,7 +1026,10 @@ var rtCalculator = {
 				}
 				// rtCalculator.quantityCalculationsResponseFull($($("tr[row_id="+id+"]")[0]).find( "td[type=quantity]" )[0],id,response_obj[id]);
 				if(source=='rt'){
-					if(response_obj.united_calculations) location.reload();
+					if(response_obj.united_calculations){
+						rtCalculator.changes_in_process = false;
+						location.reload();
+					}
 					else rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj); 
 				}
 				if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
@@ -1885,7 +1888,17 @@ var rtCalculator = {
 			} 
 		}
 		
-		var dialog = $('<div>программа удалит '+((pos_id)?'выбранную вами строку':'выбранные вами строки')+'</div>');
+		
+		if(type && type == 'prints'){
+			if(pos_id)  var sub_str = 'все услуги из выбранного ряда';
+			else  var sub_str = 'все услуги из выбранных вами рядов';
+		}
+		else{
+		    if(pos_id)  var sub_str = 'выбранный ряд';
+			else  var sub_str = 'выбранные вами ряды';
+		}
+		
+		var dialog = $('<div>программа удалит '+sub_str+'</div>');
 					 
 		$('body').append(dialog);
 		$(dialog).dialog({
