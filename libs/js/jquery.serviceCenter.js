@@ -955,6 +955,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 					$('#js-alert_union').after($('<div/>',{'id':'js-alert_union_buttons','class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'}).append( buttons_html));
 		},
+		// добавлеие варианта в связанный тираж
 		calculator_add_variant:function(obj){
 			var i = 0,ind2 = 0;
 			delete methods.dataObj;
@@ -993,60 +994,46 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			printCalculator.startCalculator(methods.dataObj);
 		},
 
-		/*
-			Добрый день, 
+		// удаление варианта из объединённого тиража
+		calculator_remove_variant:function(del_obj){
+			/*
+				  дейстие - удаление услуги из ОТ(объединенный тираж)
+				 
+				  1. массив содержащий id услуг (прикрепленных к расчету удаляется из ОТ( но только тех услуг
+				     которые входят в ОТ))(id из таблицы RT_DOP_USLUGI) - передается в массиве dataObj.usluga_id
+				  
+				  2. dataObj.action='detach'
+			*/
 
-		*/
-		
-		calculator_remove_variant:function(obj){
-
-			var del_obj = obj;
-
-			// console.log(564)
-			var i = 0,so = 0;
-			methods.dataObjSuper = [];
-			// собираем информацию по сгруппированным услугам
-			var ind = 0 ;
-			
 			methods.dataObj = {
-				action:'detach', 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-				type:'', 				// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-				usluga_id:{}, 	  		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-				dop_data_ids:{},  		// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-				quantity:{}, 			// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-				art_id:{},
-				del_var:methods.mainObj[del_obj.attr('data-dop_row_id')]['variant']			
+			    action:'detach',    
+			    usluga_id:{},     
 			}
 
-			// methods.dataObj.del_var = methods.mainObj[del_obj.attr('data-dop_row_id')];
-			console.log(methods.mainObj[del_obj.attr('data-dop_row_id')]['variant'])
+			var services = methods.mainObj[del_obj.attr('data-dop_row_id')]['services'];			
+			var k= 0;
+			// перебор сгруппированных услуг
+			methods.services_rows.each(function(index, el) {
+				if($(this).find('.service_group').length > 0){
+					// получаем список id услуг в группе
+					var services_ids = $(this).find('.service_group').attr('data-id_s').split(',');
 
+					// console.warn(services_ids)
+					// ищем совпадения услуг в данной группе с услугами из варианта
+					for(var i = 0, length1 = services.length; i < length1; i++){
+						// console.warn(services_ids.indexOf(services[i].id), services_ids,services[i].id)
+						if(services_ids.indexOf(services[i].id) >= 0){
+							methods.dataObj.usluga_id[k++] = services[i].id;
+						}
+					}
 
-				// console.warn(del_obj)
-			// console.warn(methods.dataObj.del_var)
-
-			// methods.services_rows.each(function(index, el) {		
-			// 	// собираем id строк вариантов
-			// 	methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-			// 		methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
-			// 		methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
-			// 		methods.dataObj['art_id'][index] = $(this).attr('data-art_id') ;
-			// 		i++;
-			// 	});
-
+				}
+				// console.log('вызов калькулятора methods.dataObj >> ',methods.dataObj);	
+			});
 			
-			// 	methods.dataObj['usluga_id'][ind] = [];
-			// 	methods.dataObj['usluga_id'][ind] = $(this).find('.service_group').attr('data-id_s').split(',');
-			// 	methods.dataObj['calculator_type'] = $(this).attr('data-calculator_type');
-
-			// 	so++;
-			// 	// console.log($(this).find('.service_group').attr('data-id_s').split(','));				
-			// });
-
-			console.info('удалить вариант из группы >>>',methods.dataObj);
-			// вызов калькулятора
-			alert('test');
-			// printCalculator.startCalculator(methods.dataObj);
+			// console.log(methods.dataObj)
+			// alert('test');
+			printCalculator.startCalculator(methods.dataObj);
 		},
 		// проверяем не принадлежат ли выбранные строки вариантов из одной позиции
 		check_checkboxies_belonse_to_many:function(){
