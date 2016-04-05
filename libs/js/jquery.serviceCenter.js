@@ -998,43 +998,55 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 		*/
 		
-		calculator_remove_variant:function(){
+		calculator_remove_variant:function(obj){
+
+			var del_obj = obj;
+
 			// console.log(564)
 			var i = 0,so = 0;
 			methods.dataObjSuper = [];
 			// собираем информацию по сгруппированным услугам
 			var ind = 0 ;
-			methods.dataObj = []; 
-			methods.services_rows.each(function(index, el) {				
-				methods.dataObj[so] = {
-					action:'detach', 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-					type:'', 				// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-					usluga_id:{}, 	  		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-					dop_data_ids:{},  		// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-					quantity:{}, 			// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-					art_id:{} 				// art_id - string	
-				}
+			
+			methods.dataObj = {
+				action:'detach', 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
+				type:'', 				// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
+				usluga_id:{}, 	  		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
+				dop_data_ids:{},  		// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
+				quantity:{}, 			// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
+				art_id:{},
+				del_var:methods.mainObj[del_obj.attr('data-dop_row_id')]['variant']			
+			}
 
-				// собираем id строк вариантов
-				methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-					methods.dataObj[so]['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
-					methods.dataObj[so]['quantity'][index] = $(this).attr('data-quantity') ;
-					methods.dataObj[so]['art_id'][index] = $(this).attr('data-art_id') ;
-					i++;
-				});
+			// methods.dataObj.del_var = methods.mainObj[del_obj.attr('data-dop_row_id')];
+			console.log(methods.mainObj[del_obj.attr('data-dop_row_id')]['variant'])
+
+
+				// console.warn(del_obj)
+			// console.warn(methods.dataObj.del_var)
+
+			// methods.services_rows.each(function(index, el) {		
+			// 	// собираем id строк вариантов
+			// 	methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
+			// 		methods.dataObj['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
+			// 		methods.dataObj['quantity'][index] = $(this).attr('data-quantity') ;
+			// 		methods.dataObj['art_id'][index] = $(this).attr('data-art_id') ;
+			// 		i++;
+			// 	});
 
 			
-				methods.dataObj[so]['usluga_id'][ind] = [];
-				methods.dataObj[so]['usluga_id'][ind] = $(this).find('.service_group').attr('data-id_s').split(',');
-				methods.dataObj[so]['calculator_type'] = $(this).attr('data-calculator_type');
+			// 	methods.dataObj['usluga_id'][ind] = [];
+			// 	methods.dataObj['usluga_id'][ind] = $(this).find('.service_group').attr('data-id_s').split(',');
+			// 	methods.dataObj['calculator_type'] = $(this).attr('data-calculator_type');
 
-				so++;
-				// console.log($(this).find('.service_group').attr('data-id_s').split(','));				
-			});
+			// 	so++;
+			// 	// console.log($(this).find('.service_group').attr('data-id_s').split(','));				
+			// });
 
 			console.info('удалить вариант из группы >>>',methods.dataObj);
 			// вызов калькулятора
-			printCalculator.startCalculator(methods.dataObj);
+			alert('test');
+			// printCalculator.startCalculator(methods.dataObj);
 		},
 		// проверяем не принадлежат ли выбранные строки вариантов из одной позиции
 		check_checkboxies_belonse_to_many:function(){
@@ -1109,7 +1121,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						    click: function() {
 							    $('#js-alert_union').dialog('destroy').remove();  	
 
-							    var html1 = 'В связанные тиражи запрещено добавлять варианты из уже выбранныx позиций(артикулов)';
+							    var html1 = 'В связанные тиражи запрещено добавлять варианты из одной позиции(артикула)';
 								var title1 = 'Внимание!!!';	
 								// methods.go_calculator_methods = methods.calculator_add_variant;		
 								var buttons1 = [];
@@ -1303,6 +1315,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
+				return false;
 				var buttons = [];
 					
 				// если отжали чекбокс
@@ -1355,7 +1368,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 						    }
 						});	
 					}else{
-						var html = 'В связанные тиражи запрещено добавлять варианты из уже выбранныx позиций(артикулов)';
+						var html = 'В связанные тиражи запрещено добавлять варианты из одной позиции(артикула)';
 						var title = 'Внимание!!!';	
 						// methods.go_calculator_methods = methods.calculator_add_variant;		
 
@@ -1610,7 +1623,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			methods.checked_variants = methods.services_tbl.find('.variant');
 			// ФИЛЬТР УСЛУГ для выгрузки 
 			if (methods.checked_variants.length>1) {
-				// выбираем только групперованые услуги
+				// выбираем только группированые услуги
 				var service = [];
 				var k = 0;
 				// var group_name = [
@@ -1625,7 +1638,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 
-    			// console.log(methods.checked_variants_id)
+    			console.warn(methods.checked_variants_id)
 
 				// получаем группы
 				k = 0;
@@ -1638,6 +1651,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				function checking_service(service){
 					var g = true;
 					var sirvices_rel  = service.united_calculations.split(',')
+					
+					// проверяем контрольную сумму группированных услуг и выделенных вариантов
+					var i = 0;
+					for(var ArrVal in methods.checked_variants_id) {
+						i++;
+					}
+					if(sirvices_rel.length != i){
+						return false;
+					}
 					for(var ArrVal in methods.checked_variants_id) {
 						// console.log('methods.checked_variants_id[ArrVal]',methods.checked_variants_id[ArrVal],sirvices_rel)
 						
@@ -1645,8 +1667,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							g = false;
 							var flag = true;
 
+							// перебираем все услуги сгруппирпованные к проверяемой
 							for(var i = 0, length1 = sirvices_rel.length; i < length1; i++){
+								
+
 								if(flag == true){
+									
 									if(methods.checked_variants_id[ArrVal]){
 										for(var is = 0, length2 = methods.checked_variants_id[ArrVal].length; is < length2; is++){
 											if(methods.checked_variants_id[ArrVal][is] == sirvices_rel[i]){
