@@ -430,6 +430,11 @@
          }
 		 static function attach_calculation($data){
 		    global $mysqli;
+			foreach($data_arr['usluga_id'] as $usluga_id){
+			}
+		 }
+		 static function attach_calculation($data){
+		    global $mysqli;
 			
 			$data_arr = json_decode($data,true);
 			
