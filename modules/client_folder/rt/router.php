@@ -220,6 +220,13 @@
 		rtCalculators::attach_calculation($_GET['data']);
 		exit;
 	}
+	if(isset($_GET['detach_calculation'])){
+		// print_r(json_decode($_GET['details']));//
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+		
+		rtCalculators::detach_calculation($_GET['data']);
+		exit;
+	}
 	if(isset($_GET['delete_prints_for_row'])){
 		//echo  $_GET['usluga_id'].' - '. $_GET['delete_prints_for_row'];
 		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
