@@ -566,7 +566,7 @@ span.marcker_led {
 }*/
 .js-variant_info:hover div,
 .js-variant_services_json:hover div{
-	display: block;
+	/*display: block;*/
 }
 #js-main-service_center-variants-div-table{
 	height: 220px;
