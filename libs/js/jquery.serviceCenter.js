@@ -23,23 +23,6 @@
 	 /*
 */
 
-/*
-	ЧТО ОСТАЛОСЬ:
-	1) сохранение общей скидки в группе и нет ( READY )
-	2) изменение комментариев - в группе и нет ( READY )
-	3) выгрузка валидного описания услуги из калькулятора ( READY )
-	4) добавление и удаление в связанный тираж других вариантов ( READY - дело за калькуляторами ) 
-	5) запрет объединения вариантов ( пока не нужен )
-	6) удаление услуг в группе и нет ( READY )
-	7) полное обновление информации в окне Тотал и чтоб после все работало (в основном после калькулятора) 
-	   или предоставление методов добавления услуг в объект ТОТАЛ ( READY )
-	8) метод редактирования json услуг для часных случаев   ( READY )
-	(нужен в случае, когда окно нельзя обновить, скажем при редактировании информации по услугам, их удалении)
-	( READY )
-*/
-
-
-
 function round_money(num){
 	num = Number(num);
 	var new_num = Math.ceil((num)*100)/100;
@@ -955,85 +938,92 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 					$('#js-alert_union').after($('<div/>',{'id':'js-alert_union_buttons','class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'}).append( buttons_html));
 		},
-		calculator_add_variant:function(obj){
-			var i = 0,ind2 = 0;
-			delete methods.dataObj;
+		// добавлеие варианта в связанный тираж
+		calculator_add_variant:function(add_obj){
+			/*
+				[05.04.2016 15:55:09] Андрей: 
+
+				добавление услуги в ОТ(объединенный тираж)
+				1. id добавляемого расчета (id из таблицы RT_DOP_DATA) - передается в dataObj.id_for_attachment
+				2. массив содержащий id услуг (прикрепленных к одному любому расчету уже входящему в ОТ( но только тех услуг
+				    которые входят в ОТ))(id из таблицы RT_DOP_USLUGI) - передается в массиве dataObj.usluga_id
+				3. тираж добавляемого расчета - передается в dataObj.attachment_quantity
+				4.dataObj.action='attach'
+				{
+				     action:'attach',    
+				     usluga_id:[333,4444],     
+				     id_for_attachment:2222,   
+				     attachment_quantity:1000,   
+				}
+			*/
+			var variant,first_variant_service,i=0;
+			methods.dataObj = {
+				0:{
+					action:'attach',    
+					usluga_id:{},     
+					id_for_attachment:'',   
+					attachment_quantity:''
+				}
+			}; 
+
+			variant = methods.mainObj[add_obj.attr('data-dop_row_id')]['variant'];	
 			
-
-			methods.dataObj = []; 
-			methods.services_rows.each(function(index, el) {
-
-				methods.dataObj[ind2] = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-				methods.dataObj[ind2]['action'] = 'attach';	// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-				methods.dataObj[ind2]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-				methods.dataObj[ind2]['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-				methods.dataObj[ind2]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-				methods.dataObj[ind2]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-				methods.dataObj[ind2]['art_id'] = [];			// art_id - string	
-
-				var row = methods.variants_tbody.find('tr#dop_data_'+obj.attr('data-dop_row_id'))
-				methods.dataObj[ind2]['dop_data_ids'][0] = row.attr('data-dop_row_id') ;
-				methods.dataObj[ind2]['quantity'][0] = row.attr('data-quantity') ;
-				methods.dataObj[ind2]['art_id'][0] = row.attr('data-art_id') ;
-
-				// собираем информацию по сгруппированным услугам
-				var ind = 0 ;
-				//console.log(methods.services_rows);
-				
-				methods.dataObj[ind2]['usluga_id'] = [];
-				methods.dataObj[ind2]['usluga_id'] = $(this).find('.service_group').attr('data-id_s').split(',');
-				methods.dataObj[ind2]['calculator_type'] = $(this).attr('data-calculator_type');
-				ind2++;
+			methods.services_variants_rows.each(function(index, el) {
+				if(i==0){
+					first_variant_service = methods.depending_on_the_options_and_services[$(this).attr('data-dop_data_id')];
+				}				
 			});
-			console.info('добавить вариант из группы >>>', methods.dataObj);
-			// вызов калькулятора
 			
-			// console.log(JSON.stringify(methods.dataObj),methods.dataObj)
-
+			methods.dataObj = {
+				0:{
+					action:'attach',    
+					usluga_id: first_variant_service,     
+					id_for_attachment: Number(variant.id),   
+					attachment_quantity: Number(variant.quantity)
+				}
+			}; 
+			
+			
+			console.info('добавить вариант из группы >>>', methods.dataObj);
+			
 			printCalculator.startCalculator(methods.dataObj);
 		},
 
-		/*
-			Добрый день, 
-
-		*/
-		
-		calculator_remove_variant:function(){
-			// console.log(564)
-			var i = 0,so = 0;
-			methods.dataObjSuper = [];
-			// собираем информацию по сгруппированным услугам
-			var ind = 0 ;
-			methods.dataObj = []; 
-			methods.services_rows.each(function(index, el) {				
-				methods.dataObj[so] = {
-					action:'detach', 		// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-					type:'', 				// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-					usluga_id:{}, 	  		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-					dop_data_ids:{},  		// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-					quantity:{}, 			// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-					art_id:{} 				// art_id - string	
-				}
-
-				// собираем id строк вариантов
-				methods.variants_tbody.find('tr.tr_checked').each(function(index, el) {
-					methods.dataObj[so]['dop_data_ids'][index] = $(this).attr('data-dop_row_id') ;
-					methods.dataObj[so]['quantity'][index] = $(this).attr('data-quantity') ;
-					methods.dataObj[so]['art_id'][index] = $(this).attr('data-art_id') ;
-					i++;
-				});
+		// удаление варианта из объединённого тиража
+		calculator_remove_variant:function(del_obj){
+			/*
+				  дейстие - удаление услуги из ОТ(объединенный тираж)
+				 
+				  1. массив содержащий id услуг (прикрепленных к расчету удаляется из ОТ( но только тех услуг
+				     которые входят в ОТ))(id из таблицы RT_DOP_USLUGI) - передается в массиве dataObj.usluga_id
+				  
+				  2. dataObj.action='detach'
+			*/
+			var services,first_variant_service,i=0;
 
 			
-				methods.dataObj[so]['usluga_id'][ind] = [];
-				methods.dataObj[so]['usluga_id'][ind] = $(this).find('.service_group').attr('data-id_s').split(',');
-				methods.dataObj[so]['calculator_type'] = $(this).attr('data-calculator_type');
 
-				so++;
-				// console.log($(this).find('.service_group').attr('data-id_s').split(','));				
+			// console.warn('удаление вар-та из ОТ>> ',methods.dataObj);
+
+			services = methods.mainObj[ Number(del_obj.attr('data-dop_row_id')) ]['services'];
+			
+			methods.services_variants_rows.each(function(index, el) {
+				if(i==0){
+					first_variant_service = methods.depending_on_the_options_and_services[$(this).attr('data-dop_data_id')];
+				}				
 			});
 
-			console.info('удалить вариант из группы >>>',methods.dataObj);
-			// вызов калькулятора
+			methods.dataObj = {
+			    0:{
+			    	action:'detach',    
+			    	usluga_id: first_variant_service,
+			    	id_for_detachment:del_obj.attr('data-dop_row_id')
+			    }
+			}
+
+
+			
+			// console.warn('удаление вар-та из ОТ>> ',methods.dataObj);	
 			printCalculator.startCalculator(methods.dataObj);
 		},
 		// проверяем не принадлежат ли выбранные строки вариантов из одной позиции
@@ -1303,6 +1293,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 
 			// проверяем в группе ли мы
 			if(methods.top_menu_div.find('li.checked').attr('data-var_id') && methods.top_menu_div.find('li.checked').attr('data-var_id').split(',').length>1 ){
+				// return false;
 				var buttons = [];
 					
 				// если отжали чекбокс
@@ -1610,7 +1601,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			methods.checked_variants = methods.services_tbl.find('.variant');
 			// ФИЛЬТР УСЛУГ для выгрузки 
 			if (methods.checked_variants.length>1) {
-				// выбираем только групперованые услуги
+				// выбираем только группированые услуги
 				var service = [];
 				var k = 0;
 				// var group_name = [
@@ -1625,7 +1616,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 
-    			// console.log(methods.checked_variants_id)
+    			console.warn(methods.checked_variants_id)
 
 				// получаем группы
 				k = 0;
@@ -1638,6 +1629,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				function checking_service(service){
 					var g = true;
 					var sirvices_rel  = service.united_calculations.split(',')
+					
+					// проверяем контрольную сумму группированных услуг и выделенных вариантов
+					var i = 0;
+					for(var ArrVal in methods.checked_variants_id) {
+						i++;
+					}
+					if(sirvices_rel.length != i){
+						return false;
+					}
 					for(var ArrVal in methods.checked_variants_id) {
 						// console.log('methods.checked_variants_id[ArrVal]',methods.checked_variants_id[ArrVal],sirvices_rel)
 						
@@ -1645,8 +1645,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 							g = false;
 							var flag = true;
 
+							// перебираем все услуги сгруппирпованные к проверяемой
 							for(var i = 0, length1 = sirvices_rel.length; i < length1; i++){
+								
+
 								if(flag == true){
+									
 									if(methods.checked_variants_id[ArrVal]){
 										for(var is = 0, length2 = methods.checked_variants_id[ArrVal].length; is < length2; is++){
 											if(methods.checked_variants_id[ArrVal][is] == sirvices_rel[i]){
@@ -2253,6 +2257,13 @@ $(document).on('click', '.get_calculator_services', function(event) {
 		},'json');
 });
 
+
+$(document).on('click','.notifyjs-wrapper.notifyjs-hidable',function(event){
+	event.stopPropagation();
+	// event.preventDefault();
+	return false;
+
+})
 // // закрытие окна на esc
 // $(document).keyup(function (e) {
 //     if (e.keyCode == 27) {
