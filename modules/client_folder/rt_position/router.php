@@ -14,6 +14,8 @@
       	exit;
     }
 	
+	$quick_button = '<div class="quick_button_div" style="background:none"><a href="#" id="back_to_query" style="display: block;" class="button back">Назад</a></div>';
+	
 	$forum = '';
 	
 	// // комментарии

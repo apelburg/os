@@ -463,7 +463,7 @@
 									 $copied_data['print_details']= RT::json_fix_cyr(json_encode($print_details));
 								} 
 								$query6="INSERT INTO `".RT_DOP_USLUGI."` VALUES ('".implode("','",$copied_data)."')"; 
-								echo $query6."\r\n";
+								// echo $query6."\r\n";
 								$mysqli->query($query6)or die($mysqli->error);
 							}
 						}
@@ -649,14 +649,25 @@
 							  $united_calculations_ids = explode(",",$row['united_calculations']);
 							  $united_calculations_ids = array_diff($united_calculations_ids,array($row['id']));
 
-							  $query2="SELECT united_calculations, print_details FROM `".RT_DOP_USLUGI."` WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+							  $query2="SELECT united_calculations ,price_out, price_in, print_details FROM `".RT_DOP_USLUGI."` WHERE id IN(".(implode(",",$united_calculations_ids)).")";
 							  $result2 = $mysqli->query($query2)or die($mysqli->error);
 							  if($result2->num_rows>0){
 								  // по циклу не проходим а просто редактируем один раз общиее поле print_details
 								  $row2 = $result2->fetch_assoc();
 								  
 								  $print_details_arr = json_decode($row2['print_details'],true);
+								  $print_details_obj = json_decode($row2['print_details']);
+								  $price_in = $row2['price_in'];
+								  $price_out = $row2['price_out'];
 								  
+								  $new_quantity = 0;
+								  
+								  foreach($print_details_arr['dop_data_ids'] as $index => $value){
+									  // echo $print_details_obj->quantity_details[$index]."--";
+									  if($value!=$dopRowId) $new_quantity += $print_details_arr['quantity_details'][$index];
+								  }
+							      // echo $new_quantity;
+							  
 								  if($result2->num_rows==1){
 									  // если связанный тираж только один удалеяем из него все атрибуты объединенного тиража 
 									  if(isset($print_details_arr['quantity_details']))unset($print_details_arr['quantity_details']);
@@ -673,11 +684,31 @@
 										  }
 									  }
 								  }
+								  
+								  if(isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type']=='auto'){ 
+								      // если это автоматический калькулятор
+					                  // произвести перерасчет стоимости услуги
+									  
+									  require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+	
+									  $YPriceParam = (isset($print_details_arr['dop_params']['YPriceParam']))? count($print_details_arr['dop_params']['YPriceParam']):1;
+								  
+									  // получаем новые исходящюю и входящюю цену исходя из нового таража
+									  $new_price_arr = rtCalculators::change_quantity_and_calculators_price_query($new_quantity,$print_details_obj,$YPriceParam); 
+									  // здесь надо обпрботать превышение тиража
+									  //print_r($new_price_arr);
+									  $new_data = rtCalculators::make_calculations($new_quantity,$new_price_arr,$print_details_obj->dop_params);
+									  
+									  $price_in = $new_data['new_price_arr']['price_in'];
+									  $price_out = $new_data['new_price_arr']['price_out'];
+								  
+								  }
+								  
 								  //  print_r($print_details_arr);
 								  // echo RT::json_fix_cyr(json_encode($print_details_arr));
 								  $print_details_arr['need_confirmation']=true;
 			  
-								  $query3="UPDATE `".RT_DOP_USLUGI."` SET print_details = '".RT::json_fix_cyr(json_encode($print_details_arr))."', united_calculations='".(($result2->num_rows>1)?implode(",",$united_calculations_ids):'')."' WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+								  $query3="UPDATE `".RT_DOP_USLUGI."` SET price_in = '".$price_in."',price_out = '".$price_out."', print_details = '".RT::json_fix_cyr(json_encode($print_details_arr))."', united_calculations='".(($result2->num_rows>1)?implode(",",$united_calculations_ids):'')."' WHERE id IN(".(implode(",",$united_calculations_ids)).")";
 								  $mysqli->query($query3)or die($mysqli->error);
 							  }
 						 }

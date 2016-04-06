@@ -210,7 +210,21 @@
 		// print_r(json_decode($_GET['details']));//
 		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
-		rtCalculators::save_calculatoins_result_router($_GET['details']);
+		rtCalculators::save_calculations_result_router($_GET['details']);
+		exit;
+	}
+	if(isset($_GET['attach_calculation'])){
+		// print_r(json_decode($_GET['details']));//
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+		
+		rtCalculators::attach_calculation($_GET['data']);
+		exit;
+	}
+	if(isset($_GET['detach_calculation'])){
+		// print_r(json_decode($_GET['details']));//
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+		
+		rtCalculators::detach_calculation($_GET['data']);
 		exit;
 	}
 	if(isset($_GET['delete_prints_for_row'])){
@@ -238,7 +252,7 @@
 		// "ручной" а извещение об том что есть превышение максимального тиража используется на стороне клиента для выведения 
 		// окна информирующего пользователя о том что было превышение и калькулятор переведен в "ручной" тип
 		// объединенные тиражи - если поле united_calculations в таблице RT_DOP_USLUGI содержит список других полей, при условии 
-		// что этот калькулятор автоматический, записать в эти поля новые значения прайсов, а также записать в них значение 
+		// что этот калькулятор автоматический, записать в эти поля новые значения прайсов и X индекса, а также записать в них значение 
 		// need_confirmation в случае если тип калькуляторов "ручной" и "Дежурная услуга", если калькулятор был автомачитеский и 
 		// тираж был объединенный и общее количество превысило максимальный тираж перевести калькулятор в ручной и записать всем
 		// связанным расчетам значение need_confirmation

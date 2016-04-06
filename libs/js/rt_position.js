@@ -1861,6 +1861,10 @@ function save_dop_dop_usluga(obj){
 	},'json');
 }
 
+$(document).ready(function() {
+	$('#back_to_query').attr('href',$('#claim_number a').attr('href'));
+});
+
 
 
 

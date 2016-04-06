@@ -1184,3 +1184,11 @@ table.calkulate_table span {
 .js-json_info{
   display: none;
 }
+#back_to_query{
+      background: url(../images/img_design/Back.png);
+    background-color: #CD2328;
+    text-align: right;
+    padding-left: 45px;
+    padding-right: 30px;
+    background-repeat: no-repeat;
+}
