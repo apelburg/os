@@ -16,14 +16,10 @@ trait MaxSquare {
     }
 }
 
-// echo phpinfo();
+// echo;
 abstract class Documetnt {
     protected $autor = 12;
-
     private $user;
-
- 	
-    
  
     // requirement 02
     protected $color;

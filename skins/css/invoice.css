@@ -1,0 +1,56 @@
+#js-main-invoice-table{
+	width: 100%;
+	border-collapse: collapse;
+}
+#js-main-invoice-table thead tr th{
+	color: #5E5F61;
+	font-size: 11px;
+	font-weight: normal;
+	background-color: #F2F2F2;
+	padding:2px 10px;
+}
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(1),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(3),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(9),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(1),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(3),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(4),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5){
+	text-align: right;
+}
+
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(6),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(7){
+	text-align: left;
+}
+
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(11),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(12),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(2){
+	text-align: center;
+}
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4){
+	padding-left: 10px;
+}
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13){
+	padding-right: 10px;
+}
+
+#js-main-invoice-table thead tr th{
+	border: 1px solid #CAC7C7;
+	border-bottom: 2px solid #848486;
+}
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(11),
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(12){
+	border-bottom: 1px solid #CAC7C7;
+}
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2){
+	border-right: none;
+}
+#js-main-invoice-table tbody tr td{
+	font-size: 12px;
+	color: #7A7A7A;
+}
