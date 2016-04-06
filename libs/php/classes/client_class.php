@@ -1790,7 +1790,7 @@ class Client extends aplStdAJAXMethod{
 	}
 
 	// вывод краткой информации о клиенте
-	static function get_client__information($id){
+	static function get_client__information($id,$template = 'default'){
 		// получаем информацию по клиенту
 		global $mysqli;		
 
@@ -1871,7 +1871,13 @@ class Client extends aplStdAJAXMethod{
 		}
 		$back_without_client = '<a id="back_without_client" href="./'.$get_str.'"></a>';
 		$back_without_client = '';
+		
 		include './skins/tpl/clients/client_list/condensed_information_on_the_client.tpl';
+		
+		if($template == 'default'){
+			include './skins/tpl/clients/client_list/default_menu.tpl';	
+		}
+		
 		return;
 	}
 	
