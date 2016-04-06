@@ -428,9 +428,190 @@
 			} 
 			return $json_str; 
          }
-		 static function attach_calculation($data){
+		 static function detach_calculation($data){
 		    global $mysqli;
+			
+			$data_arr = json_decode($data,true); 
+			
+			// print_r($data_arr);
+			
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			$user_id = 18;  
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!			
+			
 			foreach($data_arr['usluga_id'] as $usluga_id){
+			
+			    // получаем id связанных расчетов
+			    $query="SELECT united_calculations FROM `".RT_DOP_USLUGI."` WHERE id = '".$usluga_id."'";
+				$result = $mysqli->query($query)or die($mysqli->error);
+				if($result->num_rows>0){
+					$row = $result->fetch_assoc();
+					$united_calculations = explode(',',$row['united_calculations']);
+				}
+				else{
+				    echo 'передан не верный $usluga_id в rtCalculators.attach_calculation';
+					exit;
+				}
+				if(count($united_calculations)==0){
+				    echo 'united_calculations не найдены в rtCalculators.attach_calculation';
+					exit;
+				}
+				 /**/
+			   
+				$quantity = $detach_quantity = $detached_calculation = 0;
+				$itog_united_calculations = $print_details_arr = array();
+				
+				
+			    // получаем подробную информацию по связанным расчетам
+			    $query="SELECT dop_data.id dop_data_id, dop_data.quantity quantity, uslugi.id usluga_id, uslugi.print_details print_details, uslugi.price_in price_in, uslugi.price_out price_out
+				                   FROM `".RT_DOP_DATA."` dop_data LEFT JOIN
+										`".RT_DOP_USLUGI."` uslugi 
+										  ON dop_data.id = uslugi.dop_row_id
+										  WHERE uslugi.id IN('".implode("','",$united_calculations)."')";
+				
+					//echo $query;
+				$result = $mysqli->query($query)or die($mysqli->error);
+				if($result->num_rows>0){
+				     while($row = $result->fetch_assoc()){
+					    if(!isset($print_details_arr) || count($print_details_arr)==0){
+							$print_details_arr = json_decode($row['print_details'],true);
+							$print_details_obj = json_decode($row['print_details']);
+							$price_in = $row['price_in'];
+							$price_out = $row['price_out'];
+						}
+					    if($data_arr['id_for_detachment']!=$row['dop_data_id']){
+						    // тираж расчетов остающихся в ОТ
+						    $quantity += $row['quantity'];
+							// id-шники услуг остающихся в ОТ
+							$itog_united_calculations[] = $row['usluga_id'];
+						}
+						else{
+						    // тираж расчета удаляемого из ОТ
+						    $detach_quantity += $row['quantity'];
+							// id-шник услуги удаляемой из ОТ
+							$detached_calculation = $row['usluga_id'];
+						}
+					}
+				}
+				natsort($itog_united_calculations);
+				$itog_united_calculations = array_reverse($itog_united_calculations);
+				$itog_united_calculations = array_values($itog_united_calculations);
+				
+				//print_r($print_details_arr);
+				//print_r($itog_united_calculations);
+				//echo "price_in - ".$price_in."\r";
+				//echo "price_out - ".$price_out."\r";
+				//echo "quantity - ".$quantity."\r";
+				//echo "detach_quantity - ".$detach_quantity."\r";
+				//echo "detached_calculation - ".$detached_calculation."\r";
+				
+				if(isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type']=='auto'){
+			        // если это автоматический калькулятор
+					// произвести перерасчет стоимости услуги
+				 
+				    $YPriceParam = (isset($print_details_arr['dop_params']['YPriceParam']))? count($print_details_arr['dop_params']['YPriceParam']):1;
+					 
+					// получаем новые исходящюю и входящюю цену исходя из нового таража
+					$new_price_arr = self::change_quantity_and_calculators_price_query($quantity,$print_details_obj,$YPriceParam); 
+					// здесь надо обпрботать превышение тиража
+					//print_r($new_price_arr);
+					$new_data = self::make_calculations($quantity,$new_price_arr,$print_details_obj->dop_params);
+					  
+					$price_in = $new_data['new_price_arr']['price_in'];
+					$price_out = $new_data['new_price_arr']['price_out'];
+
+				}
+				//echo "price_in - ".$price_in."\r";
+				//echo "price_out - ".$price_out."\r";
+				
+				// если остался один расчет услуги в ОТ - значит это уже не ОТ, а простая отдельная услуга
+				// значит надо убрать из print_details все маркеры ОТ 
+				if(count($itog_united_calculations)==1){
+				    unset($print_details_arr['quantity_details']);
+					unset($print_details_arr['dop_data_ids']);	
+				}
+				else{
+					$dop_data_ids_arr = $print_details_arr['dop_data_ids'];
+					$quantity_details_arr = $print_details_arr['quantity_details'];
+					$print_details_arr['dop_data_ids'] = $print_details_arr['quantity_details'] = array();
+
+					$ln = count($dop_data_ids_arr);
+				    for($i=0; $i<$ln; $i++){
+					    if($dop_data_ids_arr[$i]!=$data_arr['id_for_detachment']){
+						   $print_details_arr['dop_data_ids'][] = $dop_data_ids_arr[$i];
+						   $print_details_arr['quantity_details'][] = $quantity_details_arr[$i];
+						}
+					}
+				}
+				
+				if(isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type']!='auto'){
+				    $print_details_arr['need_confirmation'] = true;
+				}
+
+				//print_r($united_calculations);//exit;
+
+				$print_details_json = self::json_fix_cyr(json_encode($print_details_arr)); 
+
+                // обновляем данные услуг оставшихся в ОТ 
+				foreach($itog_united_calculations as $uslugi_id){
+					 // echo $uslugi_id.' '.$quantity."\r\n";
+
+					 $query="UPDATE `".RT_DOP_USLUGI."` SET
+									   `price_in` = '".$price_in."',
+									   `price_out` ='".$price_out."',
+									   `creator_id` ='".$user_id."',
+									   `print_details` ='".cor_data_for_SQL($print_details_json)."'";
+					 if(count($itog_united_calculations)==1) $query.=", `united_calculations` =''";
+									   $query.=" WHERE `id` ='".$uslugi_id."'"; 
+			         //echo 	$query."\r";	 
+				     $mysqli->query($query)or die($mysqli->error);
+				}
+				 
+				// вносим в базу id-шники связанных нанесений 
+				if(count($itog_united_calculations)>1){
+				    rtCalculators::mark_united_calculatoins($itog_united_calculations);
+				}
+				
+				
+				////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				//   работаем с услугой которая была удалена из объединенного тиража
+				////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					
+				if(isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type']=='auto'){
+			        // если это автоматический калькулятор
+					// произвести перерасчет стоимости услуги
+				 
+				    $YPriceParam = (isset($print_details_arr['dop_params']['YPriceParam']))? count($print_details_arr['dop_params']['YPriceParam']):1;
+					 
+					// получаем новые исходящюю и входящюю цену исходя из нового таража
+					$new_price_arr = self::change_quantity_and_calculators_price_query($detach_quantity,$print_details_obj,$YPriceParam); 
+					// здесь надо обпрботать превышение тиража
+					//print_r($new_price_arr);
+					$new_data = self::make_calculations($detach_quantity,$new_price_arr,$print_details_obj->dop_params);
+					  
+					$price_in = $new_data['new_price_arr']['price_in'];
+					$price_out = $new_data['new_price_arr']['price_out'];
+
+				}
+				//echo "price_in - ".$price_in."\r";
+				//echo "price_out - ".$price_out."\r";
+				
+				// если еще остались удаляем маркеры ОТ
+				if(isset($print_details_arr['quantity_details'])) unset($print_details_arr['quantity_details']);
+				if(isset($print_details_arr['dop_data_ids'])) unset($print_details_arr['dop_data_ids']);
+			    $print_details_json = self::json_fix_cyr(json_encode($print_details_arr)); 
+				// обновляем данные услуги
+				 $query="UPDATE `".RT_DOP_USLUGI."` SET
+								   `price_in` = '".$price_in."',
+								   `price_out` ='".$price_out."',
+								   `creator_id` ='".$user_id."',
+								   `united_calculations` ='',
+								   `print_details` ='".cor_data_for_SQL($print_details_json)."'
+									WHERE `id` ='".$detached_calculation."'"; 
+				 //echo 	$query."\r";	 
+				 $mysqli->query($query)or die($mysqli->error);
+				 
+				 unset($print_details_arr);
 			}
 		 }
 		 static function attach_calculation($data){
@@ -442,8 +623,7 @@
 
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			$user_id = 18;
-			$data_arr['usluga_id'] = array($data_arr['usluga_id'][0]);
+			$user_id = 18;  
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!			
 			
 			
@@ -472,6 +652,7 @@
 				
 			    // присваиваем тираж добавляемой услуги
 				$quantity = (int)$data_arr['attachment_quantity'];
+				$print_details_arr = array();
 				
 			    // получаем подробную информацию по связанным расчетам
 			    $query="SELECT dop_data.quantity quantity, uslugi.print_details print_details  , uslugi.price_in price_in, uslugi.price_out price_out
@@ -484,7 +665,7 @@
 				$result = $mysqli->query($query)or die($mysqli->error);
 				if($result->num_rows>0){
 				    while($row = $result->fetch_assoc()){
-					    if(!isset($print_details_arr)){
+					    if(!isset($print_details_arr) || count($print_details_arr)==0){
 							$print_details_arr = json_decode($row['print_details'],true);
 			                $print_details_obj = json_decode($row['print_details']);
 							$price_in = $row['price_in'];
@@ -497,7 +678,7 @@
 				}
 				
 				
-				 if(isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type']=='auto'){
+			    if(isset($print_details_arr['calculator_type']) && $print_details_arr['calculator_type']=='auto'){
 			        // если это автоматический калькулятор
 					// произвести перерасчет стоимости услуги
 					// если тираж привысит максимальный перевести калькулятор в ручной
@@ -510,15 +691,17 @@
 					//print_r($new_price_arr);
 					$new_data = self::make_calculations($quantity,$new_price_arr,$print_details_obj->dop_params);
 					  
-					$price_in = $new_data['new_price_arr']['price_in'];
-					$price_out = $new_data['new_price_arr']['price_out'];
-
-				 }
+					// если есть превышение калькулятора по лимиту или необходим индивидуальный расчет
+					if(self::$needIndividCalculation || self::$outOfLimit){
+						$print_details_arr['calculator_type'] = 'manual';
+				    }
+					else{
+					    $price_in = $new_data['new_price_arr']['price_in'];
+					    $price_out = $new_data['new_price_arr']['price_out'];
+					}
+				}
 				 
-				 // если есть превышение калькулятора по лимиту или необходим индивидуальный расчет
-				 if(self::$needIndividCalculation || self::$outOfLimit){
-				     $print_details_arr['calculator_type'] = 'manual';
-				 }
+				
 				 
 				 // добавляем пустую запись в базу (записываем добавляемый расчет)
 				 $query="INSERT INTO `".RT_DOP_USLUGI."` SET 
@@ -530,26 +713,24 @@
 				 // echo $query."\r";		   
 				 $mysqli->query($query)or die($mysqli->error);
 				 $last_uslugi_id = $mysqli->insert_id;
+				 
 				 // добавляем id новой записи в общий массив по которому далее сделаем перезапись данных
-						
-				 //
 				 array_push($united_calculations,$last_uslugi_id);
+				 $united_calculations = array_reverse($united_calculations);
+				 natsort($united_calculations);
+				 $united_calculations = array_values($united_calculations);
+				 
 				 array_push($print_details_arr['quantity_details'],$data_arr['attachment_quantity']);
 				 array_push($print_details_arr['dop_data_ids'],$data_arr['id_for_attachment']);
 				 $print_details_arr['need_confirmation'] = true;
-				 print_r($united_calculations);
-				 print_r($print_details_arr);
+				 //print_r($united_calculations);
+				 //print_r($print_details_arr);
 				 //exit;
-				 
-				 unset($data_arr['id_for_attachment']);	
-				 unset($data_arr['attachment_quantity']);
-				 unset($data_arr['action']);
 				 
 				 $print_details_json = self::json_fix_cyr(json_encode($print_details_arr)); 
 
 
 				 foreach($united_calculations as $uslugi_id){
-					 // echo $uslugi_id.' '.$quantity."\r\n";
 
 					 $query="UPDATE `".RT_DOP_USLUGI."` SET
 									   `price_in` = '".$price_in."',
@@ -564,31 +745,9 @@
 				 //print_r($united_calculations);
 				 // вносим в базу id-шники связанных нанесений 
 				 rtCalculators::mark_united_calculatoins($united_calculations);
+				 
+				 unset($print_details_arr);
 			}
-
-		/*
-					 if(isset($details_arr['action']) && $details_arr['action']=='detach'){
-						 // извлекаем  расчет из объединенного тиража
-						 echo 'detach';
-						 exit;
-						 // если это автоматический калькулятор
-						 // 1. надо сначала получить сумму тиражей объединенных расчетов (ОБР) за минусом извлекаемого расчета
-						 // 2. пересчитать стоимость по прайсу исходя из нового общего тиража
-						 // 3. внести изменения в данные объединенного тиража всё тоже что мы делаем при удалении строки с расчетом из ОБР
-						 // 4. у выводимого тиража удаляем все атрибуты ОБР, если от ОБР остается один тираж то у него тоже удаляем все атрибуты ОБР
-						 
-						 // выполняем все необходимые действия с помощью универсального метода
-						 // используемого также при удалении рядов из РТ
-						 unset($details_arr['action']);
-						 
-						 require_once(ROOT."/libs/php/classes/rt_class.php");
-						 
-						 RT::check_and_edit_united_calculations($dopRowIdsArr);
-						 
-									 
-						 
-					 }*/
-			
 		 }
 		 static function save_calculations_result_router($details){
 		    global $mysqli;

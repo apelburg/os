@@ -958,10 +958,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			*/
 			var variant,first_group_service;
 			methods.dataObj = {
-				action:'attach',    
-				usluga_id:{},     
-				id_for_attachment:'',   
-				attachment_quantity:''
+				0:{
+					action:'attach',    
+					usluga_id:{},     
+					id_for_attachment:'',   
+					attachment_quantity:''
+				}
 			}; 
 
 			variant = methods.mainObj[add_obj.attr('data-dop_row_id')]['variant'];	
@@ -972,10 +974,12 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			});
 			
 			methods.dataObj = {
-				action:'attach',    
-				usluga_id:first_group_service,     
-				id_for_attachment:variant.id,   
-				attachment_quantity:Number(variant.quantity)
+				0:{
+					action:'attach',    
+					usluga_id: first_group_service,     
+					id_for_attachment: Number(variant.id),   
+					attachment_quantity: Number(variant.quantity)
+				}
 			}; 
 			
 			
@@ -996,11 +1000,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 			*/
 
 			methods.dataObj = {
-			    action:'detach',    
-			    usluga_id:{},     
+			    0:{
+			    	action:'detach',    
+			    	usluga_id: new Array()
+			    }
 			}
 
-			var services = methods.mainObj[del_obj.attr('data-dop_row_id')]['services'];			
+			// console.warn('удаление вар-та из ОТ>> ',methods.dataObj);
+
+			var services = methods.mainObj[ Number(del_obj.attr('data-dop_row_id')) ]['services'];			
 			var k= 0;
 			// перебор сгруппированных услуг
 			methods.services_rows.each(function(index, el) {
@@ -1009,20 +1017,23 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					var services_ids = $(this).find('.service_group').attr('data-id_s').split(',');
 
 					// console.warn(services_ids)
+
 					// ищем совпадения услуг в данной группе с услугами из варианта
 					for(var i = 0, length1 = services.length; i < length1; i++){
 						// console.warn(services_ids.indexOf(services[i].id), services_ids,services[i].id)
 						if(services_ids.indexOf(services[i].id) >= 0){
-							methods.dataObj.usluga_id[k++] = services[i].id;
+							// console.warn(services[i]['id'])
+							// console.warn('удаление вар-та из ОТ>> ',methods.dataObj);
+							methods.dataObj[0].usluga_id.push(Number(services[i]['id']));
+							// console.warn('удаление вар-та из ОТ>> ',methods.dataObj);
 						}
 					}
 
 				}
-				// console.log('вызов калькулятора methods.dataObj >> ',methods.dataObj);	
+				
 			});
 			
-			// console.log(methods.dataObj)
-			// alert('test');
+			// console.warn('удаление вар-та из ОТ>> ',methods.dataObj);	
 			printCalculator.startCalculator(methods.dataObj);
 		},
 		// проверяем не принадлежат ли выбранные строки вариантов из одной позиции

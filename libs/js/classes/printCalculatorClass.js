@@ -72,7 +72,6 @@ var printCalculator = {
 			
 			// ATTACH
 			if(dataObj.action=='attach'){
-				alert('в разработке 2');
 				// дейстие - добавление услуги в ОТ(объединенный тираж)
 				// для выполнения действия сюда должны быть переданы
 				// 1. id добавляемого расчета (id из таблицы RT_DOP_DATA) - передается в dataObj.id_for_attachment
@@ -109,8 +108,6 @@ var printCalculator = {
 				   //alert(prop+'-'+dataObj[prop]);
 				   newDataObj[prop] = dataObj[prop];
 				}
-				newDataObj.attachment_quantity = newDataObj.quantity[0];
-				newDataObj.id_for_attachment = newDataObj.dop_data_ids[0];
 				
 				 // отправляем прямой запрос без открытия калькулятора на стороне клиента
 				var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&attach_calculation=1&data='+JSON.stringify(newDataObj),'section');
@@ -120,19 +117,16 @@ var printCalculator = {
 			   
 
 				function callback(response){ 
-					 alert(response);
+					// alert(response);
 					// console.log(response);
 					//location.reload();
+					$('#js-main_service_center').totalCommander('update_total_window');
 				}
-				
-				
-				//delete dataObj;
-				
 			}
 			
 			// DETACH
 			if(dataObj.action=='detach'){
-				alert('в разработке');
+				//alert('в разработке');
 				
 	            // дейстие - удаление услуги из ОТ(объединенный тираж)
 				// для выполнения действия сюда должны быть переданы
@@ -147,14 +141,15 @@ var printCalculator = {
 					// список usluga_id, надо передать в калькулятор				
 				}
 			
-		        var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&detach_calculation=1&data='+JSON.stringify(newDataObj),'section');
+		        var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&detach_calculation=1&data='+JSON.stringify(dataObj),'section');
 				//alert(url);
 				printCalculator.send_ajax(url,callback);
 
 				function callback(response){ 
-					 alert(response);
+					//  alert(response);
 					// console.log(response);
 					//location.reload();
+					$('#js-main_service_center').totalCommander('update_total_window');
 				}
 
 			}
