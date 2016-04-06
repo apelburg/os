@@ -23,23 +23,6 @@
 	 /*
 */
 
-/*
-	ЧТО ОСТАЛОСЬ:
-	1) сохранение общей скидки в группе и нет ( READY )
-	2) изменение комментариев - в группе и нет ( READY )
-	3) выгрузка валидного описания услуги из калькулятора ( READY )
-	4) добавление и удаление в связанный тираж других вариантов ( READY - дело за калькуляторами ) 
-	5) запрет объединения вариантов ( пока не нужен )
-	6) удаление услуг в группе и нет ( READY )
-	7) полное обновление информации в окне Тотал и чтоб после все работало (в основном после калькулятора) 
-	   или предоставление методов добавления услуг в объект ТОТАЛ ( READY )
-	8) метод редактирования json услуг для часных случаев   ( READY )
-	(нужен в случае, когда окно нельзя обновить, скажем при редактировании информации по услугам, их удалении)
-	( READY )
-*/
-
-
-
 function round_money(num){
 	num = Number(num);
 	var new_num = Math.ceil((num)*100)/100;
@@ -956,41 +939,48 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					$('#js-alert_union').after($('<div/>',{'id':'js-alert_union_buttons','class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'}).append( buttons_html));
 		},
 		// добавлеие варианта в связанный тираж
-		calculator_add_variant:function(obj){
-			var i = 0,ind2 = 0;
-			delete methods.dataObj;
+		calculator_add_variant:function(add_obj){
+			/*
+				[05.04.2016 15:55:09] Андрей: 
+
+				добавление услуги в ОТ(объединенный тираж)
+				1. id добавляемого расчета (id из таблицы RT_DOP_DATA) - передается в dataObj.id_for_attachment
+				2. массив содержащий id услуг (прикрепленных к одному любому расчету уже входящему в ОТ( но только тех услуг
+				    которые входят в ОТ))(id из таблицы RT_DOP_USLUGI) - передается в массиве dataObj.usluga_id
+				3. тираж добавляемого расчета - передается в dataObj.attachment_quantity
+				4.dataObj.action='attach'
+				{
+				     action:'attach',    
+				     usluga_id:[333,4444],     
+				     id_for_attachment:2222,   
+				     attachment_quantity:1000,   
+				}
+			*/
+			var variant,first_group_service;
+			methods.dataObj = {
+				action:'attach',    
+				usluga_id:{},     
+				id_for_attachment:'',   
+				attachment_quantity:''
+			}; 
+
+			variant = methods.mainObj[add_obj.attr('data-dop_row_id')]['variant'];	
 			
 
-			methods.dataObj = []; 
 			methods.services_rows.each(function(index, el) {
-
-				methods.dataObj[ind2] = []; 					// {action: string value, type: string value, usluga_id: string value, dop_data_ids: array [0,1,2], quantity: array [100,100,200]}
-				methods.dataObj[ind2]['action'] = 'attach';	// [обязательный] - строка, возможные значения - "new" (при вызове из кнопки), "update" (при вызове из существующего расчета), "attach" (при добавлении в расчет), "detach" (при отделении от расчета) 
-				methods.dataObj[ind2]['type'] = '';			// [необязательный] - строка, возможные значения - "union" (когда нужно создать объединенный тираж) 
-				methods.dataObj[ind2]['usluga_id'] = [];		// [необязательный] - строка, нужен когда тыкаем по существующему нанесению
-				methods.dataObj[ind2]['dop_data_ids'] = [];	// [необязательный] - массив, нужен когда тыкаем по кнопке "Добавить услугу"
-				methods.dataObj[ind2]['quantity'] = [];		// [необязательный] - массив, должен содержать значения тиражей из dop_data, нужен когда делается объединенный тираж
-				methods.dataObj[ind2]['art_id'] = [];			// art_id - string	
-
-				var row = methods.variants_tbody.find('tr#dop_data_'+obj.attr('data-dop_row_id'))
-				methods.dataObj[ind2]['dop_data_ids'][0] = row.attr('data-dop_row_id') ;
-				methods.dataObj[ind2]['quantity'][0] = row.attr('data-quantity') ;
-				methods.dataObj[ind2]['art_id'][0] = row.attr('data-art_id') ;
-
-				// собираем информацию по сгруппированным услугам
-				var ind = 0 ;
-				//console.log(methods.services_rows);
-				
-				methods.dataObj[ind2]['usluga_id'] = [];
-				methods.dataObj[ind2]['usluga_id'] = $(this).find('.service_group').attr('data-id_s').split(',');
-				methods.dataObj[ind2]['calculator_type'] = $(this).attr('data-calculator_type');
-				ind2++;
+				first_group_service = $(this).find('.service_group').attr('data-id_s').split(',');
 			});
-			console.info('добавить вариант из группы >>>', methods.dataObj);
-			// вызов калькулятора
 			
-			// console.log(JSON.stringify(methods.dataObj),methods.dataObj)
-
+			methods.dataObj = {
+				action:'attach',    
+				usluga_id:first_group_service,     
+				id_for_attachment:variant.id,   
+				attachment_quantity:Number(variant.quantity)
+			}; 
+			
+			
+			console.info('добавить вариант из группы >>>', methods.dataObj);
+			
 			printCalculator.startCalculator(methods.dataObj);
 		},
 
