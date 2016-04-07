@@ -1616,7 +1616,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 
-    			// console.warn(methods.checked_variants_id)
+
 
 				// получаем группы
 				k = 0;

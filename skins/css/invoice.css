@@ -13,29 +13,34 @@
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(3),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(9),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(1),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(3),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(4),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5){
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(1){
 	text-align: right;
 }
 
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
+
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(6),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(7){
 	text-align: left;
 }
-
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(11),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(12),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(2){
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(2),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(3),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5){
 	text-align: center;
+}
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(3),
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5){
+	padding: 2px;
 }
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4){
 	padding-left: 10px;
 }
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13),
+#js-main-invoice-table tbody tr td:nth-of-type(16){
 	padding-right: 10px;
 }
 
@@ -50,7 +55,124 @@
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2){
 	border-right: none;
 }
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(3){
+	border-left: none;
+}
 #js-main-invoice-table tbody tr td{
 	font-size: 12px;
 	color: #7A7A7A;
+	padding:5px;
+}
+
+/*выравнивание текста в ячейках счета*/
+
+#js-main-invoice-table tbody tr td:nth-of-type(6) div{
+	text-align: left;
+}
+#js-main-invoice-table tbody tr td:nth-of-type(12) div,
+#js-main-invoice-table tbody tr td:nth-of-type(13) div,
+#js-main-invoice-table tbody tr td:nth-of-type(14) div{
+
+	text-align: center;
+}
+#js-main-invoice-table tbody tr td:nth-of-type(1) div,
+#js-main-invoice-table tbody tr td:nth-of-type(3) div,
+#js-main-invoice-table tbody tr td:nth-of-type(4) div,
+#js-main-invoice-table tbody tr td:nth-of-type(7) div,
+#js-main-invoice-table tbody tr td:nth-of-type(8) div,
+#js-main-invoice-table tbody tr td:nth-of-type(10) div,
+
+#js-main-invoice-table tbody tr td:nth-of-type(9) div,
+#js-main-invoice-table tbody tr td:nth-of-type(11) div,
+#js-main-invoice-table tbody tr td:nth-of-type(16) div{
+	text-align: right;
+}
+/*padding текста в ячейках счета*/
+/*#js-main-invoice-table tbody tr td:nth-of-type(16){
+	padding-right: 10px;
+}*/
+
+/*исконка флаг*/
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5){
+	background-image:url(../images/img_design/icon_invoce_1.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--icons-flag{
+	background-image:url(../images/img_design/icon_invoce_3.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--icons-flag.checked{
+	background-image:url(../images/img_design/icon_invoce_2.png);
+}
+/*иконка глаз*/
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(8){
+	background-image:url(../images/img_design/icon_invoce_ice.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--ice{
+	background-image:url(../images/img_design/icon_invoce_ice.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--ice.checked{
+	background-image:url(../images/img_design/icon_invoce_ice_green.png);
+}
+/*иконка калькулятор*/
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(10){
+	background-image:url(../images/img_design/icon_invoce_calc.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--icons-calculator{
+	background-image:url(../images/img_design/icon_invoce_calc.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--icons-calculator.checked{
+	background-image:url(../images/img_design/icon_invoce_calc_green.png);
+}
+/*иконки оповещений*/
+#js-main-invoice-table tbody tr td:nth-of-type(17){
+	padding: 0;
+	vertical-align: baseline;
+}
+#js-main-invoice-table tbody tr td .invoice-row-icon{
+	/*background-color: red;*/
+	width: 100%;
+	height: 20px;
+}
+#js-main-invoice-table tbody tr td .invoice-row-icon.invoice-row--din-din{
+	background-image:url(../images/img_design/icon_invoce_dindin.png);
+	background-repeat: no-repeat;
+	background-position: 10px 50%;
+}
+#js-main-invoice-table tbody tr td .invoice-row-icon.invoice-row--din-din.checked{
+	background-image:url(../images/img_design/icon_invoce_dindin_green.png);
+	background-color: #F0F6E9;
+}
+#js-main-invoice-table tbody tr td .invoice-row-icon.invoice-row--comment{
+	background-image:url(../images/img_design/comment_icon_empty.png);
+	background-repeat: no-repeat;
+	background-position: 0px 50%;
+}
+#js-main-invoice-table tbody tr td .invoice-row-icon.invoice-row--comment.isfull{
+	background-image:url(../images/img_design/comment_icon.png);
+}
+/*псевдочекбоксы*/
+#js-main-invoice-table tbody tr td.invoice-row--checkboxtd{
+	background-image:url(../images/img_design/icon_invoce_checkbox.png);
+	background-repeat: no-repeat;
+	background-position: 50% 10px;
+	cursor: pointer;
+	padding: 0;
+	width: 20px;
+}
+#js-main-invoice-table tbody tr td.invoice-row--checkboxtd:hover{
+	background-color: #F2F2F2;
+}
+#js-main-invoice-table tbody tr td.invoice-row--checkboxtd.checked{
+	background-image:url(../images/img_design/icon_invoce_checkbox_checked.png);
 }
