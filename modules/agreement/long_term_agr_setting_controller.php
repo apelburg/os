@@ -6,7 +6,7 @@
 	$dateDataObj = json_decode($_GET['dateDataObj']);
 	
 	// класс работы с менеджерами
-	require_once(ROOT."/libs/php/classes/client_class.php");
+	require_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/client_class.php");
 	$data_arr = Client::requisites($client_id);
 	
 	$client_requisites=''; 
@@ -67,7 +67,7 @@
 	*/	
     if($dateDataObj->doc_type=='spec'){
 	         $varying_part = '<td style="vertical-align:top;padding-top:10px;padding-bottom:25px;" colspan="2">
-							 <div class="row"><label class="areement_set_label"><input type="checkbox" onclick="show_hide_div_and_checkbox(this,\'existent_agreement_data\');" id="agreement_exists" name="agreement_exists"/>договор уже существует</label></div>
+							 <div class="row"><label class="areement_set_label"><!--<input type="checkbox" onclick="show_hide_div_and_checkbox(this,\'existent_agreement_data\');" id="agreement_exists" name="agreement_exists"/>договор уже существует</label>--></div>
 							 <div id="existent_agreement_data" style="display:none;">
 							 <div class="row"><label class="areement_set_label"><input type="checkbox" onclick="show_hide_div_and_checkbox_II(this,\'existent_client_agreement_num_div\',\'existent_agreement_num_div\');" id="client_agreement" name="existent_agreement_client_agreement"> это клиентский договор</label></div>
 							 <div id="existent_client_agreement_num_div" style="display:none;">

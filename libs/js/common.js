@@ -1047,7 +1047,6 @@
 	  var pattern = /^\d{2}.\d{2}.\d{4}$/;
 	  if(existent_agreement_date && !existent_agreement_date.match(pattern))  validate_error.push('дата подписания не соответствуюет формату 00.00.0000');
 	  if(existent_agreement_expire_date && !existent_agreement_expire_date.match(pattern))  validate_error.push('дата истечения не соответствуюет формату 00.00.0000');
-		
 
 	  if(validate_error.length > 0){
 		  alert(validate_error.join("\r\n"));
@@ -2566,3 +2565,11 @@ jQuery(function($){
 		}
 	});
 });
+
+ function show_hide_div_and_checkbox(element,id){
+	//alert(element.checked);
+	var div = document.getElementById(id);
+	if(element.checked) div.style.display = 'block';
+	else div.style.display = 'none';
+	//return false;
+}
