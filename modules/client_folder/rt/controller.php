@@ -39,7 +39,7 @@
 				  `".RT_DOP_DATA."`   dop_data_tbl   ON  main_tbl.id = dop_data_tbl.row_id
 				  LEFT JOIN 
 				  `".RT_DOP_USLUGI."` dop_uslugi_tbl ON  dop_data_tbl.id = dop_uslugi_tbl.dop_row_id
-		          WHERE main_tbl.query_num ='".$query_num."' ORDER BY main_tbl.sort,dop_data_tbl.id";
+		          WHERE main_tbl.query_num ='".$query_num."' ORDER BY main_tbl.sort,dop_data_tbl.id,dop_uslugi_tbl.id";
 		
 			// echo $query;
 		 $result = $mysqli->query($query) or die($mysqli->error);
@@ -118,7 +118,10 @@
 	 // draft - РЕАЛИЗАЦИЯ ФУНКЦИОНАЛА "ДРАФТ" оказалась не востребованной поле draft можно удалить из таблицы в базе данных
 	 // если что реализация сохранена, закомментирована внизу скрипта 
 	  
-	 // echo '<pre>'; print_r($rows[0]); echo '</pre>';
+
+	 /*if(@$_SESSION['access']['user_id']==18){ 
+		echo '<pre>'; print_r($rows[0]); echo '</pre>';
+	 }  // */
 	 $service_row[0] = array('quantity'=>'','price_in'=>'','price_out'=>'','row_status'=>'','glob_status'=>'');
 	 $glob_counter = 0;
 	 $mst_btn_summ = 0;

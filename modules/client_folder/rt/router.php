@@ -210,7 +210,21 @@
 		// print_r(json_decode($_GET['details']));//
 		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
 		
-		rtCalculators::save_calculatoins_result_router($_GET['details']);
+		rtCalculators::save_calculations_result_router($_GET['details']);
+		exit;
+	}
+	if(isset($_GET['attach_calculation'])){
+		// print_r(json_decode($_GET['details']));//
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+		
+		rtCalculators::attach_calculation($_GET['data']);
+		exit;
+	}
+	if(isset($_GET['detach_calculation'])){
+		// print_r(json_decode($_GET['details']));//
+		include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+		
+		rtCalculators::detach_calculation($_GET['data']);
 		exit;
 	}
 	if(isset($_GET['delete_prints_for_row'])){

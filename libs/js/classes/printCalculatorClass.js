@@ -37,7 +37,7 @@ var printCalculator = {
 				
 				if(dataObj.dop_data_ids){
 					if(typeof dataObj.dop_data_ids != 'object'){ echo_message_js('переменная dataObj.dop_data_ids должна быть массивом');return;}
-					if(dataObj.dop_data_ids.length == 0){ echo_message_js('вы не выбрали варианты расчетов');return;}
+					if(dataObj.dop_data_ids.length == 0){ echo_message_js('не определен список услуг');return;}
 					// список id расчетов, надо передать в калькулятор
 					
 				}
@@ -72,11 +72,15 @@ var printCalculator = {
 			
 			// ATTACH
 			if(dataObj.action=='attach'){
-				alert('в разработке 2');
-				// дейстие - добавление нанесения в объединенный тираж или распределение существующего нанесения
+				// дейстие - добавление услуги в ОТ(объединенный тираж)
+				// для выполнения действия сюда должны быть переданы
+				// 1. id добавляемого расчета (id из таблицы RT_DOP_DATA) - передается в dataObj.id_for_attachment
+				// 2. массив содержащий id услуг (прикрепленных к одному любому расчету уже входящему в ОТ( но только тех услуг
+				//    которые входят в ОТ))(id из таблицы RT_DOP_USLUGI) - передается в массиве dataObj.usluga_id
+				// 3. тираж добавляемого расчета - передается в dataObj.attachment_quantity
 				
-				// если Ручной или Держурная услуга просто вызываем калькулятор и затем открываем его с правильним тиражем(объединенный или нет)
-				// если Автоматический надо сделать фоновый перерасчет на основе правильного тиража, если будут ошибки при расчете выкинуть
+				
+			
 				// стандартные окна
 				if(dataObj.usluga_id){
 					if(typeof dataObj.usluga_id != 'object'){ echo_message_js('переменная dataObj.usluga_id должна быть массивом');return;}
@@ -84,7 +88,8 @@ var printCalculator = {
 					// список usluga_id, надо передать в калькулятор				
 				}
 				
-	
+	/*// если Ручной или Держурная услуга просто вызываем калькулятор и затем открываем его с правильним тиражем(объединенный или нет)
+				// если Автоматический надо сделать фоновый перерасчет на основе правильного тиража, если будут ошибки при расчете выкинуть
 				if(dataObj.calculator_type=='manual' || dataObj.calculator_type=='fee'){// если Ручной или Держурная услуга вызываем калькулятор c новым тиражем
 					// пересчитываем новый тираж
 					 var quantity=0;
@@ -96,53 +101,57 @@ var printCalculator = {
 					 
 					
 				}
+				*/
 				
-				if(dataObj.calculator_type=='auto'){// если калькулятор атоматический 
-				    var newDataObj= {};
-				    for(var prop in dataObj){
-					   //alert(prop+'-'+dataObj[prop]);
-					   newDataObj[prop] = dataObj[prop];
-				    }
-				    newDataObj.attachment_quantity = newDataObj.quantity[0];
-					newDataObj.id_for_attachment = newDataObj.dop_data_ids[0];
-					
-				     // отправляем прямой запрос без открытия калькулятора на стороне клиента
-					var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&save_calculator_result=1&details='+JSON.stringify(newDataObj),'section');
-                    alert(url);
-		            printCalculator.send_ajax(url,callback);
-					
-                   
-
-					function callback(response){ 
-						 alert(response);
-						// console.log(response);
-						//location.reload();
-					}
-					
+				var newDataObj= {};
+				for(var prop in dataObj){
+				   //alert(prop+'-'+dataObj[prop]);
+				   newDataObj[prop] = dataObj[prop];
 				}
-				//delete dataObj;
 				
+				 // отправляем прямой запрос без открытия калькулятора на стороне клиента
+				var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&attach_calculation=1&data='+JSON.stringify(newDataObj),'section');
+				//alert(url);
+				printCalculator.send_ajax(url,callback);
+				
+			   
+
+				function callback(response){ 
+					// alert(response);
+					// console.log(response);
+					//location.reload();
+					$('#js-main_service_center').totalCommander('update_total_window');
+				}
 			}
 			
 			// DETACH
 			if(dataObj.action=='detach'){
-				alert('в разработке');
+				//alert('в разработке');
 				
-				if(dataObj.usluga_id.length > 0){ echo_message_js('Ошибка, параметр dataObj.usluga_id должен содержать одно значение');return;}
-				// удаление расчета из объединенного тиража 
-				// 1. сделать запрос на сервер для получения дефолтных параметров калькулятора
-					
-				if(dataObj.calculator_type=='manual' || dataObj.calculator_type=='fee'){// если Ручной или Держурная услуга вызываем калькулятор c новым тиражем
-					// пересчитываем новый тираж
-					 var quantity=0;
-					 for(var i in dataObj.quantity) { quantity += parseInt(dataObj.quantity[i]); }
-					 
-					 // вызываем калькулятор с новым тиражом
-					 // дополнительно надо передать информацию что это добавление в тираж, и id добавляемого расчета
-					 printCalculator.evoke_calculator_directly({"art_id":dataObj.art_id[0],"id_for_attachment":dataObj.dop_data_ids[0],"dop_uslugi_id":dataObj.usluga_id[0],"action":dataObj.action,"attachment_quantity":dataObj.quantity[0]});//dataObj.usluga_id[0]
-					 
-					
+	            // дейстие - удаление услуги из ОТ(объединенный тираж)
+				// для выполнения действия сюда должны быть переданы
+				// 1. массив содержащий id услуг (прикрепленных к расчету удаляется из ОТ( но только тех услуг
+				//    которые входят в ОТ))(id из таблицы RT_DOP_USLUGI) - передается в массиве dataObj.usluga_id
+				
+				
+				// стандартные окна
+				if(dataObj.usluga_id){
+					if(typeof dataObj.usluga_id != 'object'){ echo_message_js('переменная dataObj.usluga_id должна быть массивом');return;}
+					if(dataObj.usluga_id.length == 0){ echo_message_js('не определен список услуг');return;}
+					// список usluga_id, надо передать в калькулятор				
 				}
+			
+		        var url = OS_HOST+'?' + addOrReplaceGetOnURL('page=client_folder&detach_calculation=1&data='+JSON.stringify(dataObj),'section');
+				//alert(url);
+				printCalculator.send_ajax(url,callback);
+
+				function callback(response){ 
+					//  alert(response);
+					// console.log(response);
+					//location.reload();
+					$('#js-main_service_center').totalCommander('update_total_window');
+				}
+
 			}
 			
 		}// запустить калькулятор

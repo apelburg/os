@@ -1829,7 +1829,7 @@ var rtCalculator = {
 			return;
 		}
 		
-		show_processing_timer();
+		// show_processing_timer();
 		//  
 		// 1. Обращаемся к серверу, получаем данные из буфера(SESSIONS)
 		// 2. Вставляем данные из буфера в базу данных на стороне сервера
@@ -1840,7 +1840,7 @@ var rtCalculator = {
 		rtCalculator.send_ajax(url,callback);
 		function callback(response){ 
 		    // alert(response);
-            close_processing_timer(); 
+           //  close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
@@ -1856,6 +1856,7 @@ var rtCalculator = {
 				return;
 			}/**/
 			location.reload();
+			//$.SC_reload_RT_content();
 		}
 	}
 	,
@@ -1870,11 +1871,6 @@ var rtCalculator = {
 		
 		var idsArr =[];
 		
-		if(type && type == 'prints') var target = 'нанесения';
-		else if(type && type == 'uslugi') var target = 'услуги';
-		else if(type && type == 'printsAndUslugi') var target = 'нанесения и доп услуги';
-		else var target = 'ряды';
-		
 		// если есть pos_id то значит функция вызвана из контекстног меню - тоесть удаляем одну позицию
 		// обходить ряды таблицы чтобы проверять мастер-кнопки не нужно 
         if(pos_id){
@@ -1883,13 +1879,16 @@ var rtCalculator = {
 		else{// иначе обходим ряды таблицы
 			 // определяем какие ряды были выделены (какие Мастер Кнопки были нажаты)
 			if(!(idsArr = rtCalculator.get_active_main_rows())){
+				if(type && type == 'prints') var target = 'нанесения';
+				else if(type && type == 'uslugi') var target = 'услуги';
+				else if(type && type == 'printsAndUslugi') var target = 'нанесения и доп услуги';
+				else var target = 'ряды';
 				echo_message_js('не возможно удалить '+target+', вы не выбрали ни одной позиции','system_message',2000);
 				closeAllMenuWindows();
 				return;
 			} 
 		}
 		
-<<<<<<< HEAD
 		
 		if(type && type == 'prints'){
 			if(pos_id)  var sub_str = 'все услуги из выбранного ряда';
@@ -1901,9 +1900,6 @@ var rtCalculator = {
 		}
 		
 		var dialog = $('<div>программа удалит '+sub_str+'</div>');
-=======
-		var dialog = $('<div>программа удалит '+((pos_id)?'выбранную вами строку '+target:'выбранные вами строки '+target)+'</div>');
->>>>>>> 6b005b6f168372aac3b6dd7dfa727affb945ad4e
 					 
 		$('body').append(dialog);
 		$(dialog).dialog({
@@ -1987,6 +1983,7 @@ var rtCalculator = {
 				return;
 			}
 			location.reload();
+			//$.SC_reload_RT_content();
 		}
 	}
 	,
