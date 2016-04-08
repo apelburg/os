@@ -2235,11 +2235,17 @@ var printCalculator = {
 	}
 	,
 	showProcessingDetails:function(){
-
+        $("#showProcessingDetailsBox").remove();
+		
 		var box = document.createElement('DIV');
 		box.id = "showProcessingDetailsBox";
 		//box.style.width = '300px';
 		box.style.display = "none";
+		var cap = document.createElement('DIV');
+		cap.className = 'printCap';
+		cap.innerHTML = printCalculator.currentCalculationData[printCalculator.type].print_details.print_type;
+		box.appendChild(cap);
+		
 		var cap = document.createElement('DIV');
 		cap.className = 'cap';
 		cap.innerHTML = 'Входящий прайс';

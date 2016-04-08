@@ -1787,6 +1787,7 @@ ul.central_menu li a:hover{
 #showProcessingDetailsBox .calculatorPriceTbl tr:first-of-type td{ font-size: 11px;border: #DDD  solid 1px; text-align:center;}
 #showProcessingDetailsBox .calculatorPriceTbl td{ font-size: 11px;border: #DDD  solid 1px; text-align:right; padding: 3px 2px;}
 #showProcessingDetailsBox .calculatorPriceTbl td:first-of-type { text-align:center;}
+#showProcessingDetailsBox .printCap{ color: #222; margin-bottom: 7px;}
 #showProcessingDetailsBox .cap{ color:#777;margin-bottom: 2px;}
 #calculatorDialogBox .calculatorMenuCell { float:left; padding:6px 40px; color:#FFFFFF; border-left: 1px solid #8b8a89; background-color:#6D6E73}
 #calculatorDialogBox .quantityInfoField { position:absolute; right:17px; top:6px; }
