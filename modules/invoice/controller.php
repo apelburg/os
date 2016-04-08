@@ -57,7 +57,7 @@ class Bill extends Documetnt {
 *	@author  	Alexey Kapitonov
  *	@version 	14:43 01.04.2016
  */
-class Invoce extends Documetnt {
+class theBill extends Documetnt {
     // requirement 03
     use Upholstery;
  	
@@ -68,15 +68,17 @@ class Invoce extends Documetnt {
         return $this->number;
     }
 }
-	// варианты просчётов
-	ob_start();	
-	$f = new Invoce();	
-		echo '<pre>';
-		print_r($f);
-		echo '</pre>';
+
+
+// варианты просчётов
+ob_start();	
+$f = new theBill();	
+	echo '<pre>';
+	print_r($f);
+	echo '</pre>';
 			
-		$content = ob_get_contents();
-	ob_get_clean();
+	$content = ob_get_contents();
+ob_get_clean();
 
 	
 

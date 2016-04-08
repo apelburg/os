@@ -6,6 +6,11 @@
 	if(!@$ACCESS['client_folder']['section']['rt_position']['access']) exit($ACCESS_NOTICE);
 	// ** БЕЗОПАСНОСТЬ **
     
+
+	include_once './libs/php/classes/invoice.class.php';
+	$Invoice = new Invoice();
+
+
 	include 'controller.php';
 
 	//////////////////////////
