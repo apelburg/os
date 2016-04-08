@@ -1692,7 +1692,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					for(var i in services_arr2[key]) {
 						quantity = Number(services_arr2[key][i].quantity)+quantity;
 						service[ k ] = services_arr2[key][i];
-						service[ k ]['id'] = Number(services_arr2[key][i]);
+						// делаем id услуги - числом (для сортировки)
+						service[ k ]['id'] = Number(services_arr2[key][i]['id']);
 					}
 					service[ k++ ].quantity = quantity;
 				}
