@@ -1616,7 +1616,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 
-    			console.warn(methods.checked_variants_id)
+    			// console.warn(methods.checked_variants_id)
 
 				// получаем группы
 				k = 0;
@@ -1692,6 +1692,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					for(var i in services_arr2[key]) {
 						quantity = Number(services_arr2[key][i].quantity)+quantity;
 						service[ k ] = services_arr2[key][i];
+						service[ k ]['id'] = Number(services_arr2[key][i]);
 					}
 					service[ k++ ].quantity = quantity;
 				}
@@ -1708,8 +1709,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.services_tbl.find('.service_th').addClass('js-service_spacer');
 			}
 
+			// сравниваем
+			function compare(serviceA, serviceB) {
+			  return serviceA.id - serviceB.id;
+			}
+			// сортируем
+			service.sort(compare);
+
 			// возвращаем объект со списком услуг
-			// console.log(service)
+			console.warn(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
