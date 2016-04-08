@@ -2176,8 +2176,8 @@ $.extend({
 		window_preload_add();
 		// обновление таблицы РТ
 		if($('#rt_tbl_body').length>0){
-			$('#scrolled_part_container').load(' #rt_tbl_body',function(){
-				// запускаем РТ по новой
+			// replace_rt_content
+			$('#replace_rt_maincontent').load(' #replace_rt_content',function(){
 				// printCalculator;
 				rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
 				// убираем прелоад

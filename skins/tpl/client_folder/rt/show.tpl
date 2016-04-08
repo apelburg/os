@@ -55,8 +55,10 @@ $( document ).ready(function() {
 
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/classes/printCalculatorClass.js"></script>
 <script type="text/javascript" src="./libs/js/up_window_consructor.js"></script>
-<div class="scrolled_tbl_container"> 
-<?php echo $rt; ?>
+<div id="replace_rt_maincontent">
+	<div class="scrolled_tbl_container" id="replace_rt_content"> 
+		<?php echo $rt; ?>
+	</div>
 </div>
 <?php if($block_page_elements){ ?>
 <div style="position:absolute;top:37px;left:50px;width:140px;height:35px;border:#ffff00 solid 0px" onclick="noticeQueryBlocked();"></div>
