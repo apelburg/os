@@ -263,8 +263,7 @@ var rtCalculator = {
 				for(var j in tds_arr){
 					if(tds_arr[j].nodeName == 'TD'){
 				        if(i == 0 && tds_arr[j].getAttribute('swiched_cols')){// swiched_cols взаимно переключаемые ряды (ед/тираж, вход/выход)
-						   $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
-						   
+						    $(tds_arr[j]).mousedown(function(){rtCalculator.swich_cols(this,'show'); }).mouseup(function(){ rtCalculator.swich_cols(this,'hide');});
 					    }
 					}
 			    }	
@@ -949,10 +948,6 @@ var rtCalculator = {
 						}
 						if(prop == 'outOfLimit'){
 							var str ='';
-
-							for(var index in response_obj.warning.calculators_checking.lackOfQuantityDetails){
-								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.lackOfQuantityDetails[index].minQuantity+"<br>";  
-							}
 							for(var index in response_obj.warning.calculators_checking.outOfLimitDetails){
 								 str += (parseInt(index)+1)+'). '+response_obj.warning.calculators_checking.outOfLimitDetails[index].print_type+', лимит тиража - '+response_obj.warning.calculators_checking.outOfLimitDetails[index].limitValue+"<br>";  
 							}
@@ -979,15 +974,6 @@ var rtCalculator = {
 									  width: 500,
 									  minHeight : 200 ,
 									  closeOnEscape: false,
-									  close: function() {
-										  // возвращаемся к предыдущему состоянию
-										 // $(this).dialog("close");
-										 // cell.innerHTML = response_obj.old_quantity;
-									  },
-									  click: function() {
-										  alert(1);
-										 $( this ).dialog( "close" );
-									  },
 									  buttons: [{text: "Да",
 												click: function(){
 														// отправляем повторный запрос с маркером ignore_calculators_checking
@@ -1038,64 +1024,14 @@ var rtCalculator = {
 						return;
 					}
 				}
-				if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
+				// rtCalculator.quantityCalculationsResponseFull($($("tr[row_id="+id+"]")[0]).find( "td[type=quantity]" )[0],id,response_obj[id]);
+				if(source=='rt'){
+					if(response_obj.united_calculations) location.reload();
+					else rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj); 
+				}
 				if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
 
 				return;
-				/*if(response_obj.print && response_obj.print.lackOfQuantity){
-					 var str =''; 
-					 for(var index in response_obj.print.lackOfQuantity){
-						 str += (parseInt(index)+1)+'). '+response_obj.print.lackOfQuantity[index].print_type+', мин тираж - '+response_obj.print.lackOfQuantity[index].minQuantity+"<br>";  
-					 }
-			
-					 var text = 'Тираж меньше минимального тиража для нанесения(ий):<br><br>'+str+'<br>стоимость будет пересчитана как для минимального тиража';
-					 
-					 if(rtCalculator.show_warning_window_timer){
-						 clearTimeout(rtCalculator.show_warning_window_timer);
-						 rtCalculator.show_warning_window_timer = null;
-						 delete rtCalculator.show_warning_window_text;
-					 }
-					 rtCalculator.show_warning_window_text = text;
-					 rtCalculator.show_warning_window_timer = setTimeout(rtCalculator.show_warning_window,1500);
-	
-				}
-				if(response_obj.print && response_obj.print.outOfLimit){
-					 var str ='';  
-					 for(var index in response_obj.print.outOfLimit){
-						 str += (parseInt(index)+1)+'). '+response_obj.print.outOfLimit[index].print_type+', лимит тиража - '+response_obj.print.outOfLimit[index].limitValue+"<br>";  
-					 }
-					 var dialog = $('<div>Из-за превышения максимального тиража<br>автоматические калькуляторы в следующих расчетах были переведены в ручной режим:<br>'+str+'</div>');
-					 $('body').append(dialog);
-					 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}]});
-					 $(dialog).dialog('open');
-					 response_obj.print.result = 'ok';
-					 // rtCalculator.changes_in_process=false;
-					 // return;
-					
-				}
-				if(response_obj.print && response_obj.print.needIndividCalculation){ 
-					 var str ='';  
-					 for(var index in response_obj.print.needIndividCalculation){
-						 str += (parseInt(index)+1)+'). '+response_obj.print.needIndividCalculation[index].print_type+"\r";  
-					 }
-					 var dialog = $('<div>Такой тираж не может быть установлен!!!<br>Потому что имеются нанесения для которых не возможно расчитать цену - для этих нанесений требуется индивидуальный расчет :<br>'+str+'</div>');
-					 $('body').append(dialog);
-					 $(dialog).dialog({modal: true, width: 500,minHeight : 200 , buttons: [{text: "Ok",click: function(){$(this).dialog("close"); }}] });
-					 $(dialog).dialog('open');
-					 
-					
-				}
-				
-				// если ответы ok для print и extra значит все нормально изменения сделаны 
-				// вызываем функции производящие изменения в HTML
-				if((response_obj.print && response_obj.print.result == 'ok') && (response_obj.extra && response_obj.extra.result == 'ok')){
-					if(source=='rt')rtCalculator.quantityCalculationsResponseFull(cell,row_id,response_obj);
-					if(source=='card')rtCalculator.cardQuantityCalculationsResponseFull(cell,row_id,response_obj);
-				}
-				else{
-					// самый лучщий вариант иначе могут быть разные ошибки
-					location.reload();
-				}*/	
 			}
 		}
 		function callbackOnlyQuantity(response){
@@ -1616,6 +1552,7 @@ var rtCalculator = {
 		
 		var tds_arr = ($(rtCalculator.body_tbl).children('tbody').length>0)? $(rtCalculator.body_tbl).children('tbody').children('tr').children('td'):$(rtCalculator.body_tbl).children('tr').children('td');
 		relay(tds_arr,name,action);
+		
 		function relay(tds_arr,name,action){
 			for(var j in tds_arr){
 				if(tds_arr[j].getAttribute){
@@ -1795,7 +1732,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){ /* alert(response); // */ rtCalculator.handler_for_copy_row_response(response); close_processing_timer(); closeAllMenuWindows(); }
+		function callback(response){ /* alert(response); // rtCalculator.handler_for_copy_row_response(response); close_processing_timer();*/  closeAllMenuWindows(); }
 	}
 	,
 	copy_row:function(e){ 
@@ -1814,7 +1751,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){/* alert(response); // */  rtCalculator.handler_for_copy_row_response(response);close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
+		function callback(response){/* alert(response); //  rtCalculator.handler_for_copy_row_response(response);*/ close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 		}
 	}
 	,
@@ -1899,15 +1836,20 @@ var rtCalculator = {
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('insert_copied_rows=1&query_num='+query_num+((typeof place_id != 'undefined')?'&place_id='+place_id:''));
 		rtCalculator.send_ajax(url,callback);
 		function callback(response){ 
-		
+		    // alert(response);
             close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
-			var data = JSON.parse(response);
+			
+			try {  var response_obj = JSON.parse(response); }
+			catch (e) { 
+				alert('неправильный формат данных in calculatorClass.insert_copied_rows() ошибка JSON.parse(response)');
+				return;
+			}
 			// alert(data[0]);
-			if(data[0]==0){
-				echo_message_js(data[1],'system_message',2400);
+			if(response_obj[0]==0){
+				echo_message_js(response_obj[1],'system_message',2400);
 				return;
 			}/**/
 			location.reload();
@@ -1915,7 +1857,7 @@ var rtCalculator = {
 	}
 	,
 	deleting:function(e){ 
-	   
+	    
 	    e = e|| window.event;
 		var cell = e.target || e.srcElement;
 		
@@ -1925,6 +1867,11 @@ var rtCalculator = {
 		
 		var idsArr =[];
 		
+		if(type && type == 'prints') var target = 'нанесения';
+		else if(type && type == 'uslugi') var target = 'услуги';
+		else if(type && type == 'printsAndUslugi') var target = 'нанесения и доп услуги';
+		else var target = 'ряды';
+		
 		// если есть pos_id то значит функция вызвана из контекстног меню - тоесть удаляем одну позицию
 		// обходить ряды таблицы чтобы проверять мастер-кнопки не нужно 
         if(pos_id){
@@ -1933,37 +1880,92 @@ var rtCalculator = {
 		else{// иначе обходим ряды таблицы
 			 // определяем какие ряды были выделены (какие Мастер Кнопки были нажаты)
 			if(!(idsArr = rtCalculator.get_active_main_rows())){
-				if(type && type == 'prints') var target = 'нанесения';
-				else if(type && type == 'uslugi') var target = 'доп услуги';
-				else if(type && type == 'printsAndUslugi') var target = 'нанесения и доп услуги';
-				else var target = 'ряды';
 				echo_message_js('не возможно удалить '+target+', вы не выбрали ни одной позиции','system_message',2000);
 				closeAllMenuWindows();
 				return;
 			} 
 		}
 		
-		if(!confirm('программа удалит '+((pos_id)?'выбранную вами строку':'выбранные вами строки'))){
-			closeAllMenuWindows();
-			return;
-		}
+		var dialog = $('<div>программа удалит '+((pos_id)?'выбранную вами строку '+target:'выбранные вами строки '+target)+'</div>');
+					 
+		$('body').append(dialog);
+		$(dialog).dialog({
+						  modal: true, 
+						  width: 500,
+						  minHeight : 200 ,
+						  closeOnEscape: false,
+						  buttons: [{text: "Да",
+									click: function(){
+											$(this).dialog("close");
+										    closeAllMenuWindows();
+											rtCalculator.deletingStep2(idsArr,type);
+										}},
+								   {text: "Отмена",
+								   click: function(){
+										   $(this).dialog("close");
+										   closeAllMenuWindows();
+			                               return;
+									   }}]
+						});
+		$(dialog).dialog('open');	
+	}
+	,
+	deletingStep2:function(idsArr,type){ 
 		// alert(idsArr.join(';'));
 		show_processing_timer();
 		
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('deleting='+JSON.stringify(idsArr)+((typeof type !== 'undefined')?'&type='+type:''));
-		rtCalculator.send_ajax(url,callback);
-		function callback(response){ 
-		    /* console.log(response); // 
-			alert(response);  */
+		rtCalculator.send_ajax(url,callbackForDeleting);
+		
+		function callbackForDeleting(response){ 
+		
+		    /* console.log(response);   */
+			// alert(response); 
 
             close_processing_timer(); 
 			closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
-			var data = JSON.parse(response);
+			
+			try {  var response_obj = JSON.parse(response); }
+			catch (e) { 
+				alert('неправильный формат данных in calculatorClass.deleting() ошибка JSON.parse(response)');
+				return;
+			}
+			
+			if(response_obj.warning && response_obj.warning.united_calculations){
+
+					 ///var dialog = $('<div>Внимание :<br>'+ notes.join(', ')+'</div>');
+					 var dialog = $('<div>удаляемые ряды содержат объединенные тиражи</div>');
+					 
+					 $('body').append(dialog);
+					 $(dialog).dialog({
+									  modal: true, 
+									  width: 500,
+									  minHeight : 200 ,
+									  closeOnEscape: false,
+									  buttons: [{text: "Да",
+												click: function(){
+														// отправляем повторный запрос с маркером ignore_calculators_checking
+														$(this).dialog("close");
+														show_processing_timer();
+														url += '&ignore_calculators_checking=1';
+														rtCalculator.send_ajax(url,callbackForDeleting);
+														
+													}},
+											   {text: "Отмена",
+											   click: function(){
+													   $(this).dialog("close");
+												   }}]
+									});
+					 $(dialog).dialog('open');
+					 
+					 return;
+			}
+			
 			// alert(data[0],data[1]);
-			if(data[0]==0){
+			if(response_obj[0]==0){
 				alert(data[1]);
 				return;
 			}
@@ -2175,12 +2177,16 @@ var rtCalculator = {
 		
 		var pos_id = false;
 		var idsObj = {};
+		var dopIdsArr = [];
+		var unitedCalculationsIds = {};
+		var unitedCalculationsFlag = false;
 		var idsArr = [];
 		var dopInfObj = {};
 		var indexCounter = 0;
-		
+		console.log('--СПФ-1-',unitedCalculationsIds);
 		// обходим ряды таблицы
-		for( var i= 0 ; i < trsArr.length; i++){
+		var ln = trsArr.length;
+		for( var i= 0 ; i < ln; i++){
 			var flag ;
 			
 			// если это ряд позиции проверяем не нажата ли Мастер Кнопка
@@ -2189,8 +2195,9 @@ var rtCalculator = {
 				
 				// работаем с рядом - ищем мастер кнопку
 				var tdsArr = $(trsArr[i]).children('td');
-				console.log(tdsArr);
-				for(var j =0; j < tdsArr.length; j++){
+				//console.log(tdsArr);
+				var ln2 = tdsArr.length;
+				for(var j =0; j < ln2; j++){
 					if(tdsArr[j].getAttribute('type')){
 						var type = tdsArr[j].getAttribute('type');
 						
@@ -2224,20 +2231,36 @@ var rtCalculator = {
 			if(pos_id!==false){
 				//console.log(pos_id+' '+trsArr[i].getAttribute('row_id'));
 				// работаем с рядом - ищем светофор 
-				var tdsArr = $(trsArr[i]).children('td');   
-				for( var j= 0 ; j < tdsArr.length; j++){
+				var tdsArr = $(trsArr[i]).children('td');  
+				var ln3 = tdsArr.length;
+				for( var j= 0 ; j < ln3; j++){
 					if(tdsArr[j].getAttribute('svetofor') && tdsArr[j].getAttribute('svetofor')=='sgreen'){
 
 						idsObj[pos_id].push(trsArr[i].getAttribute('row_id'));
+						dopIdsArr.push(trsArr[i].getAttribute('row_id'));
 						idsArr[indexCounter] = {pos_id:pos_id,row_id:trsArr[i].getAttribute('row_id')};
 						indexCounter++;
 					}
+					if(tdsArr[j].getAttribute('type') && tdsArr[j].getAttribute('type')=='dop_details'){
+						var dop_details = tdsArr[j].innerHTML;
+						//alert();
+						if(dop_details!=''){
+						    var dop_details_obj = JSON.parse(dop_details);
+							if(dop_details_obj.united_calculations){
+								unitedCalculationsFlag = true;
+						        unitedCalculationsIds[trsArr[i].getAttribute('row_id')] = dop_details_obj.united_calculations;
+							}
+						}
+					}
+	
 				}
 			}
 			
 		}
 		
-		console.log(idsObj);
+		console.log('--СПФ--',idsObj);
+		console.log('--СПФ--',dopIdsArr);
+		console.log('--СПФ--',unitedCalculationsIds);
 		
 		// проверяем сколько зеленых кнопок светофора были нажаты и в итоге были учтены
 		var nothing = true; // если вообще ни однин светофор не был суперзеленым
@@ -2284,176 +2307,208 @@ var rtCalculator = {
 			return;
 		}
 		
+		// проверяем все ли расчеты связанные объединенными тиражами выбраны
+		if(unitedCalculationsFlag){
+			var break2 = false;
+			for( var id in dopIdsArr){
+				//alert(dopIdsArr[id]);
+				if(unitedCalculationsIds[dopIdsArr[id]]){
+					var ln2 = unitedCalculationsIds[dopIdsArr[id]].length;
+					for( var j= 0 ; j < ln2; j++ ){
+						
+						if(dopIdsArr.join(',').indexOf(unitedCalculationsIds[dopIdsArr[id]][j])==-1){
+							//alert('-'+unitedCalculationsIds[dopIdsArr[id]][j]);
+							break2 = true;
+							var dialog = $('<div>Вы создаете документ, в котором находятся тиражи из объединенной группы печати, при этом в документ вошла только часть такого тиража. Проверьте актуальный данные стоимости и тиражей.</div>');
+							$(dialog).dialog({autoOpen: false ,title: 'Внимание!',modal:true,width: 600,buttons: [{text: "Да",click: function(){$(this).dialog("close");}}],close: function() {this.remove(); step1(1);}});
+							$(dialog).dialog("open");
+							
+							break;
+						}
+					}
+					
+				}
+				if(break2) break;
+			}
+			if(!break2) step1(2);
+		}
+		else{
+			step1(2);
+		}
+		
 		////////////
 		// Промежуточный интерфейс настройки типа спецификации, дат и сроков изготовления
 		//////////////////////////////////////////////////////////////////////////////////
-		
-		
-		function launch_set_window(id,title,content){
-			var box = document.createElement('DIV');
-		    box.id = id;
-		    box.style.display = "none";
-		    box.appendChild(content);
-		    document.body.appendChild(box);
-		    $("#"+id).dialog({autoOpen: false ,title: title,modal:true,width: 600,close: function() {this.remove();$("#"+id).remove();}});
-		    $("#"+id).dialog("open");
-		}
-		
-		// 1. Выбор типа спецификации
-		//var content = document.createDocumentFragment();
-		var content = document.createElement('DIV');
-		var winId ="specificationsPreWin1";
-		content.innerHTML = '<div><label><input type="radio" name="radio" value="spec" checked>Спецификация</label><br><label><input type="radio" name="radio" value="oferta">Оферта</label></div>';
-		var button = document.createElement('BUTTON');
-		button.className="CommonRightBtn";
-
-		var button1 = button.cloneNode();
-		button1.onclick=function(){ $("#"+winId).remove(); step2();}
-		button1.innerHTML ="Далее";
-		var button2 = button.cloneNode();
-		button2.onclick= function(){ $("#"+winId).remove(); }
-		button2.innerHTML ="Отмена";
-		
-		content.appendChild(button1);
-		content.appendChild(button2);
-		
-		launch_set_window(winId,"Выбор типа документа",content);
-		
-		function step2(e){
-		    e = e || window.event;
-		    var container = e.target.parentNode;
-			var doc_type = '';
-			$(container).find('input').each(function(key,val){ if(val.checked == true){  doc_type = val.value; }}); //alert(type);
-			if(type != ''){
-				// alert(doc_type);
-			    var url = OS_HOST+'?' + addOrReplaceGetOnURL('getSpecificationsDates={"ids":'+JSON.stringify(idsArr)+'}');
-		        make_ajax_request(url,callback);
-				function callback(response){ 
-					// alert(response);
-					try {  var dataObj = JSON.parse(response); }
-					catch (e) { 
-						alert('неправильный формат данных in calculatorClass.makeSpecAndPreorder2() ошибка JSON.parse(response)');
-						return;
-					}
-					console.log(dataObj);/*console.log(idsObj);console.log(dopInfObj);*/
-					
-                    var content = document.createElement('DIV');
-					content.className = "specificationsPreWin";
-					var winId ="specificationsPreWin2";
-					
-					content.innerHTML += '<div class="cap">Укажите, либо конкретную дату сдачи заказа, либо срок изготовления заказа в рабочих днях. <!--Для создаваемой '+((doc_type=='spec')?'спецификации':'оферты')+' должно быть установленно единное значение.--> Выберите из имеющихся вариантов или укажите новое значение. Выбранное вами значение будет указано в тексте '+((doc_type=='spec')?'спецификации':'оферты')+'.<div>'; 
-					if(dataObj['defined_positions']!=0) content.innerHTML += '<div class="info">На данный момент в расчетах уставноленны следующие даты или р/д:<br>(всего расчетов -'+dataObj['all_positions']+', установленно дат -'+dataObj['defined_positions']+'). Если расчет неактивный, это значит что дата в нем просрочена.<div>';
-					else content.innerHTML += '<div class="info">На данный момент в расчетах не установлены даты или р/д, установите значение<div>';
-					
-                   
-					if(dataObj['defined_positions']!=0){ 
-					    var tbl = '<table id="preWindataTbl" class="dataTbl"><tr class="cap"><th>№ позиции</th><th>тип даты</th><th width="150"></th><th>кто установил</th><th width="150"></th></tr>';
-						for(var key =0;key < dataObj.data.length;key++){
-						//$(dataObj.data).
-							 var value = (dataObj.data[key]['shablon_en']=='date')?((dataObj.data[key]['value'].split('-')).reverse()).join('.'):dataObj.data[key]['value'];
-							 
-							 
-							 tbl += '<tr><td class="first">'+dopInfObj[dataObj.data[key]['row_id']]['glob_counter']+'</td>';
-							 tbl += '<td>'+dataObj.data[key]['shablon']+'</td><td>'+value+'</td>';
-							 tbl += '<td>'+dataObj.data[key]['who']+'</td>';
-							 tbl += '<td>';
-							 if(!(dataObj.data[key]['shablon_en']=='date' && dataObj.data[key]['value']<dataObj['min_allowed_date'])) tbl += '<input type="radio" name="radio" data_type="'+dataObj.data[key]['shablon_en']+'" value="'+value+'">';
-							 tbl += '</td></tr>';
+		function step1(test_marker){
+			
+			//alert(test_marker);
+			
+			function launch_set_window(id,title,content){
+				var box = document.createElement('DIV');
+				box.id = id;
+				box.style.display = "none";
+				box.appendChild(content);
+				document.body.appendChild(box);
+				$("#"+id).dialog({autoOpen: false ,title: title,modal:true,width: 600,close: function() {this.remove();$("#"+id).remove();}});
+				$("#"+id).dialog("open");
+			}
+			
+			// 1. Выбор типа спецификации
+			//var content = document.createDocumentFragment();
+			var content = document.createElement('DIV');
+			var winId ="specificationsPreWin1";
+			content.innerHTML = '<div><label><input type="radio" name="radio" value="spec" checked>Спецификация</label><br><label><input type="radio" name="radio" value="oferta">Оферта</label></div>';
+			var button = document.createElement('BUTTON');
+			button.className="CommonRightBtn";
+	
+			var button1 = button.cloneNode();
+			button1.onclick=function(){ $("#"+winId).remove(); step2();}
+			button1.innerHTML ="Далее";
+			var button2 = button.cloneNode();
+			button2.onclick= function(){ $("#"+winId).remove(); }
+			button2.innerHTML ="Отмена";
+			
+			content.appendChild(button1);
+			content.appendChild(button2);
+			
+			launch_set_window(winId,"Выбор типа документа",content);
+			
+			function step2(e){
+				e = e || window.event;
+				var container = e.target.parentNode;
+				var doc_type = '';
+				$(container).find('input').each(function(key,val){ if(val.checked == true){  doc_type = val.value; }}); //alert(type);
+				if(type != ''){
+					// alert(doc_type);
+					var url = OS_HOST+'?' + addOrReplaceGetOnURL('getSpecificationsDates={"ids":'+JSON.stringify(idsArr)+'}');
+					make_ajax_request(url,callback);
+					function callback(response){ 
+						// alert(response);
+						try {  var dataObj = JSON.parse(response); }
+						catch (e) { 
+							alert('неправильный формат данных in calculatorClass.makeSpecAndPreorder2() ошибка JSON.parse(response)');
+							return;
 						}
-						tbl += '<tr><td colspan="5" class="dopCap">Установть другое значение:</td></tr>';
-					}
-					else var tbl = '<table id="preWindataTbl" class="dataTbl"><tr class="cap"><th></th><th></th><th width="150"></th><th></th><th></th></tr>';
-					
-					tbl += '<tr><td class="first"></td>';
-					tbl += '<td>';
-					tbl +='<select onchange="$(this).parent().parent().find(\'span\').hide(); $(\'#\'+this.options[this.selectedIndex].value).show(); $(\'#alternate_date\')[0].checked=true; " ><option value="" selected="selected"></option><option value="date_block">по дате</option><option value="rd_block">по рд</option></select></td>';					
-					tbl +='<td><span id="date_block" style="display:none"><input type="text" class="datepicker" id="datepicker"><!--<input type="text" class="timepicker" id="timepicker">--></span>';
-					tbl +='<span id="rd_block" class="rd" style="display:none"><input type="text" onkeyup="$(\'#alternate_date\')[0].checked=true; $(\'#alternate_date\')[0].setAttribute(\'data_type\',\'days\'); $(\'#alternate_date\')[0].value=this.value;" class="time_rd" id="rd" value=""> р/д</span></td>';
-					tbl += '<td></td>';
-					tbl += '<td><input id="alternate_date" type="radio" name="radio" data_type="" value=""></td></tr>';
-					tbl += '</table>';
-					content.innerHTML += tbl;
-
-                    content.innerHTML+= '<BR>';
-					var button1 = button.cloneNode();
-					button1.onclick=function(){
-						 var data_type='';
-						 var value='';
-						 $(content).find('input').each(function(key,val){ if(val.checked == true){ data_type= val.getAttribute("data_type"); value = val.value; }}); 
-						 if(value==''){
-							 alert('Вы не выбрали значение');
-						     return;
-					     }
-						 $("#"+winId).remove(); 
-						 step3(doc_type,data_type,value);/**/
-					}
-					button1.innerHTML ="ОК";
-					var button2 = button.cloneNode();
-					button2.onclick= function(){ $("#"+winId).remove(); }
-					button2.innerHTML ="Отмена";
-					content.appendChild(button1);
-					content.appendChild(button2);
-					launch_set_window(winId,"Выбор сроков сдачи заказа",content);
-					
-					$('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,startTime: new Date(0,0,0,15,0,0),minDate: new Date(dataObj['min_allowed_date']), onChangeDateTime: function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val();},closeOnDateSelect:true,
-					   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
-					/*$('#timepicker').datetimepicker({datepicker:false,format:'H:i',closeOnDateSelect:true,
-						  onChangeDateTime:function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val()+':00';},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});*/
-			
-			    }
-			}
-			else{ alert('не удалось определить тип документа in calculatorClass.makeSpecAndPreorder2() '); return;}
-			
-			function step3(doc_type,data_type,datetime){
+						console.log(dataObj);/*console.log(idsObj);console.log(dopInfObj);*/
+						
+						var content = document.createElement('DIV');
+						content.className = "specificationsPreWin";
+						var winId ="specificationsPreWin2";
+						
+						content.innerHTML += '<div class="cap">Укажите, либо конкретную дату сдачи заказа, либо срок изготовления заказа в рабочих днях. <!--Для создаваемой '+((doc_type=='spec')?'спецификации':'оферты')+' должно быть установленно единное значение.--> Выберите из имеющихся вариантов или укажите новое значение. Выбранное вами значение будет указано в тексте '+((doc_type=='spec')?'спецификации':'оферты')+'.<div>'; 
+						if(dataObj['defined_positions']!=0) content.innerHTML += '<div class="info">На данный момент в расчетах уставноленны следующие даты или р/д:<br>(всего расчетов -'+dataObj['all_positions']+', установленно дат -'+dataObj['defined_positions']+'). Если расчет неактивный, это значит что дата в нем просрочена.<div>';
+						else content.innerHTML += '<div class="info">На данный момент в расчетах не установлены даты или р/д, установите значение<div>';
+						
+					   
+						if(dataObj['defined_positions']!=0){ 
+							var tbl = '<table id="preWindataTbl" class="dataTbl"><tr class="cap"><th>№ позиции</th><th>тип даты</th><th width="150"></th><th>кто установил</th><th width="150"></th></tr>';
+							for(var key =0;key < dataObj.data.length;key++){
+							//$(dataObj.data).
+								 var value = (dataObj.data[key]['shablon_en']=='date')?((dataObj.data[key]['value'].split('-')).reverse()).join('.'):dataObj.data[key]['value'];
+								 
+								 
+								 tbl += '<tr><td class="first">'+dopInfObj[dataObj.data[key]['row_id']]['glob_counter']+'</td>';
+								 tbl += '<td>'+dataObj.data[key]['shablon']+'</td><td>'+value+'</td>';
+								 tbl += '<td>'+dataObj.data[key]['who']+'</td>';
+								 tbl += '<td>';
+								 if(!(dataObj.data[key]['shablon_en']=='date' && dataObj.data[key]['value']<dataObj['min_allowed_date'])) tbl += '<input type="radio" name="radio" data_type="'+dataObj.data[key]['shablon_en']+'" value="'+value+'">';
+								 tbl += '</td></tr>';
+							}
+							tbl += '<tr><td colspan="5" class="dopCap">Установть другое значение:</td></tr>';
+						}
+						else var tbl = '<table id="preWindataTbl" class="dataTbl"><tr class="cap"><th></th><th></th><th width="150"></th><th></th><th></th></tr>';
+						
+						tbl += '<tr><td class="first"></td>';
+						tbl += '<td>';
+						tbl +='<select onchange="$(this).parent().parent().find(\'span\').hide(); $(\'#\'+this.options[this.selectedIndex].value).show(); $(\'#alternate_date\')[0].checked=true; " ><option value="" selected="selected"></option><option value="date_block">по дате</option><option value="rd_block">по рд</option></select></td>';					
+						tbl +='<td><span id="date_block" style="display:none"><input type="text" class="datepicker" id="datepicker"><!--<input type="text" class="timepicker" id="timepicker">--></span>';
+						tbl +='<span id="rd_block" class="rd" style="display:none"><input type="text" onkeyup="$(\'#alternate_date\')[0].checked=true; $(\'#alternate_date\')[0].setAttribute(\'data_type\',\'days\'); $(\'#alternate_date\')[0].value=this.value;" class="time_rd" id="rd" value=""> р/д</span></td>';
+						tbl += '<td></td>';
+						tbl += '<td><input id="alternate_date" type="radio" name="radio" data_type="" value=""></td></tr>';
+						tbl += '</table>';
+						content.innerHTML += tbl;
+	
+						content.innerHTML+= '<BR>';
+						var button1 = button.cloneNode();
+						button1.onclick=function(){
+							 var data_type='';
+							 var value='';
+							 $(content).find('input').each(function(key,val){ if(val.checked == true){ data_type= val.getAttribute("data_type"); value = val.value; }}); 
+							 if(value==''){
+								 alert('Вы не выбрали значение');
+								 return;
+							 }
+							 $("#"+winId).remove(); 
+							 step3(doc_type,data_type,value);/**/
+						}
+						button1.innerHTML ="ОК";
+						var button2 = button.cloneNode();
+						button2.onclick= function(){ $("#"+winId).remove(); }
+						button2.innerHTML ="Отмена";
+						content.appendChild(button1);
+						content.appendChild(button2);
+						launch_set_window(winId,"Выбор сроков сдачи заказа",content);
+						
+						$('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,startTime: new Date(0,0,0,15,0,0),minDate: new Date(dataObj['min_allowed_date']), onChangeDateTime: function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val();},closeOnDateSelect:true,
+						   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
+						/*$('#timepicker').datetimepicker({datepicker:false,format:'H:i',closeOnDateSelect:true,
+							  onChangeDateTime:function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val()+':00';},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});*/
 				
-				// alert(doc_type+value+data_type);
-				 
-				 var content = document.createElement('DIV');
-			     content.className = "specificationsPreWin";
-				 var winId ="specificationsPreWin3";
-				 // от той даты которая была выбрана на предыдушем шаге надо вычесть 3 рабочих дня
-				 // они нужны на время для подписания макета и оплаты
-				 var date = datetime.slice(0,10);
-				 var time = datetime.slice(11,16);
-				 time = (time!='')?time:'22:00';
+					}
+				}
+				else{ alert('не удалось определить тип документа in calculatorClass.makeSpecAndPreorder2() '); return;}
+				
+				function step3(doc_type,data_type,datetime){
 					
-				 if(data_type=='date'){
-					 content.innerHTML += '<div class="cap"> укажите до какой даты клиент обязуется оплатить заказ и подписать макет ( дата будет установлена в тексте '+((doc_type=='spec')?'спецификации':'оферты')+' )<div>';
-					 //content.innerHTML +='doc_type-'+ doc_type+' date-'+date+' time-'+time+' data_type-'+data_type+'<br>';
-					 content.innerHTML += '<div class="limitInput"><input  id="datepicker" type="text"><input id="final_date" style="display:none" type="text"><div>';
+					// alert(doc_type+value+data_type);
 					 
-				 }
-				 if(data_type=='days'){
-					step4({'doc_type':doc_type,'data_type':data_type,'datetime':datetime});
-					return;
-				 }
-				 var button1 = button.cloneNode();
-				 button1.onclick=function(){
-					 if($('#final_date')[0].value==''){echo_message_js('Установите дату','system_message',2000);return;} 
-					 step4({'doc_type':doc_type,'data_type':data_type,'datetime':datetime,'final_date':$('#final_date')[0].value,'winId':winId});
-				 }
-				 button1.innerHTML ="Далее";
-				 var button2 = button.cloneNode();
-				 button2.onclick= function(){ $("#"+winId).remove(); }
-				 button2.innerHTML ="Отмена";
-				 content.appendChild(button1);
-		         content.appendChild(button2);
-		         //alert(datetime);
-				 datetime =(((date.split('.')).reverse()).join('-'))+' '+time+':00'
-				 //alert(datetime);
-                 var pickerMaxDate = ((goOnNumWorkingDays(datetime,3,'-')).slice(0,10)).replace(/\-/g,'/');
-				 //alert(pickerMaxDate);
-				 launch_set_window(winId,"Установка лимита",content);
-				 
-				 $('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,minDate:0,maxDate:pickerMaxDate,maxTime:time,
-					   onChangeDateTime: function(dp,$input){$('#final_date')[0].value=$input.val();},closeOnDateSelect:true,
-					   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
-			}
-			
-			function step4(dataObj){
-				 if(dataObj.winId) $("#"+dataObj.winId).remove();
-				 //console.log(dataObj);
-				 location = "?page=agreement&section=presetting&client_id=" + client_id + "&ids=" +JSON.stringify(idsArr)+'&query_num='+query_num+'&dateDataObj='+JSON.stringify(dataObj);
+					 var content = document.createElement('DIV');
+					 content.className = "specificationsPreWin";
+					 var winId ="specificationsPreWin3";
+					 // от той даты которая была выбрана на предыдушем шаге надо вычесть 3 рабочих дня
+					 // они нужны на время для подписания макета и оплаты
+					 var date = datetime.slice(0,10);
+					 var time = datetime.slice(11,16);
+					 time = (time!='')?time:'22:00';
+						
+					 if(data_type=='date'){
+						 content.innerHTML += '<div class="cap"> укажите до какой даты клиент обязуется оплатить заказ и подписать макет ( дата будет установлена в тексте '+((doc_type=='spec')?'спецификации':'оферты')+' )<div>';
+						 //content.innerHTML +='doc_type-'+ doc_type+' date-'+date+' time-'+time+' data_type-'+data_type+'<br>';
+						 content.innerHTML += '<div class="limitInput"><input  id="datepicker" type="text"><input id="final_date" style="display:none" type="text"><div>';
+						 
+					 }
+					 if(data_type=='days'){
+						step4({'doc_type':doc_type,'data_type':data_type,'datetime':datetime});
+						return;
+					 }
+					 var button1 = button.cloneNode();
+					 button1.onclick=function(){
+						 if($('#final_date')[0].value==''){echo_message_js('Установите дату','system_message',2000);return;} 
+						 step4({'doc_type':doc_type,'data_type':data_type,'datetime':datetime,'final_date':$('#final_date')[0].value,'winId':winId});
+					 }
+					 button1.innerHTML ="Далее";
+					 var button2 = button.cloneNode();
+					 button2.onclick= function(){ $("#"+winId).remove(); }
+					 button2.innerHTML ="Отмена";
+					 content.appendChild(button1);
+					 content.appendChild(button2);
+					 //alert(datetime);
+					 datetime =(((date.split('.')).reverse()).join('-'))+' '+time+':00'
+					 //alert(datetime);
+					 var pickerMaxDate = ((goOnNumWorkingDays(datetime,3,'-')).slice(0,10)).replace(/\-/g,'/');
+					 //alert(pickerMaxDate);
+					 launch_set_window(winId,"Установка лимита",content);
+					 
+					 $('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,minDate:0,maxDate:pickerMaxDate,maxTime:time,
+						   onChangeDateTime: function(dp,$input){$('#final_date')[0].value=$input.val();},closeOnDateSelect:true,
+						   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
+				}
+				
+				function step4(dataObj){
+					 if(dataObj.winId) $("#"+dataObj.winId).remove();
+					 //console.log(dataObj);
+					 location = "?page=agreement&section=presetting&client_id=" + client_id + "&ids=" +JSON.stringify(idsArr)+'&query_num='+query_num+'&dateDataObj='+JSON.stringify(dataObj);
+				}
 			}
 		}
 		

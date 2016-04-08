@@ -37,6 +37,8 @@
 		<?php 
 			echo '<div id="js-depending_on_the_services_and_options">'.json_encode($this->services_related).'</div>';
 			echo '<div id="js-depending_on_the_options_and_services">'.json_encode($this->services_related_dop).'</div>';
+			echo '<div id="js-depending_on_the_variants_and_position">'.json_encode($this->grop_var_pos_arr).'</div>';
+			echo '<div id="js-depending_on_the_position_and_variants">'.json_encode($this->grop_pos_var_arr).'</div>';
 		?>
 			
 		<div class="spacer_div"></div>

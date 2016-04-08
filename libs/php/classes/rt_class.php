@@ -217,7 +217,25 @@
 					    $warning['free_calc_exists'] = true;
 					}
 					if(!isset($warning['united_calculations']) && $row['united_calculations']!=''){
+					    // это объединенный тираж, если калькулятор auto
+						// нам необходимо определить общий тираж для все тиражей связанных с этим чтобы 
+						// проверить не будет ли он превышать максимально возможный тираж
 					    $warning['united_calculations'] = true;
+						
+						$query2="SELECT dop_data.quantity quantity FROM
+			                            `".RT_DOP_DATA."` dop_data INNER JOIN
+										`".RT_DOP_USLUGI."` uslugi 
+										  ON  dop_data.id = uslugi.dop_row_id
+										  WHERE  uslugi.id IN(".(implode(",",explode(",",$row['united_calculations']))).") AND dop_data.id <> '".$id."'";
+
+
+	
+                        $result2 = $mysqli->query($query2) or die($mysqli->error);
+						if($result2->num_rows>0){
+			                while($row2 = $result2->fetch_assoc()){
+							    $new_quantity+=$row2['quantity'];
+							}
+						}
 					}
 					if($pd['calculator_type']=='auto'){
 					    require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
@@ -229,16 +247,33 @@
 						}
 						if(rtCalculators::$outOfLimit){
 						    $warning['outOfLimit'] = true;
-						    $warning['outOfLimitDetails'] = rtCalculators::$lackOfQuantityDetails;
+						    $warning['outOfLimitDetails'] = rtCalculators::$outOfLimitDetails;
 						}
 						if(rtCalculators::$needIndividCalculation){
 						    $warning['needIndividCalculation'] = true;
-						    $warning['needIndividCalculationDetails'] = rtCalculators::$lackOfQuantityDetails;
+						    $warning['needIndividCalculationDetails'] = rtCalculators::$needIndividCalculationDetails;
 					    }
 					}
 				}
 			}
 			return (count($warning)>0)? json_encode(array('warning'=>array('calculators_checking'=>$warning),'old_quantity'=>$old_quantity)):'';  
+		}
+		static function check_on_united_calculations($main_row_id){
+			global $mysqli;
+
+			$query="SELECT uslugi.united_calculations united_calculations FROM
+			                            `".RT_DOP_DATA."` dop_data INNER JOIN
+										`".RT_DOP_USLUGI."` uslugi 
+										  ON  dop_data.id = uslugi.dop_row_id
+										  WHERE  dop_data.row_id = '".$main_row_id."'";
+			
+            $result = $mysqli->query($query) or die($mysqli->error);
+			if($result->num_rows>0){
+			     while($row = $result->fetch_assoc()){
+					if($row['united_calculations']!='') return true;
+				 }
+			}
+			return false;  
 		}
 		static function shift_rows_down($place_id,$mainCopiedRowId,$shift_counter /* $place_id - куда вставляем, $pos_id - что будем вставлять */){
 		    global $mysqli;
@@ -401,17 +436,34 @@
 								$copied_data['dop_row_id']= $new_dop_row_id;
 								// если услуга состоит в ОБЪЕДИНЕННОМ ТИРАЖЕ 
 								// ОБРАБАТЫВАЕМ ДАННЫЕ ЧТОБЫ УБРАТЬ ВСЕ МАРКЕРЫ ОТНОСЯЩИЕСЯ К ОБЪЕДИНЕННОМУ ТИРАЖУ
+								// - id из united_calculations
+							    // - print_details->quantity_details, $print_details->dop_data_ids
+							    // - поставить need_confirmation
 								if($copied_data['united_calculations']!=''){
 								     $copied_data['united_calculations']= '';
 									 $print_details = json_decode($copied_data['print_details']);
 									 if(isset($print_details->distribution_type)) unset($print_details->distribution_type);
 									 if(isset($print_details->quantity_details)) unset($print_details->quantity_details);
 									 if(isset($print_details->dop_data_ids)) unset($print_details->dop_data_ids);
+									 $print_details->need_confirmation = true;
+									
+									 
+									 // если калькулятор автоматический пытаемся пересчитать стоимость услуги
+									 if($print_details->calculator_type=='auto'){
+									     $YPriceParam = (isset($print_details->dop_params->YPriceParam))? count($print_details->dop_params->YPriceParam):1; 
+										 require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+										 // получаем новые исходящюю и входящюю цену исходя из нового таража
+										 $new_price_arr = rtCalculators::change_quantity_and_calculators_price_query($copied_data['quantity'],$print_details,$YPriceParam);
+										 $new_data = rtCalculators::make_calculations($copied_data['quantity'],$new_price_arr,$print_details->dop_params);
+									     //print_r($new_data);
+										 $copied_data['price_in'] = $new_data['new_price_arr']['price_in'];
+							             $copied_data['price_out'] = $new_data['new_price_arr']['price_out'];
+									 }
+									 
 									 $copied_data['print_details']= RT::json_fix_cyr(json_encode($print_details));
-									 // $copied_data['print_details']= json_encode($print_details);
 								} 
 								$query6="INSERT INTO `".RT_DOP_USLUGI."` VALUES ('".implode("','",$copied_data)."')"; 
-								//echo $query."\r\n";
+								// echo $query6."\r\n";
 								$mysqli->query($query6)or die($mysqli->error);
 							}
 						}
@@ -565,12 +617,99 @@
 				
 				// удаляем ряды из таблицы RT_DOP_USLUGI 
 				if(isset($dopRowIdsArr)){
+				
+				    // проверяем содержат ли расчеты объединенные тиражи, если да, правим данные
+					RT::check_and_edit_united_calculations($dopRowIdsArr);
+				
 					$query="DELETE FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` IN('".implode("','",$dopRowIdsArr)."')";
 					// echo $query."\r\n";
 					$result = $mysqli->query($query)or die($mysqli->error);
 				}
 			}
 			return '[1]';
+		}
+		
+		static function check_and_edit_united_calculations($dopRowIdsArr){
+
+		    global $mysqli;
+			
+			foreach($dopRowIdsArr as $dopRowId){
+					
+				$query="SELECT id, united_calculations FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` ='".$dopRowId."'";
+				$result = $mysqli->query($query)or die($mysqli->error);
+				if($result->num_rows>0){
+					 while($row = $result->fetch_assoc()){
+						 if($row['united_calculations']!=''){
+							  // если оказалось что  расчет входит в объединенный тираж
+							  // надо удалить его данные из всех остальных расчетов этого тиража 
+							  // данные которые надо удалить или отредактировать
+							  // - id из united_calculations
+							  // - print_details->quantity_details, $print_details->dop_data_ids
+							  // - поставить need_confirmation
+							  $united_calculations_ids = explode(",",$row['united_calculations']);
+							  $united_calculations_ids = array_diff($united_calculations_ids,array($row['id']));
+
+							  $query2="SELECT united_calculations, print_details FROM `".RT_DOP_USLUGI."` WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+							  $result2 = $mysqli->query($query2)or die($mysqli->error);
+							  if($result2->num_rows>0){
+								  // по циклу не проходим а просто редактируем один раз общиее поле print_details
+								  $row2 = $result2->fetch_assoc();
+								  
+								  $print_details_arr = json_decode($row2['print_details'],true);
+								  $print_details_obj = json_decode($row2['print_details']);
+								  
+								  $new_quantity = 0;
+								  
+								  foreach($print_details_arr['dop_data_ids'] as $index => $value){
+									  // echo $print_details_obj->quantity_details[$index]."--";
+									  if($value!=$dopRowId) $new_quantity += $print_details_arr['quantity_details'][$index];
+								  }
+							      // echo $new_quantity;
+							  
+								  if($result2->num_rows==1){
+									  // если связанный тираж только один удалеяем из него все атрибуты объединенного тиража 
+									  if(isset($print_details_arr['quantity_details']))unset($print_details_arr['quantity_details']);
+									  if(isset($print_details_arr['dop_data_ids']))unset($print_details_arr['dop_data_ids']);
+									  if(isset($print_details_arr['distribution_type']))unset($print_details_arr['distribution_type']);
+								  }
+								  if($result2->num_rows>1){  
+									  if(isset($print_details_arr['quantity_details'])){
+										  foreach($print_details_arr['dop_data_ids'] as $index => $value){
+											  if($value==$dopRowId){
+												  unset($print_details_arr['quantity_details'][$index]);
+												  unset($print_details_arr['dop_data_ids'][$index]);
+											  }
+										  }
+									  }
+								  }
+								  
+								  
+								  require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+
+								  $YPriceParam = (isset($print_details_arr['dop_params']['YPriceParam']))? count($print_details_arr['dop_params']['YPriceParam']):1;
+							  
+								  // получаем новые исходящюю и входящюю цену исходя из нового таража
+								  $new_price_arr = rtCalculators::change_quantity_and_calculators_price_query($new_quantity,$print_details_obj,$YPriceParam); 
+								  // здесь надо обпрботать превышение тиража
+								  //print_r($new_price_arr);
+								  $new_data = rtCalculators::make_calculations($new_quantity,$new_price_arr,$print_details_obj->dop_params);
+								  
+								  $print_details_arr['price_in'] = $new_data['new_price_arr']['price_in'];
+								  $print_details_arr['price_out'] = $new_data['new_price_arr']['price_out'];
+								  
+								  
+								  
+								  //  print_r($print_details_arr);
+								  // echo RT::json_fix_cyr(json_encode($print_details_arr));
+								  $print_details_arr['need_confirmation']=true;
+			  
+								  $query3="UPDATE `".RT_DOP_USLUGI."` SET price_in = '".$print_details_arr['price_in']."',price_out = '".$print_details_arr['price_out']."', print_details = '".RT::json_fix_cyr(json_encode($print_details_arr))."', united_calculations='".(($result2->num_rows>1)?implode(",",$united_calculations_ids):'')."' WHERE id IN(".(implode(",",$united_calculations_ids)).")";
+								  $mysqli->query($query3)or die($mysqli->error);
+							  }
+						 }
+					 }
+				 }
+		     }
 		}
 		static function deletePrintsAndUslugi($data,$type){
 			
@@ -589,15 +728,14 @@
 					   $dopRowIdsArr[] = $row['id'];
 				    }
 				}
+				
+				// проверяем содержат ли расчеты объединенные тиражи, если да, правим данные
+				RT::check_and_edit_united_calculations($dopRowIdsArr);
+				
 				// print_r($dopRowIdsArr);
 				// удаляем ряды из таблицы RT_DOP_USLUGI 
 				if(isset($dopRowIdsArr)){
-					$query="DELETE FROM `".RT_DOP_USLUGI."` 
-					        WHERE `dop_row_id` IN('".implode("','",$dopRowIdsArr)."')";
-							if($type == 'prints') $query.=" AND glob_type = 'print'";
-							if($type == 'uslugi') $query.=" AND glob_type = 'extra'";
-							if($type == 'printsAndUslugi') $query.=" AND (glob_type = 'print' OR glob_type = 'extra')";
-					// echo $query."\r\n";
+					$query="DELETE FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` IN('".implode("','",$dopRowIdsArr)."')";
 					$result = $mysqli->query($query)or die($mysqli->error);
 				}
 			}

@@ -32,7 +32,7 @@
 		                  dop_data_tbl.id AS dop_data_id , dop_data_tbl.row_id AS dop_t_row_id , dop_data_tbl.quantity AS dop_t_quantity , dop_data_tbl.price_in AS dop_t_price_in , dop_data_tbl.price_out AS dop_t_price_out , dop_data_tbl.discount AS dop_t_discount , dop_data_tbl.row_status AS row_status, dop_data_tbl.glob_status AS glob_status, dop_data_tbl.expel AS expel, dop_data_tbl.shipping_date AS shipping_date,dop_data_tbl.shipping_type AS shipping_type, dop_data_tbl.shipping_time AS shipping_time, dop_data_tbl.status_snab AS status_snab, dop_data_tbl.dop_men_text AS dop_men_text,
 						  
 						  dop_uslugi_tbl.id AS uslgi_t_id ,dop_uslugi_tbl.other_name AS uslugi_t_other_name ,dop_uslugi_tbl.uslugi_id AS uslgi_t_uslugi_id ,dop_uslugi_tbl.dop_row_id AS uslugi_t_dop_row_id ,dop_uslugi_tbl.type AS uslugi_t_type ,
-		                  dop_uslugi_tbl.glob_type AS uslugi_t_glob_type , dop_uslugi_tbl.quantity AS uslugi_t_quantity , dop_uslugi_tbl.price_in AS uslugi_t_price_in , dop_uslugi_tbl.price_out AS uslugi_t_price_out, dop_uslugi_tbl.discount AS uslugi_t_discount , dop_uslugi_tbl.for_how AS uslugi_t_for_how , dop_uslugi_tbl.print_details AS uslugi_t_print_details 
+		                  dop_uslugi_tbl.glob_type AS uslugi_t_glob_type , dop_uslugi_tbl.quantity AS uslugi_t_quantity , dop_uslugi_tbl.price_in AS uslugi_t_price_in , dop_uslugi_tbl.price_out AS uslugi_t_price_out, dop_uslugi_tbl.discount AS uslugi_t_discount , dop_uslugi_tbl.for_how AS uslugi_t_for_how , dop_uslugi_tbl.print_details AS uslugi_t_print_details , dop_uslugi_tbl.united_calculations AS united_calculations
 		          FROM 
 		          `".RT_MAIN_ROWS."`  main_tbl 
 				  LEFT JOIN 
@@ -86,7 +86,8 @@
 						'price_out' => $row['uslugi_t_price_out'],
 						'discount' => $row['uslugi_t_discount'],
 						'for_how' => $row['uslugi_t_for_how'],	
-						'print_details' => $row['uslugi_t_print_details']
+						'print_details' => $row['uslugi_t_print_details'],
+						'united_calculations' => $row['united_calculations']
 						);
 			}
 			
@@ -118,11 +119,6 @@
 	 // если что реализация сохранена, закомментирована внизу скрипта 
 	  
 	 // echo '<pre>'; print_r($rows[0]); echo '</pre>';
-	  /*if(@$_SESSION['access']['user_id']==18){ 
-		echo '<pre>'; print_r($rows[0]); echo '</pre>';
-      }  */
-	 
-	 
 	 $service_row[0] = array('quantity'=>'','price_in'=>'','price_out'=>'','row_status'=>'','glob_status'=>'');
 	 $glob_counter = 0;
 	 $mst_btn_summ = 0;
@@ -187,7 +183,7 @@
 		 }
 		 $counter=0;
 		
-		  
+
 		 // echo '<pre>'; print_r($row['dop_data']); echo '</pre>---';
 		 // Проходим в цикле по второму уровню массива($row['dop_data']) на основе которого строится основной шаблон таблицы
 	     foreach($row['dop_data'] as $dop_key => $dop_row){
@@ -214,19 +210,21 @@
 				 if(isset($dop_row['dop_uslugi']['print'])){ // если $dop_row['dop_uslugi']['print'] есть выводим данные о нанесениях 
 					 $row_counter = 0; 
 					 
-					 foreach($dop_row['dop_uslugi']['print'] as $extra_data){
+					 foreach($dop_row['dop_uslugi']['print'] as $extra_key=> $extra_data){
 					     // если количество в расчете нанесения не равно количеству в колонке тираж товара 
 						 // необходимо присвоить нанесениям такое же количество и пересчитать их
-						//$extra_data['quantity'] = 250;
-						$print_details = json_decode($extra_data['print_details'],true);
-
+	
+						 //$extra_data['quantity'] = 250;
+						 $print_details = json_decode($extra_data['print_details'],true);
 						 //echo '<pre>'; print_r(printCalculator::convert_print_details_for_TotalCom($extra_data['print_details'])); echo '</pre>';
-						if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto')){
-							if($extra_data['quantity']!=$dop_row['quantity']){
+
+						 if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='auto')){
+							 if($extra_data['quantity']!=$dop_row['quantity']){
 								 $reload['flag'] = true;
 								 //echo $dop_row['quantity'];
 								 include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
-								 $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false');
+
+								 $json_out =  rtCalculators::change_quantity_and_calculators($dop_row['quantity'],$dop_key,'true','false','rt');
 								 $json_out_obj =  json_decode($json_out);
 								 
 								 // если расчет не может быть произведен по причине outOfLimit или needIndividCalculation
@@ -240,6 +238,11 @@
 								 
 		
 							 } /**/
+						 }
+						 
+						 if(isset($print_details['calculator_type']) && ($print_details['calculator_type'] =='free')){
+						     $extra_data['price_in'] = ($extra_data['price_in']*(int)$print_details['quantity'])/$extra_data['quantity'];
+							 $extra_data['price_out'] = ($extra_data['price_out']*(int)$print_details['quantity'])/$extra_data['quantity'];
 						 }
 						 $discount_arr[] = $extra_data['discount'];
 						 $extra_data['price_out'] = ($extra_data['discount'] != 0 )? (($extra_data['price_out']/100)*(100 + $extra_data['discount'])) : $extra_data['price_out'];
@@ -255,8 +258,13 @@
 						 else $size='';
 						 
 						 if(isset($print_details['need_confirmation']))  $need_confirmation_flag = true;
+
+						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.((isset($extra_data['united_calculations']) && $extra_data['united_calculations']!='')?'<img src="'.HOST.'/skins/images/img_design/service_group_grey.png" class="sgroup_grey_icon">':'').$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
 						 
-						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
+						 if(isset($print_details) && isset($print_details['distribution_type']) && $print_details['distribution_type']=='union'  && isset($print_details['dop_data_ids'])){
+					         if(!isset($all_united_calculations)) $all_united_calculations=array();
+							 $all_united_calculations=array_merge($all_united_calculations,$print_details['dop_data_ids']);
+						 }
 					 }
 				     $print_exists_flag = '1'; 
 				 }
@@ -374,7 +382,8 @@
 				 $discount = round((float)(array_sum($discount_arr)/count($discount_arr)),2);
 				 $discount_str = number_format($discount,'2','.','') .'%';
 				 //$srock_sdachi = implode('.',array_reverse(explode('-',$dop_row['shipping_date'])));
-				  $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
+
+				 $srock_sdachi = ($dop_row['shipping_type']=='date')? implode('.',array_reverse(explode('-',$dop_row['shipping_date']))):'';
 				 if($srock_sdachi=='00.00.0000') $srock_sdachi='';
 				 
 				 $expel_class_main = ($expel['main']=='1')?' red_cell':'';
@@ -391,7 +400,8 @@
 				 $currency = $uslugi_btn = '';
 				 $item_price_out = $item_summ_in_format = $item_summ_out_format = $print_in_summ_format = $print_out_summ_format = '';
 				 $dop_uslugi_in_summ_format = $dop_uslugi_out_summ_format = $total_summ_in_format = $total_summ_out_format = '';
-				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format = '' ;
+
+				 $delta_format = $margin_format = $expel_class_main = $expel_class_print = $expel_class_dop = $quantity_dim = $discount = $discount_str = $srock_sdachi = $uslugi_exists_flag = $print_exists_flag = $margin_currency = $uslugi_summ_in = $uslugi_summ_out = $uslugi_price_in = $uslugi_price_out = $uslugi_summ_in_format = $uslugi_summ_out_format = $uslugi_price_in_format = $uslugi_price_out_format = $total_price_in_format = $total_price_out_format =  '' ;
 				 
 				  
 			 }
@@ -436,6 +446,13 @@
 								 </div>';
 			 }
 			 $block = (isset($dop_row['status_snab']) && ($dop_row['status_snab']=='on_calculation_snab' || $dop_row['status_snab']=='on_recalculation_snab' || $dop_row['status_snab']=='in_calculation'))?1:0;
+			 
+			 if(isset($all_united_calculations) && is_array($all_united_calculations)){
+			      if(!isset($dop_details) || !is_array($dop_details))  $dop_details=array();
+				  $dop_details['united_calculations'] = array_values(array_unique($all_united_calculations));
+				  unset($all_united_calculations);
+			 }
+
 			 
 		     $cur_row  =  '';
 		     $cur_row .=  '<tr '.(($counter==0)?'pos_id="'.$key.'" type="'.$row['row_type'].'"':'').' row_id="'.$dop_key.'" art_id="'.$row['art_id'].'" class="'.(($key>1 && $counter==0)?'pos_edge ':'').(((count($row['dop_data'])-1)==$counter)?'lowest_row_in_pos ':'').(($counter!=0)?$svetofor_tr_display:'').(($row_span==0)?'hidden':'').(($block==1)?' block_snab':'').'"  block="'.$block.'">';

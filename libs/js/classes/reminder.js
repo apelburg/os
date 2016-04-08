@@ -164,11 +164,10 @@ function get_ui_window(){
     $('.reminder_win').each(function(index, el) {
       $(this).find('.dialog_window').remove();
     });
-    
     $('.dialog_window_minimized ').remove();
-    
     $('.reminder_win').remove();
 
+    $('.dialog_window').parent().remove();
   }
 
 

@@ -1794,7 +1794,7 @@ class Services extends Variants
 						// кнопка ТЗ
 						$html .= '<td class="usl_tz">'.$buttons_tz.'<span class="tz_text">'.base64_decode($service_attach['tz']).'</span><span class="tz_text_shablon">'.@$services_arr[$service_attach['uslugi_id']]['tz'].'</span></td>';
 						// кнопка удаления услуги (только для автора услуги)
-						$html .= ($this->user_id == $service_attach['creator_id'] || $this->user_access == 1 )?'<td class="usl_del"><span class="del_row_variants"></span></td>':'<td></td>';
+						$html .= (($this->user_id == $service_attach['creator_id'] || $this->user_access == 1 ) && $service_attach['united_calculations']=='')?'<td class="usl_del"><span class="del_row_variants"></span></td>':'<td></td>';
 					$html .='</tr>';
 				// }
 			}
