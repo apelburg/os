@@ -29,11 +29,44 @@
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	08.04.2016 10:43:03
 		 */
-		protected function hellow_AJAX(){
-			
-			$this->responseClass->addMessage('Hellow from PHP.');
-			
+		protected function create_invoice_AJAX(){
+			$message  = 'Тут будут обработаны данные<br>';
+			$message  .= 'и заведена строка в счетах';
+			$message .= $this->printArr($_POST);
+			// $this->responseClass->addMessage('create_invoice PHP.');
+			$options['width'] = 1200;
+			$options['height'] = 500;
+			$this->responseClass->addSimpleWindow($message,'Создание счета',$options);
+
+			if(!isset($_POST['doc']) || $_POST['doc'] == ''){
+				$this->responseClass->addMessage('Не получен тип документа');return;
+			}
+
+			switch ($_POST['doc']) {
+				// спецификация
+				case 'spec':
+					$agreement_id = $_POST['agreement_id'];
+					$spec_num = $_POST['specification_num'];
+
+					break;
+				// оферта
+				case 'oferta':
+					$oferta_id = $_POST['oferta_id'];
+					# code...
+					break;
+				
+				default:
+					$this->responseClass->addMessage('неизвестный тип документа');
+					break;
+			}
+
+
+
+
+
 		}
+
+
 
 
 		/**
