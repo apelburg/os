@@ -1616,7 +1616,7 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					}
 				}
 
-    			console.warn(methods.checked_variants_id)
+    			// console.warn(methods.checked_variants_id)
 
 				// получаем группы
 				k = 0;
@@ -1692,6 +1692,8 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 					for(var i in services_arr2[key]) {
 						quantity = Number(services_arr2[key][i].quantity)+quantity;
 						service[ k ] = services_arr2[key][i];
+						// делаем id услуги - числом (для сортировки)
+						service[ k ]['id'] = Number(services_arr2[key][i]['id']);
 					}
 					service[ k++ ].quantity = quantity;
 				}
@@ -1708,8 +1710,15 @@ jQuery(document).on('click', '.open_service_center', function(event) {
 				methods.services_tbl.find('.service_th').addClass('js-service_spacer');
 			}
 
+			// сравниваем
+			function compare(serviceA, serviceB) {
+			  return serviceA.id - serviceB.id;
+			}
+			// сортируем
+			service.sort(compare);
+
 			// возвращаем объект со списком услуг
-			// console.log(service)
+			console.warn(service)
 			return service;
 		},
 		// добавляет строки услуг в DOM
@@ -2176,8 +2185,8 @@ $.extend({
 		window_preload_add();
 		// обновление таблицы РТ
 		if($('#rt_tbl_body').length>0){
-			$('#scrolled_part_container').load(' #rt_tbl_body',function(){
-				// запускаем РТ по новой
+			// replace_rt_content
+			$('#replace_rt_maincontent').load(' #replace_rt_content',function(){
 				// printCalculator;
 				rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
 				// убираем прелоад
