@@ -177,6 +177,7 @@ var printCalculator = {
                 console.log('=evoke_calculator_directly=',response);
 
                 printCalculator.type = (data_AboutPrintsArr.print_details.calculator_type)? data_AboutPrintsArr.print_details.calculator_type:'auto';
+				printCalculator.initial_type = printCalculator.type;
 				printCalculator.currentCalculationData = {};
 				printCalculator.currentCalculationData[printCalculator.type] = [];
 				printCalculator.currentCalculationData[printCalculator.type][0] = data_AboutPrintsArr;
@@ -515,7 +516,7 @@ var printCalculator = {
 		}
 		cell.className += " deepGreyBg";
 		// проходим по id контейнеров калькудяторов
-
+        printCalculator.previous_type = printCalculator.type;
         printCalculator.type = cell.getAttribute('calc_type');
 		
 		// если переходим в закладку auto то удаляем (если существуюет )manualCalcBox
@@ -631,7 +632,7 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type]['total_price_in'] = 0;
 				printCalculator.currentCalculationData[printCalculator.type]['total_price_out'] = 0;
 			}
-			else if(printCalculator.type == 'manual'){
+			else if(printCalculator.type == 'manual' && printCalculator.previous_type =='auto'){
 				// if(printCalculator.currentCalculationData['manual']){
 					 // если при переключении между вкладками место нанесения и тип нанесения не изменились, пересохраняем данные 
 					 // ручного расчета (данные о цене)
@@ -786,7 +787,10 @@ var printCalculator = {
 			}
 			/**/
 			mainCalculatorBox.appendChild(box);
-		    
+			
+		    if(printCalculator.initial_type && printCalculator.initial_type=='manual'){
+			    delete printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id;
+		    } 
 			printCalculator.currentCalculationData[type].mainCalculatorBox = mainCalculatorBox;
 			printCalculator.commonContainer.appendChild(mainCalculatorBox);
 			if(printCalculator.type=='auto' && printCalculator.makeProcessingFlag) printCalculator.makeProcessing();
@@ -1056,7 +1060,7 @@ var printCalculator = {
 			// если это не был вызов калькулятора для конкретного существующего расчета 
 			// ставим выбранным  option ' -- выберите вариант -- '
 			// и устанавливаем print_id = 0
-			if(printCalculator.type == 'auto'){
+			if(printCalculator.type == 'auto' || (printCalculator.type == 'manual' && printCalculator.previous_type=='free')){
 				if(typeof printCalculator.dataObj_toEvokeCalculator.currentCalculationData_id === 'undefined'){
 					option.setAttribute("selected",true);
 					printCalculator.currentCalculationData[printCalculator.type].print_details.print_id = 0;
