@@ -202,6 +202,10 @@ var printCalculator = {
 				
 				// если это объединенный тираж 
 				if(data_AboutPrintsArr.print_details.distribution_type && data_AboutPrintsArr.print_details.distribution_type == 'union'){
+					
+					printCalculator.initial_distribution_type = data_AboutPrintsArr.print_details.distribution_type;
+					if(data_AboutPrintsArr.united_calculations) printCalculator.initial_united_calculations = data_AboutPrintsArr.united_calculations;
+					
 					if(data_AboutPrintsArr.print_details.calculator_type){
 						// если  ручной или дежурный калькулятор
 				        // получаем цены соответсвующие полному объему объединенного тиража
@@ -658,6 +662,10 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type].print_details.quantity_details = printCalculator.dataObj_toEvokeCalculator.quantity_details;
 				printCalculator.currentCalculationData[printCalculator.type].print_details.dop_params = {};
 		        //printCalculator.currentCalculationData[printCalculator.type].discount = (typeof printCalculator.discount !== 'undefined')? printCalculator.discount:0;
+				
+				if(printCalculator.initial_distribution_type) printCalculator.currentCalculationData[printCalculator.type].print_details.distribution_type = printCalculator.initial_distribution_type;
+				if(printCalculator.initial_united_calculations) printCalculator.currentCalculationData[printCalculator.type].united_calculations = printCalculator.initial_united_calculations;
+				
 				if(typeof printCalculator.discount !== 'undefined'){
 					printCalculator.currentCalculationData[printCalculator.type].discount = printCalculator.discount;
 				}
@@ -858,6 +866,10 @@ var printCalculator = {
 				printCalculator.currentCalculationData[type]['price_out'] = 0;
 				printCalculator.currentCalculationData[type]['total_price_in'] = 0;
 				printCalculator.currentCalculationData[type]['total_price_out'] = 0;
+				
+				if(printCalculator.initial_distribution_type) printCalculator.currentCalculationData[type].print_details.distribution_type = printCalculator.initial_distribution_type;
+				if(printCalculator.initial_united_calculations) printCalculator.currentCalculationData[printCalculator.type].united_calculations = printCalculator.initial_united_calculations;
+				
 			}
 			
 			if(printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id) printCalculator.currentCalculationData[printCalculator.type].dop_uslugi_id = printCalculator.dataObj_toEvokeCalculator.dop_uslugi_id;

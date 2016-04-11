@@ -262,11 +262,11 @@
 						 
 						 if(isset($print_details['need_confirmation']))  $need_confirmation_flag = true;
 
-						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.((isset($extra_data['united_calculations']) && $extra_data['united_calculations']!='')?'<img src="'.HOST.'/skins/images/img_design/service_group_grey.png" class="sgroup_grey_icon">':'').$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.$extra_data['price_in'].'</td><td class="right">'.$extra_data['price_out'].'</td></tr>';
+						 $uslugi_details_trs[] = '<tr class="'.(((++$row_counter)==count($dop_row['dop_uslugi']['print']))?'border_b':'').'"><td class="small right">'.(count($uslugi_details_trs)+1).'</td><td>'.((isset($extra_data['united_calculations']) && $extra_data['united_calculations']!='')?'<img src="'.HOST.'/skins/images/img_design/service_group_grey.png" class="sgroup_grey_icon">':'').$print_details['print_type'].'</td><td class="small">'.$print_details['place_type'].'</td><td class="center">'.$YPriceParamCount.'</td><td class="border_r">'.$size.'</td><td class="right">'.number_format($extra_data['price_in'],'2','.','').'</td><td class="right">'.number_format($extra_data['price_out'],'2','.','').'</td></tr>';
 						 
 						 if(isset($print_details) && isset($print_details['distribution_type']) && $print_details['distribution_type']=='union'  && isset($print_details['dop_data_ids'])){
 					         if(!isset($all_united_calculations)) $all_united_calculations=array();
-							 $all_united_calculations=array_merge($all_united_calculations,$print_details['dop_data_ids']);
+							 if(isset($print_details['dop_data_ids']) && is_array($print_details['dop_data_ids'])) $all_united_calculations=array_merge($all_united_calculations,$print_details['dop_data_ids']);
 						 }
 					 }
 				     $print_exists_flag = '1'; 
