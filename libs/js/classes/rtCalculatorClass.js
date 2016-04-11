@@ -1841,7 +1841,7 @@ var rtCalculator = {
 		function callback(response){ 
 		    // alert(response);
            //  close_processing_timer(); 
-			closeAllMenuWindows();
+			//closeAllMenuWindows();
 			if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 			
 			
@@ -1855,8 +1855,8 @@ var rtCalculator = {
 				echo_message_js(response_obj[1],'system_message',2400);
 				return;
 			}/**/
-			location.reload();
-			//$.SC_reload_RT_content();
+			//location.reload();
+			$.SC_reload_RT_content();
 		}
 	}
 	,
@@ -1961,7 +1961,7 @@ var rtCalculator = {
 									  buttons: [{text: "Да",
 												click: function(){
 														// отправляем повторный запрос с маркером ignore_calculators_checking
-														$(this).dialog("close");
+														//$(this).dialog("close");
 														show_processing_timer();
 														url += '&ignore_calculators_checking=1';
 														rtCalculator.send_ajax(url,callbackForDeleting);
@@ -1982,8 +1982,8 @@ var rtCalculator = {
 				alert(data[1]);
 				return;
 			}
-			location.reload();
-			//$.SC_reload_RT_content();
+			//location.reload();
+			$.SC_reload_RT_content();
 		}
 	}
 	,
