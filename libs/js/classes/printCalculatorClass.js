@@ -627,15 +627,16 @@ var printCalculator = {
 				printCalculator.currentCalculationData[printCalculator.type]['total_price_in'] = 0;
 				printCalculator.currentCalculationData[printCalculator.type]['total_price_out'] = 0;
 			}
-			else if(printCalculator.type == 'manual' && printCalculator.currentCalculationData['auto']){
-				 if(printCalculator.currentCalculationData['manual']){
+			else if(printCalculator.type == 'manual'){
+				// if(printCalculator.currentCalculationData['manual']){
 					 // если при переключении между вкладками место нанесения и тип нанесения не изменились, пересохраняем данные 
 					 // ручного расчета (данные о цене)
-					 if(printCalculator.currentCalculationData['manual'].print_details.print_id == printCalculator.currentCalculationData['auto'].print_details.print_id && printCalculator.currentCalculationData['manual'].print_details.place_id == printCalculator.currentCalculationData['auto'].print_details.place_id){
+					// if(printCalculator.currentCalculationData['manual'].print_details.print_id == printCalculator.currentCalculationData['auto'].print_details.print_id && printCalculator.currentCalculationData['manual'].print_details.place_id == printCalculator.currentCalculationData['auto'].print_details.place_id){
 						 //alert(1);
-						 var temp_data = {'price_in':printCalculator.currentCalculationData['manual'].price_in,'price_out':printCalculator.currentCalculationData['manual'].price_out,'total_price_out':printCalculator.currentCalculationData['manual'].total_price_out,'total_price_in':printCalculator.currentCalculationData['manual'].total_price_in}
-					 }
-				 }
+						 var temp_data = {'price_in':printCalculator.currentCalculationData['auto'].price_in,'price_out':printCalculator.currentCalculationData['auto'].price_out,'total_price_out':printCalculator.currentCalculationData['auto'].total_price_out,'total_price_in':printCalculator.currentCalculationData['auto'].total_price_in}
+					// }
+				// }
+				 
 				  
 				 // присваиваем значение (клона объекта)
 				 printCalculator.currentCalculationData[type] =  $.extend(true, {},printCalculator.currentCalculationData['auto']);
