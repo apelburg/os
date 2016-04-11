@@ -2189,6 +2189,8 @@ $.extend({
 			$('#replace_rt_maincontent').load(' #replace_rt_content',function(){
 				// printCalculator;
 				rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
+				// фиксим высоту
+				scrolledTableSizeFixing();
 				// убираем прелоад
 				window_preload_del();
 			});
