@@ -19,8 +19,16 @@ var slice = [].slice;
       if (u == null) {
         u = '';
       }
-      console.log(this.options);
-      return this.getFirstData(this);
+      this.getFirstData(this);
+      return this.generateTableRows(this);
+    };
+
+    invoice.prototype.generateTableRows = function(_this) {
+      return console.log(invoice.options.data);
+    };
+
+    invoice.prototype.getOptions = function() {
+      return this.options.data;
     };
 
     invoice.prototype.getDataD = function(u) {
@@ -49,13 +57,13 @@ var slice = [].slice;
           var myData;
           myData = JSON.parse(jqXHR.responseText);
           _this.options.access = myData.access;
-          return _this.options.data = myData;
+          return _this.options.data = myData.data;
         }
       });
       return response;
     };
 
-    invoice.prototype.createRow = function(obj) {
+    invoice.prototype.createRow = function() {
       return $.el.u({}, $.el.i({}, "This is underlined italicized"));
     };
 
