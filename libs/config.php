@@ -49,6 +49,7 @@
 	
 	define("CLIENT_ADRES_TBL", 'os__addres_tbl');//таблица адресов // !!!!! ЗАМЕНИТЬ НАЗВАНИЕ КОНСТАНТЫ НА ADRES_TBL
 
+	define("INVOICE_TBL","os__invoice_list"); // счета
 
 	define("SUPPLIERS_TBL","os__supplier_list"); // таблица поставщиков
 	define("SUPPLIERS_ACTIVITIES_TBL","os__suppliers_activities"); // таблица видов деятельности поставщиков	

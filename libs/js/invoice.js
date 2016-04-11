@@ -16,15 +16,51 @@ var slice = [].slice;
     }
 
     invoice.prototype.init = function(u) {
-      return echo_message_js(u);
+      if (u == null) {
+        u = '';
+      }
+      console.log(this.options);
+      return this.getFirstData(this);
     };
 
-    invoice.prototype.myMethod = function(echo) {
+    invoice.prototype.getDataD = function(u) {
+      return echo_message_js('getDataD - ' + u);
+    };
+
+    invoice.prototype.myfunc = function(echo) {
       return this.$el.html(this.options.paramA + ': ' + echo);
     };
 
+    invoice.prototype.getFirstData = function(_this) {
+      var data, response;
+      data = {
+        AJAX: 'get_data'
+      };
+      response = {};
+      $.ajax({
+        url: "",
+        type: "POST",
+        data: data,
+        dataType: "json",
+        error: function(jqXHR, textStatus, errorThrown) {
+          echo_message_js("AJAX Error: " + textStatus);
+        },
+        success: function(data, textStatus, jqXHR) {
+          var myData;
+          myData = JSON.parse(jqXHR.responseText);
+          _this.options.access = myData.access;
+          return _this.options.data = myData;
+        }
+      });
+      return response;
+    };
+
+    invoice.prototype.createRow = function(obj) {
+      return $.el.u({}, $.el.i({}, "This is underlined italicized"));
+    };
+
     invoice.prototype.getData = function(ajax_name, options) {
-      var data, i, len, task;
+      var data, i, len, response, task;
       if (options == null) {
         options = {};
       }
@@ -35,6 +71,7 @@ var slice = [].slice;
       data = {
         AJAX: ajax_name
       };
+      response = {};
       return $.ajax({
         url: "",
         type: "POST",
@@ -44,9 +81,8 @@ var slice = [].slice;
           echo_message_js("AJAX Error: " + textStatus);
         },
         success: function(data, textStatus, jqXHR) {
-          console.log(jqXHR.responseJSON);
-          echo_message_js("Successful AJAX call: " + jqXHR.responseJSON);
-          standard_response_handler(jqXHR.responseJSON);
+          console.log(response);
+          return standard_response_handler(jqXHR.responseJSON);
         }
       });
     };
@@ -74,5 +110,5 @@ var slice = [].slice;
 })(window.jQuery, window);
 
 $(document).ready(function() {
-  $('#js-main-invoice-table').invoice();
+  $('#js-main-invoice-table').invoice('init');
 });
