@@ -200,6 +200,32 @@
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			}
 		}
+		/**
+		 *	edit flag_1c
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	12.04.2016 17:43:10
+		 */
+		protected function edit_flag_1c_AJAX(){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= "`flag_1c` = '".(int)$_POST['val']."'";
+			  	
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+		/**
+		 *	edit edit_flag_flag
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	12.04.2016 17:43:10
+		 */
+		protected function edit_flag_flag_AJAX(){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= "`flag_flag` = '".(int)$_POST['val']."'";
+			  	
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
 
 		/**
 		 *	get Oferta rows
