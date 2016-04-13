@@ -1,27 +1,61 @@
-#js-main-invoice-table{
+#js-main-invoice-table,
+#js-main-invoice-table-clone table{
 	width: 100%;
 	border-collapse: collapse;
+	font-family: Arial, Helvetica, sans-serif;
 }
-#js-main-invoice-table thead tr th{
+#invoice-button-top{
+	position: fixed;
+	right: 15px;
+	bottom:15px;
+	width: 40px;
+	height: 40px;
+	background-image:url(../images/img_design/invoice_scroll_top.png);
+	background-repeat: no-repeat;
+	display: none;
+	cursor: pointer;
+	border-radius: 20px;
+	opacity: 0.6;
+}
+#invoice-button-top:hover{
+	-webkit-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.29);
+    -moz-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.29);
+    box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.29);
+}
+#js-main-invoice-table-clone{
+	-webkit-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.59);
+    -moz-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.59);
+    box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.59);
+}
+#js-main-invoice-table thead tr th,
+#js-main-invoice-table-clone thead tr th{
 	color: #5E5F61;
 	font-size: 11px;
 	font-weight: normal;
 	background-color: #F2F2F2;
-	padding:2px 10px;
-	
+	padding:2px 10px;	
 }
+
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(1),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(3),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(9),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(1){
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(1),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(1),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(3),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(9),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(13),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-of-type(1){
 	text-align: right;
 }
 
 
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4),
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(6),
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(7){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(7),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(4),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(6),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(7){
 	text-align: left;
 }
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
@@ -29,42 +63,66 @@
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(12),
 #js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(2),
 #js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(3),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5){
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(11),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(12),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-of-type(2),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-of-type(3),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-of-type(5){
 	text-align: center;
 }
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
 #js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(3),
-#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5){
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-of-type(5),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-of-type(3),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-of-type(5){
 	padding: 2px;
 }
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(4),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(4){
 	padding-left: 10px;
 }
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(13),
-#js-main-invoice-table tbody tr td:nth-of-type(16){
+#js-main-invoice-table tbody tr td:nth-of-type(16),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(13),
+#js-main-invoice-table-clone tbody tr td:nth-of-type(16){
 	padding-right: 10px;
 }
 
-#js-main-invoice-table thead tr th{
+#js-main-invoice-table thead tr th,
+#js-main-invoice-table-clone thead tr th{
 	border: 1px solid #CAC7C7;
 	border-bottom: 2px solid #848486;
 }
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(11),
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(12){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(12),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(11),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(12){
 	border-bottom: 1px solid #CAC7C7;
 }
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(2){
 	border-right: none;
 }
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(3){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(3),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(3){
 	border-left: none;
 }
-#js-main-invoice-table tbody tr td{
+#js-main-invoice-table tbody tr td,
+#js-main-invoice-table-clone tbody tr td{
 	font-size: 12px;
 	color: #7A7A7A;
 	padding:5px;
 }
-
+#js-main-invoice-table tbody tr td:nth-last-of-type(1){
+	width:45px 
+}
+#js-main-invoice-table thead tr:nth-of-type(2) th:nth-last-of-type(2),
+#js-main-invoice-table-clone thead tr:nth-of-type(2) th:nth-last-of-type(2){
+	width:45px 
+}
 /*выравнивание текста в ячейках счета*/
 
 #js-main-invoice-table tbody tr td:nth-of-type(6) div{
@@ -92,9 +150,22 @@
 /*#js-main-invoice-table tbody tr td:nth-of-type(16){
 	padding-right: 10px;
 }*/
+#js-main-invoice-table tbody tr td{
+	border: 1px solid #F3F1F1;
+	border-bottom: 1px solid #F3F1F1;
+}
+#js-main-invoice-table thead tr th:nth-of-type(4),
+#js-main-invoice-table-clone thead tr th:nth-of-type(4),
+#js-main-invoice-table thead tr th:nth-of-type(5),
+#js-main-invoice-table-clone thead tr th:nth-of-type(5),
+#js-main-invoice-table tbody tr td:nth-of-type(4),
+#js-main-invoice-table tbody tr td:nth-of-type(5){
+	border-right:1px solid transparent;
+}
 
 /*исконка флаг*/
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(5){
 	background-image:url(../images/img_design/icon_invoce_1.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
@@ -103,12 +174,18 @@
 	background-image:url(../images/img_design/icon_invoce_3.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
+	padding: 0 25px 0 0;
+	cursor: pointer;
+}
+#js-main-invoice-table tbody tr td.invoice-row--icons-flag:hover{
+	background-color: #F2F2F2;
 }
 #js-main-invoice-table tbody tr td.invoice-row--icons-flag.checked{
 	background-image:url(../images/img_design/icon_invoce_2.png);
 }
 /*иконка глаз*/
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(8){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(8),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(8){
 	background-image:url(../images/img_design/icon_invoce_ice.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
@@ -122,7 +199,8 @@
 	background-image:url(../images/img_design/icon_invoce_ice_green.png);
 }
 /*иконка калькулятор*/
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(10){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(10),
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(10){
 	background-image:url(../images/img_design/icon_invoce_calc.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
