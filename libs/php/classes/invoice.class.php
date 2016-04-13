@@ -71,18 +71,36 @@
 		 *	@version 	11.04.2016 10:48:00
 		 */
 		private function get_data(){
+			//  получаем информацию по строкам
 			$query = "SELECT * FROM `".INVOICE_TBL."`";
 			if($this->user_access != 1 && $this->user_access != 2){
 				$query .= "WHERE `manager_id` = '".$this->user_id."' ";
 			}
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
-			$data = array();
+			$this->data = array();
+			$data_id_s = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
-					$data[] = $row;
+					$this->data[] = $row;
+					$data_id_s[] = $row['id'] ;
 				}
 			}
-			return $data;
+
+			// запрос ттн
+			$this->get_ttn_rows($data_id_s);
+
+
+			return $this->data;
+		}
+
+		/**
+		 *	get ttn rows
+		 *
+		 *	@param 		get_ttn_rows - array, id
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	13.04.2016 15:52:37
+		 */
+		private function get_ttn_rows($id_s){
 
 		}
 
@@ -121,6 +139,11 @@
 					// номер спецификации к данному договору
 					$data['doc_num'] = $_POST['specification_num'];
 					$data['doc_id'] = 0;
+					// проверка на существования запроса по данному документу
+					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
+						$this->responseClass->addMessage('Дла данного документа счёт уже запрошен.');
+						return;
+					}
 					// получаем данные по спецификации
 					$positions = $this->getSpecificationRows($data['agreement_id'], $data['doc_num']);
 					$agr = $this->getAgreement($data['agreement_id']);
@@ -133,7 +156,7 @@
 					$data['requisit_id'] = $agr[0]['client_requisit_id'];
 					$data['price_in'] = $this->getPriceIn($positions);
 					$data['price_out'] = $this->getPriceOut($positions);
-
+					$this->responseClass->addMessage('Счёт запрошен','successful_message');
 					break;
 				// оферта
 				case 'oferta':					
@@ -143,6 +166,14 @@
 					// номер спецификации к данному договору
 					$data['doc_num'] = 0;
 					$data['doc_id'] = $_POST['oferta_id'];
+
+					// проверка на существования запроса по данному документу
+					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
+						$this->responseClass->addMessage('Дла данного документа номер уже запрошен.');
+						return;
+					}
+
+
 					// получаем данные по спецификации
 					$Oferta = $this->getOferta($data['doc_id']);
 					$positions = $this->getOfertaRows($data['doc_id']);
@@ -156,6 +187,7 @@
 					$data['price_in'] = $this->getPriceIn($positions);
 					$data['price_out'] = $this->getPriceOut($positions);
 
+					$this->responseClass->addMessage('Номер счёта запрошен','successful_message');
 					break;
 				
 				default:
@@ -171,7 +203,42 @@
 
 			// заводим строки позиций к документу
 
-			$this->responseClass->addSimpleWindow($message,'Создание счета',$options);
+			// $this->responseClass->addSimpleWindow($message,'Создание счета',$options);
+		}
+
+		private function calc_price_width_discount($price_out, $discount){
+			$num = ($price_out / 100) * (100 + $discount);
+			return $num;
+		}
+
+		/**
+		 *	check invoice
+		 *
+		 *	@param 		doc_type
+		 *	@param 		doc_id
+		 *	@param 		doc_num
+		 *	@return  	true/false
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	13.04.2016 15:05:41
+		 */		
+		private function check_invoice($doc_type, $doc_id, $doc_num){
+			$query = "SELECT count(*) as count FROM `".INVOICE_TBL."` ";
+			$query .= "WHERE `doc_type` = '".$doc_type."'";
+			$query .= " AND `doc_id` = '".$doc_id."'";
+			$query .= " AND `doc_num` = '".$doc_num."'";
+
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$count = 0;
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$count = $row['count'];
+				}
+			}
+			// echo $count;
+			if($count>0){
+				return true;
+			}
+			return false;
 		}
 
 		/**
@@ -199,6 +266,46 @@
 				
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			}
+		}
+		/**
+		 *	edit spf_return
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	13.04.2016 16:49:25
+		 */
+		protected function edit_flag_spf_return_AJAX(){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= "`flag_spf_return` = '".(int)$_POST['val']."'";
+			  	
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+		/**
+		 *	edit flag_calc
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	12.04.2016 17:43:10
+		 */
+		protected function edit_flag_calc_AJAX(){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= "`flag_calc` = '".(int)$_POST['val']."'";
+			  	
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+
+		/**
+		 *	edit flag_ice
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	12.04.2016 17:43:10
+		 */
+		protected function edit_flag_ice_AJAX(){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= "`flag_ice` = '".(int)$_POST['val']."'";
+			  	
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 		/**
 		 *	edit flag_1c
@@ -296,7 +403,8 @@
 		private function getPriceOut($arr){
 			$price = 0;
 			foreach($arr as $row){
-				$price += $row['quantity']*$row['price'];
+				// $price += $row['quantity']*$row['price'];
+				$price += $this->calc_price_width_discount($row['summ'], $row['discount']);
 			}
 			return $price;
 		}
@@ -351,12 +459,10 @@
 			    // имя клиента
 			    $query .= "`client_name` = '".$this->getCLientName($add_data['client_id'])."', ";
 			    $query .= "`client_requisit_id` = '".$add_data['requisit_id']."',";
-			    $query .= "`client_requisit_name` = '".$this->getRequisitsName($add_data['requisit_id'])."',";
-				
+			    $query .= "`client_requisit_name` = '".$this->getRequisitsName($add_data['requisit_id'])."',";				
 				// оплачено
 				$query .= "`price_costs_all` = '0.00',";
 				// $query .= "`status` = '',";
-
 
 				$query .= "`agreement_id` = '".$add_data['agreement_id']."',";
 				$query .= "`doc_type` = '".$add_data['doc_type']."',";

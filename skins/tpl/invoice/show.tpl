@@ -1,7 +1,7 @@
 <!-- <?php echo __FILE__; ?> -- START-->
 	<script src="<?php  echo HOST; ?>/libs/js/invoice.js" rel="stylesheet" type="application/javascript"></script>
 <link href="skins/css/invoice.css" rel="stylesheet" type="text/css">
-
+<div id="invoice-button-top"></div>
 
 <div class="cabinet_top_menu first_line">
     <ul class="central_menu" style="padding-left: 19px;">
@@ -91,7 +91,7 @@
 				<th>№</th>
 				<th>дата</th>
 				<th>в-т</th>
-				<th>дата</th>
+				<th>№</th>
 				<th>в-т</th>
 			</tr>
 		</thead>
