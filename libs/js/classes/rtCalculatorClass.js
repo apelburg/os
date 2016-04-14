@@ -1735,7 +1735,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){ /* alert(response); // rtCalculator.handler_for_copy_row_response(response); close_processing_timer();*/  closeAllMenuWindows(); }
+		function callback(response){ /* alert(response); //*/ rtCalculator.handler_for_copy_row_response(response); close_processing_timer();  closeAllMenuWindows(); }
 	}
 	,
 	copy_row:function(e){ 
@@ -1754,7 +1754,7 @@ var rtCalculator = {
 		// Сохраняем полученные данные в cессию(SESSION) чтобы потом при выполнении действия (вставить скопированное) получить данные из SESSION
 		var url = OS_HOST+'?' + addOrReplaceGetOnURL('save_copied_rows_to_buffer='+JSON.stringify(idsObj));
 		rtCalculator.send_ajax(url,callback);
-		function callback(response){/* alert(response); //  rtCalculator.handler_for_copy_row_response(response);*/ close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
+		function callback(response){/* alert(response); //*/  rtCalculator.handler_for_copy_row_response(response); close_processing_timer(); closeAllMenuWindows();  if(openCloseContextMenuNew.lastElement) openCloseContextMenuNew.lastElement.style.backgroundColor = '#FFFFFF';
 		}
 	}
 	,
@@ -1767,11 +1767,11 @@ var rtCalculator = {
 		//console.log('--',dataObj);
 		if(dataObj[0]=='united_calculations'){
 			//console.log('-1-',dataObj[1]);
-			for(var i in dataObj[1]){
+			/*for(var i in dataObj[1]){
 				//console.log('--',$('#rt_tbl_body tr[row_id='+ dataObj[1][i] +']')[0]);
-				$('#rt_tbl_body tr[row_id='+ dataObj[1][i] +']')[0].style.border = '#CCC 3px solid';
-			}
-			echo_message_js('отмеченные расчеты содержат услуги входящие в объединенный тираж','system_message',5800);
+				//$('#rt_tbl_body tr[row_id='+ dataObj[1][i] +']')[0].style.border = '#000 1px dotted';
+			}*/
+			echo_message_js('в копируемые ряды входят расчеты которые содержат объединенные тиражи','system_message',5800);
 		}
 		
 	}
