@@ -203,8 +203,10 @@ calc_price_width_discount = function(price_out, discount) {
         closeOnEscape: false
       }).parent();
       buttons_html = $('<table></table>');
-      for (button_n = j = 0, len = buttons.length; j < len; button_n = ++j) {
-        i = buttons[button_n];
+      console.log(buttons);
+      for (i = j = 0, len = buttons.length; j < len; i = ++j) {
+        button_n = buttons[i];
+        console.log(button_n);
         button = $('<button/>', {
           text: button_n['text'],
           click: button_n['click']
@@ -294,7 +296,7 @@ calc_price_width_discount = function(price_out, discount) {
         'class': 'invoice-row--checkboxtd-div'
       }));
       td.click(function() {
-        var buttons, t;
+        var buttons, message, t;
         if ($(this).hasClass('checked')) {
           if (Number(_this.options.access) !== 1) {
             console.log(_this.options.access);
@@ -334,7 +336,8 @@ calc_price_width_discount = function(price_out, discount) {
               }
             }
           ];
-          _this.createSmallDialog('Вы уверены', 'Подтверждение действия', buttons);
+          message = 'Вы уверены, что хотите установить флаг рекламации?';
+          _this.createSmallDialog(message, 'Подтверждение действия', buttons);
         }
       });
       if (Number(row.flag_flag > 0)) {
@@ -478,9 +481,7 @@ $(window).scroll(function() {
       el_cloned = $('#js-main-invoice-table thead');
       thead = el_cloned.clone();
       thead.find('tr').each(function(index) {
-        console.log(thead.find('tr').eq(index));
         thead.find('tr').eq(index).find('th').each(function(ind) {
-          console.log(el_cloned.find('tr').eq(index).find('th').eq(ind).width());
           thead.find('tr').eq(index).find('th').eq(ind).width(el_cloned.find('tr').eq(index).find('th').eq(ind).width() + 1);
         });
       });
