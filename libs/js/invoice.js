@@ -101,6 +101,8 @@ calc_price_width_discount = function(price_out, discount) {
 
     invoice.prototype.access_def = 0;
 
+    invoice.prototype.response_def = {};
+
     function invoice(el, options) {
       this.options = $.extend({}, this.defaults, jQuery.parseJSON($('#invoceData').html()));
       this.access = $.extend({}, this.access_def, this.options.access);
@@ -124,6 +126,7 @@ calc_price_width_discount = function(price_out, discount) {
     };
 
     invoice.prototype.printOptions = function() {
+      console.info(this.options.access);
       return console.info(this.options.data);
     };
 
@@ -203,10 +206,8 @@ calc_price_width_discount = function(price_out, discount) {
         closeOnEscape: false
       }).parent();
       buttons_html = $('<table></table>');
-      console.log(buttons);
       for (i = j = 0, len = buttons.length; j < len; i = ++j) {
         button_n = buttons[i];
-        console.log(button_n);
         button = $('<button/>', {
           text: button_n['text'],
           click: button_n['click']
@@ -223,6 +224,162 @@ calc_price_width_discount = function(price_out, discount) {
         'id': 'js-alert_union_buttons',
         'class': 'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
       }).append(buttons_html));
+    };
+
+
+    /*
+     * get data
+     */
+
+    invoice.prototype.getData = function(ajax_name, options, func) {
+      var _this, data, k, response, v;
+      if (options == null) {
+        options = {};
+      }
+      if (func == null) {
+        func = function() {};
+      }
+      _this = this;
+      data = {
+        AJAX: ajax_name
+      };
+      for (k in options) {
+        v = options[k];
+        data[k] = v;
+      }
+      response = {};
+      $.ajax({
+        url: "",
+        type: "POST",
+        data: data,
+        dataType: "json",
+        error: function(jqXHR, textStatus, errorThrown) {
+          echo_message_js("AJAX Error: " + textStatus);
+        },
+        success: function(data, textStatus, jqXHR) {
+          response = jqXHR.responseJSON;
+          _this.response = $.extend({}, _this.response_def, response);
+          standard_response_handler(response);
+          return func();
+        }
+      });
+    };
+
+
+    /*
+     * create ttn
+     */
+
+    invoice.prototype.createTTN = function(row) {
+      var _this, buttons;
+      _this = this;
+      buttons = [
+        {
+          text: 'Отмена',
+          "class": 'button_yes_or_no no',
+          click: function() {
+            return $('#js-alert_union').dialog('destroy').remove();
+          }
+        }, {
+          text: 'Запросить',
+          "class": 'button_yes_or_no',
+          click: function() {
+            return $('#js-alert_union').dialog('destroy').remove();
+          }
+        }
+      ];
+      return this.getData('get_ttn', {
+        'id': row.id
+      }, function() {
+        var check, i, j, len, main_price, message, nds, position, pr_out, responseData, table, td, tr;
+        responseData = _this.response.data;
+        table = $('<table/>', {
+          'id': 'js-invoice--window--ttn-table'
+        });
+        i = 1;
+        if (responseData !== void 0) {
+          table.append(tr = $('<tr/>'));
+          check = $('<input/>', {
+            'type': 'checkbox'
+          });
+          td = $('<th/>').append(check);
+          tr.append(td);
+          td = $('<th/>', {
+            'text': '№'
+          });
+          tr.append(td);
+          td = $('<th/>', {
+            'html': 'Наименование и <br>описание продукции'
+          });
+          tr.append(td);
+          td = $('<th/>', {
+            'html': 'Количество<br>продукции'
+          });
+          tr.append(td);
+          td = $('<th/>', {
+            'html': 'стоимость<br>за штуку'
+          });
+          tr.append(td);
+          td = $('<th/>', {
+            'html': 'Общая<br>стоимость'
+          });
+          tr.append(td);
+          main_price = 0;
+          nds = 0;
+          for (j = 0, len = responseData.length; j < len; j++) {
+            position = responseData[j];
+            tr = $('<tr/>').data(position);
+            check = $('<input/>', {
+              'type': 'checkbox'
+            });
+            td = $('<td/>').append(check);
+            tr.append(td);
+            td = $('<td/>').append(i);
+            tr.append(td);
+            td = $('<td/>').append(position.name);
+            tr.append(td);
+            td = $('<td/>').append(position.quantity);
+            tr.append(td);
+            pr_out = calc_price_width_discount(position.price, position.discount);
+            td = $('<td/>').append(round_money(pr_out) + ' р.');
+            tr.append(td);
+            main_price += pr_out * position.quantity;
+            nds += Number(round_money(pr_out * position.quantity / 118 * 18));
+            td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.');
+            tr.append(td);
+            i++;
+            table.append(tr);
+          }
+          table.append(tr = $('<tr/>'));
+          td = $('<th/>');
+          tr.append(td);
+          td = $('<th/>', {
+            'colspan': '4',
+            'html': 'Итоговая сумма по данной спецификации (договору)'
+          });
+          tr.append(td);
+          td = $('<th/>', {
+            'html': round_money(main_price) + ' р.'
+          });
+          tr.append(td);
+          table.append(tr);
+          table.append(tr = $('<tr/>'));
+          td = $('<th/>');
+          tr.append(td);
+          td = $('<th/>', {
+            'colspan': '4',
+            'html': 'В т.ч. НДС 18%'
+          });
+          tr.append(td);
+          td = $('<th/>', {
+            'html': round_money(nds) + ' р.'
+          });
+          tr.append(td);
+          table.append(tr);
+          message = $('<div/>').append(table);
+          return _this.createSmallDialog(message, 'Запрос ТТН', buttons);
+        }
+      });
     };
 
 
@@ -409,9 +566,20 @@ calc_price_width_discount = function(price_out, discount) {
         td.addClass('checked');
       }
       tr.append(td);
-      td = $('<td/>', {
-        'colspan': '3'
-      });
+      if (row.ttn.length === 0 && this.options.access !== 2) {
+        td = $('<td/>', {
+          'colspan': '3',
+          'html': "Запросить",
+          'class': 'js-query-ttn',
+          click: function() {
+            return _this.createTTN(row);
+          }
+        });
+      } else {
+        td = $('<td/>', {
+          'colspan': '3'
+        });
+      }
       tr.append(td);
       td = $('<td/>').append($('<div/>').html(row.spf_num));
       tr.append(td);

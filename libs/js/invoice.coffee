@@ -74,6 +74,7 @@ calc_price_width_discount = (price_out, discount) ->
       start: false
     
     access_def: 0
+    response_def:{}
 
     constructor: (el, options) ->
       # console.log @options       
@@ -95,6 +96,7 @@ calc_price_width_discount = (price_out, discount) ->
         @createRow n
 
     printOptions:()->
+      console.info @options.access
       console.info @options.data
 
     # обновление сонтента в таблице
@@ -142,7 +144,6 @@ calc_price_width_discount = (price_out, discount) ->
     ###
     createSmallDialog: (html='текст не был передан', title='имя окна не было передано', buttons={})->
       
-
       # убиваем такое окно, если оно есть
       if($('#js-alert_union').length > 0) 
         $('#js-alert_union').remove();
@@ -169,9 +170,7 @@ calc_price_width_discount = (price_out, discount) ->
 
           
       buttons_html = $('<table></table>');
-      console.log buttons
       for button_n,i in buttons 
-        console.log button_n
         button = $('<button/>',{
           text: button_n['text'],
           click: button_n['click']
@@ -193,7 +192,158 @@ calc_price_width_discount = (price_out, discount) ->
         'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
           })
           .append( buttons_html));
-    
+
+    ###
+    # get data
+    ###
+    getData:(ajax_name,options={},func = ()->)->
+      _this = @
+      data = {
+          AJAX:ajax_name
+      }
+      for k,v of options
+        # console.log k + " is " + v
+        data[k] = v 
+      # console.log data
+      response = {}
+      $.ajax
+        url: ""
+        type: "POST"
+        data:data
+        dataType: "json"
+        error: (jqXHR, textStatus, errorThrown) ->
+          echo_message_js "AJAX Error: #{textStatus}"
+          return
+        success: (data, textStatus, jqXHR) ->
+          # console.log jqXHR.responseJSON
+          # data = JSON.parse jqXHR.responseText
+          # echo_message_js "Successful AJAX call: #{jqXHR.responseText}"
+          response = jqXHR.responseJSON
+          _this.response = $.extend({}, _this.response_def, response)
+          standard_response_handler(response)
+          # update json
+          func()
+          # _this.updateData()
+      return 
+    ###
+    # create ttn
+    ###
+    createTTN:(row)->
+      _this = @
+      buttons = [{
+          text: 'Отмена',
+          class:  'button_yes_or_no no',
+          click: ()->
+            $('#js-alert_union').dialog('destroy').remove();         
+        },{
+          text: 'Запросить',
+          class:  'button_yes_or_no',
+          click: ()->
+            $('#js-alert_union').dialog('destroy').remove();  
+        }];
+      
+      # запрос данных
+      
+      @getData('get_ttn',{'id':row.id},()->
+        responseData = _this.response.data
+        table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
+        i = 1
+
+
+
+        if(responseData!= undefined)
+          # шапка таблицы
+          table.append(tr = $('<tr/>'))
+          # чекбоксы
+          check = $('<input/>',{
+            'type':'checkbox'
+            })
+          td  = $('<th/>').append(check)
+          tr.append(td)
+          # Number
+          td  = $('<th/>',{'text':'№'})
+          tr.append(td)
+          # Name
+          td  = $('<th/>',{'html':'Наименование и <br>описание продукции'})
+          tr.append(td)
+          # Quantity
+          td  = $('<th/>',{'html':'Количество<br>продукции'})
+          tr.append(td)
+          # Price for one
+          td  = $('<th/>',{'html':'стоимость<br>за штуку'})
+          tr.append(td)
+          # Price for all
+          td  = $('<th/>',{'html':'Общая<br>стоимость'})
+          tr.append(td)
+
+          main_price = 0
+          nds = 0
+          for position in responseData
+
+            tr = $('<tr/>').data(position)
+            # чекбоксы
+            check = $('<input/>',{
+              'type':'checkbox'
+              })
+            td  = $('<td/>').append(check)
+            tr.append(td)
+
+            # Number
+            td  = $('<td/>').append(i)
+            tr.append(td)
+            # Name
+            td  = $('<td/>').append(position.name)
+            tr.append(td)
+            # Quantity
+            td  = $('<td/>').append(position.quantity)
+            tr.append(td)
+            # Price for one
+            pr_out = calc_price_width_discount(position.price, position.discount)
+            td  = $('<td/>').append(round_money(pr_out)+' р.')
+            tr.append(td)
+            # Price for all
+            
+            main_price += pr_out*position.quantity
+            nds += Number(round_money(pr_out*position.quantity/118*18))
+            td  = $('<td/>').append(round_money(pr_out*position.quantity)+' р.')
+            tr.append(td)
+            i++
+            table.append(tr)
+          # ИТОГО
+          table.append(tr = $('<tr/>'))
+          td  = $('<th/>')
+          tr.append(td)
+          # текст
+          td  = $('<th/>',{
+            'colspan':'4',
+            'html':'Итоговая сумма по данной спецификации (договору)'
+            })
+          tr.append(td)
+          # Price for all
+          td  = $('<th/>',{'html':round_money(main_price)+' р.'})
+          tr.append(td)
+          table.append(tr)
+          # в том числе НДС
+          table.append(tr = $('<tr/>'))
+          td  = $('<th/>')
+          tr.append(td)
+          # Тескт
+          td  = $('<th/>',{
+            'colspan':'4',
+            'html':'В т.ч. НДС 18%'
+            })
+          tr.append(td)
+          # Price НДС
+          td  = $('<th/>',{'html':round_money(nds)+' р.'})
+          tr.append(td)
+          table.append(tr)
+
+
+          message = $('<div/>').append(table)
+          _this.createSmallDialog(message,'Запрос ТТН',buttons);
+        )
+      
+
     ###
     # create tr 
     ###
@@ -380,9 +530,24 @@ calc_price_width_discount = (price_out, discount) ->
       td.addClass('checked') if Number row.flag_calc>0
       tr.append(td)
       # ттн
-      td = $('<td/>',{
+      
+      
+      if(row.ttn.length == 0 && @options.access !=2)
+        td = $('<td/>',{
+        'colspan':'3',
+        'html':"Запросить",
+        'class':'js-query-ttn'
+        click:()->
+
+          # echo_message_js('Запрос ТТН','successful_message')
+          # окно Запрос ТТН
+          _this.createTTN(row)
+        })
+      else
+        td = $('<td/>',{
         'colspan':'3'
         })
+
       tr.append(td)
 
       # спф дата
