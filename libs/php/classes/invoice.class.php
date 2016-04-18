@@ -79,18 +79,45 @@
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$this->data = array();
 			$data_id_s = array();
+			$i = 0;
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
-					$this->data[] = $row;
+					$this->data[$i] = $row;
+					$this->data[$i]['ttn'] = array();
 					$data_id_s[] = $row['id'] ;
+					// зависимости в id
+					$this->depending['id'][$row['id']] = $i++;
 				}
 			}
+
 
 			// запрос ттн
 			$this->get_ttn_rows($data_id_s);
 
 
 			return $this->data;
+		}
+
+		/**
+		 *	get ttn from id
+		 *
+		 *	@param 		invoice id
+		 *	@return  	data
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	15.04.2016 16:02:26
+		 */
+		protected function get_ttn_AJAX(){
+			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = $data; 
+			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
 
 		/**
@@ -101,7 +128,14 @@
 		 *	@version 	13.04.2016 15:52:37
 		 */
 		private function get_ttn_rows($id_s){
-
+			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$this->data[$this->depending['id'][$row['invoice_id']]]['ttn'][] = $row;
+				}
+			}
 		}
 
 		/**

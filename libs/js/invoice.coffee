@@ -1,4 +1,4 @@
-####
+###
 # update invoise date
 #
 # @param     type
@@ -7,7 +7,7 @@
 # @author    Alexey Kapitonov
 # @email     kapitonoval2012@gmail.com
 # @version   13.04.2016 16:25:40
-####
+###
 getInvoiceData = (type="new") ->
   $.ajax
     url: ""
@@ -26,19 +26,346 @@ getInvoiceData = (type="new") ->
       $('#js-main-invoice-table').invoice() if type=='new'
   return true;    
       
-  
+###
+# window onload function
+###
 $(document).ready(()->
   getInvoiceData()
 )
 
+###
+# round and return money format any input string or number
+###
 round_money = (num) ->
   num = Number(num);
   new_num = Math.ceil((num)*100)/100;
   return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
 calc_price_width_discount = (price_out, discount) ->
   return Number(price_out/100) * (100 + Number(discount));
-    
 
+###
+# model from window
+#
+# @param     data = {html='текст не был передан', title='имя окна не было передано', buttons={}}
+# @author    Alexey Kapitonov
+# @email     kapitonoval2012@gmail.com
+# @version   18.04.2016 12:53:01
+###
+class modalWindow
+  # window dop sittings - sitting from jQuery dialog plugin
+  sittings:
+    modal: true,
+    autoOpen : true,
+    closeOnEscape: false
+
+  # main default options - default content
+  defaults:
+    title:'*** Название окна ***',
+    width:'auto',
+    height:'auto',
+    html:'Текст в окне',
+    buttons:[{
+          text:   'OK',
+          class:  'button_yes_or_no no',
+          style:  'float:right;'
+          click:  ()->
+            $('#js-alert_union').dialog('destroy').remove();         
+        }]
+
+  constructor:(data = {},sittings={}) ->
+    # get options
+    @options = $.extend({}, @defaults, data) 
+    # get sittings
+    @sittings = $.extend({}, @sittings,sittings)
+    # init
+    @init()
+  init:()->
+    # html='текст не был передан', title='имя окна не было передано', buttons={}
+    # убиваем такое окно, если оно есть
+    if($('#js-alert_union').length > 0) 
+      $('#js-alert_union').remove();
+    
+    # создаем новое
+    $('body').append($('<div/>',{
+      "id":'js-alert_union',
+      "style":"height:45px;",
+      'html':@options.html
+    }));  
+          
+
+          
+    $('#js-alert_union').dialog({
+        width: 'auto',
+        height: 'auto',
+        modal: @sittings.modal,
+        title : @options.title,
+        autoOpen : @sittings.autoOpen,
+        closeOnEscape: @sittings.closeOnEscape
+        # // buttons: buttons          
+    }).parent();
+
+    # console.info @options.buttons
+    if(@options.buttons.length  > 0)
+      buttons_html = $('<table></table>');
+      for button_n,i in @options.buttons 
+        button = $('<button/>',{
+          text: button_n['text'],
+          click: button_n['click']
+          });
+        if button_n['class']
+          button.attr('class',button_n['class'])
+        if button_n['style']
+          button.attr('style',button_n['style'])
+        if button_n['id']
+          button.attr('id',button_n['id'])
+
+        buttons_html.append(
+          $('<td/>')
+            .append(button)
+            );  
+    
+    $('#js-alert_union').after($('<div/>',{
+      'id':'js-alert_union_buttons',
+      'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
+        })
+        .append(buttons_html));
+
+
+  # show:()->
+  #   console.log "show"
+  # destroy:()->
+  #   console.log "destroy"
+      
+###
+# model from ttn 
+###
+class invoiceTtn
+  defaults:
+    id:0
+  constructor: (data_row, data) ->
+    @options = $.extend({}, @defaults, data_row)  
+    @init(data)  
+  init:(responseData)->
+    _this = @      
+    # запрос данных      
+    table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
+    i = 1
+
+    if(responseData!= undefined)
+      # шапка таблицы
+      table.append(tr = $('<tr/>'))
+      # чекбоксы
+      main_checkbox = $('<input/>',{
+        'type':'checkbox',
+        change:(event)->
+          input = $(this)
+          td = $(this).parent()
+          # клик по главному чекбоксу
+          _this.clickMainCheckbox(table,td,input)
+        })
+
+      td = $('<th/>',{
+          click:()->
+            input  = $(this).find('input')
+            td = $(this)
+            # клик по главному чекбоксу
+            _this.clickMainCheckbox(table,td,input)
+          }).append(main_checkbox)
+
+      tr.append(td)
+      # Number
+      td  = $('<th/>',{'text':'№'})
+      tr.append(td)
+      # Name
+      td  = $('<th/>',{'html':'Наименование и <br>описание продукции'})
+      tr.append(td)
+      # Quantity
+      td  = $('<th/>',{'html':'Количество<br>продукции'})
+      tr.append(td)
+      # Price for one
+      td  = $('<th/>',{'html':'стоимость<br>за штуку'})
+      tr.append(td)
+      # Price for all
+      td  = $('<th/>',{'html':'Общая<br>стоимость'})
+      tr.append(td)
+
+      main_price = 0
+      nds = 0
+      for position in responseData
+
+        tr = $('<tr/>').data(position)
+        # чекбоксы
+        check = $('<input/>',{
+          'type':'checkbox',
+          change:(event)->
+            event.preventDefault()
+            event.stopPropagation()
+            if $(this).prop('checked')
+              $(this).prop('checked',false)
+              $(this).parent().removeClass('checked')
+            else
+              $(this).prop('checked',true)
+              $(this).parent().addClass('checked')
+
+            _this.checkMainCheckbox(table)
+
+          })
+        td  = $('<td/>',{
+          click:()->
+            input  = $(this).find('input')
+            if input.prop('checked')
+              input.prop('checked',false)
+              $(this).removeClass('checked')
+            else
+              input.prop('checked',true)
+              $(this).addClass('checked')
+
+            _this.checkMainCheckbox(table)
+
+          }).append(check)
+        tr.append(td)
+
+        # Number
+        td  = $('<td/>').append(i)
+        tr.append(td)
+        # Name
+        td  = $('<td/>').append(position.name)
+        tr.append(td)
+        # Quantity
+        td  = $('<td/>').append(position.quantity)
+        tr.append(td)
+        # Price for one
+        pr_out = calc_price_width_discount(position.price, position.discount)
+        td  = $('<td/>').append(round_money(pr_out)+' р.')
+        tr.append(td)
+        # Price for all
+        
+        main_price += pr_out*position.quantity
+        nds += Number(round_money(pr_out*position.quantity/118*18))
+        td  = $('<td/>').append(round_money(pr_out*position.quantity)+' р.')
+        tr.append(td)
+        i++
+        table.append(tr)
+      # ИТОГО
+      table.append(tr = $('<tr/>'))
+      td  = $('<th/>')
+      tr.append(td)
+      # текст
+      td  = $('<th/>',{
+        'colspan':'4',
+        'html':'Итоговая сумма по данной спецификации (договору)'
+        })
+      tr.append(td)
+      # Price for all
+      td  = $('<th/>',{'html':round_money(main_price)+' р.'})
+      tr.append(td)
+      table.append(tr)
+      # в том числе НДС
+      table.append(tr = $('<tr/>'))
+      td  = $('<th/>')
+      tr.append(td)
+      # Тескт
+      td  = $('<th/>',{
+        'colspan':'4',
+        'html':'В т.ч. НДС 18%'
+        })
+      tr.append(td)
+      # Price НДС
+      td  = $('<th/>',{'html':round_money(nds)+' р.'})
+      tr.append(td)
+      table.append(tr)
+
+      main_div = $('<div/>')
+      # добавляем имя клиента
+      head_info = $('<div>',{id:'ttn_head_info'});
+      head_info.append(
+        $('<table>',{id:'ttn_head_info-table'})
+          .append($('<tr/>')
+            .append($('<td/>',{'html':@options.client_name,'class':'ttn_client_name'}))
+            .append($('<td/>',{
+              'html':@options.client_requisit_name,
+              'class':'ttn_requisits',
+              'click':()->
+                echo_message_js('Вызов окна просмотра реквизитов')
+                })))
+          .append($('<tr/>')
+            .append($('<td/>',{'html':"ТТН 000"}))
+            .append($('<td/>'))
+            ))
+      console.log @options
+      main_div.append(head_info)
+      # добавляем таблицу
+      main_div.append(table)
+      # добавляем машинки
+      car_div = $('<div/>',{id:'ttn_car_div'})
+      car_div.append($('<div/>',{'html':'Доставка выбранных позиций','class':'ttn_car_div-head'}))
+      
+      li_clic = (event)->
+        $(this).parent().find('li').removeClass('checked')
+        $(this).addClass('checked')
+      ul = $('<ul/>')
+        .append($('<li/>',{click:li_clic})
+          .append($('<div/>',{'class':'ttn-our_delivery'}))
+          .append($('<div/>',{'class':'ttn-delivery-text','html':'Доставка'})))
+        .append($('<li/>',{click:li_clic})
+          .append($('<div/>',{'class':'ttn-no_delivery'}))
+          .append($('<div/>',{'class':'ttn-delivery-text','html':'Самовывоз'})))
+      div_car_body = $('<div/>',{'class':'ttn_car_div-body'}).append(ul)
+
+      car_div.append(div_car_body)
+      main_div.append(car_div)
+
+      message = main_div
+      # _this.createSmallDialog(message,'Запрос ТТН',buttons);
+      new modalWindow({
+          html:message,
+          title:'Запрос ТТН',
+          buttons: @getButtons()
+        },{
+          closeOnEscape:true
+        })
+  # клик по главному чекбоксу
+  clickMainCheckbox:(table,td,input)->
+    if input.prop('checked') || !input.prop('checked') && input.hasClass('checked_no_full')
+      input.prop('checked',false).removeClass('checked_no_full')
+      td.removeClass('checked')
+      table.find('td input').each((index,el)->
+        $(this).prop('checked',false).parent().removeClass('checked')
+        )
+    else
+      console.log this
+      input.prop('checked',true)
+      td.addClass('checked')
+      table.find('td input').each((index,el)->
+        $(this).prop('checked',true).parent().addClass('checked')
+        )
+  # проверка и поправка состояния главного чекбокса
+  checkMainCheckbox:(table)->
+    main_check = table.find('th input');
+    # отработка главного checkbox
+    if table.find('td input:checked').length == table.find('td input').length
+      main_check.prop('checked',true).removeClass('checked_no_full')
+      main_check.parent().addClass('checked')
+    else if table.find('td input:checked').length > 0
+      main_check.prop('checked',false).addClass('checked_no_full')
+      main_check.parent().addClass('checked')
+    else 
+      main_check.prop('checked',false).removeClass('checked_no_full')
+      main_check.parent().removeClass('checked')
+
+  getButtons:()->
+    buttons = [{
+          text: 'Отмена',
+          class:  'button_yes_or_no no',
+          click: ()->
+            $('#js-alert_union').dialog('destroy').remove();         
+        },{
+          text: 'Запросить',
+          class:  'button_yes_or_no',
+          click: ()->
+            $('#js-alert_union').dialog('destroy').remove();  
+        }];
+      
 ###
 # jQuery plagin Invoice
 #
@@ -48,22 +375,6 @@ calc_price_width_discount = (price_out, discount) ->
 # @version   13.04.2016 16:26:46
 ###
 (($, window) ->
-
-  ###
-  # Define the plugin class ttn
-  ###
-  class ttn
-    defaults:
-      number:0
-    constructor: constructor: (el, options) ->
-      @options = $.extend({}, @defaults, @options)
-    init:()->
-      console.log "init"
-    show:()->
-      console.log "show"
-    destroy:()->
-      console.log "destroy"
-
 
   ###
   # Define the plugin class Invoice
@@ -108,7 +419,7 @@ calc_price_width_discount = (price_out, discount) ->
     destroyRows:()->
       @$el.find('tbody').html('')
 
-    setData:(ajax_name,options={})->
+    setData:(ajax_name,options={},func = ()->)->
       _this = @
       data = {
           AJAX:ajax_name
@@ -132,66 +443,12 @@ calc_price_width_discount = (price_out, discount) ->
           # echo_message_js "Successful AJAX call: #{jqXHR.responseJSON}"
           response = jqXHR.responseJSON
           standard_response_handler(response)
-          # update json
-          # _this.updateData()
+          # выполняемая функия ы случае успеха
+          func()
 
     updateData:()->
       console.log "updateData"
       $('#invoceData').html JSON.stringify(@options)
-
-    ###
-    # confirm dialog
-    ###
-    createSmallDialog: (html='текст не был передан', title='имя окна не было передано', buttons={})->
-      
-      # убиваем такое окно, если оно есть
-      if($('#js-alert_union').length > 0) 
-        $('#js-alert_union').remove();
-      
-      # создаем новое
-      $('body').append($('<div/>',{
-        "id":'js-alert_union',
-        "style":"height:45px;",
-        'html':html
-      }));  
-              
-          
-      $('#js-alert_union').dialog({
-          width: 'auto',
-          height: 'auto',
-          modal: true,
-          title : title,
-          autoOpen : true,
-          # beforeClose: ( event, ui ) ->
-
-          closeOnEscape: false
-          # // buttons: buttons          
-      }).parent();
-
-          
-      buttons_html = $('<table></table>');
-      for button_n,i in buttons 
-        button = $('<button/>',{
-          text: button_n['text'],
-          click: button_n['click']
-          });
-        if button_n['class']
-          button.attr('class',button_n['class'])
-        if button_n['id']
-          button.attr('id',button_n['id'])
-
-        buttons_html.append(
-          $('<td/>')
-            .append(button)
-            );  
-      
-
-
-      $('#js-alert_union').after($('<div/>',{
-        'id':'js-alert_union_buttons',
-        'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
-          })
-          .append( buttons_html));
 
     ###
     # get data
@@ -224,123 +481,16 @@ calc_price_width_discount = (price_out, discount) ->
           # update json
           func()
           # _this.updateData()
-      return 
+      return
+
     ###
     # create ttn
     ###
     createTTN:(row)->
       _this = @
-      buttons = [{
-          text: 'Отмена',
-          class:  'button_yes_or_no no',
-          click: ()->
-            $('#js-alert_union').dialog('destroy').remove();         
-        },{
-          text: 'Запросить',
-          class:  'button_yes_or_no',
-          click: ()->
-            $('#js-alert_union').dialog('destroy').remove();  
-        }];
-      
-      # запрос данных
-      
       @getData('get_ttn',{'id':row.id},()->
-        responseData = _this.response.data
-        table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
-        i = 1
-
-
-
-        if(responseData!= undefined)
-          # шапка таблицы
-          table.append(tr = $('<tr/>'))
-          # чекбоксы
-          check = $('<input/>',{
-            'type':'checkbox'
-            })
-          td  = $('<th/>').append(check)
-          tr.append(td)
-          # Number
-          td  = $('<th/>',{'text':'№'})
-          tr.append(td)
-          # Name
-          td  = $('<th/>',{'html':'Наименование и <br>описание продукции'})
-          tr.append(td)
-          # Quantity
-          td  = $('<th/>',{'html':'Количество<br>продукции'})
-          tr.append(td)
-          # Price for one
-          td  = $('<th/>',{'html':'стоимость<br>за штуку'})
-          tr.append(td)
-          # Price for all
-          td  = $('<th/>',{'html':'Общая<br>стоимость'})
-          tr.append(td)
-
-          main_price = 0
-          nds = 0
-          for position in responseData
-
-            tr = $('<tr/>').data(position)
-            # чекбоксы
-            check = $('<input/>',{
-              'type':'checkbox'
-              })
-            td  = $('<td/>').append(check)
-            tr.append(td)
-
-            # Number
-            td  = $('<td/>').append(i)
-            tr.append(td)
-            # Name
-            td  = $('<td/>').append(position.name)
-            tr.append(td)
-            # Quantity
-            td  = $('<td/>').append(position.quantity)
-            tr.append(td)
-            # Price for one
-            pr_out = calc_price_width_discount(position.price, position.discount)
-            td  = $('<td/>').append(round_money(pr_out)+' р.')
-            tr.append(td)
-            # Price for all
-            
-            main_price += pr_out*position.quantity
-            nds += Number(round_money(pr_out*position.quantity/118*18))
-            td  = $('<td/>').append(round_money(pr_out*position.quantity)+' р.')
-            tr.append(td)
-            i++
-            table.append(tr)
-          # ИТОГО
-          table.append(tr = $('<tr/>'))
-          td  = $('<th/>')
-          tr.append(td)
-          # текст
-          td  = $('<th/>',{
-            'colspan':'4',
-            'html':'Итоговая сумма по данной спецификации (договору)'
-            })
-          tr.append(td)
-          # Price for all
-          td  = $('<th/>',{'html':round_money(main_price)+' р.'})
-          tr.append(td)
-          table.append(tr)
-          # в том числе НДС
-          table.append(tr = $('<tr/>'))
-          td  = $('<th/>')
-          tr.append(td)
-          # Тескт
-          td  = $('<th/>',{
-            'colspan':'4',
-            'html':'В т.ч. НДС 18%'
-            })
-          tr.append(td)
-          # Price НДС
-          td  = $('<th/>',{'html':round_money(nds)+' р.'})
-          tr.append(td)
-          table.append(tr)
-
-
-          message = $('<div/>').append(table)
-          _this.createSmallDialog(message,'Запрос ТТН',buttons);
+        console.log _this.response.data
+        new invoiceTtn(row, _this.response.data) if _this.response.data != undefined
         )
       
 
@@ -349,7 +499,7 @@ calc_price_width_discount = (price_out, discount) ->
     ###
     createRow:(row)->
       _this = @
-      console.log 654
+      # console.log 654
       tr = $('<tr/>',{
         id:'tt_'+row.id
         }).data(row);
@@ -455,7 +605,12 @@ calc_price_width_discount = (price_out, discount) ->
               $('#js-alert_union').dialog('destroy').remove();         
           }];
           message = 'Вы уверены, что хотите установить флаг рекламации?';
-          _this.createSmallDialog(message,'Подтверждение действия',buttons);  
+          # _this.createSmallDialog(message,'Подтверждение действия',buttons);  
+          new modalWindow({
+            html:message,
+            title:'Подтверждение действия',
+            buttons:buttons
+            })
         return
 
       td.addClass('checked') if Number row.flag_flag>0

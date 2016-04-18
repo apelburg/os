@@ -154,42 +154,12 @@
 	// БУХГАЛТЕР						  
 	$ACCESS_SHABLON[2] = array(
 						'agreement'=> array('access'=> true),
-				       'clients'=> array(
-										'access'=> true,
-										'full_clients_delete'=> true,
-										'show___foo___'=> false
-										),					   				   
-				       'cabinet'=> array(
-										'access'=> true,
-										'section'=> array( // 1
-											// 'paperwork'=> array(
-											// 	'access'=>true,
-											// 	'subsection'=>array( // 2
-											// 		// запрошен счёт
-											// 		'requested_the_bill' => array('access'=>true),
-											// 		// счёт выставлен
-											// 		'expense' => array('access'=>true),
-											// 		// счёт оплачен
-											// 		'payment_the_bill' => array('access'=>true),
-											// 		// заказы в оформлении
-											// 		'order_is_paperwork' => array('access'=>true),
-											// 		// заказы в работе
-											// 		'order_in_work' => array('access'=>true),
-											// 		// Отгруженные заказы
-											// 		'order_shipped' => array('access'=>true),
-											// 		// Запрос отгрузочных
-											// 		'query_ttn' => array('access'=>true),
-											// 		// возврат средств по счёту
-											// 		'refund_in_a_row' => array('access'=>true),
-											// 		// счёт аннулирован
-											// 		'cancelled' => array('access'=>true),	
-											// 		// все документы
-											// 		'all_the_bill' => array('access'=>true)																											
-											// 		)
-											// 	), 
-											
-											)
-										)
+						'invoice'=> array('access'=> true),
+				        'clients'=> array(
+							'access'=> true,
+							'full_clients_delete'=> true,
+							'show___foo___'=> false
+							)
 				       );
 	// ПРО-ВО
 	$ACCESS_SHABLON[4] = array(
@@ -223,6 +193,7 @@
 						'default'=> array('access'=> true),
 						'agreement'=> array('access'=> true),
 						'planner'=> array('access'=> true),
+						'invoice'=> array('access'=> true),
 						'cabinet'=> array(
 										'access'=> true,
 										'section'=> array( 							
