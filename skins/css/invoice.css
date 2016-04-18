@@ -254,4 +254,152 @@
 }
 #js-main-invoice-table tbody tr td.invoice-row--checkboxtd.checked{
 	background-image:url(../images/img_design/icon_invoce_checkbox_checked.png);
+<<<<<<< HEAD
+=======
+}
+
+#js-main-invoice-table tbody tr td.js-query-ttn{
+	cursor: pointer;
+	text-align: center;
+	text-decoration: underline;
+	color: #D4D4D4;
+}
+#js-main-invoice-table tbody tr td.js-query-ttn:hover{
+	text-decoration: none;
+}
+
+/*
+Кнопки всплывалок
+ */
+
+#js-alert_union_buttons button{
+	border-radius: 9px;
+	height: 36px;
+	border:1px solid #999999;
+	background: #92B73E;
+	color: #fff;
+}
+body #js-alert_union_buttons .button_yes_or_no,
+body #js-alert_union_buttons .button_yes_or_close{
+	padding: 3px 45px;
+}
+body #js-alert_union_buttons .button_yes_or_no.no,
+body #js-alert_union_buttons .button_yes_or_close.no{
+	background:#fff; 
+	color: #999999;
+}
+body #js-alert_union_buttons .save,
+body #js-alert_union_buttons .button_yes_or_close{
+	float: right;
+}
+
+#js-SC_buttons table,
+#js-alert_union_buttons table{
+	width: 100%;
+}
+#js-SC_buttons table td:nth-of-type(1),
+#js-alert_union_buttons table td:nth-of-type(1){
+	text-align: left;
+}
+#js-SC_buttons table td:nth-of-type(2){
+	text-align: center;
+}
+#js-SC_buttons table td:nth-of-type(3),
+#js-alert_union_buttons table td:nth-of-type(2){
+	text-align: right;
+}
+
+/*
+окно ТТН
+ */
+#js-invoice--window--ttn-table{
+	border-collapse: collapse;
+}
+#js-invoice--window--ttn-table tr th,
+#js-invoice--window--ttn-table tr td{
+	border: 1px solid #CAC7C7;
+	padding: 5px;
+}
+#js-invoice--window--ttn-table tr th{
+	text-align: left
+}
+#js-invoice--window--ttn-table tr td:nth-last-of-type(1),
+#js-invoice--window--ttn-table tr td:nth-last-of-type(2),
+#js-invoice--window--ttn-table tr:nth-last-of-type(1) td:nth-last-of-type(1),
+#js-invoice--window--ttn-table tr:nth-last-of-type(2) td:nth-last-of-type(2){
+	text-align: right;
+}
+
+#js-invoice--window--ttn-table th.checked,
+#js-invoice--window--ttn-table td.checked{
+	background: #92B73E;
+}
+#js-invoice--window--ttn-table th .checked_no_full:before{
+	content: "-";
+	float: left;
+    margin: -6px 0 0 2px;
+    font-size: 18px;
+    color: #424242;
+    position: absolute;
+}
+#ttn_head_info{
+	width: 100%;
+	padding-bottom: 15px;
+}
+#ttn_head_info-table{
+	width: 100%
+}
+#ttn_head_info-table .ttn_client_name{
+	font-weight: bold;
+}
+#ttn_head_info-table .ttn_requisits{
+	text-decoration: underline;
+	cursor: pointer;
+}
+#ttn_head_info-table .ttn_requisits:hover{
+	text-decoration: none;
+}
+#js-alert_union .ttn_car_div-head{
+	font-size: 12px;
+	font-weight: bold;
+}
+#js-alert_union .ttn_car_div-body ul{
+	padding:10px 0 0 0; 
+	margin: 0;
+}
+#js-alert_union .ttn_car_div-body li{
+	display: inline-block;
+}
+#js-alert_union .ttn_car_div-body li.checked .ttn-our_delivery,
+#js-alert_union .ttn_car_div-body li.checked .ttn-no_delivery{
+	background-color: #c6e1aa;
+	border: 1px solid #92b73e;
+}
+#ttn_car_div{
+    padding-top: 15px;
+}
+#js-alert_union .ttn_car_div-body li.checked .ttn-delivery-text{
+	color: #5a5c61;
+}
+#js-alert_union .ttn_car_div-body li .ttn-our_delivery{
+	background-image:url(../images/img_design/our_delivery.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-alert_union .ttn_car_div-body li .ttn-no_delivery{
+	background-image:url(../images/img_design/no_delivery.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js-alert_union .ttn_car_div-body li .ttn-our_delivery,
+#js-alert_union .ttn_car_div-body li .ttn-no_delivery{
+	width: 106px;
+	height: 43px;
+	border:1px solid #cccccc;
+}
+#js-alert_union .ttn_car_div-body li .ttn-delivery-text{
+	font-size: 10px;
+	color:#ccc;
+	text-align: center;
+>>>>>>> ttn 70%
 }
