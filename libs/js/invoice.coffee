@@ -46,11 +46,10 @@ round_money = (num) ->
 calc_price_with_discount = (price_out, discount) ->
   return Number(price_out/100) * (100 + Number(discount));
 
-
 ###
 # send AJAX
 ###
-class setData
+class sendAjax
   defaults:
     AJAX:'test',
     options:{},
@@ -68,9 +67,10 @@ class setData
 
     # console.log 
     @options = $.extend({}, @defaults, data)  
-    @send_AJAX()
+    @sendAjax()
 
-  send_AJAX:()->
+  # отправка запроса
+  sendAjax:()->
     _this = @
     data = {
         AJAX:@options.AJAX
@@ -95,7 +95,6 @@ class setData
         standard_response_handler(_this.response)
         # выполняемая функия ы случае успеха
         _this.options.func()
-
 
 ###
 # model from window
@@ -197,8 +196,13 @@ class invoiceTtn
   defaults:
     id:0
     type:"new"
-  constructor: (data_row, data) ->
-    @options = $.extend({}, @defaults, data_row)  
+
+  constructor: (obj,data_row, data) ->
+    # сохраняем объект
+    @$obj_row = obj
+    # сохраняем информацию по строке
+    @options = data_row  
+    # собираем окно ттн
     @init(data)  
   # собираем контент
   init:(responseData)->
@@ -218,7 +222,7 @@ class invoiceTtn
       # сборка сообщения
       message = main_div      
       # создание окна
-      element = new modalWindow({
+      @myObj = new modalWindow({
           html:message,
           title:'Запрос ТТН',
           buttons: @getButtons()
@@ -226,20 +230,39 @@ class invoiceTtn
           closeOnEscape:true
         })
 
-      @$el = element.options.html[0]
+      @$el = @myObj.options.html[0]
 
   # ранее созданные ттн
   alreadyWasСreated:()->
     # console.log 'alreadyWasСreated',@options
     content = $('<div/>',{
       'class':"ttn--already-was-created"
-      })
-    if(@options.ttn != undefined && @options.length > 0)
+      });
+    console.log @options.ttn.length
+    
+    if(@options.ttn && @options.ttn.length > 0)
       content.append($('<div/>',{
-        class:'ttn--already-was-created--head',
-        html:'Ранее оформленные ТТН:'
-        }))
+        'class':'ttn--already-was-created--head',
+        'html':'Ранее оформленные ТТН:'
+      }));
 
+      # console.log @options
+      for oldTtn in @options.ttn
+        console.warn oldTtn
+        if oldTtn.positions_num != null
+          # console.warn oldTtn.positions_num.split(',').length > 1
+          if oldTtn.positions_num.split(',').length>1 
+            end = 'и ' 
+          else 
+            end = 'я '
+          positions = ' позици'+end
+          positions = positions+oldTtn.positions_num
+        else
+          positions = ''
+        content.append($('<div/>',{
+          'html': '№'+oldTtn.number+' от '+oldTtn.date+positions
+          }))
+      # console.log(654)
   # выбор способа доставки
   createDeliveryChoose:()->
     car_div = $('<div/>',{id:'ttn_car_div'})
@@ -301,8 +324,8 @@ class invoiceTtn
           # клик по главному чекбоксу
           _this.clickMainCheckbox(table,td,input)
         }).append(main_checkbox)
-
     tr.append(td)
+
     # Number
     td  = $('<th/>',{'text':'№'})
     tr.append(td)
@@ -320,42 +343,46 @@ class invoiceTtn
     tr.append(td)
 
     # тогововая цена
-    main_price = 0 
+    main_price = 0
     # НДС
     nds = 0 
     # порядковый номер строки товра/услуги
     i = 1 
     # перебираем позиции
     for position in responseData
-
-      tr = $('<tr/>').data(position)
+      tr = $('<tr/>').data(position).attr('data-id',position.id)
       # чекбоксы
-      check = $('<input/>',{
-        'type':'checkbox',
-        change:(event)->
-          event.preventDefault()
-          event.stopPropagation()
-          if $(this).prop('checked')
-            $(this).prop('checked',false)
-            $(this).parent().removeClass('checked')
-          else
-            $(this).prop('checked',true)
-            $(this).parent().addClass('checked')
+      if Number(position.ttn_id) == 0
+        check = $('<input/>',{
+          'type':'checkbox',
+          change:(event)->
+            event.preventDefault()
+            event.stopPropagation()
+            if $(this).prop('checked')
+              $(this).prop('checked',false)
+              $(this).parent().removeClass('checked')
+            else
+              $(this).prop('checked',true)
+              $(this).parent().addClass('checked')
 
-          _this.checkMainCheckbox(table)
+            _this.checkMainCheckbox(table)
 
-        })
-      td  = $('<td/>',{
-        click:()->
-          input  = $(this).find('input')
-          if input.prop('checked')
-            input.prop('checked',false)
-            $(this).removeClass('checked')
-          else
-            input.prop('checked',true)
-            $(this).addClass('checked')
-          _this.checkMainCheckbox(table)
-        }).append(check)
+          })        
+        td  = $('<td/>',{
+          click:()->
+            input  = $(this).find('input')
+            if input.prop('checked')
+              input.prop('checked',false)
+              $(this).removeClass('checked')
+            else
+              input.prop('checked',true)
+              $(this).addClass('checked')
+            _this.checkMainCheckbox(table)
+          })
+        td.append(check)
+      else
+        td  = $('<td/>')
+        tr.addClass('ttn_created')
       tr.append(td)
 
       # Number
@@ -406,7 +433,6 @@ class invoiceTtn
     td  = $('<th/>',{'html':round_money(nds)+' р.'})
     tr.append(td)
     table.append(tr)
-
     table
   # клик по главному чекбоксу
   clickMainCheckbox:(table,td,input)->
@@ -438,21 +464,68 @@ class invoiceTtn
       main_check.parent().removeClass('checked')
   # запрос новой ттн (нажатие на кнопку запросить)
   queryNewTtn:(func)->
+    _this = @
     console.log @$el
+    options = []
+    position_numbers = []
+
+    # собираем информацию по выделенным позициям
+    $(@$el).find('table td input').each((index,el)->
+      if($(this).prop('checked'))
+        position_numbers.push($(this).parent().next().html())  
+        options.push($(this).parent().parent().data().id)
+        return
+        
+      )    
+
+    # проверка на выбор
+    if options.length==0
+      echo_message_js('Вы не выбрали ни одной позиции.','error_message')
+      return false
+    
+    # снимаем показания выбора доставки
+    delivery = []
+    $(@$el).find('#ttn_car_div .ttn_car_div-body li').each((index,el)->
+      if $(this).hasClass('checked')
+        delivery.push($(this).find('div').eq(0).attr('class').split('-')[1])
+      )
+    # проверка выбора доставки
+    if delivery.length == 0
+      echo_message_js('Выберите способ доставки выбранных позиций.','error_message')
+      return false  
+    
+
+
+
+    # отправляем запрос
+    new sendAjax 'create_new_ttn',{invoise_id:@options.id,positions:options.join(','),position_numbers:position_numbers.join(','), delivery:delivery.join('')}, ()->
+      # при положительном ответе
+      
+      # @$obj_row.updateTtnRows()
+
+
+
+
+
+      # убиваем окно
+      # _this.destroy()
+
+  # убиваем окно
+  destroy:()->
+    $(@$el).parent().dialog('destroy').remove()  
+
   getButtons:()->
     _this = @
     buttons = [{
           text: 'Отмена',
           class:  'button_yes_or_no no',
           click: ()->
-            $('#js-alert_union').dialog('destroy').remove();         
+            _this.destroy()
         },{
           text: 'Запросить',
           class:  'button_yes_or_no',
           click: ()->
-            _this.queryNewTtn(()->
-              $('#js-alert_union').dialog('destroy').remove();  
-              )
+            _this.queryNewTtn()
             
         }];
       
@@ -550,12 +623,8 @@ class invoiceTtn
     ###
     # create ttn
     ###
-    createTTN:(row)->
-      _this = @
-      @getData('get_ttn',{'id':row.id},()->
-        # console.log _this.response.data
-        new invoiceTtn(row, _this.response.data) if _this.response.data != undefined
-        )
+    # createTTN:(row)->
+      
       
 
     ###
@@ -601,7 +670,7 @@ class invoiceTtn
           $(this).addClass('checked')
 
         # сохраняем значение флага
-        new setData 'edit_flag_1c',{id:row.id,val:row.flag_1c}
+        new sendAjax 'edit_flag_1c',{id:row.id,val:row.flag_1c}
         return
 
       td.addClass('checked') if Number row.flag_1c>0
@@ -646,7 +715,7 @@ class invoiceTtn
           row.flag_flag = 0;
           $(this).removeClass('checked')
           # сохраняем значение флага
-          new setData 'edit_flag_flag',{id:row.id,val:row.flag_flag}
+          new sendAjax 'edit_flag_flag',{id:row.id,val:row.flag_flag}
         else
           if(Number(_this.options.access) != 5 && Number(_this.options.access) != 1)
             echo_message_js('Рекламацию устанавливает только менеджер','error_message')
@@ -660,7 +729,7 @@ class invoiceTtn
               row.flag_flag = 1;
               t.addClass('checked')
               # сохраняем значение флага
-              new setData 'edit_flag_flag',{id:row.id,val:row.flag_flag}
+              new sendAjax 'edit_flag_flag',{id:row.id,val:row.flag_flag}
               $('#js-alert_union').dialog('destroy').remove();  
           },{
             text: 'Нет',
@@ -714,7 +783,7 @@ class invoiceTtn
           $(this).addClass('checked')
 
         # сохраняем значение флага
-        new setData 'edit_flag_ice',{id:row.id,val:row.flag_ice}
+        new sendAjax 'edit_flag_ice',{id:row.id,val:row.flag_ice}
         return
 
       td.addClass('checked') if Number row.flag_ice>0
@@ -743,7 +812,7 @@ class invoiceTtn
           $(this).addClass('checked')
 
         # сохраняем значение флага
-        new setData 'edit_flag_calc',{id:row.id,val:row.flag_calc}
+        new sendAjax 'edit_flag_calc',{id:row.id,val:row.flag_calc}
         return
 
       td.addClass('checked') if Number row.flag_calc>0
@@ -753,19 +822,28 @@ class invoiceTtn
       
       if(row.ttn.length == 0 && @options.access !=2)
         td = $('<td/>',{
-        'colspan':'3',
-        'html':"Запросить",
-        'class':'js-query-ttn'
-        click:()->
-
-          # echo_message_js('Запрос ТТН','successful_message')
-          # окно Запрос ТТН
-          _this.createTTN(row)
-        })
+          'colspan':'3',
+          'html':"Запросить",
+          'class':'js-query-ttn',
+          click:()->
+            # окно Запрос ТТН
+            _this.getData('get_ttn',{'id':row.id},()->
+              # создаем экземпляр окна ттн
+              new invoiceTtn($(this), row, _this.response.data) if _this.response.data != undefined
+              )
+          })
       else
         td = $('<td/>',{
-        'colspan':'3'
-        })
+          'colspan':'3',
+          'html':"Запросить",
+          'class':'js-query-ttn',
+          click:()->
+            # окно Запрос ТТН
+            _this.getData('get_ttn',{'id':row.id},()->
+              # создаем экземпляр окна ттн
+              new invoiceTtn($(this), row, _this.response.data) if _this.response.data != undefined
+              )
+          })
 
       tr.append(td)
 
@@ -785,7 +863,7 @@ class invoiceTtn
           $(this).addClass('checked')
 
         # сохраняем значение флага
-        new setData 'edit_flag_spf_return',{id:row.id,val:row.flag_spf_return}
+        new sendAjax 'edit_flag_spf_return',{id:row.id,val:row.flag_spf_return}
         return
 
       td.addClass('checked') if Number row.flag_spf_return>0
