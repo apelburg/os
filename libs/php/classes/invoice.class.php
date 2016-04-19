@@ -38,6 +38,17 @@
 			exit;
 		}
 
+		/**
+		 *	create new ttn
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	19.04.2016 14:36:44
+		 */
+		protected function create_new_ttn_AJAX(){
+
+			
+		}
+
 		
 
         /**

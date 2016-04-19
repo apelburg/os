@@ -401,5 +401,16 @@ body #js-alert_union_buttons .button_yes_or_close{
 	font-size: 10px;
 	color:#ccc;
 	text-align: center;
+<<<<<<< HEAD
 >>>>>>> ttn 70%
+=======
+}
+.ttn--already-was-created{
+    padding-top: 15px;
+    border-top: 1px solid #000000;
+    margin-top: 15px;
+}
+.ttn--already-was-created--head{
+	font-weight: bold;
+>>>>>>> ttn 80%
 }
