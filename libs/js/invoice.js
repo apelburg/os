@@ -10,7 +10,7 @@
  * @email     kapitonoval2012@gmail.com
  * @version   13.04.2016 16:25:40
  */
-var calc_price_width_discount, getInvoiceData, invoiceTtn, modalWindow, round_money,
+var calc_price_with_discount, getInvoiceData, invoiceTtn, modalWindow, round_money, setData,
   slice = [].slice;
 
 getInvoiceData = function(type) {
@@ -59,9 +59,78 @@ round_money = function(num) {
   return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
 };
 
-calc_price_width_discount = function(price_out, discount) {
+
+/*
+ * calculate price with discount
+ */
+
+calc_price_with_discount = function(price_out, discount) {
   return Number(price_out / 100) * (100 + Number(discount));
 };
+
+
+/*
+ * send AJAX
+ */
+
+setData = (function() {
+  setData.prototype.defaults = {
+    AJAX: 'test',
+    options: {},
+    func: function() {}
+  };
+
+  setData.prototype.response = {};
+
+  function setData(AJAX, options, func) {
+    var data;
+    if (options == null) {
+      options = {};
+    }
+    if (func == null) {
+      func = function() {
+        return true;
+      };
+    }
+    data = {
+      AJAX: AJAX,
+      options: options,
+      func: func
+    };
+    this.options = $.extend({}, this.defaults, data);
+    this.send_AJAX();
+  }
+
+  setData.prototype.send_AJAX = function() {
+    var _this, data, k, ref, v;
+    _this = this;
+    data = {
+      AJAX: this.options.AJAX
+    };
+    ref = this.options.options;
+    for (k in ref) {
+      v = ref[k];
+      data[k] = v;
+    }
+    return $.ajax({
+      url: "",
+      type: "POST",
+      data: data,
+      dataType: "json",
+      error: function(jqXHR, textStatus, errorThrown) {
+        echo_message_js("AJAX Error: " + textStatus);
+      },
+      success: function(data, textStatus, jqXHR) {
+        _this.response = $.extend({}, _this.response, jqXHR.responseJSON);
+        standard_response_handler(_this.response);
+        return _this.options.func();
+      }
+    });
+  };
+
+  return setData;
+
+})();
 
 
 /*
@@ -165,7 +234,8 @@ modalWindow = (function() {
 
 invoiceTtn = (function() {
   invoiceTtn.prototype.defaults = {
-    id: 0
+    id: 0,
+    type: "new"
   };
 
   function invoiceTtn(data_row, data) {
@@ -174,190 +244,219 @@ invoiceTtn = (function() {
   }
 
   invoiceTtn.prototype.init = function(responseData) {
-    var _this, car_div, check, div_car_body, head_info, i, j, len, li_clic, main_checkbox, main_div, main_price, message, nds, position, pr_out, table, td, tr, ul;
+    var _this, element, main_div, message;
     _this = this;
-    table = $('<table/>', {
-      'id': 'js-invoice--window--ttn-table'
-    });
-    i = 1;
     if (responseData !== void 0) {
-      table.append(tr = $('<tr/>'));
-      main_checkbox = $('<input/>', {
-        'type': 'checkbox',
-        change: function(event) {
-          var input, td;
-          input = $(this);
-          td = $(this).parent();
-          return _this.clickMainCheckbox(table, td, input);
-        }
-      });
-      td = $('<th/>', {
-        click: function() {
-          var input;
-          input = $(this).find('input');
-          td = $(this);
-          return _this.clickMainCheckbox(table, td, input);
-        }
-      }).append(main_checkbox);
-      tr.append(td);
-      td = $('<th/>', {
-        'text': '№'
-      });
-      tr.append(td);
-      td = $('<th/>', {
-        'html': 'Наименование и <br>описание продукции'
-      });
-      tr.append(td);
-      td = $('<th/>', {
-        'html': 'Количество<br>продукции'
-      });
-      tr.append(td);
-      td = $('<th/>', {
-        'html': 'стоимость<br>за штуку'
-      });
-      tr.append(td);
-      td = $('<th/>', {
-        'html': 'Общая<br>стоимость'
-      });
-      tr.append(td);
-      main_price = 0;
-      nds = 0;
-      for (j = 0, len = responseData.length; j < len; j++) {
-        position = responseData[j];
-        tr = $('<tr/>').data(position);
-        check = $('<input/>', {
-          'type': 'checkbox',
-          change: function(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            if ($(this).prop('checked')) {
-              $(this).prop('checked', false);
-              $(this).parent().removeClass('checked');
-            } else {
-              $(this).prop('checked', true);
-              $(this).parent().addClass('checked');
-            }
-            return _this.checkMainCheckbox(table);
-          }
-        });
-        td = $('<td/>', {
-          click: function() {
-            var input;
-            input = $(this).find('input');
-            if (input.prop('checked')) {
-              input.prop('checked', false);
-              $(this).removeClass('checked');
-            } else {
-              input.prop('checked', true);
-              $(this).addClass('checked');
-            }
-            return _this.checkMainCheckbox(table);
-          }
-        }).append(check);
-        tr.append(td);
-        td = $('<td/>').append(i);
-        tr.append(td);
-        td = $('<td/>').append(position.name);
-        tr.append(td);
-        td = $('<td/>').append(position.quantity);
-        tr.append(td);
-        pr_out = calc_price_width_discount(position.price, position.discount);
-        td = $('<td/>').append(round_money(pr_out) + ' р.');
-        tr.append(td);
-        main_price += pr_out * position.quantity;
-        nds += Number(round_money(pr_out * position.quantity / 118 * 18));
-        td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.');
-        tr.append(td);
-        i++;
-        table.append(tr);
-      }
-      table.append(tr = $('<tr/>'));
-      td = $('<th/>');
-      tr.append(td);
-      td = $('<th/>', {
-        'colspan': '4',
-        'html': 'Итоговая сумма по данной спецификации (договору)'
-      });
-      tr.append(td);
-      td = $('<th/>', {
-        'html': round_money(main_price) + ' р.'
-      });
-      tr.append(td);
-      table.append(tr);
-      table.append(tr = $('<tr/>'));
-      td = $('<th/>');
-      tr.append(td);
-      td = $('<th/>', {
-        'colspan': '4',
-        'html': 'В т.ч. НДС 18%'
-      });
-      tr.append(td);
-      td = $('<th/>', {
-        'html': round_money(nds) + ' р.'
-      });
-      tr.append(td);
-      table.append(tr);
       main_div = $('<div/>');
-      head_info = $('<div>', {
-        id: 'ttn_head_info'
-      });
-      head_info.append($('<table>', {
-        id: 'ttn_head_info-table'
-      }).append($('<tr/>').append($('<td/>', {
-        'html': this.options.client_name,
-        'class': 'ttn_client_name'
-      })).append($('<td/>', {
-        'html': this.options.client_requisit_name,
-        'class': 'ttn_requisits',
-        'click': function() {
-          return echo_message_js('Вызов окна просмотра реквизитов');
-        }
-      }))).append($('<tr/>').append($('<td/>', {
-        'html': "ТТН 000"
-      })).append($('<td/>'))));
-      console.log(this.options);
-      main_div.append(head_info);
-      main_div.append(table);
-      car_div = $('<div/>', {
-        id: 'ttn_car_div'
-      });
-      car_div.append($('<div/>', {
-        'html': 'Доставка выбранных позиций',
-        'class': 'ttn_car_div-head'
-      }));
-      li_clic = function(event) {
-        $(this).parent().find('li').removeClass('checked');
-        return $(this).addClass('checked');
-      };
-      ul = $('<ul/>').append($('<li/>', {
-        click: li_clic
-      }).append($('<div/>', {
-        'class': 'ttn-our_delivery'
-      })).append($('<div/>', {
-        'class': 'ttn-delivery-text',
-        'html': 'Доставка'
-      }))).append($('<li/>', {
-        click: li_clic
-      }).append($('<div/>', {
-        'class': 'ttn-no_delivery'
-      })).append($('<div/>', {
-        'class': 'ttn-delivery-text',
-        'html': 'Самовывоз'
-      })));
-      div_car_body = $('<div/>', {
-        'class': 'ttn_car_div-body'
-      }).append(ul);
-      car_div.append(div_car_body);
-      main_div.append(car_div);
+      main_div.append(this.createHead());
+      main_div.append(this.createTable(responseData));
+      main_div.append(this.createDeliveryChoose());
+      main_div.append(this.alreadyWasСreated());
       message = main_div;
-      return new modalWindow({
+      element = new modalWindow({
         html: message,
         title: 'Запрос ТТН',
         buttons: this.getButtons()
       }, {
         closeOnEscape: true
       });
+      return this.$el = element.options.html[0];
     }
+  };
+
+  invoiceTtn.prototype.alreadyWasСreated = function() {
+    var content;
+    content = $('<div/>', {
+      'class': "ttn--already-was-created"
+    });
+    if (this.options.ttn !== void 0 && this.options.length > 0) {
+      return content.append($('<div/>', {
+        "class": 'ttn--already-was-created--head',
+        html: 'Ранее оформленные ТТН:'
+      }));
+    }
+  };
+
+  invoiceTtn.prototype.createDeliveryChoose = function() {
+    var car_div, div_car_body, li_clic, ul;
+    car_div = $('<div/>', {
+      id: 'ttn_car_div'
+    });
+    car_div.append($('<div/>', {
+      'html': 'Доставка выбранных позиций',
+      'class': 'ttn_car_div-head'
+    }));
+    li_clic = function(event) {
+      $(this).parent().find('li').removeClass('checked');
+      return $(this).addClass('checked');
+    };
+    ul = $('<ul/>').append($('<li/>', {
+      click: li_clic
+    }).append($('<div/>', {
+      'class': 'ttn-our_delivery'
+    })).append($('<div/>', {
+      'class': 'ttn-delivery-text',
+      'html': 'Доставка'
+    }))).append($('<li/>', {
+      click: li_clic
+    }).append($('<div/>', {
+      'class': 'ttn-no_delivery'
+    })).append($('<div/>', {
+      'class': 'ttn-delivery-text',
+      'html': 'Самовывоз'
+    })));
+    div_car_body = $('<div/>', {
+      'class': 'ttn_car_div-body'
+    }).append(ul);
+    return car_div.append(div_car_body);
+  };
+
+  invoiceTtn.prototype.createHead = function() {
+    var head_info;
+    head_info = $('<div>', {
+      id: 'ttn_head_info'
+    });
+    head_info.append($('<table>', {
+      id: 'ttn_head_info-table'
+    }).append($('<tr/>').append($('<td/>', {
+      'html': this.options.client_name,
+      'class': 'ttn_client_name'
+    })).append($('<td/>', {
+      'html': this.options.client_requisit_name,
+      'class': 'ttn_requisits',
+      'click': function() {
+        return echo_message_js('Вызов окна просмотра реквизитов');
+      }
+    }))).append($('<tr/>').append($('<td/>', {
+      'html': "ТТН 000"
+    })).append($('<td/>'))));
+    return head_info;
+  };
+
+  invoiceTtn.prototype.createTable = function(responseData) {
+    var _this, check, i, j, len, main_checkbox, main_price, nds, position, pr_out, table, td, tr;
+    _this = this;
+    table = $('<table/>', {
+      'id': 'js-invoice--window--ttn-table'
+    });
+    table.append(tr = $('<tr/>'));
+    main_checkbox = $('<input/>', {
+      'type': 'checkbox',
+      change: function(event) {
+        var input, td;
+        input = $(this);
+        td = $(this).parent();
+        return _this.clickMainCheckbox(table, td, input);
+      }
+    });
+    td = $('<th/>', {
+      click: function() {
+        var input;
+        input = $(this).find('input');
+        td = $(this);
+        return _this.clickMainCheckbox(table, td, input);
+      }
+    }).append(main_checkbox);
+    tr.append(td);
+    td = $('<th/>', {
+      'text': '№'
+    });
+    tr.append(td);
+    td = $('<th/>', {
+      'html': 'Наименование и <br>описание продукции'
+    });
+    tr.append(td);
+    td = $('<th/>', {
+      'html': 'Количество<br>продукции'
+    });
+    tr.append(td);
+    td = $('<th/>', {
+      'html': 'стоимость<br>за штуку'
+    });
+    tr.append(td);
+    td = $('<th/>', {
+      'html': 'Общая<br>стоимость'
+    });
+    tr.append(td);
+    main_price = 0;
+    nds = 0;
+    i = 1;
+    for (j = 0, len = responseData.length; j < len; j++) {
+      position = responseData[j];
+      tr = $('<tr/>').data(position);
+      check = $('<input/>', {
+        'type': 'checkbox',
+        change: function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          if ($(this).prop('checked')) {
+            $(this).prop('checked', false);
+            $(this).parent().removeClass('checked');
+          } else {
+            $(this).prop('checked', true);
+            $(this).parent().addClass('checked');
+          }
+          return _this.checkMainCheckbox(table);
+        }
+      });
+      td = $('<td/>', {
+        click: function() {
+          var input;
+          input = $(this).find('input');
+          if (input.prop('checked')) {
+            input.prop('checked', false);
+            $(this).removeClass('checked');
+          } else {
+            input.prop('checked', true);
+            $(this).addClass('checked');
+          }
+          return _this.checkMainCheckbox(table);
+        }
+      }).append(check);
+      tr.append(td);
+      td = $('<td/>').append(i);
+      tr.append(td);
+      td = $('<td/>').append(position.name);
+      tr.append(td);
+      td = $('<td/>').append(position.quantity);
+      tr.append(td);
+      pr_out = calc_price_with_discount(position.price, position.discount);
+      td = $('<td/>').append(round_money(pr_out) + ' р.');
+      tr.append(td);
+      main_price += pr_out * position.quantity;
+      nds += Number(round_money(pr_out * position.quantity / 118 * 18));
+      td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.');
+      tr.append(td);
+      i++;
+      table.append(tr);
+    }
+    table.append(tr = $('<tr/>'));
+    td = $('<th/>');
+    tr.append(td);
+    td = $('<th/>', {
+      'colspan': '4',
+      'html': 'Итоговая сумма по данной спецификации (договору)'
+    });
+    tr.append(td);
+    td = $('<th/>', {
+      'html': round_money(main_price) + ' р.'
+    });
+    tr.append(td);
+    table.append(tr);
+    table.append(tr = $('<tr/>'));
+    td = $('<th/>');
+    tr.append(td);
+    td = $('<th/>', {
+      'colspan': '4',
+      'html': 'В т.ч. НДС 18%'
+    });
+    tr.append(td);
+    td = $('<th/>', {
+      'html': round_money(nds) + ' р.'
+    });
+    tr.append(td);
+    table.append(tr);
+    return table;
   };
 
   invoiceTtn.prototype.clickMainCheckbox = function(table, td, input) {
@@ -392,8 +491,13 @@ invoiceTtn = (function() {
     }
   };
 
+  invoiceTtn.prototype.queryNewTtn = function(func) {
+    return console.log(this.$el);
+  };
+
   invoiceTtn.prototype.getButtons = function() {
-    var buttons;
+    var _this, buttons;
+    _this = this;
     return buttons = [
       {
         text: 'Отмена',
@@ -405,7 +509,9 @@ invoiceTtn = (function() {
         text: 'Запросить',
         "class": 'button_yes_or_no',
         click: function() {
-          return $('#js-alert_union').dialog('destroy').remove();
+          return _this.queryNewTtn(function() {
+            return $('#js-alert_union').dialog('destroy').remove();
+          });
         }
       }
     ];
@@ -476,39 +582,6 @@ invoiceTtn = (function() {
       return this.$el.find('tbody').html('');
     };
 
-    invoice.prototype.setData = function(ajax_name, options, func) {
-      var _this, data, k, response, v;
-      if (options == null) {
-        options = {};
-      }
-      if (func == null) {
-        func = function() {};
-      }
-      _this = this;
-      data = {
-        AJAX: ajax_name
-      };
-      for (k in options) {
-        v = options[k];
-        data[k] = v;
-      }
-      response = {};
-      return $.ajax({
-        url: "",
-        type: "POST",
-        data: data,
-        dataType: "json",
-        error: function(jqXHR, textStatus, errorThrown) {
-          echo_message_js("AJAX Error: " + textStatus);
-        },
-        success: function(data, textStatus, jqXHR) {
-          response = jqXHR.responseJSON;
-          standard_response_handler(response);
-          return func();
-        }
-      });
-    };
-
     invoice.prototype.updateData = function() {
       console.log("updateData");
       return $('#invoceData').html(JSON.stringify(this.options));
@@ -564,7 +637,6 @@ invoiceTtn = (function() {
       return this.getData('get_ttn', {
         'id': row.id
       }, function() {
-        console.log(_this.response.data);
         if (_this.response.data !== void 0) {
           return new invoiceTtn(row, _this.response.data);
         }
@@ -610,7 +682,7 @@ invoiceTtn = (function() {
           row.flag_1c = 1;
           $(this).addClass('checked');
         }
-        _this.setData('edit_flag_1c', {
+        new setData('edit_flag_1c', {
           id: row.id,
           val: row.flag_1c
         });
@@ -650,7 +722,7 @@ invoiceTtn = (function() {
           }
           row.flag_flag = 0;
           $(this).removeClass('checked');
-          _this.setData('edit_flag_flag', {
+          new setData('edit_flag_flag', {
             id: row.id,
             val: row.flag_flag
           });
@@ -667,7 +739,7 @@ invoiceTtn = (function() {
               click: function() {
                 row.flag_flag = 1;
                 t.addClass('checked');
-                _this.setData('edit_flag_flag', {
+                new setData('edit_flag_flag', {
                   id: row.id,
                   val: row.flag_flag
                 });
@@ -721,7 +793,7 @@ invoiceTtn = (function() {
           row.flag_ice = 1;
           $(this).addClass('checked');
         }
-        _this.setData('edit_flag_ice', {
+        new setData('edit_flag_ice', {
           id: row.id,
           val: row.flag_ice
         });
@@ -749,7 +821,7 @@ invoiceTtn = (function() {
           row.flag_calc = 1;
           $(this).addClass('checked');
         }
-        _this.setData('edit_flag_calc', {
+        new setData('edit_flag_calc', {
           id: row.id,
           val: row.flag_calc
         });
@@ -786,7 +858,7 @@ invoiceTtn = (function() {
           row.flag_spf_return = 1;
           $(this).addClass('checked');
         }
-        _this.setData('edit_flag_spf_return', {
+        new setData('edit_flag_spf_return', {
           id: row.id,
           val: row.flag_spf_return
         });
