@@ -45,8 +45,33 @@
 		 *	@version 	19.04.2016 14:36:44
 		 */
 		protected function create_new_ttn_AJAX(){
+			$message  = '<b>Method:</b> '.__METHOD__.'<br>';
+			$message .= $this->printArr($_POST);
+			// $this->responseClass->addMessage($message,'system_message');
 
+			$query = "INSERT INTO `".INVOICE_TTN."` SET ";
+			    // $query .= "`id` = '',";
+			    // дата создания заявки
+			    $query .= "`date` = NOW()";
+			    $query .= ",`position_id` = '".$_POST['positions']."'";
+			    $query .= ",`positions_num` = '".$_POST['position_numbers']."'";
+			    $query .= ",`delivery` = '".$_POST['delivery']."'";
+			    $query .= ",`invoice_id` = '".$_POST['invoise_id']."'";
+
+			$message .= '<br>'.$query;
 			
+
+			// $query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+			$insert_id = $this->mysqli->insert_id;				
+			$query = "UPDATE `".INVOICE_ROWS."` SET ";
+			$query .= "`ttn_id` = '".$insert_id ."'";
+			  	
+			$query .= " WHERE `id` IN (".$_POST['positions'].")";		
+			// $this->responseClass->addSimpleWindow($message.'<br>'.$_POST['positions'],'Создание TTN');		
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
 		}
 
 		

@@ -401,10 +401,19 @@ body #js-alert_union_buttons .button_yes_or_close{
 	text-align: center;
 }
 .ttn--already-was-created{
-    padding-top: 15px;
+    /*padding-top: 15px;*/
     border-top: 1px solid #000000;
     margin-top: 15px;
 }
+.ttn--already-was-created div {
+    font-size: 11px;
+}
 .ttn--already-was-created--head{
 	font-weight: bold;
+	padding-top: 15px;
+	padding-bottom: 15px;
+}
+.ttn_created td{
+	background-color: #c6e1aa;
+	color: #9eb488;
 }
