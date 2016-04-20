@@ -113,7 +113,8 @@
 				$query .= "WHERE `manager_id` = '".$this->user_id."' ";
 			}
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
-			$this->data = array();
+			$this->data =$this->depending['id']= array();
+
 			$data_id_s = array();
 			$i = 0;
 			if($result->num_rows > 0){
@@ -164,6 +165,10 @@
 		 *	@version 	13.04.2016 15:52:37
 		 */
 		private function get_ttn_rows($id_s){
+			// if(count)
+			if(count($id_s) == 0){
+				return;
+			}
 			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$data = array();
@@ -210,10 +215,10 @@
 					$data['doc_num'] = $_POST['specification_num'];
 					$data['doc_id'] = 0;
 					// проверка на существования запроса по данному документу
-					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
-						$this->responseClass->addMessage('Дла данного документа счёт уже запрошен.');
-						return;
-					}
+					// if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
+					// 	$this->responseClass->addMessage('Дла данного документа счёт уже запрошен.');
+					// 	return;
+					// }
 					// получаем данные по спецификации
 					$positions = $this->getSpecificationRows($data['agreement_id'], $data['doc_num']);
 					$agr = $this->getAgreement($data['agreement_id']);

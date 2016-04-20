@@ -34,6 +34,20 @@ $(document).ready(()->
 )
 
 ###
+# get date
+###
+getDateNow = () ->
+  d = new Date();            
+  dd = d.getDate()
+  dd = '0' + dd if dd < 10  
+  mm = d.getMonth()+1
+  mm = '0' + mm if mm < 10 
+  yy = d.getFullYear()
+  # yy = d.getFullYear() % 100
+  # yy = '0' + yy if yy < 10 
+  return dd+'.'+mm+'.'+yy
+
+###
 # round and return money format any input string or number
 ###
 round_money = (num) ->
@@ -143,10 +157,8 @@ class modalWindow
       "id":'js-alert_union',
       "style":"height:45px;",
       'html':@options.html
-    }));  
-          
-
-          
+    }));
+      
     $('#js-alert_union').dialog({
         width: 'auto',
         height: 'auto',
@@ -194,16 +206,23 @@ class modalWindow
 ###
 class invoiceTtn
   defaults:
-    id:0
+    id:0,
+    number:'0000',
+
     type:"new"
 
-  constructor: (obj,data_row, data) ->
+  constructor: (obj,data_row, data, accces, ttn ) ->
+    if ttn != null
+      @defaults = $.extend({}, @defaults, ttn )
+    # запоминаем уровень допуска
+    @access = accces
     # сохраняем объект
     @$obj_row = obj
     # сохраняем информацию по строке
     @options = data_row  
     # собираем окно ттн
     @init(data)  
+    console.log accces
   # собираем контент
   init:(responseData)->
     _this = @      
@@ -248,7 +267,7 @@ class invoiceTtn
 
       # console.log @options
       for oldTtn in @options.ttn
-        console.warn oldTtn
+        # console.warn oldTtn
         if oldTtn.positions_num != null
           # console.warn oldTtn.positions_num.split(',').length > 1
           if oldTtn.positions_num.split(',').length>1 
@@ -259,8 +278,11 @@ class invoiceTtn
           positions = positions+oldTtn.positions_num
         else
           positions = ''
+        number = oldTtn.number
+        if oldTtn.number == null || oldTtn.number == undefined
+          number = '<b>не выставлен</b>'
         content.append($('<div/>',{
-          'html': '№'+oldTtn.number+' от '+oldTtn.date+positions
+          'html': '№'+number+' от '+oldTtn.date+positions
           }))
       # console.log(654)
   # выбор способа доставки
@@ -281,8 +303,9 @@ class invoiceTtn
     div_car_body = $('<div/>',{'class':'ttn_car_div-body'}).append(ul)
     car_div.append(div_car_body)
 
-  # сборка шапки окна
-  createHead:()->
+  # сборка шапки АДМИН - БУХ
+  createHeadAdmin:()->
+    _this = @
     # добавляем имя клиента
     head_info = $('<div>',{id:'ttn_head_info'});
     head_info.append(
@@ -296,13 +319,244 @@ class invoiceTtn
               echo_message_js('Вызов окна просмотра реквизитов')
               })))
         .append($('<tr/>')
-          .append($('<td/>',{'html':"ТТН 000"}))
+          .append($('<td/>',{'html':"ТТН "}).append($('<input/>',{
+            'val':_this.defaults.number,
+            'class':'ttn_number_input'
+            })))
           .append($('<td/>'))
           ))
     # console.log @options
     head_info
-  # сборка таблицы
-  createTable:(responseData)->
+  spanDate : (val = getDateNow())->
+    _this = @
+    $('<span/>',{
+      'class':'dateInput',
+      'html':val,
+      click:()->
+        val = $(this).html()
+        input = _this.inputDate(val)
+        $(this).replaceWith(input)
+        setTimeout(input.focus(),500)
+      })
+  spanInput : (val="&nbsp;")->
+    _this = @
+    $('<span/>',{
+      'class':'spanInput',
+      'html':val,
+      click:()->
+        val = $(this).html()
+        input = _this.inputSpan(val)
+        $(this).replaceWith(input)
+        setTimeout(input.focus(),500)
+      })
+  inputSpan :(val)->
+    _this = @
+    $('<input/>',{
+      val:val,
+      blur:()->
+        val = $(this).val()
+        $(this).replaceWith(_this.spanInput(val))            
+      })
+  inputDate :(val)->
+    _this = @
+    $('<input/>',{
+      val:val,
+      blur:()->
+        val = $(this).val()
+        # console.log _this.spanDate(val)
+        $(this).replaceWith(_this.spanDate(val))            
+      }).datetimepicker({
+          minDate:new Date(),
+          timepicker:false,
+          dayOfWeekStart: 1,
+          onSelectDate:(ct,$i)->
+            $i.blur();
+
+          onGenerate:( ct )->
+            $(this).find('.xdsoft_date.xdsoft_weekend')
+              .addClass('xdsoft_disabled');
+            $(this).find('.xdsoft_date');
+          
+          closeOnDateSelect:true,
+          format:'d.m.Y'
+        });
+  # сборка шапки МЕНЕДЖЕР и остальные
+  createHeadManager:()->
+    # добавляем имя клиента
+    # getDateNow()
+    
+    _this = @
+
+    span_ttn = $('<span/>',{'html':"№ ТТН 0000 от "}).append(_this.spanDate())
+
+    span_invoice = $('<span/>',{'html':"№ Счёта "+@options.invoice_num+" от " + @options.invoice_create_date;})
+
+    head_info = $('<div>',{id:'ttn_head_info'});
+    head_info.append(
+      $('<table>',{id:'ttn_head_info-table'})
+        .append($('<tr/>')
+          .append($('<td/>',{'html':@options.client_name,'class':'ttn_client_name'}))
+          .append($('<td/>',{
+            'html':@options.client_requisit_name,
+            'class':'ttn_requisits',
+            'click':()->
+              echo_message_js('Вызов окна просмотра реквизитов')
+              })))
+        .append($('<tr/>')
+          .append($('<td/>').append(span_ttn).append(span_invoice))
+          .append($('<td/>'))
+          ))
+    # console.log @options
+    head_info
+
+  # проверка прав и сборка шапки окна
+  createHead:()->
+    # console.warn @access
+    # проверка уровня доступа и вызов соответствующей шапки
+    switch @access
+      when 1 then head_info = @createHeadAdmin()
+      when 2 then head_info = @createHeadAdmin()
+      when 5 then head_info = @createHeadManager()
+      else
+        head_info = @createHeadManager()
+
+  # сборка таблицы менеджер и осталные
+  createTableManager:(responseData)->
+    _this = @      
+    table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
+    # шапка таблицы
+    table.append(tr = $('<tr/>'))
+    # чекбоксы
+    main_checkbox = $('<input/>',{
+      'type':'checkbox',
+      change:(event)->
+        input = $(this)
+        td = $(this).parent()
+        # клик по главному чекбоксу
+        _this.clickMainCheckbox(table,td,input)
+      })
+
+    td = $('<th/>',{
+        click:()->
+          input  = $(this).find('input')
+          td = $(this)
+          # клик по главному чекбоксу
+          _this.clickMainCheckbox(table,td,input)
+        }).append(main_checkbox)
+    tr.append(td)
+
+    # Number
+    td  = $('<th/>',{'text':'№'})
+    tr.append(td)
+    # Name
+    td  = $('<th/>',{'html':'Наименование и <br>описание продукции'})
+    tr.append(td)
+    # Quantity
+    td  = $('<th/>',{'html':'Количество<br>продукции'})
+    tr.append(td)
+    # Price for one
+    td  = $('<th/>',{'html':'стоимость<br>за штуку'})
+    tr.append(td)
+    # Price for all
+    td  = $('<th/>',{'html':'Общая<br>стоимость'})
+    tr.append(td)
+
+    # тогововая цена
+    main_price = 0
+    # НДС
+    nds = 0 
+    # порядковый номер строки товра/услуги
+    i = 1 
+    # перебираем позиции
+    for position in responseData
+      tr = $('<tr/>').data(position).attr('data-id',position.id)
+      # чекбоксы
+      if Number(position.ttn_id) == 0
+        check = $('<input/>',{
+          'type':'checkbox',
+          change:(event)->
+            event.preventDefault()
+            event.stopPropagation()
+            if $(this).prop('checked')
+              $(this).prop('checked',false)
+              $(this).parent().removeClass('checked')
+            else
+              $(this).prop('checked',true)
+              $(this).parent().addClass('checked')
+
+            _this.checkMainCheckbox(table)
+
+          })        
+        td  = $('<td/>',{
+          click:()->
+            input  = $(this).find('input')
+            if input.prop('checked')
+              input.prop('checked',false)
+              $(this).removeClass('checked')
+            else
+              input.prop('checked',true)
+              $(this).addClass('checked')
+            _this.checkMainCheckbox(table)
+          })
+        td.append(check)
+      else
+        td  = $('<td/>')
+        tr.addClass('ttn_created')
+      tr.append(td)
+
+      # Number
+      td  = $('<td/>').append(i)
+      tr.append(td)
+      # Name
+      td  = $('<td/>').append(position.name)
+      tr.append(td)
+      # Quantity
+      td  = $('<td/>').append(position.quantity)
+      tr.append(td)
+      # Price for one
+      pr_out = calc_price_with_discount(position.price, position.discount)
+      td  = $('<td/>').append(round_money(pr_out)+' р.')
+      tr.append(td)
+      # Price for all      
+      if position.quantity == 0 
+        position.quantity = 1 
+      main_price += pr_out*position.quantity
+      nds += Number(round_money(pr_out*position.quantity/118*18))
+      td  = $('<td/>').append(round_money(pr_out*position.quantity)+' р.')
+      tr.append(td)
+      i++
+      table.append(tr)
+    # ИТОГО
+    table.append(tr = $('<tr/>'))
+    td  = $('<th/>')
+    tr.append(td)
+    # текст
+    td  = $('<th/>',{
+      'colspan':'4',
+      'html':'Итоговая сумма по данной спецификации (договору)'
+      })
+    tr.append(td)
+    # Price for all
+    td  = $('<th/>',{'html':round_money(main_price)+' р.'})
+    tr.append(td)
+    table.append(tr)
+    # в том числе НДС
+    table.append(tr = $('<tr/>'))
+    td  = $('<th/>')
+    tr.append(td)
+    # Тескт
+    td  = $('<th/>',{
+      'colspan':'4',
+      'html':'В т.ч. НДС 18%'
+      })
+    tr.append(td)
+    # Price НДС
+    td  = $('<th/>',{'html':round_money(nds)+' р.'})
+    tr.append(td)
+    table.append(tr)
+    table
+  # сборка таблицы Админ + бух
+  createTableAdmin:(responseData)->
     _this = @      
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
     # шапка таблицы
@@ -434,6 +688,19 @@ class invoiceTtn
     tr.append(td)
     table.append(tr)
     table
+    
+  # проверка прав и сборка таблицы
+  createTable:(responseData)->
+    # проверка уровня доступа и вызов соответствующей шапки
+    switch @options.access
+      when 1 then tbl = @createTableAdmin(responseData)
+      when 2 then tbl = @createTableAdmin(responseData)
+      when 5 then tbl = @createTableManager(responseData)
+      else
+        tbl = @createTableManager(responseData)
+    tbl
+
+    
   # клик по главному чекбоксу
   clickMainCheckbox:(table,td,input)->
     if input.prop('checked') || !input.prop('checked') && input.hasClass('checked_no_full')
@@ -502,8 +769,28 @@ class invoiceTtn
       # при положительном ответе
       
       # @$obj_row.updateTtnRows()
-
-
+      if(delivery.join('') == 'our_delivery')
+        @myObj = new modalWindow({
+            html:'Открыть карту курьера в новой вкладке?',
+            title:'Переход',
+            buttons: [{
+            text:   'Да',
+            class:  'button_yes_or_no no',
+            style:  'float:right;'
+            click:  ()->
+              window.open(window.location.origin+'/dostavka_new/', '_blank');  
+              $('#js-alert_union').dialog('destroy').remove();           
+          },{
+            text:   'Нет, Спасибо.',
+            class:  'button_yes_or_no no',
+            style:  'float:right;'
+            click:  ()->
+              $('#js-alert_union').dialog('destroy').remove();           
+          }]
+          },{
+            closeOnEscape:true
+          })
+      
 
 
 
@@ -625,7 +912,91 @@ class invoiceTtn
     ###
     # createTTN:(row)->
       
-      
+    getRowTtn:(row)->
+      if @defttn == undefined 
+        @defttn = {
+          0:$('#defttn1').width(),
+          1:$('#defttn2').width(),
+          2:$('#defttn3').width()
+        }
+
+      _this = @
+      # if(row.ttn.length == 0 && @options.access !=2)
+      table1 = $('<div/>',{'class':'table','style':'width:100%'})
+      tr = ''
+      for ttn in row.ttn
+        tr1 = $('<div/>',{
+          'id':ttn.id,
+          'class':'row'
+          }).data(ttn)
+        # определяем номер
+        if ttn.number <= 0
+          number = 'запрос'
+        else
+          number = ttn.number
+        # определяем дату
+        tr1.append($('<div/>',{
+          'class':'defttn1 cell',
+          'html':number,
+          click:()->
+            # окно Запрос ТТН
+            _this.getData('get_ttn',{'id':row.id},()->
+              # создаем экземпляр окна ттн
+              new invoiceTtn($(this), row, _this.response.data, _this.options.access) if _this.response.data != undefined
+              )
+          }).width(_this.defttn[0]))
+
+        tr1.append($('<div/>',{
+          'class':'defttn2 cell',
+          'html':ttn.date,
+          click:()->
+            # окно Запрос ТТН
+            _this.getData('get_ttn',{'id':row.id},()->
+              # создаем экземпляр окна ттн
+              new invoiceTtn($(this), row, _this.response.data, _this.options.access) if _this.response.data != undefined
+              )
+          }).width(_this.defttn[1]))
+
+        tr1.append($('<div/>',{
+          # 'class':'',
+          'class':'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd'
+          }).width(_this.defttn[2]))
+
+        table1.append(tr1)
+
+      console.warn table1
+
+      if row.ttn.length <= 0
+        td = $('<td/>',{
+          'colspan':'3',
+          'class':'js-query-ttn',
+          'html':'Запросить',
+          click:()->
+            # окно Запрос ТТН
+            _this.getData('get_ttn',{'id':row.id},()->
+              # создаем экземпляр окна ттн
+              new invoiceTtn($(this), row, _this.response.data, _this.options.access) if _this.response.data != undefined
+              )
+          }).append(table1)
+      else
+        td = $('<td/>',{
+          'colspan':'3',
+          'class':'js-query-ttn'
+          }).append(table1)
+
+      td
+      # else
+      #   td = $('<td/>',{
+      #     'colspan':'3',
+      #     'html':"Запросить",
+      #     'class':'js-query-ttn',
+      #     click:()->
+      #       # окно Запрос ТТН
+      #       _this.getData('get_ttn',{'id':row.id},()->
+      #         # создаем экземпляр окна ттн
+      #         new invoiceTtn($(this), row, _this.response.data,_this.options.access) if _this.response.data != undefined
+      #         )
+      #     })
 
     ###
     # create tr 
@@ -819,31 +1190,8 @@ class invoiceTtn
       tr.append(td)
       # ттн
       
+      td = @getRowTtn(row)
       
-      if(row.ttn.length == 0 && @options.access !=2)
-        td = $('<td/>',{
-          'colspan':'3',
-          'html':"Запросить",
-          'class':'js-query-ttn',
-          click:()->
-            # окно Запрос ТТН
-            _this.getData('get_ttn',{'id':row.id},()->
-              # создаем экземпляр окна ттн
-              new invoiceTtn($(this), row, _this.response.data) if _this.response.data != undefined
-              )
-          })
-      else
-        td = $('<td/>',{
-          'colspan':'3',
-          'html':"Запросить",
-          'class':'js-query-ttn',
-          click:()->
-            # окно Запрос ТТН
-            _this.getData('get_ttn',{'id':row.id},()->
-              # создаем экземпляр окна ттн
-              new invoiceTtn($(this), row, _this.response.data) if _this.response.data != undefined
-              )
-          })
 
       tr.append(td)
 

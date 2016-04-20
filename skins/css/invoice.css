@@ -143,7 +143,9 @@
 
 #js-main-invoice-table tbody tr td:nth-of-type(9) div,
 #js-main-invoice-table tbody tr td:nth-of-type(11) div,
-#js-main-invoice-table tbody tr td:nth-of-type(16) div{
+#js-main-invoice-table tbody tr td:nth-of-type(16) div,
+#js-main-invoice-table-clone thead tr:nth-last-of-type(2) td:nth-last-of-type(1),
+#js-main-invoice-table-clone thead tr:nth-last-of-type(1) td:nth-last-of-type(1){
 	text-align: right;
 }
 /*padding текста в ячейках счета*/
@@ -162,7 +164,16 @@
 #js-main-invoice-table tbody tr td:nth-of-type(5){
 	border-right:1px solid transparent;
 }
+#js-main-invoice-table tbody tr td.js-query-ttn{
+	padding:0;
+}
+#js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div{
 
+}
+#js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div span:nth-of-type(1){
+	width: 50px;
+	padding-right: 15px;
+}
 /*исконка флаг*/
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5),
 #js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(5){
@@ -241,7 +252,8 @@
 	background-image:url(../images/img_design/comment_icon.png);
 }
 /*псевдочекбоксы*/
-#js-main-invoice-table tbody tr td.invoice-row--checkboxtd{
+#js-main-invoice-table tbody tr td.invoice-row--checkboxtd,
+#js-main-invoice-table tbody tr td .invoice-row--checkboxtd{
 	background-image:url(../images/img_design/icon_invoce_checkbox.png);
 	background-repeat: no-repeat;
 	background-position: 50% 10px;
@@ -249,15 +261,27 @@
 	padding: 0;
 	width: 20px;
 }
-#js-main-invoice-table tbody tr td.invoice-row--checkboxtd:hover{
+#js-main-invoice-table tbody tr td.invoice-row--checkboxtd:hover,
+#js-main-invoice-table tbody tr td .invoice-row--checkboxtd:hover{
 	background-color: #F2F2F2;
 }
-#js-main-invoice-table tbody tr td.invoice-row--checkboxtd.checked{
+#js-main-invoice-table tbody tr td.invoice-row--checkboxtd.checked,
+#js-main-invoice-table tbody tr td .invoice-row--checkboxtd.checked{
 	background-image:url(../images/img_design/icon_invoce_checkbox_checked.png);
 <<<<<<< HEAD
 =======
 }
-
+.defttn1,
+.defttn2,
+.defttn3{
+	padding:5px;
+}
+#js-main-invoice-table tbody tr td div.defttn2{
+	text-align: center;
+}
+#js-main-invoice-table tbody tr td div.defttn3{
+	background-position: 50%;
+}
 #js-main-invoice-table tbody tr td.js-query-ttn{
 	cursor: pointer;
 	text-align: center;
@@ -334,10 +358,36 @@ body #js-alert_union_buttons .button_yes_or_close{
 #js-invoice--window--ttn-table td.checked{
 	background: #92B73E;
 }
-#js-invoice--window--ttn-table th .checked_no_full:before{
-	content: "-";
+#js-invoice--window--ttn-table th:nth-of-type(1) input[type="checkbox"]:before,
+#js-invoice--window--ttn-table td:nth-of-type(1) input[type="checkbox"]:before{
+	background: url(../images/img_design/checkbox_bg1.png);
+    content: "";
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    background-repeat: no-repeat;
+}
+#js-invoice--window--ttn-table th:nth-of-type(1).checked input[type="checkbox"]:before,
+#js-invoice--window--ttn-table td:nth-of-type(1).checked input[type="checkbox"]:before{
+	background-image: url(../images/img_design/chckbox_is_checed.png),url(../images/img_design/checkbox_bg1.png);
+}
+
+
+#js-invoice--window--ttn-table td.checked.buh_style{
+    background-image: url(../images/img_design/chckbox_is_checed.png);
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+#js-invoice--window--ttn-table tr.ttn_id_created td{
+	background:#fff;
+	color: #cccccc
+}
+#js-invoice--window--ttn-table th:nth-of-type(1).checked input[type="checkbox"].checked_no_full:before{
+	/*background: none;*/
+	background-image: url(../images/img_design/checked_no_full_ch.png);
+	content: "";
 	float: left;
-    margin: -6px 0 0 2px;
+    /*margin: -6px 0 0 2px;*/
     font-size: 18px;
     color: #424242;
     position: absolute;
@@ -348,6 +398,28 @@ body #js-alert_union_buttons .button_yes_or_close{
 }
 #ttn_head_info-table{
 	width: 100%
+}
+#ttn_head_info-table tr:nth-of-type(2) td{
+	padding-top: 15px;
+}
+#ttn_head_info-table tr td span{
+	padding-right: 15px;
+}
+#ttn_head_info-table tr td span.dateInput,
+#ttn_head_info-table tr td span.spanInput{
+	width: 84px;
+	padding: 3px 4px 3px 3px;
+    border: 1px solid #A9A9A9;
+}
+#ttn_head_info-table tr td input.ttn_number_input{
+	text-align: right;
+	width: 36px;
+}
+#ttn_head_info-table tr td input{
+	width: 83px;
+	outline: none;padding: 2px 2px;
+	margin-top: -4px;
+	margin-bottom: 0;
 }
 #ttn_head_info-table .ttn_client_name{
 	font-weight: bold;
