@@ -942,7 +942,7 @@ class invoiceTtn
             # окно Запрос ТТН
             _this.getData('get_ttn',{'id':row.id},()->
               # создаем экземпляр окна ттн
-              new invoiceTtn($(this), row, _this.response.data, _this.options.access) if _this.response.data != undefined
+              new invoiceTtn($(this), row, _this.response.data, _this.options.access,ttn) if _this.response.data != undefined
               )
           }).width(_this.defttn[0]))
 
@@ -953,13 +953,15 @@ class invoiceTtn
             # окно Запрос ТТН
             _this.getData('get_ttn',{'id':row.id},()->
               # создаем экземпляр окна ттн
-              new invoiceTtn($(this), row, _this.response.data, _this.options.access) if _this.response.data != undefined
+              new invoiceTtn($(this), row, _this.response.data, _this.options.access,ttn) if _this.response.data != undefined
               )
           }).width(_this.defttn[1]))
 
         tr1.append($('<div/>',{
           # 'class':'',
-          'class':'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd'
+          'class':'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd',
+          click:()->
+            echo_message_js('Это действие изменит в системе дату получения подписанных документов<br>Продолжить?')
           }).width(_this.defttn[2]))
 
         table1.append(tr1)

@@ -1122,7 +1122,7 @@ invoiceTtn = (function() {
               'id': row.id
             }, function() {
               if (_this.response.data !== void 0) {
-                return new invoiceTtn($(this), row, _this.response.data, _this.options.access);
+                return new invoiceTtn($(this), row, _this.response.data, _this.options.access, ttn);
               }
             });
           }
@@ -1135,13 +1135,16 @@ invoiceTtn = (function() {
               'id': row.id
             }, function() {
               if (_this.response.data !== void 0) {
-                return new invoiceTtn($(this), row, _this.response.data, _this.options.access);
+                return new invoiceTtn($(this), row, _this.response.data, _this.options.access, ttn);
               }
             });
           }
         }).width(_this.defttn[1]));
         tr1.append($('<div/>', {
-          'class': 'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd'
+          'class': 'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd',
+          click: function() {
+            return echo_message_js('Это действие изменит в системе дату получения подписанных документов<br>Продолжить?');
+          }
         }).width(_this.defttn[2]));
         table1.append(tr1);
       }
