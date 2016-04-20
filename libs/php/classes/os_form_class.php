@@ -373,7 +373,7 @@ PS было бы неплохо взять взять это за правило
                               // вывод сообщения, что по размеру 
                               //$warning = 1;                              
                               $message = 'В размерах '.$different_size.' для артикула '.$articul['art'].' были обнаружены разные цены, поэтому для него было добавлено '.count($price_different).' позиции(й)';
-                              $this->responseClass->addResponseFunction('window_reload',array('timeout'=>'2000'));
+                              $this->responseClass->addResponseFunction('rtReload',array('timeout'=>'2000'));
                               $this->responseClass->addMessage($message,'system_message');    
                          }
                     }
@@ -399,7 +399,7 @@ PS было бы неплохо взять взять это за правило
                     if(count($this->positions_arr)>0){
                          $message = 'Вы успешно добавили '.count($this->positions_arr).' позиции(й)';
                          $this->responseClass->addMessage($message,'successful_message');    
-                         $this->responseClass->addResponseFunction('window_reload',array('timeout'=>'2000'));
+                         $this->responseClass->addResponseFunction('rtReload',array('timeout'=>'2000'));
                     }else{
                          $message = 'Добавилено '.count($this->positions_arr).' позиции(й)';
                          $message = '<br>Капитонов пилит, скоро все заработает';

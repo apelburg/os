@@ -2285,3 +2285,7 @@ $(document).on('click','.notifyjs-wrapper.notifyjs-hidable',function(event){
 //     	$.SC_reload_RT_content();
 //     }
 // });
+
+function rtReload(){
+	$.SC_reload_RT_content();
+}
