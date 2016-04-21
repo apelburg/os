@@ -164,8 +164,19 @@
 #js-main-invoice-table tbody tr td:nth-of-type(5){
 	border-right:1px solid transparent;
 }
-#js-main-invoice-table tbody tr td.js-query-ttn{
+#js-main-invoice-table tbody tr td.js-query-ttn,
+#js-main-invoice-table tbody tr td.js-query-ttn-rows{
 	padding:0;
+}
+#js-main-invoice-table tbody tr td.js-query-ttn-rows{
+    vertical-align: -webkit-baseline-middle;
+}
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row{
+	cursor: pointer;
+}
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(1),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(2){
+	background-color: #f1f1f1;
 }
 #js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div{
 
@@ -343,12 +354,15 @@ body #js-alert_union_buttons .button_yes_or_close{
 	padding: 5px;
 }
 #js-invoice--window--ttn-table tr th{
-	text-align: left
+	text-align: left;
+}
+#js-invoice--window--ttn-table tr th:nth-last-of-type(1){
+	width: 150px;
 }
 #js-invoice--window--ttn-table tr td:nth-last-of-type(1),
 #js-invoice--window--ttn-table tr td:nth-last-of-type(2),
-#js-invoice--window--ttn-table tr:nth-last-of-type(1) td:nth-last-of-type(1),
-#js-invoice--window--ttn-table tr:nth-last-of-type(2) td:nth-last-of-type(2){
+#js-invoice--window--ttn-table tr:nth-last-of-type(1) th:nth-last-of-type(1),
+#js-invoice--window--ttn-table tr:nth-last-of-type(2) th:nth-last-of-type(1){
 	text-align: right;
 }
 

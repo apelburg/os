@@ -73,7 +73,38 @@
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
 		}
+		/**
+		 *	insert ttn number
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	21.04.2016 12:55:23
+		 */
+		protected function update_ttn_number_AJAX(){
+			$query = "UPDATE `".INVOICE_TTN."` SET ";
+			$query .= "`number` = '".(int)$_POST['val'] ."'";
+			  	
+			$query .= " WHERE `id` = '".$_POST['id']."'";		
+			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
 
+		/**
+		 *	return assigned ttn
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	21.04.2016 11:37:56
+		 */
+		protected function ttn_was_returned_AJAX(){
+			$query = "UPDATE `".INVOICE_TTN."` SET ";
+			$query .= "`return` = '".(int)$_POST['val'] ."'";
+			$query .= ",`date_return` = NOW()";
+			$query .= ",`buch_id` = '".$this->user_id."'";
+			$query .= ",`buch_name` = '".$this->getAuthUserName()."'";
+			  	
+			$query .= " WHERE `id` = '".$_POST['id']."'";		
+			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
 		
 
         /**
@@ -169,7 +200,7 @@
 			if(count($id_s) == 0){
 				return;
 			}
-			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$data = array();
 			if($result->num_rows > 0){
