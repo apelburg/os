@@ -266,7 +266,7 @@ class modalWindow
   #   console.log "show"
   # destroy:()->
   #   console.log "destroy"
-   
+
    
 ###
 # model from ttn 
@@ -280,23 +280,26 @@ class invoiceTtn
     number:'0000',
     type:"new"
 
-  constructor: (obj, data_row, data, accces, ttn ) ->
+  constructor: (obj, data_row, data, accces, type ='', ttn ) ->
     if ttn != null
       @defaults = $.extend({}, @defaults, ttn )
       @defaults.number = '0000' if @defaults.number == null 
     else
       ttn = {}
-    # сохраняем объект
-    @objRow = obj
     # запоминаем уровень допуска
     @access = accces
     # сохраняем информацию по строке
-    @options = data_row  
-    # собираем окно ттн
-    @init(obj, data_row, data, accces, ttn)  
+    @options = data_row
+    if type == 'get_the_bill'
+      @initBILL(obj, data_row, data, accces, ttn)
+    else
+      # собираем окно ттн
+      @initTTN(obj, data_row, data, accces, ttn)  
     # console.log @defaults
-  # собираем контент
-  init:(obj, data_row, responseData, accces, ttn)->
+
+
+  # собираем контент ттн
+  initBILL:(obj, data_row, responseData, accces, ttn)->
     _this = @      
     # запрос данных      
     if(responseData!= undefined)
@@ -307,11 +310,43 @@ class invoiceTtn
       ###
       # добавляем таблицу
       ###
-      main_div.append(@createTable(responseData))
+      main_div.append(@createTtnTable(responseData))
       ###
       # добавление шапки окна
       ###
-      main_div.prepend(@createHead(ttn))
+      # main_div.prepend(@createTtnHead(ttn))
+      
+      ###
+      # создание окна
+      ###
+      @myObj = new modalWindow({
+          html:main_div,
+          width:'1000px',
+          maxHeight:'100%',
+          title:'Счёт',
+          buttons: @getButtons(obj,data_row)
+        },{
+          closeOnEscape:true
+        })
+      @$el = @myObj.options.html[0]
+  
+  # собираем контент ттн
+  initTTN:(obj, data_row, responseData, accces, ttn)->
+    _this = @      
+    # запрос данных      
+    if(responseData!= undefined)
+      ###
+      # создание контейнера
+      ###
+      main_div = $('<div/>')
+      ###
+      # добавляем таблицу
+      ###
+      main_div.append(@createTtnTable(responseData))
+      ###
+      # добавление шапки окна
+      ###
+      main_div.prepend(@createTtnHead(ttn))
       ###
       # выбор способа доставки
       ###
@@ -335,7 +370,7 @@ class invoiceTtn
           closeOnEscape:true
         })
       @$el = @myObj.options.html[0]
-
+  
   editSaveObj:(key,value, old_value)->
     if(old_value == value)
       delete @saveObj[key]
@@ -397,7 +432,7 @@ class invoiceTtn
     car_div.append(div_car_body)
 
   # сборка шапки АДМИН - БУХ
-  createHeadAdmin:(ttn)->
+  createTtnHeadAdmin:(ttn)->
     _this = @
     ###
     # контейнер шапки окна ТТН
@@ -443,19 +478,16 @@ class invoiceTtn
           $(this).val($(this).attr('data-val')) if Number($(this).val()) == 0
           return
         keyup:()->
-          # ttn.number = $(this).val()
           _this.editSaveObj('number', $(this).val(), _this.defaults.number)
-          # new sendAjax 'update_ttn_number',{id:ttn.id ,val:ttn.number} 
-          # _this.objRow.parent().find('div.defttn1').html(ttn.number);
+          
+          
         })
       input_date = $('<input/>',{
         'val':_this.defaults.date,
         'class':'',
         blur:()->
-          # ttn.number = $(this).val()
           _this.editSaveObj('date', $(this).val(), _this.defaults.date)
-          # new sendAjax 'update_ttn_number',{id:ttn.id ,val:ttn.number} 
-          # _this.objRow.parent().find('div.defttn1').html(ttn.number);
+
         }).datetimepicker({
           minDate:new Date(),
           timepicker:false,
@@ -540,7 +572,7 @@ class invoiceTtn
           format:'d.m.Y'
         });
   # сборка шапки МЕНЕДЖЕР и остальные
-  createHeadManager:(ttn)->
+  createTtnHeadManager:(ttn)->
     # ttn number & date 
     span_ttn = $('<span/>',{'html':"№ ТТН "+@defaults.number+" от "}).append(@spanDate())
     # invoice number & date
@@ -566,18 +598,18 @@ class invoiceTtn
     $('<div>',{id:'ttn_head_info'}).append(table)
 
   # проверка прав и сборка шапки окна
-  createHead:(ttn)->
+  createTtnHead:(ttn)->
     # console.log  @access
     # проверка уровня доступа и вызов соответствующей шапки
     switch @access
-      when 1 then head_info = @createHeadAdmin(ttn)
-      when 2 then head_info = @createHeadAdmin(ttn)
-      when 5 then head_info = @createHeadManager(ttn)
+      when 1 then head_info = @createTtnHeadAdmin(ttn)
+      when 2 then head_info = @createTtnHeadAdmin(ttn)
+      when 5 then head_info = @createTtnHeadManager(ttn)
       else
-        head_info = @createHeadManager(ttn)
+        head_info = @createTtnHeadManager(ttn)
 
   # сборка таблицы менеджер и осталные
-  createTableManager:(responseData)->
+  createTtnTableManager:(responseData)->
     _this = @      
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
     # шапка таблицы
@@ -718,7 +750,7 @@ class invoiceTtn
     table.append(tr)
     table
   # сборка таблицы Админ + бух
-  createTableAdmin:(responseData)->
+  createTtnTableAdmin:(responseData)->
     # console.log 654
     _this = @      
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
@@ -836,15 +868,15 @@ class invoiceTtn
     table
     
   # проверка прав и сборка таблицы
-  createTable:(responseData)->
+  createTtnTable:(responseData)->
     # проверка уровня доступа и вызов соответствующей шапки
     # console.log @access
     switch @access
-      when 1 then tbl = @createTableAdmin(responseData)
-      when 2 then tbl = @createTableAdmin(responseData)
-      when 5 then tbl = @createTableManager(responseData)
+      when 1 then tbl = @createTtnTableAdmin(responseData)
+      when 2 then tbl = @createTtnTableAdmin(responseData)
+      when 5 then tbl = @createTtnTableManager(responseData)
       else
-        tbl = @createTableManager(responseData)
+        tbl = @createTtnTableManager(responseData)
     tbl
 
     
@@ -1015,7 +1047,7 @@ class invoiceTtn
             click: ()->
               _this.destroy()
           }];
-      
+
       
 ###
 # jQuery plagin Invoice
@@ -1132,7 +1164,7 @@ class invoiceTtn
           # окно Запрос ТТН
           _this.getData('get_ttn',{'id':row.id},()->
             # создаем экземпляр окна ттн
-            new invoiceTtn(t, row, _this.response.data, _this.options.access,ttn) if _this.response.data != undefined
+            new invoiceTtn(t, row, _this.response.data, _this.options.access ,'',ttn) if _this.response.data != undefined
             )
         }).width(_this.defttn[0]))
 
@@ -1144,7 +1176,7 @@ class invoiceTtn
           t = $(this)
           _this.getData('get_ttn',{'id':row.id},()->
             # создаем экземпляр окна ттн
-            new invoiceTtn(t, row, _this.response.data, _this.options.access,ttn) if _this.response.data != undefined
+            new invoiceTtn(t, row, _this.response.data, _this.options.access ,'', ttn) if _this.response.data != undefined
             )
         }).width(_this.defttn[1]))
 
@@ -1175,6 +1207,7 @@ class invoiceTtn
             new sendAjax 'ttn_was_returned',{id:row.ttn[i].id ,val:ttn.return}
               # echo_message_js('Да, я уверен.'+row.ttn[i].id)
               # )
+            console.log 
           else
             # ограничение на снятие 
             # if _this.options.access != 1
@@ -1219,7 +1252,7 @@ class invoiceTtn
               t = $(this)
               _this.getData('get_ttn',{'id':row.id},()->
                 # создаем экземпляр окна ттн
-                new invoiceTtn(t, row, _this.response.data, _this.options.access) if _this.response.data != undefined
+                new invoiceTtn(t, row, _this.response.data, _this.options.access,'') if _this.response.data != undefined
                 )
             })
         else
@@ -1234,18 +1267,6 @@ class invoiceTtn
           }).append(table)
 
       td
-      # else
-      #   td = $('<td/>',{
-      #     'colspan':'3',
-      #     'html':"Запросить",
-      #     'class':'js-query-ttn',
-      #     click:()->
-      #       # окно Запрос ТТН
-      #       _this.getData('get_ttn',{'id':row.id},()->
-      #         # создаем экземпляр окна ттн
-      #         new invoiceTtn($(this), row, _this.response.data,_this.options.access) if _this.response.data != undefined
-      #         )
-      #     })
 
     ###
     # create tr 
@@ -1264,10 +1285,19 @@ class invoiceTtn
         row.spf_num  = 'оф'
         doc_type = 'счёт - оферта'
 
-      td = $('<td/>')
+      td = $('<td/>',{
+        'class':'invoice-row--fist-td',
+        click:()->
+          t = $(@)
+          _this.getData('get_ttn',{'id':row.id},()->
+            # создаем экземпляр окна ттн
+            new invoiceTtn(t, row, _this.response.data, _this.options.access, 'get_the_bill' ) if _this.response.data != undefined
+            )
+        })
         .append($('<div/>',{
           'class':'invoice-row--number',
           'html':'<span>'+row.invoice_num+'</span>  '+row.invoice_create_date
+          
             }))
         .append($('<div/>',{
           'class':'invoice-row--type',

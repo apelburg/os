@@ -195,6 +195,10 @@
 	background-repeat: no-repeat;
 	background-position: 50%;
 }
+#js-main-invoice-table tbody tr td.invoice-row--fist-td:hover{
+	background-color: #f1f1f1;
+	cursor: pointer;
+}
 #js-main-invoice-table tbody tr td.invoice-row--icons-flag{
 	background-image:url(../images/img_design/icon_invoce_3.png);
 	background-repeat: no-repeat;
