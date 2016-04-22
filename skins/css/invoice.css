@@ -6,16 +6,18 @@
 }
 #invoice-button-top{
 	position: fixed;
-	right: 15px;
-	bottom:15px;
-	width: 40px;
-	height: 40px;
+	right: 35px;
+	bottom:35px;
+	width: 00px;
+	height: 00px;
 	background-image:url(../images/img_design/invoice_scroll_top.png);
 	background-repeat: no-repeat;
-	display: none;
+	background-size:100%;
+	/*display: none;*/
 	cursor: pointer;
 	border-radius: 20px;
-	opacity: 0.6;
+	/*opacity: 0.6;*/
+	opacity: 0
 }
 #invoice-button-top:hover{
 	-webkit-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.29);
@@ -175,7 +177,8 @@
 	cursor: pointer;
 }
 #js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(1),
-#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(2){
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(2),
+#js-main-invoice-table tbody tr td.js-query-ttn:hover{
 	background-color: #f1f1f1;
 }
 #js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div{
@@ -279,10 +282,7 @@
 #js-main-invoice-table tbody tr td.invoice-row--checkboxtd.checked,
 #js-main-invoice-table tbody tr td .invoice-row--checkboxtd.checked{
 	background-image:url(../images/img_design/icon_invoce_checkbox_checked.png);
-<<<<<<< HEAD
 
-=======
->>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
 }
 .defttn1,
 .defttn2,
@@ -447,6 +447,9 @@ body #js-alert_union_buttons .button_yes_or_close{
 #ttn_head_info-table .ttn_requisits:hover{
 	text-decoration: none;
 }
+div#js-alert_union{
+	/*font-size: 12px;*/
+}
 #js-alert_union .ttn_car_div-head{
 	font-size: 12px;
 	font-weight: bold;
@@ -489,10 +492,6 @@ body #js-alert_union_buttons .button_yes_or_close{
 	font-size: 10px;
 	color:#ccc;
 	text-align: center;
-<<<<<<< HEAD
-
-=======
->>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
 }
 .ttn--already-was-created{
     /*padding-top: 15px;*/
@@ -504,14 +503,24 @@ body #js-alert_union_buttons .button_yes_or_close{
 }
 .ttn--already-was-created--head{
 	font-weight: bold;
-<<<<<<< HEAD
-
-=======
->>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
 	padding-top: 15px;
 	padding-bottom: 15px;
 }
 .ttn_created td{
 	background-color: #c6e1aa;
 	color: #9eb488;
+}
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: left;
+    border-width: 1px 0 0 0;
+    background-image: none;
+    /* margin-top: .5em; */
+    /* padding: .3em 1em .5em .4em; */
+    padding: .3em 1em .5em 1.5em;
+}
+#js-alert_union_buttons {
+    border: none;
+    padding: 3px 0 0 0;
+    border: 0;
+    margin: 0;
 }

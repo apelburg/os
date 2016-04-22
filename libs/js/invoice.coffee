@@ -60,6 +60,30 @@ round_money = (num) ->
 calc_price_with_discount = (price_out, discount) ->
   return Number(price_out/100) * (100 + Number(discount));
 
+
+class ttnObj
+  defaults:
+    buch_id:0
+    buch_name:0
+    comments:''
+    date:"00.00.0000"
+    date_return:null
+    delivery:""
+    id:0
+    invoice_id:0
+    number:0
+    position_id:0
+    positions_num:0
+    return:0
+  options:{}
+
+  constructor:(data = {})->
+    
+    for key,el of data
+      @options[key] = el    
+    return $.extend({}, @defaults, @options)
+    
+
 ###
 # send AJAX
 ###
@@ -108,7 +132,7 @@ class sendAjax
         _this.response = $.extend({}, _this.response, jqXHR.responseJSON)
         standard_response_handler(_this.response)
         # выполняемая функия ы случае успеха
-        _this.options.func()
+        _this.options.func(_this.response)
 
 ###
 # modal confirm
@@ -176,6 +200,12 @@ class modalWindow
     @options = $.extend({}, @defaults, data) 
     # get sittings
     @sittings = $.extend({}, @sittings,sittings)
+
+    if @options.maxWidth && @options.maxWidth .indexOf('%') + 1
+      @options.maxWidth  = $(window).width()/100*Number(@options.maxWidth .substring(@options.maxWidth .length-1,0));
+    if @options.maxHeight && @options.maxHeight.indexOf('%') + 1
+      @options.maxHeight = $(window).height()/100*Number(@options.maxHeight.substring(@options.maxHeight.length-1,0));
+    
     # init
     @init()
   init:()->
@@ -191,18 +221,22 @@ class modalWindow
       'html':@options.html
     }));
       
-    $('#js-alert_union').dialog({
+    self = $('#js-alert_union').dialog({
         width: @options.width,
         height: @options.height,
         modal: @sittings.modal,
         title : @options.title,
         autoOpen : @sittings.autoOpen,
-        closeOnEscape: @sittings.closeOnEscape
+        closeOnEscape: @sittings.closeOnEscape,
+        buttons:@options.buttons
         # // buttons: buttons          
     }).parent();
 
-    # console.info @options.buttons
-    if(@options.buttons.length  > 0)
+    $('#js-alert_union').dialog("option", "maxHeight", @options.maxHeight) if @options.maxHeight
+    $('#js-alert_union').dialog("option", "maxWidth", @options.maxWidth) if @options.maxWidth
+
+    # replace standart buttons
+    if(@options.buttons.length  > 0 && true)
       buttons_html = $('<table></table>');
       for button_n,i in @options.buttons 
         button = $('<button/>',{
@@ -220,12 +254,12 @@ class modalWindow
           $('<td/>')
             .append(button)
             );  
-    
-    $('#js-alert_union').after($('<div/>',{
-      'id':'js-alert_union_buttons',
-      'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
-        })
-        .append(buttons_html));
+
+      self.find('.ui-dialog-buttonpane').html($('<div/>',{
+        'id':'js-alert_union_buttons',
+        'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
+          }).append(buttons_html))
+      # $('#js-alert_union').after();
 
 
   # show:()->
@@ -244,7 +278,6 @@ class invoiceTtn
   defaults:
     id:0,
     number:'0000',
-
     type:"new"
 
   constructor: (obj, data_row, data, accces, ttn ) ->
@@ -253,20 +286,17 @@ class invoiceTtn
       @defaults.number = '0000' if @defaults.number == null 
     else
       ttn = {}
-
-    # console.log obj
+    # сохраняем объект
     @objRow = obj
     # запоминаем уровень допуска
     @access = accces
-    # сохраняем объект
-    @$obj_row = obj
     # сохраняем информацию по строке
     @options = data_row  
     # собираем окно ттн
-    @init(data,ttn)  
+    @init(obj, data_row, data, accces, ttn)  
     # console.log @defaults
   # собираем контент
-  init:(responseData,ttn)->
+  init:(obj, data_row, responseData, accces, ttn)->
     _this = @      
     # запрос данных      
     if(responseData!= undefined)
@@ -285,7 +315,8 @@ class invoiceTtn
       ###
       # выбор способа доставки
       ###
-      if @access == 5 
+      # только для менеджеров и при условии что, есть что выбирать
+      if @access == 5 && @checkNumber>0
         main_div.append(@createDeliveryChoose())
       ###
       # ранее созданные ттн
@@ -297,8 +328,9 @@ class invoiceTtn
       @myObj = new modalWindow({
           html:main_div,
           width:'1000px',
+          maxHeight:'100%',
           title:'Запрос ТТН',
-          buttons: @getButtons()
+          buttons: @getButtons(obj,data_row)
         },{
           closeOnEscape:true
         })
@@ -393,14 +425,23 @@ class invoiceTtn
     # если номер к данной ТТН не назначен - выводим строку 
     # с формой назначения номера ТТН и даты от которой эта ТТН выставлена
     ###
-    if Number(_this.defaults.number) == 0
+    
       # span_ttn_number = $('<span/>')
 
-      span_invoice = $('<span/>',{'html':"№ Счёта "+@options.invoice_num+" от " + @options.invoice_create_date;})
-
+    span_invoice = $('<span/>',{'html':"№ Счёта "+@options.invoice_num+" от " + @options.invoice_create_date;})
+    td = $('<td/>',{'colspan':'2'})
+      
+    if Number(_this.defaults.number) == 0
       input = $('<input/>',{
         'val':_this.defaults.number,
+        'data-val':_this.defaults.number,
         'class':'ttn_number_input',
+        focus:()->
+          $(this).val('') if Number($(this).val()) == 0
+          return
+        blur:()->
+          $(this).val($(this).attr('data-val')) if Number($(this).val()) == 0
+          return
         keyup:()->
           # ttn.number = $(this).val()
           _this.editSaveObj('number', $(this).val(), _this.defaults.number)
@@ -430,15 +471,16 @@ class invoiceTtn
           closeOnDateSelect:true,
           format:'d.m.Y'
         });
-      td = $('<td/>',{'html':"ТТН ",'colspan':'2'})
-        # номер ттн
-        .append($('<span/>').append(input))
-        # дата ттн
-        .append($('<span/>').append(input_date))
-        # счёт
-        .append(span_invoice)
-      tr = $('<tr/>').append(td)
-      table.append(tr)
+      
+      # номер ттн
+      td.append('№ ТТН ').append($('<span/>').append(input))
+      # дата ттн
+      td.append($('<span/>').append(input_date))
+    
+    # счёт
+    td.append(span_invoice)   
+    tr = $('<tr/>').append(td)
+    table.append(tr)
     ###
     # добавляем всё в контейнер и возвращаем
     ###
@@ -499,32 +541,29 @@ class invoiceTtn
         });
   # сборка шапки МЕНЕДЖЕР и остальные
   createHeadManager:(ttn)->
-    # добавляем имя клиента
-    # getDateNow()
-    
-    _this = @
-
-    span_ttn = $('<span/>',{'html':"№ ТТН "+_this.defaults.number+" от "}).append(_this.spanDate())
-
+    # ttn number & date 
+    span_ttn = $('<span/>',{'html':"№ ТТН "+@defaults.number+" от "}).append(@spanDate())
+    # invoice number & date
     span_invoice = $('<span/>',{'html':"№ Счёта "+@options.invoice_num+" от " + @options.invoice_create_date;})
 
-    head_info = $('<div>',{id:'ttn_head_info'});
-    head_info.append(
-      $('<table>',{id:'ttn_head_info-table'})
-        .append($('<tr/>')
-          .append($('<td/>',{'html':@options.client_name,'class':'ttn_client_name'}))
-          .append($('<td/>',{
+    table = $('<table>',{id:'ttn_head_info-table'})
+
+    # client info row
+    table.append(tr = $('<tr/>'))
+    tr.append($('<td/>',{'html':@options.client_name,'class':'ttn_client_name'}))
+    tr.append($('<td/>',{
             'html':@options.client_requisit_name,
             'class':'ttn_requisits',
             'click':()->
               echo_message_js('Вызов окна просмотра реквизитов')
-              })))
-        .append($('<tr/>')
-          .append($('<td/>').append(span_ttn).append(span_invoice))
-          .append($('<td/>'))
-          ))
-    # console.log @options
-    head_info
+              }))
+    # если есть что выбирать
+    if @checkNumber > 0
+      table.append(tr = $('<tr/>'))
+      tr.append($('<td/>',{'colspan':'2'}).append(span_ttn).append(span_invoice))
+
+    # create and return conteiner
+    $('<div>',{id:'ttn_head_info'}).append(table)
 
   # проверка прав и сборка шапки окна
   createHead:(ttn)->
@@ -553,14 +592,14 @@ class invoiceTtn
         _this.clickMainCheckbox(table,td,input)
       })
 
-    td = $('<th/>',{
+    td_main_check = $('<th/>',{
         click:()->
           input  = $(this).find('input')
           td = $(this)
           # клик по главному чекбоксу
           _this.clickMainCheckbox(table,td,input)
-        }).append(main_checkbox)
-    tr.append(td)
+        })
+    tr.append(td_main_check)
 
     # Number
     td  = $('<th/>',{'text':'№'})
@@ -590,6 +629,7 @@ class invoiceTtn
       tr = $('<tr/>').data(position).attr('data-id',position.id)
       # чекбоксы
       if Number(position.ttn_id) == 0
+        @checkNumber++
         check = $('<input/>',{
           'type':'checkbox',
           change:(event)->
@@ -644,6 +684,10 @@ class invoiceTtn
       tr.append(td)
       i++
       table.append(tr)
+    if @checkNumber>0
+      td_main_check.append(main_checkbox)
+    else
+      td_main_check.width('20px')
     # ИТОГО
     table.append(tr = $('<tr/>'))
     td  = $('<th/>')
@@ -701,7 +745,7 @@ class invoiceTtn
     if@access != 1 && @access != 2
       td.append(main_checkbox) 
     else
-      td.append('&nbsp;&nbsp;&nbsp;')  
+      td.width('20px')  
     
     tr.append(td)
 
@@ -733,7 +777,6 @@ class invoiceTtn
       # чекбоксы
       # if @defaults.buch_id != undefined && @defaults.buch_id == null
       
-      console.log _this.defaults.id , position.ttn_id
       if Number(_this.defaults.id) == Number position.ttn_id
         td  = $('<td/>').addClass('checked buh_style')
       else
@@ -814,7 +857,7 @@ class invoiceTtn
         $(this).prop('checked',false).parent().removeClass('checked')
         )
     else
-      console.log this
+      # console.log this
       input.prop('checked',true)
       td.addClass('checked')
       table.find('td input').each((index,el)->
@@ -833,10 +876,13 @@ class invoiceTtn
     else 
       main_check.prop('checked',false).removeClass('checked_no_full')
       main_check.parent().removeClass('checked')
+
   # запрос новой ттн (нажатие на кнопку запросить)
-  queryNewTtn:(func)->
+  # менеджер хочет создать новую ттн
+  # в базу заводится строка ттн
+  queryNewTtn:(obj,data_row)->
     _this = @
-    console.log @$el
+    console.log obj
     options = []
     position_numbers = []
 
@@ -845,9 +891,8 @@ class invoiceTtn
       if($(this).prop('checked'))
         position_numbers.push($(this).parent().next().html())  
         options.push($(this).parent().parent().data().id)
-        return
-        
-      )    
+        return        
+      )
 
     # проверка на выбор
     if options.length==0
@@ -864,33 +909,62 @@ class invoiceTtn
     if delivery.length == 0
       echo_message_js('Выберите способ доставки выбранных позиций.','error_message')
       return false  
-    
-
-
 
     # отправляем запрос
-    new sendAjax 'create_new_ttn',{invoise_id:@options.id,positions:options.join(','),position_numbers:position_numbers.join(','), delivery:delivery.join('')}, ()->
+    new sendAjax 'create_new_ttn',{invoise_id:@options.id,positions:options.join(','),position_numbers:position_numbers.join(','), delivery:delivery.join('')}, (response)->
       # при положительном ответе
+      _this.destroy()
+      # сервер должен вернуть информацию по новой ТТН
+      if(response.data)
+        # если успешно вернул - записываем новую информацию в объект
+        data_row.ttn[data_row.ttn.length] = new ttnObj(response.data);
+        # обновляем информацию в DOM
+        $('#js-main-invoice-table').invoice('reflesh',data_row.id)
+        # console.log 
       
-      # @$obj_row.updateTtnRows()
       if(delivery.join('') == 'our_delivery')
         new modalConfirm({html:'Открыть карту курьера в новой вкладке?'},()->
           window.open(window.location.origin+'/dostavka_new/', '_blank');  
           )
+
         # Вы уверены, что хотите установить флаг рекламации?
   # убиваем окно
   destroy:()->
     $(@$el).parent().dialog('destroy').remove()  
-  confirmAndCreateTtn:()->
 
-    console.log @saveObj
-    # printObject @saveObj
-    echo_message_js('Бухгалтерия подтверждает и создает ттн')
-  getButtons:()->
+  # бух присваивает ттн номер и подтверждает создание ттн
+  confirmAndCreateTtn:(obj,data_row)->
     _this = @
-    console.log  @defaults.buch_id
+    row_id = @options.id
+    console.warn @saveObj 
+    # check update ttn number
+    if @saveObj.number
+      @saveObj.id = @defaults.id
+
+      # правика сохраняемых значений в главном объекте
+      for el in data_row.ttn
+        if el.id == @defaults.id
+          # console.log el
+          for key,l of @saveObj
+            el[key] = l
+          # console.log el
+         
+      # обновляем DOM
+      $('#js-main-invoice-table').invoice('reflesh',data_row.id)
+      # отправляем запрос
+      new sendAjax 'confirm_create_ttn',@saveObj, ()->
+        _this.destroy()
+    else
+      echo_message_js('Для создания ттн необходимо ввести её номер','error_message')  
+    # delete window
+    
+    
+    
+
+  getButtons:(obj,data_row)->
+    _this = @
     if @access == 2 || @access == 1
-      if @defaults.buch_id != undefined && @defaults.buch_id == null
+      if Number(@defaults.number) != undefined && Number(@defaults.number) == 0
         buttons = [{
           text: 'Отмена',
           class:  'button_yes_or_no no',
@@ -900,7 +974,7 @@ class invoiceTtn
           text: 'Создать',
           class:  'button_yes_or_no',
           click: ()->
-            _this.confirmAndCreateTtn()            
+            _this.confirmAndCreateTtn(obj,data_row)            
         }];
       else
         buttons = [{
@@ -917,17 +991,30 @@ class invoiceTtn
 
 
     else
-      buttons = [{
-          text: 'Отмена',
-          class:  'button_yes_or_no no',
-          click: ()->
-            _this.destroy()
-        },{
-          text: 'Запросить',
-          class:  'button_yes_or_no',
-          click: ()->
-            _this.queryNewTtn()            
-        }];
+      if @checkNumber > 0
+        buttons = [{
+            text: 'Отмена',
+            class:  'button_yes_or_no no',
+            click: ()->
+              _this.destroy()
+          },{
+            text: 'Запросить',
+            class:  'button_yes_or_no',
+            click: ()->
+              _this.queryNewTtn(obj,data_row)            
+          }];
+      else
+        buttons = [{
+            text: 'Отмена',
+            class:  'button_yes_or_no no',
+            click: ()->
+              _this.destroy()
+          },{
+            text: 'Закрыть',
+            class:  'button_yes_or_no',
+            click: ()->
+              _this.destroy()
+          }];
       
       
 ###
@@ -950,7 +1037,9 @@ class invoiceTtn
     
     access_def: 0
     response_def:{}
-
+    reflesh:(id)->
+      data = $(@$el).find('#tt_'+id).data()
+      return $(@$el).find('#tt_'+id).replaceWith(@createRow(data))
     constructor: (el, options) ->
       # console.log @options       
       @options = $.extend({}, @defaults, jQuery.parseJSON($('#invoceData').html()))
@@ -1069,6 +1158,9 @@ class invoiceTtn
         # 'html':ttn.id,
         'data-id':ttn.id
         click:()->
+          if _this.options.access != 2
+            $(this).prev().click() 
+            return false
           # console.log  
 
           # echo_message_js(ttn.id+' + '+$(this).attr('data-id'))
@@ -1124,9 +1216,10 @@ class invoiceTtn
             'html':'Запросить',
             click:()->
               # окно Запрос ТТН
+              t = $(this)
               _this.getData('get_ttn',{'id':row.id},()->
                 # создаем экземпляр окна ттн
-                new invoiceTtn($(this), row, _this.response.data, _this.options.access) if _this.response.data != undefined
+                new invoiceTtn(t, row, _this.response.data, _this.options.access) if _this.response.data != undefined
                 )
             })
         else
@@ -1422,14 +1515,14 @@ $(window).scroll ()->
         # .stop( true, true )
         .css {'display':'block'}
     # показываем кнопку вверх
-    $('#invoice-button-top').show()
+    $('#invoice-button-top').stop().animate({right:'15px',bottom:'15px',width:'40px',height:'40px','opacity':0.6},100)
   else
     if($('#js-main-invoice-table-clone').length > 0)  
       $('#js-main-invoice-table-clone')
         # .stop( true, true )
         .css {'display':'none'}
     # скрываем кнопку вверх
-    $('#invoice-button-top').hide()
+    $('#invoice-button-top').stop().animate({right:'35px',bottom:'35px',width:'0px',height:'0px','opacity':0},100)
 
   
 

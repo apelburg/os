@@ -1,26 +1,56 @@
 <?php
 	/**
-	* 
-	*/
+	 *	class API from javscript invoice class
+	 *
+	 *	@author  	Alexey Kapitonov
+	 *	@version 	22.04.2016 12:03:08
+	 */
 	class Invoice  extends aplStdAJAXMethod
-	{
-		public $user = array(); // authorised user info
+	{	
+		protected $user_access = 0; 	// user right (int)
+		protected $user_id = 0;			// user id with base
+		public $user = array(); 		// authorised user info
+		
 		function __construct()
-		{
+		{	
+			// connectin to database
 			$this->db();
 
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
-
+			// geting rights
 			$this->user_access = $this->get_user_access_Database_Int($this->user_id);
-		
+			
+			// calls ajax methods from POST
 			if(isset($_POST['AJAX'])){
 				$this->_AJAX_($_POST['AJAX']);
 			}
 
+			// calls ajax methods from GET
 			## the data GET --- on debag time !!!
 			if(isset($_GET['AJAX'])){
 				$this->_AJAX_($_GET['AJAX']);		
 			}
+		}
+
+		/**
+		 *	buch the confirmation create ttn 
+		 *
+		 *	@author  	Alexey Kapitonov
+		 *	@version 	22.04.2016 13:48:55
+		 */
+		protected function confirm_create_ttn_AJAX(){
+			$query = "UPDATE `".INVOICE_TTN."` SET ";
+			$query .= "`number` = '".(int)$_POST['number'] ."'";
+			if(isset($_POST['date'])){
+				$query .= ",`date` =  '".date("Y-m-d",strtotime($_POST['date']))."' ";
+			}
+
+			$query .= ",`buch_id` = '".$this->user_id."'";
+			$query .= ",`buch_name` = '".$this->getAuthUserName()."'";
+			  	
+			$query .= " WHERE `id` = '".$_POST['id']."'";		
+			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 
 		/**
@@ -71,6 +101,18 @@
 			$query .= " WHERE `id` IN (".$_POST['positions'].")";		
 			// $this->responseClass->addSimpleWindow($message.'<br>'.$_POST['positions'],'Создание TTN');		
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+			// сборка возвращаемого объекта для апдейта строки
+			$data = array(
+				'id' => $insert_id,
+				'date'=>date("d.m.Y"),
+				'position_id' => $_POST['positions'],
+			    'positions_num' => $_POST['position_numbers'],
+			    'delivery' => $_POST['delivery'],
+			    'invoice_id' => $_POST['invoise_id'],
+				);
+
+			$this->responseClass->response['data'] = $data; 
 
 		}
 		/**
@@ -334,15 +376,11 @@
 			$query .= " AND `doc_num` = '".$doc_num."'";
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			$count = 0;
+			
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
-					$count = $row['count'];
+					if($row['count']>0) return true;
 				}
-			}
-			// echo $count;
-			if($count>0){
-				return true;
 			}
 			return false;
 		}
@@ -360,15 +398,15 @@
 				$query = "INSERT INTO `".INVOICE_ROWS."` SET ";
 			    // $query .= "`id` = '',";
 			    // дата создания заявки
-			    $query .= "`invoice_id` = '".$invoce_id."',";
+			    $query .= "`invoice_id` = '".$invoce_id."'";
 			    // id автора
-			    $query .= "`name` = '".$data['name']."', ";
-			    $query .= "`quantity` = '".$data['quantity']."', ";
-			    $query .= "`price_in` = '".$data['price_in']."', ";
-			    $query .= "`price` = '".$data['price']."', ";
-			    $query .= "`summ` = '".$data['summ']."', ";
-			    $query .= "`discount` = '".$data['discount']."', ";
-				$query .= "`flag_ttn` = '0'";
+			    $query .= ", `name` = '".$data['name']."' ";
+			    $query .= ", `quantity` = '".$data['quantity']."' ";
+			    $query .= ", `price_in` = '".$data['price_in']."' ";
+			    $query .= ", `price` = '".$data['price']."' ";
+			    $query .= ", `summ` = '".$data['summ']."' ";
+			    $query .= ", `discount` = '".$data['discount']."' ";
+				$query .= ", `flag_ttn` = '0'";
 				
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			}
@@ -386,6 +424,7 @@
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
+
 		/**
 		 *	edit flag_calc
 		 *
