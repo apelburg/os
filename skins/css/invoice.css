@@ -279,7 +279,10 @@
 #js-main-invoice-table tbody tr td.invoice-row--checkboxtd.checked,
 #js-main-invoice-table tbody tr td .invoice-row--checkboxtd.checked{
 	background-image:url(../images/img_design/icon_invoce_checkbox_checked.png);
+<<<<<<< HEAD
 
+=======
+>>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
 }
 .defttn1,
 .defttn2,
@@ -486,7 +489,10 @@ body #js-alert_union_buttons .button_yes_or_close{
 	font-size: 10px;
 	color:#ccc;
 	text-align: center;
+<<<<<<< HEAD
 
+=======
+>>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
 }
 .ttn--already-was-created{
     /*padding-top: 15px;*/
@@ -498,7 +504,10 @@ body #js-alert_union_buttons .button_yes_or_close{
 }
 .ttn--already-was-created--head{
 	font-weight: bold;
+<<<<<<< HEAD
 
+=======
+>>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
 	padding-top: 15px;
 	padding-bottom: 15px;
 }

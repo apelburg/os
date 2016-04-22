@@ -2284,8 +2284,12 @@ $(document).on('click','.notifyjs-wrapper.notifyjs-hidable',function(event){
 //     	$('#js-main_service_center').dialog('destroy').remove();
 //     	$.SC_reload_RT_content();
 //     }
+<<<<<<< HEAD
 // });
 
 function rtReload(){
 	$.SC_reload_RT_content();
 }
+=======
+// });
+>>>>>>> a93bc38608f9c482095501378da70fa518e1b4cc
