@@ -1354,6 +1354,7 @@ invoiceTtn = (function() {
             $(this).prev().click();
             return false;
           }
+          console.log;
           if (Number(ttn["return"]) === 0) {
             t = $(this);
             ttn["return"] = ++ttn["return"] & 1;

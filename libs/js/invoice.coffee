@@ -1123,7 +1123,7 @@ class invoiceTtn
         number = 'запрос'
       else
         number = ttn.number
-      # определяем дату
+      # определяем дату 
       tr.append($('<div/>',{
         'class':'defttn1 cell',
         'html':number,
@@ -1161,7 +1161,7 @@ class invoiceTtn
           if _this.options.access != 2
             $(this).prev().click() 
             return false
-          # console.log  
+          console.log  
 
           # echo_message_js(ttn.id+' + '+$(this).attr('data-id'))
           if Number(ttn.return) == 0
