@@ -1,10 +1,11 @@
 <?php
-	/**
-	 *	class API from javscript invoice class
-	 *
-	 *	@author  	Alexey Kapitonov
-	 *	@version 	22.04.2016 12:03:08
-	 */
+/**
+ * Class Invoice
+ *
+ *
+ * @author  	Alexey Kapitonov
+ * @version 	22.04.2016 12:03:08
+ */
 	class Invoice  extends aplStdAJAXMethod
 	{	
 		protected $user_access = 0; 	// user right (int)
@@ -33,10 +34,10 @@
 		}
 
 		/**
-		 *	buch the confirmation create ttn 
+		 * buch the confirmation create ttn
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	22.04.2016 13:48:55
+		 * @author  	Alexey Kapitonov
+		 * @version 	22.04.2016 13:48:55
 		 */
 		protected function confirm_create_ttn_AJAX(){
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
@@ -54,10 +55,10 @@
 		}
 
 		/**
-		 *	return data
+		 * return data
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version	11.04.2016 9:29:45 	
+		 * @author  	Alexey Kapitonov
+		 * @version	11.04.2016 9:29:45
 		 */
 		protected function get_data_AJAX(){
 			$response = array(
@@ -69,10 +70,10 @@
 		}
 
 		/**
-		 *	create new ttn
+		 * create new ttn
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	19.04.2016 14:36:44
+		 * @author  	Alexey Kapitonov
+		 * @version 	19.04.2016 14:36:44
 		 */
 		protected function create_new_ttn_AJAX(){
 			$message  = '<b>Method:</b> '.__METHOD__.'<br>';
@@ -116,10 +117,10 @@
 
 		}
 		/**
-		 *	insert ttn number
+		 * insert ttn number
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	21.04.2016 12:55:23
+		 * @author  	Alexey Kapitonov
+		 * @version 	21.04.2016 12:55:23
 		 */
 		protected function update_ttn_number_AJAX(){
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
@@ -131,10 +132,10 @@
 		}
 
 		/**
-		 *	return assigned ttn
+		 * return assigned ttn
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	21.04.2016 11:37:56
+		 * @author  	Alexey Kapitonov
+		 * @version 	21.04.2016 11:37:56
 		 */
 		protected function ttn_was_returned_AJAX(){
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
@@ -150,10 +151,10 @@
 		
 
         /**
-         *	get user full name
+         * get user full name
          *
-         *	@author  	Alexey Kapitonov
-         *	@version 	11.04.2016 15:20:48
+         * @author  	Alexey Kapitonov
+         * @version 	11.04.2016 15:20:48
          */
         private function getAuthUserName(){
 			$name = '';
@@ -172,16 +173,41 @@
         	return $name;
         }
 
+        /**
+         * save invoice number	
+         *
+         * @author  	Alexey Kapitonov
+         * @version 	25.04.2016 15:02:30
+         */
+        protected function confirm_create_bill_AJAX(){
+        	$i = 0;
+        	$query = "UPDATE `".INVOICE_TBL."` SET ";
+        	if(isset($_POST['date'])){
+				$query .= (($i>0)?',':'')." `invoice_create_date` = '".date('Y-m-d',strtotime($_POST['date']))."'";$i++;
+        	}
+			if(isset($_POST['number'])){
+				$query .= (($i>0)?',':'')." `invoice_num` = '".$_POST['number']."'";$i++;
+			}
+
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
+			if ($i>0){
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			}else{
+				$this->responseClass->addMessage('Вы не указали данные для сохранения');
+			}
+        }
+
 		/**
-		 *	get data rows
+		 * get data rows
 		 *
-		 *	@return  	data rows
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 10:48:00
+		 * @return array
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 10:48:00
 		 */
 		private function get_data(){
 			//  получаем информацию по строкам
-			$query = "SELECT * FROM `".INVOICE_TBL."`";
+			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."`";
+			// $query = "  SORT BY `id` DESC";
 			if($this->user_access != 1 && $this->user_access != 2){
 				$query .= "WHERE `manager_id` = '".$this->user_id."' ";
 			}
@@ -199,22 +225,16 @@
 					$this->depending['id'][$row['id']] = $i++;
 				}
 			}
-
-
 			// запрос ттн
 			$this->get_ttn_rows($data_id_s);
-
-
 			return $this->data;
 		}
 
 		/**
-		 *	get ttn from id
+		 * get ttn from id
 		 *
-		 *	@param 		invoice id
-		 *	@return  	data
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	15.04.2016 16:02:26
+		 * @author  	Alexey Kapitonov
+		 * @version 	15.04.2016 16:02:26
 		 */
 		protected function get_ttn_AJAX(){
 			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
@@ -231,11 +251,11 @@
 		}
 
 		/**
-		 *	get ttn rows
+		 * get ttn rows
 		 *
-		 *	@param 		get_ttn_rows - array, id
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	13.04.2016 15:52:37
+		 * @param $id_s
+		 * @author  	Alexey Kapitonov
+		 * @version 	13.04.2016 15:52:37
 		 */
 		private function get_ttn_rows($id_s){
 			// if(count)
@@ -253,19 +273,18 @@
 		}
 
 		/**
-		 *	update and save main discount
+		 * update and save main discount
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	08.04.2016 10:43:03
+		 * @author  	Alexey Kapitonov
+		 * @version 	08.04.2016 10:43:03
 		 */
-		/*
-			define("GENERATED_AGREEMENTS_TBL","os__generated_agreements"); // таблица созданных договоров
-			define("GENERATED_SPECIFICATIONS_TBL","os__generated_specifications"); // таблица созданных спецификаций и строк в них
-			define("OFFERTS_TBL","os__offerts"); // таблица созданных оферт
-			define("OFFERTS_ROWS_TBL","os__offerts_rows"); // таблица строк в офертах
-		 */
-		
 		protected function create_invoice_AJAX(){
+			/*
+				define("GENERATED_AGREEMENTS_TBL","os__generated_agreements"); // таблица созданных договоров
+				define("GENERATED_SPECIFICATIONS_TBL","os__generated_specifications"); // таблица созданных спецификаций и строк в них
+				define("OFFERTS_TBL","os__offerts"); // таблица созданных оферт
+				define("OFFERTS_ROWS_TBL","os__offerts_rows"); // таблица строк в офертах
+			 */
 			$message  = 'Тут будут обработаны данные<br>';
 			$message  .= 'и заведена строка в счетах';
 			$message .= $this->printArr($_POST);
@@ -362,13 +381,13 @@
 		/**
 		 *	check invoice
 		 *
-		 *	@param 		doc_type
-		 *	@param 		doc_id
-		 *	@param 		doc_num
-		 *	@return  	true/false
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	13.04.2016 15:05:41
-		 */		
+		 * @param $doc_type
+		 * @param $doc_id
+		 * @param $doc_num
+		 * @return bool
+		 * @author  	Alexey Kapitonov
+		 * @version 	13.04.2016 15:05:41
+		 */
 		private function check_invoice($doc_type, $doc_id, $doc_num){
 			$query = "SELECT count(*) as count FROM `".INVOICE_TBL."` ";
 			$query .= "WHERE `doc_type` = '".$doc_type."'";
@@ -386,12 +405,12 @@
 		}
 
 		/**
-		 *	create Position Rows
+		 * create Position Rows
 		 *
-		 *	@param 		invoce_id 
-		 *	@return  	$data
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:59:33
+		 * @param $invoce_id
+		 * @param $positions_data
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:59:33
 		 */
 		private function createPositionRows($invoce_id, $positions_data){
 			foreach($positions_data as $data){
@@ -434,7 +453,6 @@
 		protected function edit_flag_calc_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= "`flag_calc` = '".(int)$_POST['val']."'";
-			  	
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
@@ -448,7 +466,6 @@
 		protected function edit_flag_ice_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= "`flag_ice` = '".(int)$_POST['val']."'";
-			  	
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
@@ -461,7 +478,6 @@
 		protected function edit_flag_1c_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= "`flag_1c` = '".(int)$_POST['val']."'";
-			  	
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
@@ -474,17 +490,18 @@
 		protected function edit_flag_flag_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= "`flag_flag` = '".(int)$_POST['val']."'";
-			  	
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 
 		/**
-		 *	get Oferta rows
+		 * get Oferta rows
 		 *
-		 *	@param 		id
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:37:10
+		 * @param $id
+		 * @return array
+		 * @param 		id
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:37:10
 		 */
 		private function getOfertaRows($id){
 			$query = "SELECT * FROM `".OFFERTS_ROWS_TBL."` WHERE `oferta_id` = '".$id."'";
@@ -501,11 +518,13 @@
 		}
 
 		/**
-		 *	get Oferta 
+		 * get Oferta
 		 *
-		 *	@param 		id
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:37:10
+		 * @param $id
+		 * @return array
+		 * @param 		id
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:37:10
 		 */
 		private function getOferta($id){
 			$query = "SELECT * FROM `".OFFERTS_TBL."`";
@@ -523,12 +542,12 @@
 		}
 
 		/**
-		 *	calc price in
+		 * calc price in
 		 *
-		 *	@param 		docement rows array()
-		 *	@return  	number
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:18:25
+		 * @param $arr
+		 * @return int
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:18:25
 		 */
 		private function getPriceIn($arr){
 			$price = 0;
@@ -538,12 +557,12 @@
 			return $price;
 		}
 		/**
-		 *	calc price out
+		 * calc price out
 		 *
-		 *	@param 		docement rows array()
-		 *	@return  	number
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:18:33
+		 * @param $arr
+		 * @return float|int
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:18:33
 		 */
 		private function getPriceOut($arr){
 			$price = 0;
@@ -555,34 +574,37 @@
 		}
 
 		/**
-		 *	get requisits name
+		 * get requisits name
 		 *
-		 *	@param 		requisit_id
-		 *	@return  	str
-		 *	@see 		requisits name
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:16:57
+		 * @param $requisit_id
+		 * @return string
+		 * @see 		requisits name
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:16:57
 		 */
 		private function getRequisitsName($requisit_id){
 			return 'метод получения названия реквизитов';
 		}
+
 		/**
-		 *	get client name
+		 * get client name
 		 *
-		 *	@param 		client_id
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:17:25
+		 * @param $client_id
+		 * @return string
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:17:25
 		 */
 		private function getCLientName($client_id){
 			return 'метод получения названия клиента';
 		}
 
 		/**
-		 *	insert invoice row
+		 * insert invoice row
 		 *
-		 *	@param 		add_data - информация для добавления
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 15:14:53
+		 * @param $add_data
+		 * @return mixed
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 15:14:53
 		 */
 		private function createInoceRow($add_data){
 			$query = "INSERT INTO `".INVOICE_TBL."` SET ";
@@ -621,11 +643,12 @@
 
 
 		/**
-		 *	get agreement rows
+		 * get agreement rows
 		 *
-		 *	@param 		agreement_id
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 11:55:13
+		 * @param $agreement_id
+		 * @return array
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 11:55:13
 		 */
 		private function getAgreement($agreement_id){
 			$query = "SELECT * FROM `".GENERATED_AGREEMENTS_TBL."` WHERE `id` = '".$agreement_id."' ";
@@ -640,12 +663,14 @@
 		}
 
 		/**
-		 *	get specification rows
+		 * get specification rows
 		 *
-		 *	@param 		agreement_id
-		 *	@param 		specification_num
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11.04.2016 11:50:07
+		 *
+		 * @param $agreement_id
+		 * @param $specification_num
+		 * @return array
+		 * @author  	Alexey Kapitonov
+		 * @version 	11.04.2016 11:50:07
 		 */
 		private function getSpecificationRows($agreement_id,$specification_num){
 			$query = "SELECT * FROM `".GENERATED_SPECIFICATIONS_TBL."` WHERE `agreement_id` = '".$agreement_id."' AND `specification_num` = '".$specification_num."'";
@@ -660,12 +685,12 @@
 		}
 
 		/**
-		 *	get user acces
+		 * get user access
 		 *
-		 *	@param 		user_id
-		 *	@return  	user acces - number
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	11:38 16.03.2016
+		 * @param $id
+		 * @return int
+		 * @author  	Alexey Kapitonov
+		 * @version 	11:38 16.03.2016
 		 */
 		private function get_user_access_Database_Int($id){
 			$query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
