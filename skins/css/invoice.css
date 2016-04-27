@@ -412,6 +412,15 @@ body #js-alert_union_buttons .button_yes_or_close{
     color: #424242;
     position: absolute;
 }
+#js-invoice--window--ttn-table td:nth-of-type(3) div,
+#js-invoice--window--ttn-table td:nth-of-type(3) textarea{
+	text-align: center;
+	
+}
+#js-invoice--window--ttn-table td:nth-of-type(4) textarea,
+#js-invoice--window--ttn-table td:nth-of-type(5) textarea{
+	text-align: right;
+}
 #ttn_head_info{
 	width: 100%;
 	padding-bottom: 15px;
@@ -527,4 +536,33 @@ div#js-alert_union{
     padding: 3px 0 0 0;
     border: 0;
     margin: 0;
+}
+
+
+.myBlockBefore {
+	/*display: none;*/
+	position: absolute;
+	font-size: 14px;
+	cursor: pointer;
+	text-align: center;
+	/*border:2px solid #92b73e;*/
+	padding: 7px 5px;
+	color: #000;
+	background-color: #92b73e;
+	width: 150px;
+	opacity: 1;
+}
+.myBlockBefore:active{
+	/*transition: opacity .15s ease-in 0s,transform .5s cubic-bezier(0.4,0,.3,1) .1s;*/
+	background-color: #619324;
+	color: #fff;
+}
+.myyClass1 textarea{
+	padding: 3px  0 3px 3px;
+	border:none;
+	/*float: left;*/
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border:2px solid #92b73e;
 }

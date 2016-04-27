@@ -79,7 +79,7 @@
 			$message  = '<b>Method:</b> '.__METHOD__.'<br>';
 			$message .= $this->printArr($_POST);
 			// $this->responseClass->addMessage($message,'system_message');
-
+			
 			$query = "INSERT INTO `".INVOICE_TTN."` SET ";
 			    // $query .= "`id` = '',";
 			    // дата создания заявки

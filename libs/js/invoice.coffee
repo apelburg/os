@@ -189,7 +189,7 @@ class modalWindow
     height:'auto',
     html:'Текст в окне',
     buttons:[{
-          text:   'OK',
+          text:   'Закрыть',
           class:  'button_yes_or_no no',
           style:  'float:right;'
           click:  ()->
@@ -305,6 +305,10 @@ class invoiceWindow
       ###
       main_div.append(@createBillTable(responseData))
       ###
+      # рабочий блок
+      ###
+#      main_div.append()
+      ###
       # добавление шапки окна
       ###
       main_div.prepend(@createBillHead(data_row))
@@ -323,15 +327,12 @@ class invoiceWindow
       })
       @$el = @myObj.options.html[0]
 
-  # сборка таблицы менеджер и осталные
+  # сборка таблицы
   createBillTable:(responseData)->
     _this = @
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
     # шапка таблицы
     table.append(tr = $('<tr/>'))
-    # чекбоксы
-
-    # tr.append(td_main_check)
 
     # Number
     td  = $('<th/>',{'text':'№'})
@@ -359,38 +360,39 @@ class invoiceWindow
     @checkNumber = 0
     for position in responseData
       tr = $('<tr/>').data(position).attr('data-id',position.id)
-      # чекбоксы
 
       td  = $('<td/>')
-      # tr.addClass('ttn_created')
-      # tr.append(td)
-
       # Number
       td  = $('<td/>').append(i)
       tr.append(td)
       # Name
-      td  = $('<td/>').append(position.name)
+      border = '1px solid green'
+      td  = _this.createTS_copyContent(position,'name',table)
       tr.append(td)
       # Quantity
-      td  = $('<td/>').append(position.quantity)
+      td  = _this.createTS_copyContent(position,'quantity',table)
       tr.append(td)
+
       # Price for one
       pr_out = calc_price_with_discount(position.price, position.discount)
-      td  = $('<td/>').append(round_money(pr_out)+' р.')
+      position.pr_out = round_money(pr_out)+' р.';
+      # td  = $('<td/>').append(round_money(pr_out)+' р.')
+      td  = _this.createTS_copyContent(position,'pr_out',table)
       tr.append(td)
       # Price for all
       if position.quantity == 0
         position.quantity = 1
+
       main_price += pr_out*position.quantity
+
       nds += Number(round_money(pr_out*position.quantity/118*18))
-      td  = $('<td/>').append(round_money(pr_out*position.quantity)+' р.')
+      position.main_price = round_money(pr_out*position.quantity)+' р.'
+
+      td  = _this.createTS_copyContent(position,'main_price',table)
       tr.append(td)
       i++
       table.append(tr)
-    # if @checkNumber>0
-    #   td_main_check.append(main_checkbox)
-    # else
-    #   td_main_check.width('20px')
+
     # ИТОГО
     table.append(tr = $('<tr/>'))
     td  = $('<th/>')
@@ -420,6 +422,71 @@ class invoiceWindow
     tr.append(td)
     table.append(tr)
     table
+
+  createTS_copyContent:(position,key,table)->
+    _this = @
+    td  = $('<td/>',{
+        'class':'myyClass1',
+        on:
+          click:()->      
+            # убиваем все textarea в таблице
+            _this.updateTableTextarea($(this).parent().parent())
+
+            # перед вставкой textarea обнуляем отступы в ячейке
+            $(this).css('padding','0').html(textarea)
+            # получаем контент ячейки
+            name = $(this).data().val
+            # вставка textarea
+            textarea = $('<textarea/>',{
+              'val':name,
+              'click':(event)->
+                event.preventDefault()
+                event.stopPropagation()
+
+                return false
+            }).width($(this).innerWidth()-6).height($(this).innerHeight()+1)
+            
+            $(this).html(textarea).focus()
+            # кнопка сохранить
+            div = $('<div/>',{
+              'class':'myBlockBefore',
+              'html':'Скопировать',
+              click:(event)->
+                $(this).parent().find('textarea').select();
+                # event.preventDefault()
+                try
+                  # // Now that we've selected the anchor text, execute the copy command
+                  successful = document.execCommand('copy');
+
+                  # $('<input/>',{'val':td1.text()}).execCommand("Copy")
+                  msg = successful ? 'successful' : 'unsuccessful';
+                  console.log('Copy email command was ' + msg);
+                  # _this.updateTableTextarea(table)
+
+                catch  error
+                  console.log  error
+              # on:
+              #   mouseenter:()->
+              #     $(this).remove()
+            }).css({
+              'marginLeft':($(this).innerWidth() - 166),
+              'marginTop':-2
+            })
+            $(this).append(div)
+          mouseleave:()->            
+            _this.updateTableTextarea($(this).parent().parent())
+
+        }).append($('<div/>',{'class':'mmmmm','html':position[key]})).data('val',position[key])
+    return td
+  # перебор всех строк и репласе всех textarea
+  updateTableTextarea:(table) ->
+
+    table.find('textarea').each(()->
+      
+        name = $(this).parent().data().val
+        $(this).parent().attr('style','').html($('<div/>',{'class':'mmmmm','html':name}))  
+      )
+    return
   # шапка таблицы счёт
   createBillHead:(data_row)->
     _this = @
@@ -515,31 +582,19 @@ class invoiceWindow
   getBillButtons:(obj,data_row)->
     _this = @
     @saveObj = {}
-    if @access == 2 || @access == 1
-      if Number(@defaults.number) != undefined && Number(@defaults.number) == 0
-        buttons = [{
-          text: 'Отмена',
-          class:  'button_yes_or_no no',
-          click: ()->
-            _this.destroy()
-        },{
-          text: 'Создать',
-          class:  'button_yes_or_no',
-          click: ()->
-            _this.confirmAndCreateBill(obj,data_row)
-        }];
-      else
-        buttons = [{
-          text: 'Отмена',
-          class:  'button_yes_or_no no',
-          click: ()->
-            _this.destroy()
-        },{
-          text: 'Закрыть',
-          class:  'button_yes_or_no',
-          click: ()->
-            _this.destroy()
-        }];
+    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
+      buttons = [{
+        text: 'Отмена',
+        class:  'button_yes_or_no no',
+        click: ()->
+          _this.destroy()
+      },{
+        text: 'Создать',
+        class:  'button_yes_or_no',
+        click: ()->
+          _this.confirmAndCreateBill(obj,data_row)
+      }];
+
   editSaveObj:(key,value, old_value)->
     if(old_value == value)
       delete @saveObj[key]
