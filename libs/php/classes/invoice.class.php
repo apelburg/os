@@ -249,6 +249,25 @@
 			$this->responseClass->response['data'] = $data; 
 			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
+		/**
+		 * get pp from invoice id
+		 *
+		 * @author  	Alexey Kapitonov
+		 * @version 	15.04.2016 16:02:26
+		 */
+		protected function get_payment_AJAX(){
+			$query = "SELECT * FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = $data;
+			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+		}
 
 		/**
 		 * get ttn rows

@@ -52,6 +52,7 @@
 	define("INVOICE_TBL","os__invoice_list"); // счета
 	define("INVOICE_ROWS",'os__invoice_rows'); // строки позиций
 	define("INVOICE_TTN",'os__invoice_TTN'); // строки ттн для таблицы счета
+	define("INVOICE_PP",'os__invoice_PP'); // строки приходов по счетам
 
 	define("SUPPLIERS_TBL","os__supplier_list"); // таблица поставщиков
 	define("SUPPLIERS_ACTIVITIES_TBL","os__suppliers_activities"); // таблица видов деятельности поставщиков	

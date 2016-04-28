@@ -85,6 +85,80 @@ class ttnObj
     return $.extend({}, @defaults, @options)
 
 
+class ppRow
+  defaults:
+    id:0
+    invoice_id:0
+    invoice_number:0
+    number:0
+    date: getDateNow()
+    price: 0
+    percent: 0
+    craeate: getDateNow()
+    buch_id:0
+    buch_name:'Default Name'
+    edit:0
+    del:0
+  enterObj:{}
+  options:{}
+
+  constructor:(data = {})->
+    console.log "ppRow"
+    for key,el of data
+      @options[key] = el
+    if data.edit == undefined
+      data.edit = 1
+    @options = $.extend({}, @defaults, @options)
+
+    return @init()
+  init:()->
+    if @options.edit > 0
+      return @createEditingObj()
+    else
+      return @createSimpleRow()
+
+  createEditingObj:()->
+    tr = $('<tr/>')
+      .append($('<td/>',{'html':@options.number}))
+      .append($('<td/>',{'html':@options.date}))
+      .append($('<td/>',{'html':@options.price}))
+      .append($('<td/>')
+        .append($('<span/>',{'html':@options.percent}))
+        .append($('<span/>',{'html':"%"}))
+        )
+      .append($('<td/>')
+        .append($('<div/>',{'html':@options.buch_name}))
+        .append($('<div/>',{'html':@options.craeate}))
+        )
+      .append($('<td/>',{
+        'class':'ppDel'
+        click:()->
+          echo_message_js "del pp"
+        }))
+      .data(@options)
+    return tr
+  createSimpleRow:()->
+    tr = $('<tr/>')
+      .append($('<td/>',{'html':@options.number}))
+      .append($('<td/>',{'html':@options.date}))
+      .append($('<td/>',{'html':@options.price}))
+      .append($('<td/>')
+        .append($('<span/>',{'html':@options.percent}))
+        .append($('<span/>',{'html':"%"}))
+        )
+      .append($('<td/>')
+        .append($('<div/>',{'html':@options.buch_name}))
+        .append($('<div/>',{'html':@options.craeate}))
+        )
+      .append($('<td/>',{
+        'class':'ppDel'
+        click:()->
+          echo_message_js "del pp"
+        }))
+      .data(@options)
+    return tr
+
+
 ###
 # send AJAX
 ###
@@ -241,7 +315,7 @@ class modalWindow
       buttons_html = $('<table></table>');
       for button_n,i in @options.buttons
         button = $('<button/>',{
-          text: button_n['text'],
+          html: button_n['text'],
           click: button_n['click']
           });
         if button_n['class']
@@ -252,9 +326,12 @@ class modalWindow
           button.attr('id',button_n['id'])
 
         buttons_html.append(
-          $('<td/>')
+          td = $('<td/>')
             .append(button)
             );
+        if(i>0)
+          td.css('textAlign','right');
+
 
       self.find('.ui-dialog-buttonpane').html($('<div/>',{
         'id':'js-alert_union_buttons',
@@ -263,11 +340,253 @@ class modalWindow
       # $('#js-alert_union').after();
 
 
-  # show:()->
-  #   console.log "show"
-  # destroy:()->
-  #   console.log "destroy"
 
+###
+# model show window entering payment for invoice 
+###
+class paymentWindow
+  saveObj:{}
+  defaults:
+    id:0,
+    number:'0000',
+    type:"new"
+  # 
+  constructor: (obj, data_row, data, accces) ->
+    # запоминаем уровень допуска
+    @access = accces
+    # сохраняем информацию по строке
+    @options = data_row
+    # сборка окна счёта
+    @init(obj, data_row, data, accces)
+  
+  # собираем окно счёт
+  init:(obj, data_row, responseData, accces)->
+    _this = @
+    # запрос данных
+    if(responseData!= undefined)
+      ###
+      # создание контейнера
+      ###
+      main_div = $('<div/>')
+      ###
+      # добавляем таблицу
+      ###
+      main_div.append(@createTable(responseData))
+      ###
+      # добавление шапки окна
+      ###
+      main_div.prepend(@createHead(data_row))
+
+      ###
+      # создание окна
+      ###
+      @myObj = new modalWindow({
+        html:main_div,
+        width:'1000px',
+        maxHeight:'100%',
+        title:'Приходы по счёту',
+        buttons: @getButtons(obj,data_row)
+      },{
+        closeOnEscape:true
+      })
+      @$el = @myObj.options.html[0]
+      console.log @$el
+
+      $(@$el).parent().css('padding','0')
+  # сборка таблицы
+  createTable:(responseData)->
+    tbl = $('<table>',{'id':'js--payment-window--body_info-table'})
+        .append(tr = $('<tr/>'))
+
+    tr.append($('<th/>',{'html':'№ платёжки'}))
+      .append($('<th/>',{'html':'дата ПП'}))
+      .append($('<th/>',{'html':'платёж на сумму'}))
+      .append($('<th/>',{'html':'% оплаты'}))
+      .append($('<th/>',{'html':'платёж внесён','colspan':'2'}))
+    return tbl
+
+  ###
+  # возвращает <td> с textarea и кнопкой копировать,
+  # изменения в поле textarea не редактируют информацию, 
+  # textarea служит только для того, чтобы программно скопировать информацию из его тела
+  ###
+  createTS_copyContent:(position,key,table)->
+    _this = @
+    td  = $('<td/>',{
+        'class':'myyClass1',
+        on:
+          click:()->      
+            # убиваем все textarea в таблице
+            _this.updateTableTextarea($(this).parent().parent())
+
+            # перед вставкой textarea обнуляем отступы в ячейке
+            $(this).css('padding','0').html(textarea)
+            # получаем контент ячейки
+            name = $(this).data().val
+            # вставка textarea
+            textarea = $('<textarea/>',{
+              'val':name,
+              'click':(event)->
+                event.preventDefault()
+                event.stopPropagation()
+
+                return false
+            }).width($(this).innerWidth()-6).height($(this).innerHeight()+1)
+            
+            $(this).html(textarea).focus()
+            # кнопка сохранить
+            div = $('<div/>',{
+              'class':'myBlockBefore',
+              'html':'Скопировать',
+              click:(event)->
+                $(this).parent().find('textarea').select();
+                # event.preventDefault()
+                try
+                  # // Now that we've selected the anchor text, execute the copy command
+                  successful = document.execCommand('copy');
+
+                  # $('<input/>',{'val':td1.text()}).execCommand("Copy")
+                  msg = successful ? 'successful' : 'unsuccessful';
+                  console.log('Copy email command was ' + msg);
+                  # _this.updateTableTextarea(table)
+
+                catch  error
+                  console.log  error
+              # on:
+              #   mouseenter:()->
+              #     $(this).remove()
+            }).css({
+              'marginLeft':($(this).innerWidth() - 159),
+              'marginTop':-2
+            })
+            $(this).append(div)
+          mouseleave:()->            
+            _this.updateTableTextarea($(this).parent().parent())
+
+        }).append($('<div/>',{'class':'mmmmm','html':position[key]})).data('val',position[key])
+    return td
+  # перебор всех строк и репласе всех textarea
+  
+  # шапка таблицы 
+  createHead:(data_row)->
+    console.log data_row
+    _this = @
+    # общий контейнер
+    head_info = $('<div>',{id:'head_info'});
+    table = $('<table>',{id:'js--payment-window--head_info-table'});
+
+    ###
+    # строка 1
+    ###
+    tr = $('<tr/>').append($('<td/>',{'colspan':'2'}).append($('<span/>',{'html':'номер счёта','class':'span-greyText'}))).append($('<td/>')).append($('<td/>'))
+    table.append(tr)
+
+    ###
+    # строка 2
+    ###
+    tr = $('<tr/>')
+    inputSearch = $('<input/>',{'type':'text','id':'js--payment-window--search-pp-input','val':data_row.invoice_num})
+    tr.append($('<td/>').append(inputSearch))
+    buttonSearch = $('<button/>',{'id':'js--payment-window--search-pp-button'})
+    tr.append($('<td/>').append(buttonSearch))
+#    table.append(tr)
+    div1 = $('<div/>')
+      .append($('<span/>',{'html':'Счёт','class':'span-boldText'}))
+      .append($('<span/>',{'html':' № ', 'class':'span-greyText span-boldText'}))
+      .append($('<span/>',{'html':data_row.invoice_num,'class':'span-boldText'}))
+      .append($('<span/>',{'html':' от ', 'class':'span-greyText'}).css('paddingLeft','10px'))
+      .append($('<span/>',{'html':data_row.invoice_create_date}).css('paddingLeft','10px'))
+      .append($('<span/>',{'html':' на сумму ', 'class':'span-greyText'}).css('paddingLeft','10px'))
+      .append($('<span/>',{'html':data_row.price_out}).css('paddingLeft','10px'))
+
+    div2 = $('<div/>')
+      .append($('<span/>',{'html':data_row.manager_name,'data-id':data_row.manager_id}))
+      .append($('<span/>',{'html':' '+data_row.client_name,'data-id':data_row.client_id}).css('paddingLeft','28px'))
+
+    tr.append($('<td/>').append(div1).append(div2))
+    div1 = $('<div/>')
+      .append($('<span/>',{'html':'оплачен:', 'class':'span-greyText'}))
+      .append($('<span/>',{'html':data_row.percent_payment}))
+      .append('%')
+    div2 = $('<div/>')
+      .append($('<span/>',{'html':'условия:', 'class':'span-greyText'}))
+      .append($('<span/>',{'html':data_row.conditions}))
+      .append('%')
+    tr.append($('<td/>').append(div1).append(div2))
+
+
+    # span_ttn_number = $('<span/>')
+
+
+#    tr = $('<tr/>').append(td)
+    table.append(tr)
+    ###
+    # добавляем всё в контейнер и возвращаем
+    ###
+    head_info.append(table)
+
+  createRow:(data_row)->
+    console.log $('<tr/>')
+    console.log new ppRow()
+    $(@$el).find('#js--payment-window--body_info-table').append(new ppRow())
+  getButtons:(obj,data_row)->
+    _this = @
+    @saveObj = {}
+#    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
+    buttons = [{
+      text: 'Добавить платеж',
+      class:  'button_yes_or_no yes add_payment_button',
+      click: ()->
+        _this.createRow()
+    },{
+      text: 'Показать удалённые(0)',
+      class:  'button_yes_or_no no show_del_payment_button',
+      click: ()->
+        _this.destroy()
+    },{
+      text: 'Закрыть',
+      class:'button_yes_or_no no',
+      click:()->
+        _this.destroy()
+        #_this.confirmAndCreateBill(obj,data_row)
+    }];
+
+    return buttons
+
+  editSaveObj:(key,value, old_value)->
+    if(old_value == value)
+      delete @saveObj[key]
+      @saveObj[key] = undefined
+    else
+      @saveObj[key] = value
+    return
+  # бух присваивает номер и подтверждает создание счета
+  confirmAndCreateBill:(obj,data_row)->
+    _this = @
+    console.log data_row
+    @saveObj.id = data_row.id
+    # check update ttn number
+    reload = false
+    if @saveObj.number
+      reload = true
+      data_row.invoice_num = @saveObj.number
+    if @saveObj.date
+      reload = true
+      data_row.invoice_create_date = @saveObj.date
+
+    if(reload)
+      # обновляем информацию по строке
+      obj.parent().data({}).data(data_row)
+      # обновляем дом в строке
+      $('#js-main-invoice-table').invoice('reflesh',data_row.id)
+      # отправляем запрос
+      new sendAjax 'confirm_create_bill',@saveObj, ()->
+        _this.destroy()
+    else
+      echo_message_js('Для создания счёта необходимо ввести его номер','error_message')
+  # убиваем окно
+  destroy:()->
+    $(@$el).parent().dialog('destroy').remove()
 ###
 # model show Invoice positions and
 # insert invoice number or date from buh
@@ -279,20 +598,15 @@ class invoiceWindow
     number:'0000',
     type:"new"
 
-  constructor: (obj, data_row, data, accces, type ='', ttn ) ->
-    if ttn != null
-      @defaults = $.extend({}, @defaults, ttn )
-      @defaults.number = '0000' if @defaults.number == null
-    else
-      ttn = {}
+  constructor: (obj, data_row, data, accces) ->
     # запоминаем уровень допуска
     @access = accces
     # сохраняем информацию по строке
     @options = data_row
     # сборка окна счёта
-    @initBILL(obj, data_row, data, accces, ttn)
+    @init(obj, data_row, data, accces)
   # собираем окно счёт
-  initBILL:(obj, data_row, responseData, accces, ttn)->
+  init:(obj, data_row, responseData, accces)->
     _this = @
     # запрос данных
     if(responseData!= undefined)
@@ -303,15 +617,11 @@ class invoiceWindow
       ###
       # добавляем таблицу
       ###
-      main_div.append(@createBillTable(responseData))
-      ###
-      # рабочий блок
-      ###
-#      main_div.append()
+      main_div.append(@createTable(responseData))
       ###
       # добавление шапки окна
       ###
-      main_div.prepend(@createBillHead(data_row))
+      main_div.prepend(@createHead(data_row))
 
       ###
       # создание окна
@@ -328,7 +638,7 @@ class invoiceWindow
       @$el = @myObj.options.html[0]
 
   # сборка таблицы
-  createBillTable:(responseData)->
+  createTable:(responseData)->
     _this = @
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
     # шапка таблицы
@@ -423,6 +733,11 @@ class invoiceWindow
     table.append(tr)
     table
 
+  ###
+  # возвращает <td> с textarea и кнопкой копировать,
+  # изменения в поле textarea не редактируют информацию, 
+  # textarea служит только для того, чтобы программно скопировать информацию из его тела
+  ###
   createTS_copyContent:(position,key,table)->
     _this = @
     td  = $('<td/>',{
@@ -469,7 +784,7 @@ class invoiceWindow
               #   mouseenter:()->
               #     $(this).remove()
             }).css({
-              'marginLeft':($(this).innerWidth() - 166),
+              'marginLeft':($(this).innerWidth() - 159),
               'marginTop':-2
             })
             $(this).append(div)
@@ -488,7 +803,7 @@ class invoiceWindow
       )
     return
   # шапка таблицы счёт
-  createBillHead:(data_row)->
+  createHead:(data_row)->
     _this = @
     ###
     # контейнер шапки окна ТТН
@@ -629,6 +944,8 @@ class invoiceWindow
   # убиваем окно
   destroy:()->
     $(@$el).parent().dialog('destroy').remove()
+
+
 ###
 # model from ttn
 ###
@@ -653,13 +970,13 @@ class invoiceTtn
     @options = data_row
 
     # собираем окно ттн
-    @initTTN(obj, data_row, data, accces, ttn)
+    @init(obj, data_row, data, accces, ttn)
 
 
 
 
   # собираем окно ттн
-  initTTN:(obj, data_row, responseData, accces, ttn)->
+  init:(obj, data_row, responseData, accces, ttn)->
     _this = @
     # запрос данных
     if(responseData!= undefined)
@@ -670,11 +987,11 @@ class invoiceTtn
       ###
       # добавляем таблицу
       ###
-      main_div.append(@createTtnTable(responseData))
+      main_div.append(@createTable(responseData))
       ###
       # добавление шапки окна
       ###
-      main_div.prepend(@createTtnHead(ttn))
+      main_div.prepend(@createHead(ttn))
       ###
       # выбор способа доставки
       ###
@@ -761,7 +1078,7 @@ class invoiceTtn
 
     
   # сборка шапки АДМИН - БУХ
-  createTtnHeadAdmin:(ttn)->
+  createHeadAdmin:(ttn)->
     _this = @
     ###
     # контейнер шапки окна ТТН
@@ -901,7 +1218,7 @@ class invoiceTtn
           format:'d.m.Y'
         });
   # сборка шапки МЕНЕДЖЕР и остальные
-  createTtnHeadManager:(ttn)->
+  createHeadManager:(ttn)->
     # ttn number & date
     span_ttn = $('<span/>',{'html':"№ ТТН "+@defaults.number+" от "}).append(@spanDate())
     # invoice number & date
@@ -927,18 +1244,18 @@ class invoiceTtn
     $('<div>',{id:'ttn_head_info'}).append(table)
 
   # проверка прав и сборка шапки окна
-  createTtnHead:(ttn)->
+  createHead:(ttn)->
     # console.log  @access
     # проверка уровня доступа и вызов соответствующей шапки
     switch @access
-      when 1 then head_info = @createTtnHeadAdmin(ttn)
-      when 2 then head_info = @createTtnHeadAdmin(ttn)
-      when 5 then head_info = @createTtnHeadManager(ttn)
+      when 1 then head_info = @createHeadAdmin(ttn)
+      when 2 then head_info = @createHeadAdmin(ttn)
+      when 5 then head_info = @createHeadManager(ttn)
       else
-        head_info = @createTtnHeadManager(ttn)
+        head_info = @createHeadManager(ttn)
 
   # сборка таблицы менеджер и осталные
-  createTtnTableManager:(responseData)->
+  createTableManager:(responseData)->
     _this = @
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
     # шапка таблицы
@@ -1079,7 +1396,7 @@ class invoiceTtn
     table.append(tr)
     table
   # сборка таблицы Админ + бух
-  createTtnTableAdmin:(responseData)->
+  createTableAdmin:(responseData)->
     # console.log 654
     _this = @
     table = $('<table/>',{'id':'js-invoice--window--ttn-table'})
@@ -1199,15 +1516,15 @@ class invoiceTtn
 
 
   # проверка прав и сборка таблицы 
-  createTtnTable:(responseData)->
+  createTable:(responseData)->
     # проверка уровня доступа и вызов соответствующей шапки
     # console.log @access
     switch @access
-      when 1 then tbl = @createTtnTableAdmin(responseData)
-      when 2 then tbl = @createTtnTableAdmin(responseData)
-      # when 5 then tbl = @createTtnTableManager(responseData)
+      when 1 then tbl = @createTableAdmin(responseData)
+      when 2 then tbl = @createTableAdmin(responseData)
+      # when 5 then tbl = @createTableManager(responseData)
       else
-        tbl = @createTtnTableManager(responseData)
+        tbl = @createTableManager(responseData)
     tbl
 
 
@@ -1381,8 +1698,6 @@ class invoiceTtn
             click: ()->
               _this.destroy()
           }];
-
-
 ###
 # jQuery plagin Invoice
 #
@@ -1662,7 +1977,19 @@ class invoiceTtn
       td.addClass('checked') if Number row.flag_1c>0
       tr.append(td)
       # выручка, платежи
-      td = $('<td/>')
+      td = $('<td/>',{
+        click:(e)->
+          t = $(@)
+          _this.getData('get_payment',{'id':row.id},()->
+            # создаем экземпляр окна ттн
+            new paymentWindow(t, row, _this.response.data, _this.options.access )
+            )
+        on:
+          mouseenter:()->
+            $(this).css('backgroundColor':'#f1f1f1')
+          mouseleave:()->
+            $(this).attr('style','')
+        }).css('cursor','pointer')
         .append($('<div/>',{
           'class':'invoice-row--price-profit',
           'html':round_money row.price_out

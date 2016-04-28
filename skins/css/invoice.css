@@ -333,6 +333,12 @@ body #js-alert_union_buttons .save,
 body #js-alert_union_buttons .button_yes_or_close{
 	float: right;
 }
+body #js-alert_union_buttons table td button.right{
+    float: right;
+}
+body #js-alert_union_buttons table td button.left{
+    float: left;
+}
 
 #js-SC_buttons table,
 #js-alert_union_buttons table{
@@ -348,6 +354,9 @@ body #js-alert_union_buttons .button_yes_or_close{
 #js-SC_buttons table td:nth-of-type(3),
 #js-alert_union_buttons table td:nth-of-type(2){
 	text-align: right;
+}
+#js-alert_union_buttons table td{
+    min-width: 55px;
 }
 
 /*
@@ -566,3 +575,138 @@ div#js-alert_union{
 	overflow: hidden;
 	border:2px solid #92b73e;
 }
+/* окно приходы */
+#js--payment-window--head_info-table{
+	border-collapse: collapse;
+	width: 100%;
+}
+#js--payment-window--head_info-table tr td{
+	background-color: #f1f2f2;
+	border: 1px solid #ccc;
+
+}
+#js--payment-window--head_info-table tr td span{
+	color: #000;
+}
+#js--payment-window--head_info-table tr td{
+	padding: 5px;
+}
+#js--payment-window--head_info-table tr td span.span-greyText{
+	color: #999999
+}
+#js--payment-window--head_info-table tr td span.span-boldText{
+	font-weight: bold;
+}
+#js--payment-window--head_info-table tr:nth-of-type(1) td{
+    font-size: 11px;
+    padding: 2px 5px;
+}
+#js--payment-window--head_info-table tr:nth-of-type(1) td:nth-of-type(1){
+	text-align: center;
+}
+#js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(1){
+	padding: 0;
+	width: 80px;
+}
+#js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(1) input{
+	width: 79px;
+	height: 63px;
+	float: left;
+	border:0px;
+	outline: none;
+	text-align: center;
+	font-weight: bold;
+	padding:0 5px;
+}
+#js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(2){
+	padding: 0;
+	width: 50px;
+}
+#js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(2) button{
+	width: 57px;
+	height: 63px;
+	float: left;
+	outline: none;
+	border: 0px;
+	background-color: #c6e1aa;
+	background-image: url(../images/img_design/ppwindow_search_btn.png);
+	cursor: pointer;
+	background-repeat: no-repeat;
+	background-position: 50%;
+}
+#js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(2) button:active,
+#js-alert_union_buttons button.add_payment_button:active{
+	background-color: #acc494;
+}
+#js-alert_union_buttons button.add_payment_button{
+    /*font-size: 12px;*/
+}
+#js-alert_union_buttons button.show_del_payment_button{
+    /*font-size: 12px;*/
+}
+#js--payment-window--body_info-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#js--payment-window--body_info-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+#js--payment-window--body_info-table tr th{
+    background-color: #f1f2f2;
+    border: 1px solid #ccc;
+    border-top:0px;
+    font-size:10px;
+    font-weight: normal;
+    color: #999999;
+}
+#js--payment-window--body_info-table tr th:nth-of-type(1){
+    width: 98px;
+    border-left: 0px;
+}
+#js--payment-window--body_info-table tr th:nth-last-of-type(1){
+    border-left: 0px;
+}
+#js--payment-window--body_info-table tr th:nth-of-type(2){
+    width: 135px;
+}
+#js--payment-window--body_info-table tr th:nth-of-type(3){
+    width: 165px;
+}
+#js--payment-window--body_info-table tr th:nth-last-of-type(2){
+    border-right: 0px;
+}
+#js--payment-window--body_info-table tr td {
+    padding: 5px;
+    height: 44px;
+    text-align: center;
+}
+#js--payment-window--body_info-table tr td:nth-last-of-type(2){
+   padding: 0;
+    width: 130px;
+}
+#js--payment-window--body_info-table tr td.ppDel{
+    width: 44px;
+    background-image: url("../images/img_design/tc_del_service_all.png");
+    background-repeat: no-repeat;
+    background-position: 50%;
+    opacity: 0.3;
+    padding: 0;
+    height: 44px;
+    cursor: pointer;
+}
+#js--payment-window--body_info-table tr td:nth-last-of-type(2) div{
+    /*width:100%;*/
+    text-align: left;
+    font-size: 12px;
+    color: #959595;
+}
+#js--payment-window--body_info-table tr td input{
+    border: 0px;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+}
+
+
