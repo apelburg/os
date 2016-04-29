@@ -162,7 +162,7 @@
     }
 
     ppRow.prototype.init = function() {
-      if (this.options.edit > 0) {
+      if (Number(this.options.del) === 0) {
         return this.createEditingObj();
       } else {
         return this.createSimpleRow();
@@ -170,13 +170,121 @@
     };
 
     ppRow.prototype.createEditingObj = function() {
-      var tr;
+      var _this, tr;
+      _this = this;
       tr = $('<tr/>').append($('<td/>', {
-        'html': this.options.number
+        'html': this.options.number,
+        click: function() {
+          var input;
+          if ($(this).find('input').length === 0) {
+            $(this).html(input = $('<input/>', {
+              'type': 'text',
+              'val': $(this).html(),
+              change: function() {
+                return _this.options.number = $(this).val();
+              }
+            }));
+            $(this).addClass('tdInputHere');
+            return input.focus().blur(function() {
+              var t;
+              t = $(this);
+              _this.options.number = $(this).val();
+              return new sendAjax('save_payment_row', {
+                id: _this.options.id,
+                number: _this.options.number
+              }, function() {
+                t.parent().removeClass('tdInputHere');
+                return t.replaceWith(_this.options.number);
+              });
+            });
+          }
+        }
       })).append($('<td/>', {
-        'html': this.options.date
+        'html': this.options.date,
+        click: function() {
+          var input;
+          if ($(this).find('input').length === 0) {
+            $(this).html(input = $('<input/>', {
+              'type': 'text',
+              'val': $(this).html(),
+              change: function() {
+                return _this.options.date = $(this).val();
+              }
+            }));
+            $(this).addClass('tdInputHere');
+            input.datetimepicker({
+              minDate: new Date(),
+              timepicker: false,
+              dayOfWeekStart: 1,
+              onSelectDate: function(ct, $i) {
+                return $i.blur();
+              },
+              onGenerate: function(ct) {
+                $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+                return $(this).find('.xdsoft_date');
+              },
+              closeOnDateSelect: true,
+              format: 'd.m.Y'
+            });
+            return input.focus().blur(function() {
+              var t;
+              t = $(this);
+              _this.options.date = $(this).val();
+              return new sendAjax('save_payment_row', {
+                id: _this.options.id,
+                date: _this.options.date
+              }, function() {
+                t.parent().removeClass('tdInputHere');
+                return t.replaceWith(_this.options.date);
+              });
+            });
+          }
+        }
       })).append($('<td/>', {
-        'html': this.options.price
+        'html': this.options.price,
+        click: function() {
+          var input;
+          if ($(this).find('input').length === 0) {
+            $(this).html(input = $('<input/>', {
+              'type': 'text',
+              'val': $(this).html(),
+              keyup: function() {
+                return $(this).val($(this).val().replace(/[^-0-9]/gim, ''));
+              },
+              focus: function() {
+                var focusedElement;
+                if (Number($(this).val()) === 0) {
+                  return $(this).val('');
+                } else {
+                  focusedElement = $(this);
+                  return setTimeout(function() {
+                    return focusedElement.select();
+                  }, 50);
+                }
+              },
+              change: function() {
+                return _this.options.price = $(this).val();
+              }
+            }));
+            $(this).addClass('tdInputHere');
+            return input.focus().blur(function() {
+              var t;
+              t = $(this);
+              if (Number($(this).val()) === 0) {
+                _this.options.price = '0.00';
+              } else {
+                _this.options.price = round_money($(this).val());
+              }
+              return new sendAjax('save_payment_row', {
+                id: _this.options.id,
+                price: _this.options.price
+              }, function() {
+                t.parent().removeClass('tdInputHere');
+                return t.replaceWith(_this.options.price);
+              });
+            });
+          }
+        }
       })).append($('<td/>').append($('<span/>', {
         'html': this.options.percent
       })).append($('<span/>', {
@@ -188,9 +296,19 @@
       }))).append($('<td/>', {
         'class': 'ppDel',
         click: function() {
-          return echo_message_js("del pp");
+          var t;
+          t = $(this).parent();
+          return new sendAjax('save_payment_row', {
+            id: _this.options.id,
+            del: 1
+          }, function() {
+            return t.remove();
+          });
         }
       })).data(this.options);
+      if (Number(this.options.del) > 0) {
+        tr.addClass('deleted');
+      }
       return tr;
     };
 
@@ -216,6 +334,9 @@
           return echo_message_js("del pp");
         }
       })).data(this.options);
+      if (Number(this.options.del) > 0) {
+        tr.addClass('deleted');
+      }
       return tr;
     };
 
@@ -460,6 +581,8 @@
       type: "new"
     };
 
+    paymentWindow.prototype.countDelRow = 0;
+
     function paymentWindow(obj, data_row, data, accces) {
       this.access = accces;
       this.options = data_row;
@@ -485,6 +608,7 @@
          * добавление шапки окна
          */
         main_div.prepend(this.createHead(data_row));
+        console.log(data_row);
 
         /*
          * создание окна
@@ -494,7 +618,7 @@
           width: '1000px',
           maxHeight: '100%',
           title: 'Приходы по счёту',
-          buttons: this.getButtons(obj, data_row)
+          buttons: this.getButtons(obj, data_row, responseData)
         }, {
           closeOnEscape: true
         });
@@ -504,8 +628,21 @@
       }
     };
 
-    paymentWindow.prototype.createTable = function(responseData) {
+    paymentWindow.prototype.updatePaymenContent = function(button, responseData) {
+      if (button.hasClass('showed')) {
+        button.removeClass('showed');
+        return $(this.$el).find('#js--payment-window--body_info-table').replaceWith(this.createTable(responseData, 0));
+      } else {
+        button.addClass('showed');
+        return $(this.$el).find('#js--payment-window--body_info-table').replaceWith(this.createTable(responseData, 1));
+      }
+    };
+
+    paymentWindow.prototype.createTable = function(responseData, showDell) {
       var j, len, payment, tbl, tr;
+      if (showDell == null) {
+        showDell = 0;
+      }
       tbl = $('<table>', {
         'id': 'js--payment-window--body_info-table'
       }).append(tr = $('<tr/>'));
@@ -523,7 +660,11 @@
       }));
       for (j = 0, len = responseData.length; j < len; j++) {
         payment = responseData[j];
-        tbl.append(new ppRow(payment));
+        if (Number(payment.del) > 0 && showDell === 0) {
+          this.countDelRow = this.countDelRow + 1;
+        } else {
+          tbl.append(new ppRow(payment));
+        }
       }
       return tbl;
     };
@@ -675,12 +816,59 @@
     };
 
     paymentWindow.prototype.createRow = function(data_row) {
+      var _this;
+      _this = this;
+      console.warn(data_row);
+      this.getData('create_payment', {
+        'id': data_row.id
+      }, function() {
+        console.warn(_this.response.data);
+        return $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(_this.response.data));
+      });
       console.log($('<tr/>'));
-      console.log(new ppRow());
-      return $(this.$el).find('#js--payment-window--body_info-table').append(new ppRow());
+      return console.log(new ppRow());
     };
 
-    paymentWindow.prototype.getButtons = function(obj, data_row) {
+
+    /*
+     * get data
+     */
+
+    paymentWindow.prototype.getData = function(ajax_name, options, func) {
+      var _this, data, k, response, v;
+      if (options == null) {
+        options = {};
+      }
+      if (func == null) {
+        func = function() {};
+      }
+      _this = this;
+      data = {
+        AJAX: ajax_name
+      };
+      for (k in options) {
+        v = options[k];
+        data[k] = v;
+      }
+      response = {};
+      $.ajax({
+        url: "",
+        type: "POST",
+        data: data,
+        dataType: "json",
+        error: function(jqXHR, textStatus, errorThrown) {
+          echo_message_js("AJAX Error: " + textStatus);
+        },
+        success: function(data, textStatus, jqXHR) {
+          response = jqXHR.responseJSON;
+          _this.response = $.extend({}, _this.response_def, response);
+          standard_response_handler(response);
+          return func();
+        }
+      });
+    };
+
+    paymentWindow.prototype.getButtons = function(obj, data_row, responseData) {
       var _this, buttons;
       _this = this;
       this.saveObj = {};
@@ -689,13 +877,14 @@
           text: 'Добавить платеж',
           "class": 'button_yes_or_no yes add_payment_button',
           click: function() {
-            return _this.createRow();
+            console.warn(data_row);
+            return _this.createRow(data_row);
           }
         }, {
-          text: 'Показать удалённые(0)',
+          text: 'Показать удалённые(' + _this.countDelRow + ')',
           "class": 'button_yes_or_no no show_del_payment_button',
           click: function() {
-            return _this.destroy();
+            return _this.updatePaymenContent($(this), responseData);
           }
         }, {
           text: 'Закрыть',

@@ -102,6 +102,7 @@ class ppRow
   enterObj:{}
   options:{}
 
+
   constructor:(data = {})->
     console.log "ppRow"
     for key,el of data
@@ -112,16 +113,111 @@ class ppRow
 
     return @init()
   init:()->
-    if @options.edit > 0
+    if Number(@options.del) == 0
       return @createEditingObj()
     else
       return @createSimpleRow()
 
+
+
   createEditingObj:()->
+    _this = @
     tr = $('<tr/>')
-      .append($('<td/>',{'html':@options.number}))
-      .append($('<td/>',{'html':@options.date}))
-      .append($('<td/>',{'html':@options.price}))
+      .append($('<td/>',{
+        'html':@options.number,
+        click:()->
+          if($(this).find('input').length == 0)
+  #          html =
+            $(this).html(input = $('<input/>',{
+              'type':'text',
+              'val':$(this).html(),
+              change:()->
+                _this.options.number = $(this).val()
+              }))
+            $(this).addClass('tdInputHere')
+
+            input.focus().blur(()->
+                t = $(this)
+                _this.options.number = $(this).val()
+                new sendAjax 'save_payment_row',{id:_this.options.id,number:_this.options.number}, ()->
+                  t.parent().removeClass('tdInputHere')
+                  t.replaceWith(_this.options.number)
+
+              )
+      }))
+      .append($('<td/>',{
+        'html':@options.date,
+        click:()->
+          if($(this).find('input').length == 0)
+  #          html =
+            $(this).html(input = $('<input/>',{
+              'type':'text',
+              'val':$(this).html(),
+              change:()->
+                _this.options.date = $(this).val()
+            }))
+            $(this).addClass('tdInputHere')
+            input.datetimepicker({
+              minDate:new Date(),
+              timepicker:false,
+              dayOfWeekStart: 1,
+              onSelectDate:(ct,$i)->
+                $i.blur();
+
+              onGenerate:( ct )->
+                $(this).find('.xdsoft_date.xdsoft_weekend')
+                .addClass('xdsoft_disabled');
+                $(this).find('.xdsoft_date');
+
+              closeOnDateSelect:true,
+              format:'d.m.Y'
+            });
+            input.focus().blur(()->
+              t = $(this)
+              _this.options.date = $(this).val()
+              new sendAjax 'save_payment_row',{id:_this.options.id,date:_this.options.date}, ()->
+                t.parent().removeClass('tdInputHere')
+                t.replaceWith(_this.options.date)
+
+            )
+      }))
+      # денежный формат
+      .append($('<td/>',{
+        'html':@options.price,
+        click:()->
+          if($(this).find('input').length == 0)
+  #          html =
+            $(this).html(input = $('<input/>',{
+              'type':'text',
+              'val':$(this).html(),
+              keyup:()->
+                $(this).val($(this).val().replace(/[^-0-9]/gim,''))
+              focus:()->
+                if(Number($(this).val()) == 0)
+                  # если 0.00 подменяем на пусто
+                  $(this).val('')
+                 else
+                  # выделение
+                  focusedElement = $(this)
+                  setTimeout(()->
+                    focusedElement.select()
+                  , 50)
+              change:()->
+                _this.options.price = $(this).val()
+            }))
+            $(this).addClass('tdInputHere')
+
+            input.focus().blur(()->
+              t = $(this)
+              if (Number($(this).val()) == 0)
+                _this.options.price =  '0.00'
+              else
+                _this.options.price =  round_money($(this).val())
+              new sendAjax 'save_payment_row',{id:_this.options.id,price:_this.options.price}, ()->
+                t.parent().removeClass('tdInputHere')
+                t.replaceWith(_this.options.price)
+            )
+        }))
       .append($('<td/>')
         .append($('<span/>',{'html':@options.percent}))
         .append($('<span/>',{'html':"%"}))
@@ -133,9 +229,12 @@ class ppRow
       .append($('<td/>',{
         'class':'ppDel'
         click:()->
-          echo_message_js "del pp"
+          t = $(this).parent()
+          new sendAjax 'save_payment_row',{id:_this.options.id,del:1}, ()->
+            t.remove()
         }))
       .data(@options)
+    tr.addClass('deleted') if Number(@options.del)>0
     return tr
   createSimpleRow:()->
     tr = $('<tr/>')
@@ -156,6 +255,7 @@ class ppRow
           echo_message_js "del pp"
         }))
       .data(@options)
+    tr.addClass('deleted') if Number(@options.del)>0
     return tr
 
 
@@ -350,6 +450,7 @@ class paymentWindow
     id:0,
     number:'0000',
     type:"new"
+  countDelRow:0
   # 
   constructor: (obj, data_row, data, accces) ->
     # запоминаем уровень допуска
@@ -376,7 +477,7 @@ class paymentWindow
       # добавление шапки окна
       ###
       main_div.prepend(@createHead(data_row))
-
+      console.log data_row
       ###
       # создание окна
       ###
@@ -385,7 +486,7 @@ class paymentWindow
         width:'1000px',
         maxHeight:'100%',
         title:'Приходы по счёту',
-        buttons: @getButtons(obj,data_row)
+        buttons: @getButtons(obj,data_row,responseData)
       },{
         closeOnEscape:true
       })
@@ -393,8 +494,17 @@ class paymentWindow
       console.log @$el
 
       $(@$el).parent().css('padding','0')
-  # сборка таблицы
-  createTable:(responseData)->
+
+  updatePaymenContent:(button, responseData)->
+#    console.log  button
+    if button.hasClass('showed')
+      button.removeClass('showed')
+      $(@$el).find('#js--payment-window--body_info-table').replaceWith(@createTable(responseData, 0))
+    else
+      button.addClass('showed')
+      $(@$el).find('#js--payment-window--body_info-table').replaceWith(@createTable(responseData, 1))
+# сборка таблицы
+  createTable:(responseData,showDell = 0)->
     tbl = $('<table>',{'id':'js--payment-window--body_info-table'})
         .append(tr = $('<tr/>'))
 
@@ -403,10 +513,12 @@ class paymentWindow
       .append($('<th/>',{'html':'платёж на сумму'}))
       .append($('<th/>',{'html':'% оплаты'}))
       .append($('<th/>',{'html':'платёж внесён','colspan':'2'}))
-
     # перебор строк ПП
     for payment in responseData
-      tbl.append(new ppRow(payment))
+      if Number(payment.del) > 0 && showDell == 0
+        @countDelRow = @countDelRow+1
+      else
+        tbl.append(new ppRow(payment))
 
     return tbl
 
@@ -449,17 +561,11 @@ class paymentWindow
                 try
                   # // Now that we've selected the anchor text, execute the copy command
                   successful = document.execCommand('copy');
-
-                  # $('<input/>',{'val':td1.text()}).execCommand("Copy")
                   msg = successful ? 'successful' : 'unsuccessful';
                   console.log('Copy email command was ' + msg);
                   # _this.updateTableTextarea(table)
-
                 catch  error
                   console.log  error
-              # on:
-              #   mouseenter:()->
-              #     $(this).remove()
             }).css({
               'marginLeft':($(this).innerWidth() - 159),
               'marginTop':-2
@@ -531,10 +637,53 @@ class paymentWindow
     head_info.append(table)
 
   createRow:(data_row)->
+#    t = $(this)
+    _this = @
+    # окно Запрос ТТН
+    console.warn data_row
+
+    @getData('create_payment',{'id':data_row.id},()->
+    # создаем экземпляр окна ттн
+      console.warn(_this.response.data)
+      $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(_this.response.data))
+      #new invoiceTtn(t, row, _this.response.data, _this.options.access ,ttn) if _this.response.data != undefined
+    )
     console.log $('<tr/>')
     console.log new ppRow()
-    $(@$el).find('#js--payment-window--body_info-table').append(new ppRow())
-  getButtons:(obj,data_row)->
+
+  ###
+  # get data
+  ###
+  getData:(ajax_name,options={},func = ()->)->
+    _this = @
+    data = {
+      AJAX:ajax_name
+    }
+    for k,v of options
+      # console.log k + " is " + v
+      data[k] = v
+    # console.log data
+    response = {}
+    $.ajax
+      url: ""
+      type: "POST"
+      data:data
+      dataType: "json"
+      error: (jqXHR, textStatus, errorThrown) ->
+        echo_message_js "AJAX Error: #{textStatus}"
+        return
+      success: (data, textStatus, jqXHR) ->
+        # console.log jqXHR.responseJSON
+        # data = JSON.parse jqXHR.responseText
+        # echo_message_js "Successful AJAX call: #{jqXHR.responseText}"
+        response = jqXHR.responseJSON
+        _this.response = $.extend({}, _this.response_def, response)
+        standard_response_handler(response)
+        # update json
+        func()
+    # _this.updateData()
+    return
+  getButtons:(obj,data_row,responseData)->
     _this = @
     @saveObj = {}
 #    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
@@ -542,12 +691,13 @@ class paymentWindow
       text: 'Добавить платеж',
       class:  'button_yes_or_no yes add_payment_button',
       click: ()->
-        _this.createRow()
+        console.warn data_row
+        _this.createRow(data_row)
     },{
-      text: 'Показать удалённые(0)',
+      text: 'Показать удалённые('+_this.countDelRow+')',
       class:  'button_yes_or_no no show_del_payment_button',
       click: ()->
-        _this.destroy()
+        _this.updatePaymenContent($(this),responseData)
     },{
       text: 'Закрыть',
       class:'button_yes_or_no no',
@@ -1986,6 +2136,7 @@ class invoiceTtn
         click:(e)->
           t = $(@)
           _this.getData('get_payment',{'id':row.id},()->
+#            console.log "654"
             # создаем экземпляр окна ттн
             new paymentWindow(t, row, _this.response.data, _this.options.access )
             )

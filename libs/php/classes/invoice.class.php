@@ -249,6 +249,64 @@
 			$this->responseClass->response['data'] = $data; 
 			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
+
+		/**
+		 * create payment
+		 *
+		 */
+		protected  function create_payment_AJAX(){
+			$query = "INSERT INTO `".INVOICE_PP."` SET ";
+			// $query .= "`id` = '',";
+			// дата создания заявки
+			$query .= "`invoice_id` = '".(int)$_POST['id']."'";
+			$query .= ", `date` = NOW()";
+
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = array('id'=>$this->mysqli->insert_id);
+			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+		}
+
+
+		/**
+		 * update payment
+		 *
+		 * @author  	Alexey Kapitonov
+		 * @version 	15.04.2016 16:02:26
+		 */
+		protected  function  save_payment_row_AJAX()
+		{
+			$query = "UPDATE `" . INVOICE_PP . "` SET ";
+			$i = 0;
+			$mess = '';
+			$myReturn = 1;
+			foreach ($_POST as $key => $val) {
+
+				if ($key != 'id' && $key != 'edit' && $key != 'AJAX' && $key != 'date') {
+//					$mess .= " $key => $val;";
+					$query .= (($i > 0) ? ',' : '') . "`" . $key . "` = '" . $val . "'";
+					$i++;
+					$myReturn = 0;
+				} else if ($key == 'date') {
+//					$mess .= " $key => $val;";
+					$query .= (($i > 0) ? ',' : '') . "`" . $key . "` = '" . date('Y-m-d', strtotime($val)) . "'";
+					$i++;
+					$myReturn = 0;
+				} else {
+//					$this->responseClass->addSimpleWindow($this->printArr($_POST).$query,'tester info');
+					
+				}
+
+
+			}
+			if ($myReturn > 0){
+				$this->responseClass->addSimpleWindow($mess . '<br>' . $this->printArr($_POST) . $query, 'tester info');
+				return;
+			}
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+
 		/**
 		 * get pp from invoice id
 		 *
@@ -256,7 +314,7 @@
 		 * @version 	15.04.2016 16:02:26
 		 */
 		protected function get_payment_AJAX(){
-			$query = "SELECT * FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
+			$query = "SELECT *,DATE_FORMAT(`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$data = array();
 			if($result->num_rows > 0){

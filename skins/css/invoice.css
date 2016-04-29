@@ -637,6 +637,7 @@ div#js-alert_union{
 #js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(2) button:active,
 #js-alert_union_buttons button.add_payment_button:active{
 	background-color: #acc494;
+	outline: none;
 }
 #js-alert_union_buttons button.add_payment_button{
     /*font-size: 12px;*/
@@ -681,6 +682,11 @@ div#js-alert_union{
     padding: 5px;
     height: 44px;
     text-align: center;
+	border: 1px solid #ccc;
+}
+#js--payment-window--body_info-table tr td:nth-last-of-type(2),
+#js--payment-window--body_info-table tr td:nth-last-of-type(3){
+	border-right: 1px solid #fff;
 }
 #js--payment-window--body_info-table tr td:nth-last-of-type(2){
    padding: 0;
@@ -702,11 +708,21 @@ div#js-alert_union{
     font-size: 12px;
     color: #959595;
 }
+#js--payment-window--body_info-table tr.deleted td{
+	background-color: rgba(105, 40, 40, 0.17);
+}
 #js--payment-window--body_info-table tr td input{
     border: 0px;
     text-align: center;
     height: 100%;
-    width: 100%;
+    width: calc(100% - 4px);
+}
+#js--payment-window--body_info-table tr td.tdInputHere{
+	padding: 0px;
+}
+#js--payment-window--body_info-table tr td.tdInputHere input{
+	border:2px solid #acc494;
+	outline: none;
 }
 
 
