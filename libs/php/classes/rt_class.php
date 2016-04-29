@@ -870,7 +870,9 @@
 				$result = $mysqli->query($query)or die($mysqli->error);
 				while($item = $result->fetch_assoc()) $characteristics['materials'][] = $item['material'];
 				
-				require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+				// здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется с основного сайта
+				// и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
+				require_once(ROOT."/os/libs/php/classes/rt_calculators_class.php");
 				$characteristics =(count($characteristics)>0)?RT::json_fix_cyr(json_encode($characteristics)):'';
 				
 				//print_r($dop_info);
@@ -941,7 +943,9 @@
 			
 			// -->  START  <-- //
 			if($customer_data){
-				include_once(ROOT."/libs/php/classes/comments_class.php");
+			    // здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется с основного сайта
+				// и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
+				include_once(ROOT."/os/libs/php/classes/comments_class.php");
 				$COMMENTS = new Comments_for_query_class;
 	
 				$text = (trim($customer_data['name'])!='')?'Имя: '.$customer_data['name'].'<br>':'';

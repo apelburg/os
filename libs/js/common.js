@@ -1889,6 +1889,8 @@
 			var regexp = /%20/g; // Регулярное выражение соответствующее закодированному пробелу
 			var request = HTTP.newRequest();
 			var url =  HOST+"/os/?add_data_to_rt_from_basket=1&client_data=" + encodeURIComponent(client_data).replace(regexp,"+") +  "&dop_info=" + JSON.stringify(dopInfo) +  "&manager_login=" + encodeURIComponent(manager_login).replace(regexp,"+");
+			
+			console.log('===manager_login===',manager_login);
 			// alert(url);
 			// return;
 			// производим запрос
@@ -1903,9 +1905,9 @@
 					  //  alert(22);
 					  var request_response = request.responseText;
 					   // alert(request_response);
-					   // console.log(request_response);
+					   console.log('======',request_response);
 					  
-					  //return;
+					  return;
 					 
 					  var responseObj = JSON.parse(request_response);
 					  //console.log(responseObj);
