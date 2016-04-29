@@ -785,7 +785,7 @@
 			$dop_info_arr = json_decode($dop_info,true);
 			$dop_info_arr = (count($dop_info_arr)>0)?$dop_info_arr:false;
 			
-			$query_num = RT::add_data_from_basket($client_id,$manager_id_arr,FALSE,$dop_info_arr);
+			$query_num = RT::add_data_from_basket($client_id,$manager_id_arr,FALSE,$dop_info_arr,'os');
 			
 			////////////////////
 			//	определяем вкладку для переадресации подльзователя
@@ -828,7 +828,7 @@
 
 		
 		}
-		static function add_data_from_basket($client_id,$manager_id_arr,$customer_data=FALSE,$dop_info=FALSE){
+		static function add_data_from_basket($client_id,$manager_id_arr,$customer_data=FALSE,$dop_info=FALSE,$sourse=FALSE){
 		
 			global $mysqli;
 			
@@ -872,7 +872,8 @@
 				
 				// здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется с основного сайта
 				// и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
-				require_once(ROOT."/os/libs/php/classes/rt_calculators_class.php");
+				if($sourse && $sourse == 'os') require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+				else require_once(ROOT."/os/libs/php/classes/rt_calculators_class.php");
 				$characteristics =(count($characteristics)>0)?RT::json_fix_cyr(json_encode($characteristics)):'';
 				
 				//print_r($dop_info);
@@ -945,7 +946,8 @@
 			if($customer_data){
 			    // здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется с основного сайта
 				// и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
-				include_once(ROOT."/os/libs/php/classes/comments_class.php");
+				if($sourse && $sourse == 'os') include_once(ROOT."/libs/php/classes/comments_class.php");
+				else include_once(ROOT."/os/libs/php/classes/comments_class.php");
 				$COMMENTS = new Comments_for_query_class;
 	
 				$text = (trim($customer_data['name'])!='')?'Имя: '.$customer_data['name'].'<br>':'';
