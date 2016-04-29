@@ -1927,8 +1927,8 @@
 					  // обрабатываем ответ сервера
 					  //  alert(22);
 					  var request_response = request.responseText;
-					   // alert(request_response);
-					    console.log(request_response);
+					  // alert(request_response);
+					  // console.log(request_response);
 					  
 					  //return;
 					 
