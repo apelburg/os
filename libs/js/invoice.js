@@ -505,7 +505,7 @@
     };
 
     paymentWindow.prototype.createTable = function(responseData) {
-      var tbl, tr;
+      var j, len, payment, tbl, tr;
       tbl = $('<table>', {
         'id': 'js--payment-window--body_info-table'
       }).append(tr = $('<tr/>'));
@@ -521,6 +521,10 @@
         'html': 'платёж внесён',
         'colspan': '2'
       }));
+      for (j = 0, len = responseData.length; j < len; j++) {
+        payment = responseData[j];
+        tbl.append(new ppRow(payment));
+      }
       return tbl;
     };
 

@@ -403,6 +403,11 @@ class paymentWindow
       .append($('<th/>',{'html':'платёж на сумму'}))
       .append($('<th/>',{'html':'% оплаты'}))
       .append($('<th/>',{'html':'платёж внесён','colspan':'2'}))
+
+    # перебор строк ПП
+    for payment in responseData
+      tbl.append(new ppRow(payment))
+
     return tbl
 
   ###
