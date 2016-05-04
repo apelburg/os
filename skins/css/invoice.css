@@ -684,6 +684,9 @@ div#js-alert_union{
     text-align: center;
 	border: 1px solid #ccc;
 }
+#js--payment-window--body_info-table tr td:nth-of-type(3){
+	text-align: right;
+}
 #js--payment-window--body_info-table tr td:nth-last-of-type(2),
 #js--payment-window--body_info-table tr td:nth-last-of-type(3){
 	border-right: 1px solid #fff;
@@ -709,13 +712,18 @@ div#js-alert_union{
     color: #959595;
 }
 #js--payment-window--body_info-table tr.deleted td{
-	background-color: rgba(105, 40, 40, 0.17);
+	background-color: rgb(255, 240, 240);
+}
+#js--payment-window--body_info-table tr.deleted td:nth-last-of-type(2),
+#js--payment-window--body_info-table tr.deleted td:nth-last-of-type(3){
+	border-right-color: rgb(255, 240, 240);
 }
 #js--payment-window--body_info-table tr td input{
     border: 0px;
     text-align: center;
     height: 100%;
-    width: calc(100% - 4px);
+    width: calc(100% - 10px);
+	padding:0 3px;
 }
 #js--payment-window--body_info-table tr td.tdInputHere{
 	padding: 0px;

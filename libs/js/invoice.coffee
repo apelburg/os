@@ -85,7 +85,7 @@ class ttnObj
     return $.extend({}, @defaults, @options)
 
 
-class ppRow
+class ppRowObj
   defaults:
     id:0
     invoice_id:0
@@ -102,25 +102,60 @@ class ppRow
   enterObj:{}
   options:{}
 
-
   constructor:(data = {})->
-    console.log "ppRow"
-    for key,el of data
-      @options[key] = el
     if data.edit == undefined
       data.edit = 1
-    @options = $.extend({}, @defaults, @options)
+    for key,el of data
+      @options[key] = el
 
-    return @init()
-  init:()->
-    if Number(@options.del) == 0
-      return @createEditingObj()
+    return $.extend({}, @defaults, @options)
+
+
+
+###
+# html представление строки прихода денежных средств
+###
+class ppRow
+  defaults:
+    id:0
+    invoice_id:0
+    invoice_number:0
+    number:0
+    date: getDateNow()
+    price: 0
+    percent: 0
+    craeate: getDateNow()
+    buch_id:0
+    buch_name:'Default Name'
+    edit:0
+    del:0
+  enterObj:{}
+  options:{}
+  access:0
+
+  constructor:(rData,i,access=0)->
+    data = rData[i]
+    if data.edit == undefined
+      data.edit = 1
+
+    @access = access
+
+    for key,el of data
+      @options[key] = el
+
+    @options = data
+
+    return @init(data,rData,i)
+  init:(data,rData,i)->
+
+    if Number(@options.del) == 0 && Number(@options.edit) > 0 && (Number(@access) == 1 or Number(@access) == 2)
+      return @createEditingObj(data,rData,i)
     else
-      return @createSimpleRow()
+      return @createSimpleRow(data,rData,i)
 
 
 
-  createEditingObj:()->
+  createEditingObj:(data,rData,i)->
     _this = @
     tr = $('<tr/>')
       .append($('<td/>',{
@@ -135,8 +170,7 @@ class ppRow
                 _this.options.number = $(this).val()
               }))
             $(this).addClass('tdInputHere')
-
-            input.focus().blur(()->
+            input.css('textAlign',$(this).css('textAlign')).focus().blur(()->
                 t = $(this)
                 _this.options.number = $(this).val()
                 new sendAjax 'save_payment_row',{id:_this.options.id,number:_this.options.number}, ()->
@@ -206,8 +240,7 @@ class ppRow
                 _this.options.price = $(this).val()
             }))
             $(this).addClass('tdInputHere')
-
-            input.focus().blur(()->
+            input.css('textAlign',$(this).css('textAlign')).focus().blur(()->
               t = $(this)
               if (Number($(this).val()) == 0)
                 _this.options.price =  '0.00'
@@ -228,15 +261,32 @@ class ppRow
         )
       .append($('<td/>',{
         'class':'ppDel'
-        click:()->
-          t = $(this).parent()
+        click:(e)->
+
+          td = $(this)
+          row = td.parent()
+
           new sendAjax 'save_payment_row',{id:_this.options.id,del:1}, ()->
-            t.remove()
+            data.del = 1
+            # присваеваем строке класс удаленной строки
+            row.addClass('deleted').data(_this.options)
+            # поменяем td с евентами на новый чистый td
+            td.replaceWith(td = $('<td/>'))
+            # если админ вешаем удаление на onClick
+            if _this.access == 1
+              td.addClass('ppDel')
+              _this.realPaymentDel(td,rData,i)
+            # правим данные в кнопке
+            button_changed = $('#js--how_del_payment_button')
+            button_changed.data().num = Number(button_changed.data().num)+1
+            button_changed.text('Показать удалённые('+button_changed.data().num+')')
+
         }))
       .data(@options)
     tr.addClass('deleted') if Number(@options.del)>0
     return tr
-  createSimpleRow:()->
+  createSimpleRow:(data,rData,i)->
+    _this = @
     tr = $('<tr/>')
       .append($('<td/>',{'html':@options.number}))
       .append($('<td/>',{'html':@options.date}))
@@ -249,14 +299,32 @@ class ppRow
         .append($('<div/>',{'html':@options.buch_name}))
         .append($('<div/>',{'html':@options.craeate}))
         )
-      .append($('<td/>',{
-        'class':'ppDel'
-        click:()->
-          echo_message_js "del pp"
-        }))
+      .append(td_del = $('<td/>'))
       .data(@options)
+    console.log @access
+    if Number(@access) == 1
+      td_del.addClass('ppDel')
+      @realPaymentDel(td_del,rData,i)
     tr.addClass('deleted') if Number(@options.del)>0
     return tr
+  # навешивает onClick удаление на td
+  realPaymentDel:(tdObj,rData,i)->
+    tdObj.click((e)->
+      td = $(this)
+      row = td.parent()
+      confirmObj = new modalConfirm({html:'Данная запись будет удалена безвозвратно.<br>Продолжить?'},()->
+        new sendAjax 'delete_payment',{id:rData[i].id}, ()->
+          row.remove()
+
+          rData[i] = undefined
+          delete rData[i]
+          rData.splice(i,1);
+          #              confirmObj.buttonsTab.
+          button_changed = $('#js--how_del_payment_button')
+          button_changed.data().num = Number(button_changed.data().num)-1
+          button_changed.text('Показать удалённые('+button_changed.data().num+')')
+      )
+    )
 
 
 ###
@@ -323,7 +391,7 @@ class modalConfirm
 
   constructor:(data = {},func = ()->)->
     # get options
-
+    _this = @
     @options = $.extend({}, @defaults, data)
     @options.buttons = [{
         text:   'Да',
@@ -331,15 +399,18 @@ class modalConfirm
         style:  'float:right;'
         click:  ()->
           func()
-          $('#js-alert_union').dialog('destroy').remove();
+          $(_this.selfObj.winDiv).dialog('destroy').remove()
       },{
         text:   'Нет, Спасибо.',
         class:  'button_yes_or_no no',
         style:  'float:right;'
         click:  ()->
-          $('#js-alert_union').dialog('destroy').remove();
+          $(_this.selfObj.winDiv).dialog('destroy').remove()
+#          $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
       }]
-    new modalWindow(@options)
+
+    @selfObj = new modalWindow(@options,{single:false})
+
 
 ###
 # model from window
@@ -354,7 +425,8 @@ class modalWindow
   sittings:
     modal: true,
     autoOpen : true,
-    closeOnEscape: false
+    closeOnEscape: false,
+    single:true
 
   # main default options - default content
   defaults:
@@ -367,7 +439,7 @@ class modalWindow
           class:  'button_yes_or_no no',
           style:  'float:right;'
           click:  ()->
-            $('#js-alert_union').dialog('destroy').remove();
+            $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
         }]
 
   constructor:(data = {},sittings={}) ->
@@ -386,17 +458,29 @@ class modalWindow
   init:()->
     # html='текст не был передан', title='имя окна не было передано', buttons={}
     # убиваем такое окно, если оно есть
-    if($('#js-alert_union').length > 0)
-      $('#js-alert_union').remove();
+    if(@sittings.single)
+      if($('#js-alert_union').length > 0)
+        $('#js-alert_union').remove();
 
-    # создаем новое
-    $('body').append($('<div/>',{
-      "id":'js-alert_union',
-      "style":"height:45px;",
-      'html':@options.html
-    }));
+      # создаем новое
+      $('body').append(@winDiv = $('<div/>',{
+        "id":'js-alert_union',
+        "style":"height:45px;",
+        'html':@options.html,
+        "class":"js-alert_union",
+      }));
+    else
+      len = $('.js-alert_union').length
+      # создаем новое
+      $('body').append(@winDiv = $('<div/>',{
+        "id":'js-alert_union'+len,
+        "style":"height:45px;",
+        'html':@options.html,
+        "class":"js-alert_union",
+      }));
 
-    self = $('#js-alert_union').dialog({
+
+    self = @winDiv.dialog({
         width: @options.width,
         height: @options.height,
         modal: @sittings.modal,
@@ -412,7 +496,7 @@ class modalWindow
 
     # replace standart buttons
     if(@options.buttons.length  > 0 && true)
-      buttons_html = $('<table></table>');
+      buttons_html = $('<table/>').append(tr = $('<tr/>'));
       for button_n,i in @options.buttons
         button = $('<button/>',{
           html: button_n['text'],
@@ -425,18 +509,24 @@ class modalWindow
         if button_n['id']
           button.attr('id',button_n['id'])
 
-        buttons_html.append(
+        tr.append(
           td = $('<td/>')
             .append(button)
             );
+#        console.log button_n.data
+        if button_n.data != undefined
+#          console.log button_n.data
+          button.data(button_n.data)
         if(i>0)
           td.css('textAlign','right');
 
+      @buttonDiv = buttonDiv
 
-      self.find('.ui-dialog-buttonpane').html($('<div/>',{
+      self.find('.ui-dialog-buttonpane').html(buttonDiv = $('<div/>',{
         'id':'js-alert_union_buttons',
         'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
           }).append(buttons_html))
+
       # $('#js-alert_union').after();
 
 
@@ -451,17 +541,18 @@ class paymentWindow
     number:'0000',
     type:"new"
   countDelRow:0
+  accces:0
   # 
-  constructor: (obj, data_row, data, accces) ->
+  constructor: (obj, data_row, responseData, access) ->
     # запоминаем уровень допуска
-    @access = accces
+    @access = access
     # сохраняем информацию по строке
     @options = data_row
     # сборка окна счёта
-    @init(obj, data_row, data, accces)
+    @init(obj, data_row, responseData)
   
   # собираем окно счёт
-  init:(obj, data_row, responseData, accces)->
+  init:(obj, data_row, responseData)->
     _this = @
     # запрос данных
     if(responseData!= undefined)
@@ -477,7 +568,6 @@ class paymentWindow
       # добавление шапки окна
       ###
       main_div.prepend(@createHead(data_row))
-      console.log data_row
       ###
       # создание окна
       ###
@@ -491,19 +581,17 @@ class paymentWindow
         closeOnEscape:true
       })
       @$el = @myObj.options.html[0]
-      console.log @$el
-
+      console.warn @myObj
       $(@$el).parent().css('padding','0')
 
   updatePaymenContent:(button, responseData)->
-#    console.log  button
     if button.hasClass('showed')
       button.removeClass('showed')
       $(@$el).find('#js--payment-window--body_info-table').replaceWith(@createTable(responseData, 0))
     else
       button.addClass('showed')
       $(@$el).find('#js--payment-window--body_info-table').replaceWith(@createTable(responseData, 1))
-# сборка таблицы
+  # сборка таблицы
   createTable:(responseData,showDell = 0)->
     tbl = $('<table>',{'id':'js--payment-window--body_info-table'})
         .append(tr = $('<tr/>'))
@@ -514,73 +602,20 @@ class paymentWindow
       .append($('<th/>',{'html':'% оплаты'}))
       .append($('<th/>',{'html':'платёж внесён','colspan':'2'}))
     # перебор строк ПП
-    for payment in responseData
+    for payment,i in responseData
       if Number(payment.del) > 0 && showDell == 0
         @countDelRow = @countDelRow+1
       else
-        tbl.append(new ppRow(payment))
+        responseData[i] = new ppRowObj(responseData[i])
+        tbl.append(new ppRow(responseData,i,@access))
 
     return tbl
 
-  ###
-  # возвращает <td> с textarea и кнопкой копировать,
-  # изменения в поле textarea не редактируют информацию, 
-  # textarea служит только для того, чтобы программно скопировать информацию из его тела
-  ###
-  createTS_copyContent:(position,key,table)->
-    _this = @
-    td  = $('<td/>',{
-        'class':'myyClass1',
-        on:
-          click:()->      
-            # убиваем все textarea в таблице
-            _this.updateTableTextarea($(this).parent().parent())
 
-            # перед вставкой textarea обнуляем отступы в ячейке
-            $(this).css('padding','0').html(textarea)
-            # получаем контент ячейки
-            name = $(this).data().val
-            # вставка textarea
-            textarea = $('<textarea/>',{
-              'val':name,
-              'click':(event)->
-                event.preventDefault()
-                event.stopPropagation()
-
-                return false
-            }).width($(this).innerWidth()-6).height($(this).innerHeight()+1)
-            
-            $(this).html(textarea).focus()
-            # кнопка сохранить
-            div = $('<div/>',{
-              'class':'myBlockBefore',
-              'html':'Скопировать',
-              click:(event)->
-                $(this).parent().find('textarea').select();
-                # event.preventDefault()
-                try
-                  # // Now that we've selected the anchor text, execute the copy command
-                  successful = document.execCommand('copy');
-                  msg = successful ? 'successful' : 'unsuccessful';
-                  console.log('Copy email command was ' + msg);
-                  # _this.updateTableTextarea(table)
-                catch  error
-                  console.log  error
-            }).css({
-              'marginLeft':($(this).innerWidth() - 159),
-              'marginTop':-2
-            })
-            $(this).append(div)
-          mouseleave:()->            
-            _this.updateTableTextarea($(this).parent().parent())
-
-        }).append($('<div/>',{'class':'mmmmm','html':position[key]})).data('val',position[key])
-    return td
   # перебор всех строк и репласе всех textarea
   
   # шапка таблицы 
   createHead:(data_row)->
-    console.log data_row
     _this = @
     # общий контейнер
     head_info = $('<div>',{id:'head_info'});
@@ -636,20 +671,17 @@ class paymentWindow
     ###
     head_info.append(table)
 
-  createRow:(data_row)->
-#    t = $(this)
+  createRow:(data_row,responseData)->
     _this = @
-    # окно Запрос ТТН
-    console.warn data_row
-
     @getData('create_payment',{'id':data_row.id},()->
-    # создаем экземпляр окна ттн
       console.warn(_this.response.data)
-      $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(_this.response.data))
-      #new invoiceTtn(t, row, _this.response.data, _this.options.access ,ttn) if _this.response.data != undefined
+      # добавляем информацию в главный объект
+      len = responseData.length
+      responseData[len] = new ppRowObj(_this.response.data)
+      # добавляем строку в таблицу в окне
+      $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(responseData,len,_this.access))
+
     )
-    console.log $('<tr/>')
-    console.log new ppRow()
 
   ###
   # get data
@@ -686,25 +718,33 @@ class paymentWindow
   getButtons:(obj,data_row,responseData)->
     _this = @
     @saveObj = {}
+    buttons = []
 #    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
-    buttons = [{
-      text: 'Добавить платеж',
-      class:  'button_yes_or_no yes add_payment_button',
-      click: ()->
-        console.warn data_row
-        _this.createRow(data_row)
-    },{
+    if @access == 2
+      buttons.push(
+        text: 'Добавить платеж',
+        class:  'button_yes_or_no yes add_payment_button',
+        click: ()->
+          console.warn data_row
+          _this.createRow(data_row,responseData)
+        )
+    buttons.push(
       text: 'Показать удалённые('+_this.countDelRow+')',
       class:  'button_yes_or_no no show_del_payment_button',
+      id:'js--how_del_payment_button',
+      data:{
+        num:_this.countDelRow
+      },
       click: ()->
         _this.updatePaymenContent($(this),responseData)
-    },{
+      )
+    buttons.push(
       text: 'Закрыть',
       class:'button_yes_or_no no',
       click:()->
         _this.destroy()
         #_this.confirmAndCreateBill(obj,data_row)
-    }];
+      )
 
     return buttons
 

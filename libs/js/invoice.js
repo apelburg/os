@@ -12,7 +12,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, getDateNow, getInvoiceData, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, round_money, sendAjax, ttnObj,
+  var calc_price_with_discount, getDateNow, getInvoiceData, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, sendAjax, ttnObj,
     slice = [].slice;
 
   getInvoiceData = function(type) {
@@ -124,6 +124,50 @@
 
   })();
 
+  ppRowObj = (function() {
+    ppRowObj.prototype.defaults = {
+      id: 0,
+      invoice_id: 0,
+      invoice_number: 0,
+      number: 0,
+      date: getDateNow(),
+      price: 0,
+      percent: 0,
+      craeate: getDateNow(),
+      buch_id: 0,
+      buch_name: 'Default Name',
+      edit: 0,
+      del: 0
+    };
+
+    ppRowObj.prototype.enterObj = {};
+
+    ppRowObj.prototype.options = {};
+
+    function ppRowObj(data) {
+      var el, key;
+      if (data == null) {
+        data = {};
+      }
+      if (data.edit === void 0) {
+        data.edit = 1;
+      }
+      for (key in data) {
+        el = data[key];
+        this.options[key] = el;
+      }
+      return $.extend({}, this.defaults, this.options);
+    }
+
+    return ppRowObj;
+
+  })();
+
+
+  /*
+   * html представление строки прихода денежных средств
+   */
+
   ppRow = (function() {
     ppRow.prototype.defaults = {
       id: 0,
@@ -144,32 +188,35 @@
 
     ppRow.prototype.options = {};
 
-    function ppRow(data) {
-      var el, key;
-      if (data == null) {
-        data = {};
+    ppRow.prototype.access = 0;
+
+    function ppRow(rData, i, access) {
+      var data, el, key;
+      if (access == null) {
+        access = 0;
       }
-      console.log("ppRow");
+      data = rData[i];
+      if (data.edit === void 0) {
+        data.edit = 1;
+      }
+      this.access = access;
       for (key in data) {
         el = data[key];
         this.options[key] = el;
       }
-      if (data.edit === void 0) {
-        data.edit = 1;
-      }
-      this.options = $.extend({}, this.defaults, this.options);
-      return this.init();
+      this.options = data;
+      return this.init(data, rData, i);
     }
 
-    ppRow.prototype.init = function() {
-      if (Number(this.options.del) === 0) {
-        return this.createEditingObj();
+    ppRow.prototype.init = function(data, rData, i) {
+      if (Number(this.options.del) === 0 && Number(this.options.edit) > 0 && (Number(this.access) === 1 || Number(this.access) === 2)) {
+        return this.createEditingObj(data, rData, i);
       } else {
-        return this.createSimpleRow();
+        return this.createSimpleRow(data, rData, i);
       }
     };
 
-    ppRow.prototype.createEditingObj = function() {
+    ppRow.prototype.createEditingObj = function(data, rData, i) {
       var _this, tr;
       _this = this;
       tr = $('<tr/>').append($('<td/>', {
@@ -185,7 +232,7 @@
               }
             }));
             $(this).addClass('tdInputHere');
-            return input.focus().blur(function() {
+            return input.css('textAlign', $(this).css('textAlign')).focus().blur(function() {
               var t;
               t = $(this);
               _this.options.number = $(this).val();
@@ -267,7 +314,7 @@
               }
             }));
             $(this).addClass('tdInputHere');
-            return input.focus().blur(function() {
+            return input.css('textAlign', $(this).css('textAlign')).focus().blur(function() {
               var t;
               t = $(this);
               if (Number($(this).val()) === 0) {
@@ -295,14 +342,25 @@
         'html': this.options.craeate
       }))).append($('<td/>', {
         'class': 'ppDel',
-        click: function() {
-          var t;
-          t = $(this).parent();
+        click: function(e) {
+          var row, td;
+          td = $(this);
+          row = td.parent();
           return new sendAjax('save_payment_row', {
             id: _this.options.id,
             del: 1
           }, function() {
-            return t.remove();
+            var button_changed;
+            data.del = 1;
+            row.addClass('deleted').data(_this.options);
+            td.replaceWith(td = $('<td/>'));
+            if (_this.access === 1) {
+              td.addClass('ppDel');
+              _this.realPaymentDel(td, rData, i);
+            }
+            button_changed = $('#js--how_del_payment_button');
+            button_changed.data().num = Number(button_changed.data().num) + 1;
+            return button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
           });
         }
       })).data(this.options);
@@ -312,8 +370,9 @@
       return tr;
     };
 
-    ppRow.prototype.createSimpleRow = function() {
-      var tr;
+    ppRow.prototype.createSimpleRow = function(data, rData, i) {
+      var _this, td_del, tr;
+      _this = this;
       tr = $('<tr/>').append($('<td/>', {
         'html': this.options.number
       })).append($('<td/>', {
@@ -328,16 +387,40 @@
         'html': this.options.buch_name
       })).append($('<div/>', {
         'html': this.options.craeate
-      }))).append($('<td/>', {
-        'class': 'ppDel',
-        click: function() {
-          return echo_message_js("del pp");
-        }
-      })).data(this.options);
+      }))).append(td_del = $('<td/>')).data(this.options);
+      console.log(this.access);
+      if (Number(this.access) === 1) {
+        td_del.addClass('ppDel');
+        this.realPaymentDel(td_del, rData, i);
+      }
       if (Number(this.options.del) > 0) {
         tr.addClass('deleted');
       }
       return tr;
+    };
+
+    ppRow.prototype.realPaymentDel = function(tdObj, rData, i) {
+      return tdObj.click(function(e) {
+        var confirmObj, row, td;
+        td = $(this);
+        row = td.parent();
+        return confirmObj = new modalConfirm({
+          html: 'Данная запись будет удалена безвозвратно.<br>Продолжить?'
+        }, function() {
+          return new sendAjax('delete_payment', {
+            id: rData[i].id
+          }, function() {
+            var button_changed;
+            row.remove();
+            rData[i] = void 0;
+            delete rData[i];
+            rData.splice(i, 1);
+            button_changed = $('#js--how_del_payment_button');
+            button_changed.data().num = Number(button_changed.data().num) - 1;
+            return button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
+          });
+        });
+      });
     };
 
     return ppRow;
@@ -424,12 +507,14 @@
     };
 
     function modalConfirm(data, func) {
+      var _this;
       if (data == null) {
         data = {};
       }
       if (func == null) {
         func = function() {};
       }
+      _this = this;
       this.options = $.extend({}, this.defaults, data);
       this.options.buttons = [
         {
@@ -438,18 +523,20 @@
           style: 'float:right;',
           click: function() {
             func();
-            return $('#js-alert_union').dialog('destroy').remove();
+            return $(_this.selfObj.winDiv).dialog('destroy').remove();
           }
         }, {
           text: 'Нет, Спасибо.',
           "class": 'button_yes_or_no no',
           style: 'float:right;',
           click: function() {
-            return $('#js-alert_union').dialog('destroy').remove();
+            return $(_this.selfObj.winDiv).dialog('destroy').remove();
           }
         }
       ];
-      new modalWindow(this.options);
+      this.selfObj = new modalWindow(this.options, {
+        single: false
+      });
     }
 
     return modalConfirm;
@@ -470,7 +557,8 @@
     modalWindow.prototype.sittings = {
       modal: true,
       autoOpen: true,
-      closeOnEscape: false
+      closeOnEscape: false,
+      single: true
     };
 
     modalWindow.prototype.defaults = {
@@ -484,7 +572,7 @@
           "class": 'button_yes_or_no no',
           style: 'float:right;',
           click: function() {
-            return $('#js-alert_union').dialog('destroy').remove();
+            return $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
           }
         }
       ]
@@ -509,16 +597,27 @@
     }
 
     modalWindow.prototype.init = function() {
-      var button, button_n, buttons_html, i, j, len, ref, self, td;
-      if ($('#js-alert_union').length > 0) {
-        $('#js-alert_union').remove();
+      var button, buttonDiv, button_n, buttons_html, i, j, len, len1, ref, self, td, tr;
+      if (this.sittings.single) {
+        if ($('#js-alert_union').length > 0) {
+          $('#js-alert_union').remove();
+        }
+        $('body').append(this.winDiv = $('<div/>', {
+          "id": 'js-alert_union',
+          "style": "height:45px;",
+          'html': this.options.html,
+          "class": "js-alert_union"
+        }));
+      } else {
+        len = $('.js-alert_union').length;
+        $('body').append(this.winDiv = $('<div/>', {
+          "id": 'js-alert_union' + len,
+          "style": "height:45px;",
+          'html': this.options.html,
+          "class": "js-alert_union"
+        }));
       }
-      $('body').append($('<div/>', {
-        "id": 'js-alert_union',
-        "style": "height:45px;",
-        'html': this.options.html
-      }));
-      self = $('#js-alert_union').dialog({
+      self = this.winDiv.dialog({
         width: this.options.width,
         height: this.options.height,
         modal: this.sittings.modal,
@@ -534,9 +633,9 @@
         $('#js-alert_union').dialog("option", "maxWidth", this.options.maxWidth);
       }
       if (this.options.buttons.length > 0 && true) {
-        buttons_html = $('<table></table>');
+        buttons_html = $('<table/>').append(tr = $('<tr/>'));
         ref = this.options.buttons;
-        for (i = j = 0, len = ref.length; j < len; i = ++j) {
+        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           button_n = ref[i];
           button = $('<button/>', {
             html: button_n['text'],
@@ -551,12 +650,16 @@
           if (button_n['id']) {
             button.attr('id', button_n['id']);
           }
-          buttons_html.append(td = $('<td/>').append(button));
+          tr.append(td = $('<td/>').append(button));
+          if (button_n.data !== void 0) {
+            button.data(button_n.data);
+          }
           if (i > 0) {
             td.css('textAlign', 'right');
           }
         }
-        return self.find('.ui-dialog-buttonpane').html($('<div/>', {
+        this.buttonDiv = buttonDiv;
+        return self.find('.ui-dialog-buttonpane').html(buttonDiv = $('<div/>', {
           'id': 'js-alert_union_buttons',
           'class': 'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
         }).append(buttons_html));
@@ -583,13 +686,15 @@
 
     paymentWindow.prototype.countDelRow = 0;
 
-    function paymentWindow(obj, data_row, data, accces) {
-      this.access = accces;
+    paymentWindow.prototype.accces = 0;
+
+    function paymentWindow(obj, data_row, responseData, access) {
+      this.access = access;
       this.options = data_row;
-      this.init(obj, data_row, data, accces);
+      this.init(obj, data_row, responseData);
     }
 
-    paymentWindow.prototype.init = function(obj, data_row, responseData, accces) {
+    paymentWindow.prototype.init = function(obj, data_row, responseData) {
       var _this, main_div;
       _this = this;
       if (responseData !== void 0) {
@@ -608,7 +713,6 @@
          * добавление шапки окна
          */
         main_div.prepend(this.createHead(data_row));
-        console.log(data_row);
 
         /*
          * создание окна
@@ -623,7 +727,7 @@
           closeOnEscape: true
         });
         this.$el = this.myObj.options.html[0];
-        console.log(this.$el);
+        console.warn(this.myObj);
         return $(this.$el).parent().css('padding', '0');
       }
     };
@@ -639,7 +743,7 @@
     };
 
     paymentWindow.prototype.createTable = function(responseData, showDell) {
-      var j, len, payment, tbl, tr;
+      var i, j, len1, payment, tbl, tr;
       if (showDell == null) {
         showDell = 0;
       }
@@ -658,81 +762,20 @@
         'html': 'платёж внесён',
         'colspan': '2'
       }));
-      for (j = 0, len = responseData.length; j < len; j++) {
-        payment = responseData[j];
+      for (i = j = 0, len1 = responseData.length; j < len1; i = ++j) {
+        payment = responseData[i];
         if (Number(payment.del) > 0 && showDell === 0) {
           this.countDelRow = this.countDelRow + 1;
         } else {
-          tbl.append(new ppRow(payment));
+          responseData[i] = new ppRowObj(responseData[i]);
+          tbl.append(new ppRow(responseData, i, this.access));
         }
       }
       return tbl;
     };
 
-
-    /*
-     * возвращает <td> с textarea и кнопкой копировать,
-     * изменения в поле textarea не редактируют информацию, 
-     * textarea служит только для того, чтобы программно скопировать информацию из его тела
-     */
-
-    paymentWindow.prototype.createTS_copyContent = function(position, key, table) {
-      var _this, td;
-      _this = this;
-      td = $('<td/>', {
-        'class': 'myyClass1',
-        on: {
-          click: function() {
-            var div, name, textarea;
-            _this.updateTableTextarea($(this).parent().parent());
-            $(this).css('padding', '0').html(textarea);
-            name = $(this).data().val;
-            textarea = $('<textarea/>', {
-              'val': name,
-              'click': function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                return false;
-              }
-            }).width($(this).innerWidth() - 6).height($(this).innerHeight() + 1);
-            $(this).html(textarea).focus();
-            div = $('<div/>', {
-              'class': 'myBlockBefore',
-              'html': 'Скопировать',
-              click: function(event) {
-                var error, error1, msg, successful;
-                $(this).parent().find('textarea').select();
-                try {
-                  successful = document.execCommand('copy');
-                  msg = successful != null ? successful : {
-                    'successful': 'unsuccessful'
-                  };
-                  return console.log('Copy email command was ' + msg);
-                } catch (error1) {
-                  error = error1;
-                  return console.log(error);
-                }
-              }
-            }).css({
-              'marginLeft': $(this).innerWidth() - 159,
-              'marginTop': -2
-            });
-            return $(this).append(div);
-          },
-          mouseleave: function() {
-            return _this.updateTableTextarea($(this).parent().parent());
-          }
-        }
-      }).append($('<div/>', {
-        'class': 'mmmmm',
-        'html': position[key]
-      })).data('val', position[key]);
-      return td;
-    };
-
     paymentWindow.prototype.createHead = function(data_row) {
       var _this, buttonSearch, div1, div2, head_info, inputSearch, table, tr;
-      console.log(data_row);
       _this = this;
       head_info = $('<div>', {
         id: 'head_info'
@@ -815,18 +858,18 @@
       return head_info.append(table);
     };
 
-    paymentWindow.prototype.createRow = function(data_row) {
+    paymentWindow.prototype.createRow = function(data_row, responseData) {
       var _this;
       _this = this;
-      console.warn(data_row);
-      this.getData('create_payment', {
+      return this.getData('create_payment', {
         'id': data_row.id
       }, function() {
+        var len;
         console.warn(_this.response.data);
-        return $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(_this.response.data));
+        len = responseData.length;
+        responseData[len] = new ppRowObj(_this.response.data);
+        return $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(responseData, len, _this.access));
       });
-      console.log($('<tr/>'));
-      return console.log(new ppRow());
     };
 
 
@@ -872,28 +915,35 @@
       var _this, buttons;
       _this = this;
       this.saveObj = {};
-      buttons = [
-        {
+      buttons = [];
+      if (this.access === 2) {
+        buttons.push({
           text: 'Добавить платеж',
           "class": 'button_yes_or_no yes add_payment_button',
           click: function() {
             console.warn(data_row);
-            return _this.createRow(data_row);
+            return _this.createRow(data_row, responseData);
           }
-        }, {
-          text: 'Показать удалённые(' + _this.countDelRow + ')',
-          "class": 'button_yes_or_no no show_del_payment_button',
-          click: function() {
-            return _this.updatePaymenContent($(this), responseData);
-          }
-        }, {
-          text: 'Закрыть',
-          "class": 'button_yes_or_no no',
-          click: function() {
-            return _this.destroy();
-          }
+        });
+      }
+      buttons.push({
+        text: 'Показать удалённые(' + _this.countDelRow + ')',
+        "class": 'button_yes_or_no no show_del_payment_button',
+        id: 'js--how_del_payment_button',
+        data: {
+          num: _this.countDelRow
+        },
+        click: function() {
+          return _this.updatePaymenContent($(this), responseData);
         }
-      ];
+      });
+      buttons.push({
+        text: 'Закрыть',
+        "class": 'button_yes_or_no no',
+        click: function() {
+          return _this.destroy();
+        }
+      });
       return buttons;
     };
 
@@ -997,7 +1047,7 @@
     };
 
     invoiceWindow.prototype.createTable = function(responseData) {
-      var _this, border, i, j, len, main_price, nds, position, pr_out, table, td, tr;
+      var _this, border, i, j, len1, main_price, nds, position, pr_out, table, td, tr;
       _this = this;
       table = $('<table/>', {
         'id': 'js-invoice--window--ttn-table'
@@ -1027,7 +1077,7 @@
       nds = 0;
       i = 1;
       this.checkNumber = 0;
-      for (j = 0, len = responseData.length; j < len; j++) {
+      for (j = 0, len1 = responseData.length; j < len1; j++) {
         position = responseData[j];
         tr = $('<tr/>').data(position).attr('data-id', position.id);
         td = $('<td/>');
@@ -1403,7 +1453,7 @@
     };
 
     invoiceTtn.prototype.alreadyWasСreated = function() {
-      var content, end, j, len, number, oldTtn, positions, ref, results;
+      var content, end, j, len1, number, oldTtn, positions, ref, results;
       content = $('<div/>', {
         'class': "ttn--already-was-created"
       });
@@ -1414,7 +1464,7 @@
         }));
         ref = this.options.ttn;
         results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
+        for (j = 0, len1 = ref.length; j < len1; j++) {
           oldTtn = ref[j];
           if (oldTtn.positions_num !== null) {
             if (oldTtn.positions_num.split(',').length > 1) {
@@ -1699,7 +1749,7 @@
     };
 
     invoiceTtn.prototype.createTableManager = function(responseData) {
-      var _this, check, i, j, len, main_checkbox, main_price, nds, position, pr_out, table, td, td_main_check, tr;
+      var _this, check, i, j, len1, main_checkbox, main_price, nds, position, pr_out, table, td, td_main_check, tr;
       _this = this;
       table = $('<table/>', {
         'id': 'js-invoice--window--ttn-table'
@@ -1747,7 +1797,7 @@
       nds = 0;
       i = 1;
       this.checkNumber = 0;
-      for (j = 0, len = responseData.length; j < len; j++) {
+      for (j = 0, len1 = responseData.length; j < len1; j++) {
         position = responseData[j];
         tr = $('<tr/>').data(position).attr('data-id', position.id);
         if (Number(position.ttn_id) === 0) {
@@ -1841,7 +1891,7 @@
     };
 
     invoiceTtn.prototype.createTableAdmin = function(responseData) {
-      var _this, i, j, len, main_checkbox, main_price, nds, position, pr_out, table, td, tr;
+      var _this, i, j, len1, main_checkbox, main_price, nds, position, pr_out, table, td, tr;
       _this = this;
       table = $('<table/>', {
         'id': 'js-invoice--window--ttn-table'
@@ -1893,7 +1943,7 @@
       main_price = 0;
       nds = 0;
       i = 1;
-      for (j = 0, len = responseData.length; j < len; j++) {
+      for (j = 0, len1 = responseData.length; j < len1; j++) {
         position = responseData[j];
         tr = $('<tr/>').data(position).attr('data-id', position.id);
         if (Number(_this.defaults.id) === Number(position.ttn_id)) {
@@ -2048,14 +2098,14 @@
     };
 
     invoiceTtn.prototype.confirmAndCreateTtn = function(obj, data_row) {
-      var _this, el, j, key, l, len, ref, ref1, row_id;
+      var _this, el, j, key, l, len1, ref, ref1, row_id;
       _this = this;
       row_id = this.options.id;
       console.warn(this.saveObj);
       if (this.saveObj.number) {
         this.saveObj.id = this.defaults.id;
         ref = data_row.ttn;
-        for (j = 0, len = ref.length; j < len; j++) {
+        for (j = 0, len1 = ref.length; j < len1; j++) {
           el = ref[j];
           if (el.id === this.defaults.id) {
             ref1 = this.saveObj;
@@ -2198,10 +2248,10 @@
       };
 
       invoice.prototype.init = function(echo) {
-        var j, len, n, ref, results;
+        var j, len1, n, ref, results;
         ref = this.options.data;
         results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
+        for (j = 0, len1 = ref.length; j < len1; j++) {
           n = ref[j];
           results.push(this.$el.find('tbody').append(this.createRow(n)));
         }
@@ -2356,7 +2406,7 @@
        */
 
       invoice.prototype.getTdTtn = function(row) {
-        var _this, i, j, len, ref, table, td, ttn;
+        var _this, i, j, len1, ref, table, td, ttn;
         if (this.defttn === void 0) {
           this.defttn = {
             0: $('#defttn1').width(),
@@ -2370,7 +2420,7 @@
           'style': 'width:100%'
         });
         ref = row.ttn;
-        for (i = j = 0, len = ref.length; j < len; i = ++j) {
+        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           ttn = ref[i];
           table.append(this.getTtnRow(row, ttn, i));
         }
