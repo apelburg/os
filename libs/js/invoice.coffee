@@ -94,7 +94,7 @@ class ppRowObj
     date: getDateNow()
     price: 0
     percent: 0
-    craeate: getDateNow()
+    create: getDateNow()
     buch_id:0
     buch_name:'Default Name'
     edit:0
@@ -124,7 +124,7 @@ class ppRow
     date: getDateNow()
     price: 0
     percent: 0
-    craeate: getDateNow()
+    create: getDateNow()
     buch_id:0
     buch_name:'Default Name'
     edit:0
@@ -257,7 +257,7 @@ class ppRow
         )
       .append($('<td/>')
         .append($('<div/>',{'html':@options.buch_name}))
-        .append($('<div/>',{'html':@options.craeate}))
+        .append($('<div/>',{'html':@options.create}))
         )
       .append($('<td/>',{
         'class':'ppDel'
@@ -297,7 +297,7 @@ class ppRow
         )
       .append($('<td/>')
         .append($('<div/>',{'html':@options.buch_name}))
-        .append($('<div/>',{'html':@options.craeate}))
+        .append($('<div/>',{'html':@options.create}))
         )
       .append(td_del = $('<td/>'))
       .data(@options)
@@ -403,9 +403,9 @@ class modalConfirm
       },{
         text:   'Нет, Спасибо.',
         class:  'button_yes_or_no no',
-        style:  'float:right;'
-        click:  ()->
-          $(_this.selfObj.winDiv).dialog('destroy').remove()
+        style:  'float:right;',
+#        click:  'close'
+#          $(_this.selfObj.winDiv).dialog('destroy').remove()
 #          $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
       }]
 
@@ -430,17 +430,12 @@ class modalWindow
 
   # main default options - default content
   defaults:
+    id:'js-alert_union'
     title:'*** Название окна ***',
     width:'auto',
     height:'auto',
     html:'Текст в окне',
-    buttons:[{
-          text:   'Закрыть',
-          class:  'button_yes_or_no no',
-          style:  'float:right;'
-          click:  ()->
-            $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
-        }]
+    buttons:[]
 
   constructor:(data = {},sittings={}) ->
     # get options
@@ -455,7 +450,11 @@ class modalWindow
 
     # init
     @init()
+
+  destroy:()->
+    @winDiv.dialog('destroy').remove()
   init:()->
+    _this = @
     # html='текст не был передан', title='имя окна не было передано', buttons={}
     # убиваем такое окно, если оно есть
     if(@sittings.single)
@@ -464,7 +463,7 @@ class modalWindow
 
       # создаем новое
       $('body').append(@winDiv = $('<div/>',{
-        "id":'js-alert_union',
+        "id":@defaults.id,
         "style":"height:45px;",
         'html':@options.html,
         "class":"js-alert_union",
@@ -472,8 +471,9 @@ class modalWindow
     else
       len = $('.js-alert_union').length
       # создаем новое
+      @defaults.id = @defaults.id+len
       $('body').append(@winDiv = $('<div/>',{
-        "id":'js-alert_union'+len,
+        "id":@defaults.id,
         "style":"height:45px;",
         'html':@options.html,
         "class":"js-alert_union",
@@ -487,21 +487,45 @@ class modalWindow
         title : @options.title,
         autoOpen : @sittings.autoOpen,
         closeOnEscape: @sittings.closeOnEscape,
-        buttons:@options.buttons
+
         # // buttons: buttons
     }).parent();
+    if(@options.buttons.length == 0)
+      @options.buttons.push({
+          text: 'Закрыть',
+          class: 'button_yes_or_no no',
+          style: 'float:right;',
+          click: ()->
+            $('#'+_this.defaults.id).dialog('destroy').remove()
+      })
+    @winDiv.dialog("option", "buttons",
+      buttons:
+        text: 'Закрыть',
+        class: 'button_yes_or_no no',
+        style: 'float:right;',
+        click: ()->
+          $('#'+_this.defaults.id).dialog('destroy').remove()
 
-    $('#js-alert_union').dialog("option", "maxHeight", @options.maxHeight) if @options.maxHeight
-    $('#js-alert_union').dialog("option", "maxWidth", @options.maxWidth) if @options.maxWidth
+    )
+    @winDiv.dialog("option", "maxHeight", @options.maxHeight) if @options.maxHeight
+    @winDiv.dialog("option", "maxWidth", @options.maxWidth) if @options.maxWidth
+
 
     # replace standart buttons
+    console.log @options.buttons.length
+
+    console.log @options.buttons.length
+
     if(@options.buttons.length  > 0 && true)
+      console.log @options.buttons.length
       buttons_html = $('<table/>').append(tr = $('<tr/>'));
       for button_n,i in @options.buttons
         button = $('<button/>',{
           html: button_n['text'],
-          click: button_n['click']
-          });
+          click:button_n['click'],
+        });
+
+
         if button_n['class']
           button.attr('class',button_n['class'])
         if button_n['style']
@@ -520,11 +544,11 @@ class modalWindow
         if(i>0)
           td.css('textAlign','right');
 
-      @buttonDiv = buttonDiv
 
-      self.find('.ui-dialog-buttonpane').html(buttonDiv = $('<div/>',{
-        'id':'js-alert_union_buttons',
-        'class':'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
+      console.log buttons_html
+      self.find('.ui-dialog-buttonpane').html(@buttonDiv = $('<div/>',{
+#        'id':'js-alert_union_buttons',
+        'class':'js-alert_union_buttons ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
           }).append(buttons_html))
 
       # $('#js-alert_union').after();
@@ -954,13 +978,13 @@ class invoiceWindow
                 event.stopPropagation()
 
                 return false
-            }).width($(this).innerWidth()-6).height($(this).innerHeight()+1)
+            })
             
             $(this).html(textarea).focus()
             # кнопка сохранить
             div = $('<div/>',{
               'class':'myBlockBefore',
-              'html':'Скопировать',
+              'html':'Копировать',
               click:(event)->
                 $(this).parent().find('textarea').select();
                 # event.preventDefault()

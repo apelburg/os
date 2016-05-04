@@ -270,7 +270,7 @@
 				'id'=>$this->mysqli->insert_id,
 				'buch_id'=>$this->user_id,
 				'buch_name'=>$userName,
-                'craeate'=>date('d.m.Y',time()),
+                'create'=>date('d.m.Y H:i',time()),
                 'del'=>0,
                 'edit'=>1
 			);
@@ -331,7 +331,7 @@
 		 * @version 	15.04.2016 16:02:26
 		 */
 		protected function get_payment_AJAX(){
-			$query = "SELECT *,DATE_FORMAT(`craeate`,'%d.%m.%Y')  AS `craeate` FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
+			$query = "SELECT *, DATE_FORMAT(`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$data = array();
 			if($result->num_rows > 0){

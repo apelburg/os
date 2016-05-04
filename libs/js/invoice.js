@@ -133,7 +133,7 @@
       date: getDateNow(),
       price: 0,
       percent: 0,
-      craeate: getDateNow(),
+      create: getDateNow(),
       buch_id: 0,
       buch_name: 'Default Name',
       edit: 0,
@@ -177,7 +177,7 @@
       date: getDateNow(),
       price: 0,
       percent: 0,
-      craeate: getDateNow(),
+      create: getDateNow(),
       buch_id: 0,
       buch_name: 'Default Name',
       edit: 0,
@@ -339,7 +339,7 @@
       }))).append($('<td/>').append($('<div/>', {
         'html': this.options.buch_name
       })).append($('<div/>', {
-        'html': this.options.craeate
+        'html': this.options.create
       }))).append($('<td/>', {
         'class': 'ppDel',
         click: function(e) {
@@ -386,7 +386,7 @@
       }))).append($('<td/>').append($('<div/>', {
         'html': this.options.buch_name
       })).append($('<div/>', {
-        'html': this.options.craeate
+        'html': this.options.create
       }))).append(td_del = $('<td/>')).data(this.options);
       console.log(this.access);
       if (Number(this.access) === 1) {
@@ -528,10 +528,7 @@
         }, {
           text: 'Нет, Спасибо.',
           "class": 'button_yes_or_no no',
-          style: 'float:right;',
-          click: function() {
-            return $(_this.selfObj.winDiv).dialog('destroy').remove();
-          }
+          style: 'float:right;'
         }
       ];
       this.selfObj = new modalWindow(this.options, {
@@ -562,20 +559,12 @@
     };
 
     modalWindow.prototype.defaults = {
+      id: 'js-alert_union',
       title: '*** Название окна ***',
       width: 'auto',
       height: 'auto',
       html: 'Текст в окне',
-      buttons: [
-        {
-          text: 'Закрыть',
-          "class": 'button_yes_or_no no',
-          style: 'float:right;',
-          click: function() {
-            return $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
-          }
-        }
-      ]
+      buttons: []
     };
 
     function modalWindow(data, sittings) {
@@ -596,22 +585,28 @@
       this.init();
     }
 
+    modalWindow.prototype.destroy = function() {
+      return this.winDiv.dialog('destroy').remove();
+    };
+
     modalWindow.prototype.init = function() {
-      var button, buttonDiv, button_n, buttons_html, i, j, len, len1, ref, self, td, tr;
+      var _this, button, button_n, buttons_html, i, j, len, len1, ref, self, td, tr;
+      _this = this;
       if (this.sittings.single) {
         if ($('#js-alert_union').length > 0) {
           $('#js-alert_union').remove();
         }
         $('body').append(this.winDiv = $('<div/>', {
-          "id": 'js-alert_union',
+          "id": this.defaults.id,
           "style": "height:45px;",
           'html': this.options.html,
           "class": "js-alert_union"
         }));
       } else {
         len = $('.js-alert_union').length;
+        this.defaults.id = this.defaults.id + len;
         $('body').append(this.winDiv = $('<div/>', {
-          "id": 'js-alert_union' + len,
+          "id": this.defaults.id,
           "style": "height:45px;",
           'html': this.options.html,
           "class": "js-alert_union"
@@ -623,16 +618,38 @@
         modal: this.sittings.modal,
         title: this.options.title,
         autoOpen: this.sittings.autoOpen,
-        closeOnEscape: this.sittings.closeOnEscape,
-        buttons: this.options.buttons
+        closeOnEscape: this.sittings.closeOnEscape
       }).parent();
+      if (this.options.buttons.length === 0) {
+        this.options.buttons.push({
+          text: 'Закрыть',
+          "class": 'button_yes_or_no no',
+          style: 'float:right;',
+          click: function() {
+            return $('#' + _this.defaults.id).dialog('destroy').remove();
+          }
+        });
+      }
+      this.winDiv.dialog("option", "buttons", {
+        buttons: {
+          text: 'Закрыть',
+          "class": 'button_yes_or_no no',
+          style: 'float:right;',
+          click: function() {
+            return $('#' + _this.defaults.id).dialog('destroy').remove();
+          }
+        }
+      });
       if (this.options.maxHeight) {
-        $('#js-alert_union').dialog("option", "maxHeight", this.options.maxHeight);
+        this.winDiv.dialog("option", "maxHeight", this.options.maxHeight);
       }
       if (this.options.maxWidth) {
-        $('#js-alert_union').dialog("option", "maxWidth", this.options.maxWidth);
+        this.winDiv.dialog("option", "maxWidth", this.options.maxWidth);
       }
+      console.log(this.options.buttons.length);
+      console.log(this.options.buttons.length);
       if (this.options.buttons.length > 0 && true) {
+        console.log(this.options.buttons.length);
         buttons_html = $('<table/>').append(tr = $('<tr/>'));
         ref = this.options.buttons;
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
@@ -658,10 +675,9 @@
             td.css('textAlign', 'right');
           }
         }
-        this.buttonDiv = buttonDiv;
-        return self.find('.ui-dialog-buttonpane').html(buttonDiv = $('<div/>', {
-          'id': 'js-alert_union_buttons',
-          'class': 'ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
+        console.log(buttons_html);
+        return self.find('.ui-dialog-buttonpane').html(this.buttonDiv = $('<div/>', {
+          'class': 'js-alert_union_buttons ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
         }).append(buttons_html));
       }
     };
@@ -1155,11 +1171,11 @@
                 event.stopPropagation();
                 return false;
               }
-            }).width($(this).innerWidth() - 6).height($(this).innerHeight() + 1);
+            });
             $(this).html(textarea).focus();
             div = $('<div/>', {
               'class': 'myBlockBefore',
-              'html': 'Скопировать',
+              'html': 'Копировать',
               click: function(event) {
                 var error, error1, msg, successful;
                 $(this).parent().find('textarea').select();

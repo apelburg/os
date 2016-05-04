@@ -313,49 +313,49 @@
 Кнопки всплывалок
  */
 
-#js-alert_union_buttons button{
+.js-alert_union_buttons button{
 	border-radius: 9px;
 	height: 36px;
 	border:1px solid #999999;
 	background: #92B73E;
 	color: #fff;
 }
-body #js-alert_union_buttons .button_yes_or_no,
-body #js-alert_union_buttons .button_yes_or_close{
+body .js-alert_union_buttons .button_yes_or_no,
+body .js-alert_union_buttons .button_yes_or_close{
 	padding: 3px 45px;
 }
-body #js-alert_union_buttons .button_yes_or_no.no,
-body #js-alert_union_buttons .button_yes_or_close.no{
+body .js-alert_union_buttons .button_yes_or_no.no,
+body .js-alert_union_buttons .button_yes_or_close.no{
 	background:#fff; 
 	color: #999999;
 }
-body #js-alert_union_buttons .save,
-body #js-alert_union_buttons .button_yes_or_close{
+body .js-alert_union_buttons .save,
+body .js-alert_union_buttons .button_yes_or_close{
 	float: right;
 }
-body #js-alert_union_buttons table td button.right{
+body .js-alert_union_buttons table td button.right{
     float: right;
 }
-body #js-alert_union_buttons table td button.left{
+body .js-alert_union_buttons table td button.left{
     float: left;
 }
 
 #js-SC_buttons table,
-#js-alert_union_buttons table{
+.js-alert_union_buttons table{
 	width: 100%;
 }
 #js-SC_buttons table td:nth-of-type(1),
-#js-alert_union_buttons table td:nth-of-type(1){
+.js-alert_union_buttons table td:nth-of-type(1){
 	text-align: left;
 }
 #js-SC_buttons table td:nth-of-type(2){
 	text-align: center;
 }
 #js-SC_buttons table td:nth-of-type(3),
-#js-alert_union_buttons table td:nth-of-type(2){
+.js-alert_union_buttons table td:nth-of-type(2){
 	text-align: right;
 }
-#js-alert_union_buttons table td{
+.js-alert_union_buttons table td{
     min-width: 55px;
 }
 
@@ -540,7 +540,7 @@ div#js-alert_union{
     /* padding: .3em 1em .5em .4em; */
     padding: .3em 1em .5em 1.5em;
 }
-#js-alert_union_buttons {
+.js-alert_union_buttons {
     border: none;
     padding: 3px 0 0 0;
     border: 0;
@@ -567,11 +567,11 @@ div#js-alert_union{
 	color: #fff;
 }
 .myyClass1 textarea{
-	padding: 3px  0 3px 3px;
+	padding: 3px;
 	border:none;
 	/*float: left;*/
-	width: 100%;
-	height: 100%;
+	width: calc(100% - 10px);
+	height:calc(100% - 6px);
 	overflow: hidden;
 	border:2px solid #92b73e;
 }
