@@ -1759,6 +1759,7 @@ class invoiceTtn
       table.find('td input').each((index,el)->
         $(this).prop('checked',true).parent().addClass('checked')
         )
+      
   # проверка и поправка состояния главного чекбокса
   checkMainCheckbox:(table)->
     main_check = table.find('th input');
