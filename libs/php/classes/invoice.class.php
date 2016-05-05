@@ -11,7 +11,6 @@
 		protected $user_access = 0; 	// user right (int)
 		protected $user_id = 0;			// user id with base
 		public $user = array(); 		// authorised user info
-		private $mysqli;
 		
 		function __construct()
 		{	
@@ -37,8 +36,6 @@
 		/**
 		 * buch the confirmation create ttn
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	22.04.2016 13:48:55
 		 */
 		protected function confirm_create_ttn_AJAX(){
 			$this->db();
@@ -59,8 +56,6 @@
 		/**
 		 * return data
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version	11.04.2016 9:29:45
 		 */
 		protected function get_data_AJAX(){
 			$response = array(
@@ -74,8 +69,6 @@
 		/**
 		 * create new ttn
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	19.04.2016 14:36:44
 		 */
 		protected function create_new_ttn_AJAX(){
 			$message  = '<b>Method:</b> '.__METHOD__.'<br>';
@@ -121,8 +114,6 @@
 		/**
 		 * insert ttn number
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	21.04.2016 12:55:23
 		 */
 		protected function update_ttn_number_AJAX(){
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
@@ -136,8 +127,6 @@
 		/**
 		 * return assigned ttn
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	21.04.2016 11:37:56
 		 */
 		protected function ttn_was_returned_AJAX(){
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
@@ -155,8 +144,6 @@
         /**
          * get user full name
          *
-         * @author  	Alexey Kapitonov
-         * @version 	11.04.2016 15:20:48
          */
         private function getAuthUserName(){
 			$name = '';
@@ -178,8 +165,6 @@
         /**
          * save invoice number	
          *
-         * @author  	Alexey Kapitonov
-         * @version 	25.04.2016 15:02:30
          */
         protected function confirm_create_bill_AJAX(){
         	$i = 0;
@@ -203,8 +188,6 @@
 		 * get data rows
 		 *
 		 * @return array
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 10:48:00
 		 */
 		private function get_data(){
 			//  получаем информацию по строкам
@@ -235,8 +218,6 @@
 		/**
 		 * get ttn from id
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	15.04.2016 16:02:26
 		 */
 		protected function get_ttn_AJAX(){
 			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
@@ -285,8 +266,6 @@
 		/**
 		 * update payment rows
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	15.04.2016 16:02:26
 		 */
 		protected  function  save_payment_row_AJAX()
 		{
@@ -332,8 +311,6 @@
 		/**
 		 * get pp from invoice id
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	15.04.2016 16:02:26
 		 */
 		protected function get_payment_AJAX(){
 			$query = "SELECT *, DATE_FORMAT(`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
@@ -353,8 +330,6 @@
 		 * get ttn rows
 		 *
 		 * @param $id_s
-		 * @author  	Alexey Kapitonov
-		 * @version 	13.04.2016 15:52:37
 		 */
 		private function get_ttn_rows($id_s){
 			// if(count)
@@ -374,8 +349,6 @@
 		/**
 		 * update and save main discount
 		 *
-		 * @author  	Alexey Kapitonov
-		 * @version 	08.04.2016 10:43:03
 		 */
 		protected function create_invoice_AJAX(){
 			/*
@@ -484,8 +457,6 @@
 		 * @param $doc_id
 		 * @param $doc_num
 		 * @return bool
-		 * @author  	Alexey Kapitonov
-		 * @version 	13.04.2016 15:05:41
 		 */
 		private function check_invoice($doc_type, $doc_id, $doc_num){
 			$query = "SELECT count(*) as count FROM `".INVOICE_TBL."` ";
@@ -508,8 +479,6 @@
 		 *
 		 * @param $invoce_id
 		 * @param $positions_data
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:59:33
 		 */
 		private function createPositionRows($invoce_id, $positions_data){
 			foreach($positions_data as $data){
@@ -532,8 +501,6 @@
 		/**
 		 *	edit spf_return
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	13.04.2016 16:49:25
 		 */
 		protected function edit_flag_spf_return_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
@@ -546,8 +513,6 @@
 		/**
 		 *	edit flag_calc
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	12.04.2016 17:43:10
 		 */
 		protected function edit_flag_calc_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
@@ -559,8 +524,6 @@
 		/**
 		 *	edit flag_ice
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	12.04.2016 17:43:10
 		 */
 		protected function edit_flag_ice_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
@@ -571,8 +534,6 @@
 		/**
 		 *	edit flag_1c
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	12.04.2016 17:43:10
 		 */
 		protected function edit_flag_1c_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
@@ -583,8 +544,6 @@
 		/**
 		 *	edit edit_flag_flag
 		 *
-		 *	@author  	Alexey Kapitonov
-		 *	@version 	12.04.2016 17:43:10
 		 */
 		protected function edit_flag_flag_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
@@ -599,8 +558,6 @@
 		 * @param $id
 		 * @return array
 		 * @param 		id
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:37:10
 		 */
 		private function getOfertaRows($id){
 			$query = "SELECT * FROM `".OFFERTS_ROWS_TBL."` WHERE `oferta_id` = '".$id."'";
@@ -622,8 +579,6 @@
 		 * @param $id
 		 * @return array
 		 * @param 		id
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:37:10
 		 */
 		private function getOferta($id){
 			$query = "SELECT * FROM `".OFFERTS_TBL."`";
@@ -645,8 +600,6 @@
 		 *
 		 * @param $arr
 		 * @return int
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:18:25
 		 */
 		private function getPriceIn($arr){
 			$price = 0;
@@ -660,8 +613,6 @@
 		 *
 		 * @param $arr
 		 * @return float|int
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:18:33
 		 */
 		private function getPriceOut($arr){
 			$price = 0;
@@ -678,8 +629,6 @@
 		 * @param $requisit_id
 		 * @return string
 		 * @see 		requisits name
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:16:57
 		 */
 		private function getRequisitsName($requisit_id){
 			return 'метод получения названия реквизитов';
@@ -690,8 +639,6 @@
 		 *
 		 * @param $client_id
 		 * @return string
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:17:25
 		 */
 		private function getCLientName($client_id){
 			return 'метод получения названия клиента';
@@ -702,8 +649,6 @@
 		 *
 		 * @param $add_data
 		 * @return mixed
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 15:14:53
 		 */
 		private function createInoceRow($add_data){
 			$query = "INSERT INTO `".INVOICE_TBL."` SET ";
@@ -746,8 +691,6 @@
 		 *
 		 * @param $agreement_id
 		 * @return array
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 11:55:13
 		 */
 		private function getAgreement($agreement_id){
 			$query = "SELECT * FROM `".GENERATED_AGREEMENTS_TBL."` WHERE `id` = '".$agreement_id."' ";
@@ -768,8 +711,6 @@
 		 * @param $agreement_id
 		 * @param $specification_num
 		 * @return array
-		 * @author  	Alexey Kapitonov
-		 * @version 	11.04.2016 11:50:07
 		 */
 		private function getSpecificationRows($agreement_id,$specification_num){
 			$query = "SELECT * FROM `".GENERATED_SPECIFICATIONS_TBL."` WHERE `agreement_id` = '".$agreement_id."' AND `specification_num` = '".$specification_num."'";
@@ -788,8 +729,6 @@
 		 *
 		 * @param $id
 		 * @return int
-		 * @author  	Alexey Kapitonov
-		 * @version 	11:38 16.03.2016
 		 */
 		private function get_user_access_Database_Int($id){
 			$query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
