@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class Invoice
  *
@@ -262,6 +263,26 @@
 			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
 
+		/**
+		 * update percent payment from invoice
+		 */
+		protected function save_percent_from_invoice_AJAX()
+		{
+
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `percent_payment`=?";
+			$query .= ", `price_out_payment`=?";
+
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('ddi',$_POST['percent_payment'],$_POST['price_out_payment'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+		}
 
 		/**
 		 * update payment rows
