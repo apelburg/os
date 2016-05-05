@@ -1764,7 +1764,7 @@ class invoiceTtn
     main_check = table.find('th input');
     # отработка главного checkbox
     if table.find('td input:checked').length == table.find('td input').length
-      main_check.prop('checked',true).removeClass('checked_no_full')
+      main_check.prop('checked', true).removeClass('checked_no_full')
       main_check.parent().addClass('checked')
     else if table.find('td input:checked').length > 0
       main_check.prop('checked',false).addClass('checked_no_full')
