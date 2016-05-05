@@ -241,16 +241,21 @@
 		protected  function create_payment_AJAX(){
 			$userName = $this->getAuthUserName();
 			$query = "INSERT INTO `".INVOICE_PP."` SET ";
-			// $query .= "`id` = '',";
-			// дата создания заявки
-			$query .= "`invoice_id` = '".(int)$_POST['id']."'";
-			$query .= ",`buch_id` = '".$this->user_id."'";
-			$query .= ",`buch_name` = '".$userName."'";
+			$query .= "`invoice_id` =?";
+			$query .= ",`buch_id` =?";
+			$query .= ",`buch_name` =?";
 			$query .= ", `date` = NOW()";
 			$query .= ", `lasttouch` = NOW()";
 
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$stmt->bind_param('iis',$_POST['id'],$this->user_id,$userName) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+//			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			// возвращаем полученные данные
 			$this->responseClass->response['data'] = array(
 				'id'=>$this->mysqli->insert_id,
