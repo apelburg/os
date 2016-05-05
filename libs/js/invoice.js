@@ -209,7 +209,7 @@
     }
 
     ppRow.prototype.init = function(data, rData, i) {
-      if (Number(this.options.del) === 0 && Number(this.options.edit) > 0 && (Number(this.access) === 1 || Number(this.access) === 2)) {
+      if (Number(this.options.del) === 0 && Number(this.options.edit) > 0 && (Number(this.access) === 1 || Number(this.access) === 2) && (data.number === "" || Number(data.price) === 0)) {
         return this.createEditingObj(data, rData, i);
       } else {
         return this.createSimpleRow(data, rData, i);
@@ -217,7 +217,7 @@
     };
 
     ppRow.prototype.createEditingObj = function(data, rData, i) {
-      var _this, tr;
+      var _this, delTd, tr;
       _this = this;
       tr = $('<tr/>').append($('<td/>', {
         'html': this.options.number,
@@ -340,30 +340,8 @@
         'html': this.options.buch_name
       })).append($('<div/>', {
         'html': this.options.create
-      }))).append($('<td/>', {
-        'class': 'ppDel',
-        click: function(e) {
-          var row, td;
-          td = $(this);
-          row = td.parent();
-          return new sendAjax('save_payment_row', {
-            id: _this.options.id,
-            del: 1
-          }, function() {
-            var button_changed;
-            data.del = 1;
-            row.addClass('deleted').data(_this.options);
-            td.replaceWith(td = $('<td/>'));
-            if (_this.access === 1) {
-              td.addClass('ppDel');
-              _this.realPaymentDel(td, rData, i);
-            }
-            button_changed = $('#js--how_del_payment_button');
-            button_changed.data().num = Number(button_changed.data().num) + 1;
-            return button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
-          });
-        }
-      })).data(this.options);
+      }))).append(delTd = $('<td/>')).data(this.options);
+      this.paymentDel(delTd, rData, i, data);
       if (Number(this.options.del) > 0) {
         tr.addClass('deleted');
       }
@@ -371,8 +349,7 @@
     };
 
     ppRow.prototype.createSimpleRow = function(data, rData, i) {
-      var _this, td_del, tr;
-      _this = this;
+      var td_del, tr;
       tr = $('<tr/>').append($('<td/>', {
         'html': this.options.number
       })).append($('<td/>', {
@@ -388,10 +365,12 @@
       })).append($('<div/>', {
         'html': this.options.create
       }))).append(td_del = $('<td/>')).data(this.options);
-      console.log(this.access);
       if (Number(this.access) === 1) {
-        td_del.addClass('ppDel');
-        this.realPaymentDel(td_del, rData, i);
+        if (Number(rData[i].del) > 0) {
+          this.realPaymentDel(td_del, rData, i, data);
+        } else {
+          this.paymentDel(td_del, rData, i, data);
+        }
       }
       if (Number(this.options.del) > 0) {
         tr.addClass('deleted');
@@ -399,8 +378,33 @@
       return tr;
     };
 
-    ppRow.prototype.realPaymentDel = function(tdObj, rData, i) {
-      return tdObj.click(function(e) {
+    ppRow.prototype.paymentDel = function(tdObj, rData, i, data) {
+      var _this;
+      _this = this;
+      return tdObj.addClass('ppDel').click(function(e) {
+        var row, td;
+        td = $(this);
+        row = td.parent();
+        return new sendAjax('save_payment_row', {
+          id: _this.options.id,
+          del: 1
+        }, function() {
+          var button_changed;
+          rData[i].del = 1;
+          row.addClass('deleted').data(_this.options);
+          td.replaceWith(td = $('<td/>'));
+          if (_this.access === 1) {
+            _this.realPaymentDel(td, rData, i, data);
+          }
+          button_changed = $('#js--how_del_payment_button');
+          button_changed.data().num = Number(button_changed.data().num) + 1;
+          return button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
+        });
+      });
+    };
+
+    ppRow.prototype.realPaymentDel = function(tdObj, rData, i, data) {
+      return tdObj.addClass('ppDel').click(function(e) {
         var confirmObj, row, td;
         td = $(this);
         row = td.parent();
@@ -408,7 +412,7 @@
           html: 'Данная запись будет удалена безвозвратно.<br>Продолжить?'
         }, function() {
           return new sendAjax('delete_payment', {
-            id: rData[i].id
+            id: data.id
           }, function() {
             var button_changed;
             row.remove();
@@ -441,7 +445,7 @@
 
     sendAjax.prototype.response = {};
 
-    function sendAjax(AJAX, options, func) {
+    function sendAjax(ajaxName, options, func) {
       var data;
       if (options == null) {
         options = {};
@@ -452,7 +456,7 @@
         };
       }
       data = {
-        AJAX: AJAX,
+        AJAX: ajaxName,
         options: options,
         func: func
       };
@@ -528,7 +532,10 @@
         }, {
           text: 'Нет, Спасибо.',
           "class": 'button_yes_or_no no',
-          style: 'float:right;'
+          style: 'float:right;',
+          click: function() {
+            return $(_this.selfObj.winDiv).dialog('destroy').remove();
+          }
         }
       ];
       this.selfObj = new modalWindow(this.options, {
@@ -646,40 +653,34 @@
       if (this.options.maxWidth) {
         this.winDiv.dialog("option", "maxWidth", this.options.maxWidth);
       }
-      console.log(this.options.buttons.length);
-      console.log(this.options.buttons.length);
-      if (this.options.buttons.length > 0 && true) {
-        console.log(this.options.buttons.length);
-        buttons_html = $('<table/>').append(tr = $('<tr/>'));
-        ref = this.options.buttons;
-        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
-          button_n = ref[i];
-          button = $('<button/>', {
-            html: button_n['text'],
-            click: button_n['click']
-          });
-          if (button_n['class']) {
-            button.attr('class', button_n['class']);
-          }
-          if (button_n['style']) {
-            button.attr('style', button_n['style']);
-          }
-          if (button_n['id']) {
-            button.attr('id', button_n['id']);
-          }
-          tr.append(td = $('<td/>').append(button));
-          if (button_n.data !== void 0) {
-            button.data(button_n.data);
-          }
-          if (i > 0) {
-            td.css('textAlign', 'right');
-          }
+      buttons_html = $('<table/>').append(tr = $('<tr/>'));
+      ref = this.options.buttons;
+      for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+        button_n = ref[i];
+        button = $('<button/>', {
+          html: button_n['text'],
+          click: button_n['click']
+        });
+        if (button_n['class']) {
+          button.attr('class', button_n['class']);
         }
-        console.log(buttons_html);
-        return self.find('.ui-dialog-buttonpane').html(this.buttonDiv = $('<div/>', {
-          'class': 'js-alert_union_buttons ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
-        }).append(buttons_html));
+        if (button_n['style']) {
+          button.attr('style', button_n['style']);
+        }
+        if (button_n['id']) {
+          button.attr('id', button_n['id']);
+        }
+        tr.append(td = $('<td/>').append(button));
+        if (button_n.data !== void 0) {
+          button.data(button_n.data);
+        }
+        if (i > 0) {
+          td.css('textAlign', 'right');
+        }
       }
+      return self.find('.ui-dialog-buttonpane').html(this.buttonDiv = $('<div/>', {
+        'class': 'js-alert_union_buttons ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
+      }).append(buttons_html));
     };
 
     return modalWindow;
@@ -704,6 +705,12 @@
 
     paymentWindow.prototype.accces = 0;
 
+    paymentWindow.prototype.head = {
+      price: {},
+      r_percent: {},
+      conditions: {}
+    };
+
     function paymentWindow(obj, data_row, responseData, access) {
       this.access = access;
       this.options = data_row;
@@ -721,14 +728,14 @@
         main_div = $('<div/>');
 
         /*
-         * добавляем таблицу
-         */
-        main_div.append(this.createTable(responseData));
-
-        /*
          * добавление шапки окна
          */
         main_div.prepend(this.createHead(data_row));
+
+        /*
+         * добавляем таблицу
+         */
+        main_div.append(this.createTable(responseData, 0, data_row));
 
         /*
          * создание окна
@@ -743,22 +750,21 @@
           closeOnEscape: true
         });
         this.$el = this.myObj.options.html[0];
-        console.warn(this.myObj);
         return $(this.$el).parent().css('padding', '0');
       }
     };
 
-    paymentWindow.prototype.updatePaymenContent = function(button, responseData) {
+    paymentWindow.prototype.updatePaymenContent = function(button, responseData, data_row) {
       if (button.hasClass('showed')) {
         button.removeClass('showed');
-        return $(this.$el).find('#js--payment-window--body_info-table').replaceWith(this.createTable(responseData, 0));
+        return $(this.$el).find('#js--payment-window--body_info-table').replaceWith(this.createTable(responseData, 0, data_row));
       } else {
         button.addClass('showed');
-        return $(this.$el).find('#js--payment-window--body_info-table').replaceWith(this.createTable(responseData, 1));
+        return $(this.$el).find('#js--payment-window--body_info-table').replaceWith(this.createTable(responseData, 1, data_row));
       }
     };
 
-    paymentWindow.prototype.createTable = function(responseData, showDell) {
+    paymentWindow.prototype.createTable = function(responseData, showDell, data_row) {
       var i, j, len1, payment, tbl, tr;
       if (showDell == null) {
         showDell = 0;
@@ -784,7 +790,7 @@
           this.countDelRow = this.countDelRow + 1;
         } else {
           responseData[i] = new ppRowObj(responseData[i]);
-          tbl.append(new ppRow(responseData, i, this.access));
+          tbl.append(new ppRow(responseData, i, this.access, this.head, data_row));
         }
       }
       return tbl;
@@ -842,7 +848,7 @@
       }).css('paddingLeft', '10px')).append($('<span/>', {
         'html': ' на сумму ',
         'class': 'span-greyText'
-      }).css('paddingLeft', '10px')).append($('<span/>', {
+      }).css('paddingLeft', '10px')).append(this.head.price = $('<span/>', {
         'html': data_row.price_out
       }).css('paddingLeft', '10px'));
       div2 = $('<div/>').append($('<span/>', {
@@ -856,13 +862,13 @@
       div1 = $('<div/>').append($('<span/>', {
         'html': 'оплачен:',
         'class': 'span-greyText'
-      })).append($('<span/>', {
+      })).append(this.head.r_percent = $('<span/>', {
         'html': data_row.percent_payment
       })).append('%');
       div2 = $('<div/>').append($('<span/>', {
         'html': 'условия:',
         'class': 'span-greyText'
-      })).append($('<span/>', {
+      })).append(this.head.conditions = $('<span/>', {
         'html': data_row.conditions
       })).append('%');
       tr.append($('<td/>').append(div1).append(div2));
@@ -884,7 +890,7 @@
         console.warn(_this.response.data);
         len = responseData.length;
         responseData[len] = new ppRowObj(_this.response.data);
-        return $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(responseData, len, _this.access));
+        return $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(responseData, len, _this.access, _this.head, data_row));
       });
     };
 
@@ -950,7 +956,7 @@
           num: _this.countDelRow
         },
         click: function() {
-          return _this.updatePaymenContent($(this), responseData);
+          return _this.updatePaymenContent($(this), responseData, data_row);
         }
       });
       buttons.push({
@@ -2792,3 +2798,5 @@
   });
 
 }).call(this);
+
+//# sourceMappingURL=invoice.js.map

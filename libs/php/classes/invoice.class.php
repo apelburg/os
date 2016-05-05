@@ -11,6 +11,7 @@
 		protected $user_access = 0; 	// user right (int)
 		protected $user_id = 0;			// user id with base
 		public $user = array(); 		// authorised user info
+		private $mysqli;
 		
 		function __construct()
 		{	
@@ -40,6 +41,7 @@
 		 * @version 	22.04.2016 13:48:55
 		 */
 		protected function confirm_create_ttn_AJAX(){
+			$this->db();
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
 			$query .= "`number` = '".(int)$_POST['number'] ."'";
 			if(isset($_POST['date'])){
@@ -263,6 +265,8 @@
 			$query .= ",`buch_id` = '".$this->user_id."'";
 			$query .= ",`buch_name` = '".$userName."'";
 			$query .= ", `date` = NOW()";
+			$query .= ", `lasttouch` = NOW()";
+
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			// возвращаем полученные данные
@@ -313,6 +317,7 @@
 				$this->responseClass->addSimpleWindow($mess . '<br>' . $this->printArr($_POST) . $query, 'tester info');
 				return;
 			}
+			$query .= ", `lasttouch` = NOW()";
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
