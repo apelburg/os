@@ -1754,7 +1754,7 @@ class invoiceTtn
         )
     else
       # console.log this
-      input.prop('checked',true)
+      input.prop('checked',true)#
       td.addClass('checked')
       table.find('td input').each((index,el)->
         $(this).prop('checked',true).parent().addClass('checked')
