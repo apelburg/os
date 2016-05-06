@@ -31,7 +31,11 @@
                 </div>
                 <div class="quick_button_circle__text">Уведомления</div>
             </div> -->
-            <?php echo $planner_display; ?>
+            <?php
+            if(@$ACCESS['planner']['access']){
+                echo $planner_display;
+            }
+            ?>
         </td>
         <td class="quick_view_button">
             <?php echo $view_button; ?>
