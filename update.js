@@ -22,6 +22,14 @@ $(document).on('click', '#copy_client_contact_info', function(event) {
 	},'json');
 });
 
+$(document).on('click', '#delete_supplier_contact_info', function(event) {
+	$.post('', {
+		AJAX: 'delete_supplier_contact_info'
+	}, function(data, textStatus, xhr) {
+		standard_response_handler(data);
+	},'json');
+});
+
 $(document).on('click', '#copy_client_addres', function(event) {
 	$.post('', {
 		AJAX: 'copy_client_addres'
