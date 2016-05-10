@@ -12,7 +12,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, getDateNow, getInvoiceData, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, sendAjax, ttnObj,
+  var calc_price_with_discount, cyrill_to_latin, getDateNow, getInvoiceData, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, sendAjax, ttnObj,
     slice = [].slice;
 
   getInvoiceData = function(type) {
@@ -88,6 +88,23 @@
 
   calc_price_with_discount = function(price_out, discount) {
     return Number(price_out / 100) * (100 + Number(discount));
+  };
+
+
+  /*
+   * translit
+   */
+
+  cyrill_to_latin = function(text) {
+    var arren, arrru, i, itm, j, len1, reg;
+    arrru = ['Я', 'я', 'Ю', 'ю', 'Ч', 'ч', 'Ш', 'ш', 'Щ', 'щ', 'Ж', 'ж', 'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ё', 'ё', 'З', 'з', 'И', 'и', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о', 'П', 'п', 'Р', 'р', 'С', 'с', 'Т', 'т', 'У', 'у', 'Ф', 'ф', 'Х', 'х', 'Ц', 'ц', 'Ы', 'ы', 'Ь', 'ь', 'Ъ', 'ъ', 'Э', 'э', ' '];
+    arren = ['Ya', 'ya', 'Yu', 'yu', 'Ch', 'ch', 'Sh', 'sh', 'Sh', 'sh', 'Zh', 'zh', 'A', 'a', 'B', 'b', 'V', 'v', 'G', 'g', 'D', 'd', 'E', 'e', 'E', 'e', 'Z', 'z', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'F', 'f', 'H', 'h', 'C', 'c', 'Y', 'y', '`', '`', '\'', '\'', 'E', 'e', '_'];
+    for (i = j = 0, len1 = arrru.length; j < len1; i = ++j) {
+      itm = arrru[i];
+      reg = new RegExp(arrru[i], "g");
+      text = text.replace(reg, arren[i]);
+    }
+    return text;
   };
 
   ttnObj = (function() {
@@ -831,6 +848,78 @@
       return tbl;
     };
 
+    paymentWindow.prototype.addHandlerForInputSearch = function(inputSearch, buttonSearch) {
+
+      /*
+       * inputSearch
+       */
+      var _this;
+      _this = this;
+      inputSearch.autocomplete({
+        minLength: 2,
+        source: function(request, response) {
+          return $.ajax({
+            type: "POST",
+            dataType: "json",
+            data: {
+              AJAX: 'shearch_invoice_autocomlete',
+              search: request.term
+            },
+            success: function(data) {
+              return response(data);
+            }
+          });
+        },
+        select: function(event, ui) {
+          inputSearch.attr('data-id', ui.item.desc);
+          if (event.keyCode !== 13) {
+            if (inputSearch.is(':focus')) {
+              buttonSearch.click();
+            }
+          }
+          return false;
+        }
+      });
+      inputSearch.data("ui-autocomplete")._renderItem = function(ul, item) {
+        ul.css('z-index', Number($(_this.$el).parent().parent().css("z-index")) + 1);
+        return $("<li></li>", {
+          click: function(e) {
+            return inputSearch.attr('data-id', 0);
+          }
+        }).data("ui-autocomplete-item", item).append(item.label).appendTo(ul);
+      };
+      inputSearch.keydown(function(e) {
+        if (e.keyCode === 13) {
+          if (inputSearch.is(':focus')) {
+            buttonSearch.click();
+            inputSearch.attr('data-id', 0);
+            return false;
+          }
+        }
+      });
+
+      /*
+       * buttonSearch
+       */
+      return buttonSearch.click(function(e) {
+        var send;
+        send = {
+          invoice_num: inputSearch.val(),
+          id: 0
+        };
+        if (inputSearch.attr('data-id') && Number(inputSearch.attr('data-id')) > 0 && inputSearch.attr('data-id') !== void 0) {
+          send.id = inputSearch.attr('data-id');
+        }
+        return new sendAjax('getInvoceRow', send, function(responseRow) {
+          console.log("запрос на выгрузку '" + inputSearch.val(), responseRow);
+          if (responseRow.data.length === 1) {
+            echo_message_js(" найдено полное соответствие " + responseRow.data, 'successful_message');
+            return console.log(" найдено полное соответствие ", responseRow.data);
+          }
+        });
+      });
+    };
+
     paymentWindow.prototype.createHead = function(data_row) {
       var _this, buttonSearch, div1, div2, head_info, inputSearch, table, tr;
       _this = this;
@@ -856,16 +945,15 @@
        * строка 2
        */
       tr = $('<tr/>');
-      inputSearch = $('<input/>', {
+      tr.append($('<td/>').append(inputSearch = $('<input/>', {
         'type': 'text',
         'id': 'js--payment-window--search-pp-input',
         'val': data_row.invoice_num
-      });
-      tr.append($('<td/>').append(inputSearch));
-      buttonSearch = $('<button/>', {
+      })));
+      tr.append($('<td/>').append(buttonSearch = $('<button/>', {
         'id': 'js--payment-window--search-pp-button'
-      });
-      tr.append($('<td/>').append(buttonSearch));
+      })));
+      this.addHandlerForInputSearch(inputSearch, buttonSearch);
       div1 = $('<div/>').append($('<span/>', {
         'html': 'Счёт',
         'class': 'span-boldText'
@@ -2292,8 +2380,22 @@
      */
     var invoice;
     invoice = (function() {
+      var tabs;
+
       invoice.prototype.defaults = {
         start: false
+      };
+
+      tabs = {
+        0: 'Запрос',
+        1: 'Готовые',
+        2: 'Част. оплаченные',
+        3: 'Оплаченные',
+        4: 'Запрос ТТН',
+        5: 'Готовые ТТН',
+        6: 'Част. отгрузка',
+        7: 'Отгрузка',
+        8: 'Закрытые'
       };
 
       invoice.prototype.access_def = 0;
@@ -2851,3 +2953,5 @@
   });
 
 }).call(this);
+
+//# sourceMappingURL=invoice.js.map

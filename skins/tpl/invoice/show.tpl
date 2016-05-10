@@ -3,6 +3,7 @@
 <link href="skins/css/invoice.css" rel="stylesheet" type="text/css">
 <link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/ZeroClipboard.js"></script>
 <div id="invoice-button-top"></div>
 
@@ -16,7 +17,7 @@
     </ul>
 </div>
 <div id="invoceData" style="display:none">test</div>
-<div class="cabinet_top_menu first_line" style="background-color:#92b73e">
+<div id="js-menu-invoice" class="cabinet_top_menu" style="background-color:#92b73e">
     <ul class="central_menu" style="padding-left: 19px;padding-right: 19px;">
         <li class="selected">
             <a href="#">

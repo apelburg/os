@@ -61,6 +61,20 @@ round_money = (num) ->
 calc_price_with_discount = (price_out, discount) ->
   return Number(price_out/100) * (100 + Number(discount));
 
+###
+# translit
+###
+cyrill_to_latin = (text)->
+  arrru = ['Я','я','Ю','ю','Ч','ч','Ш','ш','Щ','щ','Ж','ж','А','а','Б','б','В','в','Г','г','Д','д','Е','е','Ё','ё','З','з','И','и','Й','й','К','к','Л','л','М','м','Н','н', 'О','о','П','п','Р','р','С','с','Т','т','У','у','Ф','ф','Х','х','Ц','ц','Ы','ы','Ь','ь','Ъ','ъ','Э','э',' ']
+
+  arren = ['Ya','ya','Yu','yu','Ch','ch','Sh','sh','Sh','sh','Zh','zh','A','a','B','b','V','v','G','g','D','d','E','e','E','e','Z','z','I','i','J','j','K','k','L','l','M','m','N','n', 'O','o','P','p','R','r','S','s','T','t','U','u','F','f','H','h','C','c','Y','y','`','`','\'','\'','E', 'e', '_']
+
+  for itm,i in arrru
+    reg = new RegExp(arrru[i], "g");
+    text = text.replace(reg, arren[i]);
+
+  return text;
+
 
 class ttnObj
   defaults:
@@ -676,10 +690,85 @@ class paymentWindow
 
     return tbl
 
+  # добавляем обработчик для на элементы поиска по счетам
+  addHandlerForInputSearch:(inputSearch,buttonSearch)->
+    ###
+    # inputSearch
+    ###
+    _this = @
+    inputSearch.autocomplete({
+      minLength: 2,
+      source: (request, response)->
+#        console.log(request)
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+          data:
+            AJAX: 'shearch_invoice_autocomlete', # показать
+            search: request.term # поисковая фраза
+          success: (data) ->
+            response(data);
+        })
+      select: ( event, ui ) ->
+        inputSearch.attr('data-id',ui.item.desc)
+        if(event.keyCode != 13)
+          ####
+          # исключение на кнопку enter
+          #
+          # т.к. при клике enter при выборе из выпадающего списка
+          # keyCode тоже равен 13
+          # чтобы не отрабатывало дважды при клике на enter на фокусе
+          ####
+          if(inputSearch.is(':focus'))
+            buttonSearch.click();
+        return false;
 
-  # перебор всех строк и репласе всех textarea
-  
-  # шапка таблицы 
+    })
+    inputSearch.data( "ui-autocomplete" )._renderItem = ( ul, item )->
+      ul.css('z-index',Number($(_this.$el).parent().parent().css( "z-index" ))+1)
+      return $("<li></li>",{
+        click:(e)->
+          inputSearch.attr('data-id',0)
+      })
+        .data("ui-autocomplete-item", item) # для jquery-ui 1.10+
+        #.append( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
+        .append( item.label )
+        .appendTo(ul);
+        # console.log ul
+
+    inputSearch.keydown((e)->
+      if(e.keyCode == 13)#enter
+        if(inputSearch.is(':focus'))#
+          buttonSearch.click()
+          inputSearch.attr('data-id',0)
+          return false;
+        #отправка поиска на enter
+    )
+
+
+    ###
+    # buttonSearch
+    ###
+    buttonSearch.click((e)->
+      send = {
+        invoice_num:inputSearch.val()
+        id:0
+      }
+      if inputSearch.attr('data-id') && Number(inputSearch.attr('data-id')) > 0 && inputSearch.attr('data-id')!= undefined
+        send.id = inputSearch.attr('data-id')
+
+
+      new sendAjax 'getInvoceRow',send, (responseRow)->
+        console.log "запрос на выгрузку '"+inputSearch.val(),responseRow
+        if responseRow.data.length == 1
+          echo_message_js  " найдено полное соответствие "+responseRow.data,'successful_message'
+          console.log " найдено полное соответствие ",responseRow.data
+    )
+
+
+
+
+  # шапка таблицы
   createHead:(data_row)->
     _this = @
     # общий контейнер
@@ -696,11 +785,15 @@ class paymentWindow
     # строка 2
     ###
     tr = $('<tr/>')
-    inputSearch = $('<input/>',{'type':'text','id':'js--payment-window--search-pp-input','val':data_row.invoice_num})
-    tr.append($('<td/>').append(inputSearch))
-    buttonSearch = $('<button/>',{'id':'js--payment-window--search-pp-button'})
-    tr.append($('<td/>').append(buttonSearch))
-#    table.append(tr)
+    # поиск
+    tr.append($('<td/>').append(inputSearch = $('<input/>',{'type':'text','id':'js--payment-window--search-pp-input','val':data_row.invoice_num})))
+    tr.append($('<td/>').append(buttonSearch = $('<button/>',{'id':'js--payment-window--search-pp-button'})))
+
+    # добавляем обработчик для на элементы поиска по счетам
+    @addHandlerForInputSearch(inputSearch, buttonSearch)
+
+
+    # table.append(tr)
     div1 = $('<div/>')
       .append($('<span/>',{'html':'Счёт','class':'span-boldText'}))
       .append($('<span/>',{'html':' № ', 'class':'span-greyText span-boldText'}))
@@ -2006,6 +2099,19 @@ class invoiceTtn
 
     defaults:
       start: false
+
+    tabs = {
+      0:'Запрос',
+      1:'Готовые',
+      2:'Част. оплаченные',
+      3:'Оплаченные',
+      4:'Запрос ТТН',
+      5:'Готовые ТТН',
+      6:'Част. отгрузка',
+      7:'Отгрузка',
+      8:'Закрытые'
+    }
+
 
     access_def: 0
     response_def:{}

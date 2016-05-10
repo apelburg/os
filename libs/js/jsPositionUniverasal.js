@@ -255,10 +255,8 @@ $.extend({
           urlString += ((index==0)?'?':'&') + element + '=' + hashes[element];
         }); 
         window.history.pushState("object or string", "Портфолио", "/os/" + urlString);
-      }     
-      
+      }
     }
-
 });
 
 

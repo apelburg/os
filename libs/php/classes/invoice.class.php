@@ -36,7 +36,6 @@
 
 		/**
 		 * buch the confirmation create ttn
-		 *
 		 */
 		protected function confirm_create_ttn_AJAX(){
 			$this->db();
@@ -55,8 +54,42 @@
 		}
 
 		/**
+		 * invoice_autocomlete
+		 */
+		protected function shearch_invoice_autocomlete_AJAX(){
+
+			$query="SELECT * FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?";
+//			$query="SELECT * FROM `".CLIENTS_TBL."`  WHERE `company` LIKE ?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$search = '%'.$_POST['search'].'%';
+			$stmt->bind_param('s', $search) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$response = array();
+
+			$i=0;
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					// $response[] = $row['company'];
+					$response[$i]['label'] = $row['invoice_num'];
+					$response[$i]['value'] = $row['invoice_num'];
+					$response[$i]['href'] = '#';
+//					$response[$i]['href'] = $_SERVER['REQUEST_URI'].'&client_id='.$row['id'];
+					$response[$i++]['desc'] = $row['id'];
+				}
+			}
+//			echo $this->printArr($response);
+			echo json_encode($response);
+			exit;
+		}
+
+
+
+		/**
 		 * return data
-		 *
 		 */
 		protected function get_data_AJAX(){
 			$response = array(
@@ -185,18 +218,59 @@
 			}
         }
 
+		protected function getInvoceRow_AJAX(){
+			if (isset($_POST['invoice_num'])){
+				$search['invoice_num'] = $_POST['invoice_num'];
+			}
+			if (isset($_POST['id'])){
+				$search['id'] = $_POST['id'];
+			}
+
+
+			$this->responseClass->response['data'] = $this->get_data($search);
+			switch ($InvCount = count($this->responseClass->response['data'])){
+				case 1:
+					return;
+					break;
+				case 0:
+					$this->responseClass->response['data'] = [];
+					$this->responseClass->addMessage('Такого номера счёта не существует');
+					break;
+				default:
+
+					$this->responseClass->addMessage('Вы не полностью ввели номер счёта, найдено '.$InvCount.' совпадений.');
+					$this->responseClass->response['data'] = [];
+					break;
+			}
+		}
+
 		/**
 		 * get data rows
 		 *
+		 * @param int $id
 		 * @return array
 		 */
-		private function get_data(){
+		private function get_data($sarch = array('invoice_num'=>'','id'=>0)){
+			$w = 0;
 			//  получаем информацию по строкам
 			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."`";
 			// $query = "  SORT BY `id` DESC";
 			if($this->user_access != 1 && $this->user_access != 2){
-				$query .= "WHERE `manager_id` = '".$this->user_id."' ";
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `manager_id` = '".$this->user_id."' ";
+				$w++;
 			}
+
+			if((int)$sarch['id'] > 0){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `id` = '".$sarch['id']."' ";
+				$w++;
+			}else if( $sarch['invoice_num'] != '' ){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `invoice_num` = '".$sarch['invoice_num']."' ";
+				$w++;
+			}
+
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$this->data =$this->depending['id']= array();
 
