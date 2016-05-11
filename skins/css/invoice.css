@@ -1,3 +1,9 @@
+#js-main-invoice-div{
+	padding-bottom: 70px;
+	padding-bottom: 70px;
+	float: left;
+	width: 100%;
+}
 #js-main-invoice-table,
 #js-main-invoice-table-clone table{
 	width: 100%;
@@ -692,8 +698,19 @@ div#js-alert_union{
 	border-right: 1px solid #fff;
 }
 #js--payment-window--body_info-table tr td:nth-last-of-type(2){
-   padding: 0;
-    width: 130px;
+	padding: 0;
+	width: 130px;
+}
+#js--payment-window--body_info-table tr td.date,
+#js--payment-window--body_info-table tr td.date input{
+	background-image: url("../images/img_design/icon_calendar.png");
+	background-position: calc(100% - 9px);
+	background-repeat: no-repeat;
+}
+#js--payment-window--body_info-table tr td.date input{
+	background-image: url("../images/img_design/icon_calendar.png");
+	background-position: calc(100% - 7px);
+	background-repeat: no-repeat;
 }
 #js--payment-window--body_info-table tr td.ppDel{
     width: 44px;
@@ -732,5 +749,33 @@ div#js-alert_union{
 	border:2px solid #acc494;
 	outline: none;
 }
-
+#js-main-invoice-show-rows{
+	position: fixed;
+	bottom: -35px;
+	padding: 10px;
+	border: 1px solid #F3F1F1;
+	color: #7A7A7A;
+	width: 200px;
+	left: 50%;
+	margin-left: -100px;
+	text-align: center;
+	cursor: pointer;
+	background-color: #fff;
+	opacity: 0.8;
+}
+#js-main-invoice-show-rows:hover{
+	background-color: #FDFDFD;
+	-webkit-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.15);
+	-moz-box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.15);
+	box-shadow: 0px 5px 11px 0px rgba(50, 50, 50, 0.15);
+}
+#js-menu-invoice ul.central_menu li span {
+	font-size: 12px;
+	color: #fff;
+	padding: 3px 10px 3px 10px;
+	float: left;
+	text-decoration: none;
+	margin: 0;
+	cursor:pointer;
+}
 

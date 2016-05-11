@@ -5,7 +5,8 @@
 	// если нет $ACCESS['suppliers']['access'] или она равна FALSE прерываем работу скирпта 
 	if(!@$ACCESS['client_folder']['section']['rt_position']['access']) exit($ACCESS_NOTICE);
 	// ** БЕЗОПАСНОСТЬ **
-    
+
+	$quick_button = '<div class="quick_button_div"  id="quick_button_div" style="background:none"></div>';
 
 	include_once './libs/php/classes/invoice.class.php';
 	$Invoice = new Invoice();

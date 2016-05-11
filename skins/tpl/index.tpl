@@ -54,7 +54,7 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                     <?php 
                         echo get_worked_link_for_cabinet();
                     ?>
-                    <a href="?page=invoice" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
+                    <a href="?page=invoice&section=1" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
 
                     <a href="?page=clients&section=clients_list" class="<?php if($page=='clients')echo'selected'; ?>">Клиенты</a>
                 

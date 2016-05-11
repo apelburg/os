@@ -250,7 +250,7 @@
 		 * @param int $id
 		 * @return array
 		 */
-		private function get_data($sarch = array('invoice_num'=>'','id'=>0)){
+		private function get_data($curSearch = array('invoice_num'=>'','id'=>0)){
 			$w = 0;
 			//  получаем информацию по строкам
 			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."`";
@@ -260,15 +260,84 @@
 				$query .= " `manager_id` = '".$this->user_id."' ";
 				$w++;
 			}
+//			echo $query;
 
-			if((int)$sarch['id'] > 0){
+
+			if((int)$curSearch['id'] > 0){
 				$query .= ($w>0?' AND ':' WHERE ');
-				$query .= " `id` = '".$sarch['id']."' ";
+				$query .= " `id` = '".$curSearch['id']."' ";
 				$w++;
-			}else if( $sarch['invoice_num'] != '' ){
+			}else if( $curSearch['invoice_num'] != '' ){
 				$query .= ($w>0?' AND ':' WHERE ');
-				$query .= " `invoice_num` = '".$sarch['invoice_num']."' ";
+				$query .= " `invoice_num` = '".$curSearch['invoice_num']."' ";
 				$w++;
+			}else{
+				// если мы не используем поиск
+				// правила выборки счетов по вкладкам
+				if (isset($_GET['section'])){
+					switch ((int)$_GET['section']){
+						// Запрос
+						case 1:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " (`invoice_num` = '0' OR `invoice_create_date` = '0000-00-00')";
+							$w++;
+
+							break;
+						// Готовые
+						case 2:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `invoice_num` <> '0' ";
+							$w++;
+							$query .= " AND `invoice_create_date` <> '0000-00-00' ";
+							break;
+						// Част. оплаченные
+						case 3:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `price_out_payment` >  0  AND `price_out_payment` <  `price_out`";
+							$w++;
+							break;
+						// Оплаченные
+						case 4:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `price_out_payment` >=  `price_out` ";
+							$w++;
+							break;
+						// Запрос ТТН
+						case 5:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `ttn_query` >=  0 ";
+							$w++;
+							break;
+						// Готовые ТТН
+						case 6:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `ttn_build` >=  0 ";
+							$w++;
+							break;
+						// Част. отгрузка
+						case 7:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `shipped` <>  `need_shipping` ";
+							$w++;
+							break;
+						// Отгрузка
+						case 8:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `shipped` >  0 ";
+							$w++;
+							break;
+						// Закрытые
+						case 9:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `shipped_date` > (NOW() - interval 10 day) AND `flag_calc` > 0 ";
+							$w++;
+							break;
+						// все остальные
+						default:
+							break;
+					}
+				}
+
 			}
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
@@ -286,7 +355,7 @@
 				}
 			}
 			// запрос ттн
-			$this->get_ttn_rows($data_id_s);
+			$this->get_ttn_rows($data_id_s,$curSearch);
 			return $this->data;
 		}
 
@@ -431,17 +500,72 @@
 		 *
 		 * @param $id_s
 		 */
-		private function get_ttn_rows($id_s){
+		private function get_ttn_rows($id_s,$curSearch = array('invoice_num'=>'','id'=>0)){
 			// if(count)
 			if(count($id_s) == 0){
 				return;
 			}
 			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			$w = 1;
+
+			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
+				// если мы не используем поиск
+				// правила выборки счетов по вкладкам
+				if (isset($_GET['section'])){
+					switch ((int)$_GET['section']){
+						// Запрос ТТН
+						case 5:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `number` = '' ";
+							$w++;
+							break;
+						// Готовые ТТН
+						case 6:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `number` <> '' ";
+							$w++;
+							break;
+						default:
+							break;
+					}
+				}
+
+			}
+
+
+
+
+
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$data = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
 					$this->data[$this->depending['id'][$row['invoice_id']]]['ttn'][] = $row;
+				}
+			}
+
+
+			// если мы не используем поиск
+			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
+				// если мы выбираем по ТТН
+				if (isset($_GET['section']) && ((int)$_GET['section'] == 5 || (int)$_GET['section'] == 6)){
+					foreach ($this->data as $key => $val){
+						if(!isset($this->data[$key]['ttn']) || count($this->data[$key]['ttn']) == 0){
+							// в этих разделах нас интересуют ттн, поэтому строки счетов без ттн удаляются
+							unset($this->depending['id'][$val['id']]);
+							unset($this->data[$key]);
+						}
+					}
+
+					// сортируем массив, присваиваем новые ключи по порядку
+					$i = 0;
+					foreach ($this->data as $key => $val){
+						$this->data[$i] = $val;
+						if($i != $key ){
+							unset($this->data[$key]);
+						}
+						$i++;
+					}
 				}
 			}
 		}

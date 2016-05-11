@@ -1,41 +1,21 @@
 ###
-# update invoise date
+# class Invoice
 #
-# @param     type
-# @return    json 2
-# @see       add json data in div#invoceData
 # @author    Alexey Kapitonov
 # @email     kapitonoval2012@gmail.com
 # @version   13.04.2016 16:25:40
 ###
-getInvoiceData = (type = "new") ->
 
-  $.ajax
-    url: ""
-    type: "POST"
-    data:{AJAX:'get_data'}
-    dataType: "json"
-    error: (jqXHR, textStatus, errorThrown) ->
-      echo_message_js "AJAX Error: #{textStatus}"
-      return
-    success: (data, textStatus, jqXHR) ->
-      # console.log jqXHR
-      standard_response_handler(jqXHR.responseJSON)
-      # записываем json
-      $('#invoceData').html jqXHR.responseText;
-      # запускаем плагин
-      $('#js-main-invoice-table').invoice() if type=='new'
-  return true;
 
 ###
-# window onload function
+# Запуск модуля счета
 ###
 $(document).ready(()->
-  getInvoiceData()
+  $('#js-main-invoice-table').invoice()
 )
 
 ###
-# get date
+# возвращяет текущую дату в читабельном формате
 ###
 getDateNow = () ->
   d = new Date();
@@ -49,20 +29,24 @@ getDateNow = () ->
   return dd+'.'+mm+'.'+yy
 
 ###
-# round and return money format any input string or number
+# округляет и приводит числа к денежному формату
+# строку преобразует в число
 ###
 round_money = (num) ->
   num = Number(num);
   new_num = Math.ceil((num)*100)/100;
   return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
+
 ###
-# calculate price with discount
+# подсчет скидки
+# @param      price_out - входящая цена
+# @discount   discount - скидка
 ###
 calc_price_with_discount = (price_out, discount) ->
   return Number(price_out/100) * (100 + Number(discount));
 
 ###
-# translit
+# транслитерация
 ###
 cyrill_to_latin = (text)->
   arrru = ['Я','я','Ю','ю','Ч','ч','Ш','ш','Щ','щ','Ж','ж','А','а','Б','б','В','в','Г','г','Д','д','Е','е','Ё','ё','З','з','И','и','Й','й','К','к','Л','л','М','м','Н','н', 'О','о','П','п','Р','р','С','с','Т','т','У','у','Ф','ф','Х','х','Ц','ц','Ы','ы','Ь','ь','Ъ','ъ','Э','э',' ']
@@ -75,7 +59,9 @@ cyrill_to_latin = (text)->
 
   return text;
 
-
+###
+# прототип объекта ТТН
+###
 class ttnObj
   defaults:
     buch_id:0
@@ -98,7 +84,9 @@ class ttnObj
       @options[key] = el
     return $.extend({}, @defaults, @options)
 
-
+###
+# прототип объекта прихода
+###
 class ppRowObj
   defaults:
     id:0
@@ -127,7 +115,7 @@ class ppRowObj
 
 
 ###
-# html представление строки прихода денежных средств
+# прототип html строки прихода
 ###
 class ppRow
   defaults:
@@ -206,6 +194,7 @@ class ppRow
       # дата
       .append($('<td/>',{
         'html':@options.date,
+        'class':'date',
         click:()->
           if($(this).find('input').length == 0)
             $(this).html(input = $('<input/>',{
@@ -384,7 +373,7 @@ class ppRow
 
 
 ###
-# send AJAX
+# метод отправки запроса AJAX
 ###
 class sendAjax
   defaults:
@@ -414,9 +403,8 @@ class sendAjax
     for k,v of @options.options
       # console.log k + " is " + v
       data[k] = v
-
     $.ajax
-      url: ""
+      url: window.location.href
       type: "POST"
       data:data
       dataType: "json"
@@ -433,10 +421,8 @@ class sendAjax
         _this.options.func(_this.response)
 
 ###
-# modal confirm
+# прототип окна Confirm
 #
-# @author    Alexey Kapitonov
-# @email     kapitonoval2012@gmail.com
 # @version   21.04.2016 11:20:30
 ###
 class modalConfirm
@@ -468,11 +454,9 @@ class modalConfirm
 
 
 ###
-# model from window
+# прототип окна
 #
 # @param     data = {html='текст не был передан', title='имя окна не было передано', buttons={}}
-# @author    Alexey Kapitonov
-# @email     kapitonoval2012@gmail.com
 # @version   18.04.2016 12:53:01
 ###
 class modalWindow
@@ -604,7 +588,7 @@ class modalWindow
 
 
 ###
-# model show window entering payment for invoice 
+# прототип окна приходов
 ###
 class paymentWindow
   saveObj:{}
@@ -922,7 +906,6 @@ class paymentWindow
         standard_response_handler(response)
         # update json
         func()
-    # _this.updateData()
     return
   getButtons:(obj,data_row,responseData)->
     _this = @
@@ -998,8 +981,8 @@ class paymentWindow
   destroy:()->
     $(@$el).parent().dialog('destroy').remove()
 ###
-# model show Invoice positions and
-# insert invoice number or date from buh
+# прототип окна счёта
+# некоторые пользователи емеют право редактировать номер счёта и дату
 ###
 class invoiceWindow
   saveObj:{}
@@ -1151,63 +1134,61 @@ class invoiceWindow
   createTS_copyContent:(position,key,table)->
     _this = @
     td  = $('<td/>',{
-        'class':'myyClass1',
-        on:
-          click:()->      
-            # убиваем все textarea в таблице
-            _this.updateTableTextarea($(this).parent().parent())
+      'class':'myyClass1',
+      on:
+        click:()->
+          # убиваем все textarea в таблице
+          _this.updateTableTextarea($(this).parent().parent())
 
-            # перед вставкой textarea обнуляем отступы в ячейке
-            $(this).css('padding','0').html(textarea)
-            # получаем контент ячейки
-            name = $(this).data().val
-            # вставка textarea
-            textarea = $('<textarea/>',{
-              'val':name,
-              'click':(event)->
-                event.preventDefault()
-                event.stopPropagation()
+          # перед вставкой textarea обнуляем отступы в ячейке
+          $(this).css('padding','0').html(textarea)
+          # получаем контент ячейки
+          name = $(this).data().val
+          # вставка textarea
+          textarea = $('<textarea/>',{
+            'val':name,
+            'click':(event)->
+              event.preventDefault()
+              event.stopPropagation()
 
-                return false
-            })
-            
-            $(this).html(textarea).focus()
-            # кнопка сохранить
-            div = $('<div/>',{
-              'class':'myBlockBefore',
-              'html':'Копировать',
-              click:(event)->
-                $(this).parent().find('textarea').select();
-                # event.preventDefault()
-                try
-                  # // Now that we've selected the anchor text, execute the copy command
-                  successful = document.execCommand('copy');
+              return false
+          })
 
-                  # $('<input/>',{'val':td1.text()}).execCommand("Copy")
-                  msg = successful ? 'successful' : 'unsuccessful';
-                  console.log('Copy email command was ' + msg);
-                  # _this.updateTableTextarea(table)
+          $(this).html(textarea).focus()
+          # кнопка сохранить
+          div = $('<div/>',{
+            'class':'myBlockBefore',
+            'html':'Копировать',
+            click:(event)->
+              $(this).parent().find('textarea').select();
+              # event.preventDefault()
+              try
+                # // Now that we've selected the anchor text, execute the copy command
+                successful = document.execCommand('copy');
 
-                catch  error
-                  console.log  error
-              # on:
-              #   mouseenter:()->
-              #     $(this).remove()
-            }).css({
-              'marginLeft':($(this).innerWidth() - 159),
-              'marginTop':-2
-            })
-            $(this).append(div)
-          mouseleave:()->            
-            _this.updateTableTextarea($(this).parent().parent())
+                # $('<input/>',{'val':td1.text()}).execCommand("Copy")
+                msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Copy email command was ' + msg);
+                # _this.updateTableTextarea(table)
 
-        }).append($('<div/>',{'class':'mmmmm','html':position[key]})).data('val',position[key])
+              catch  error
+                console.log  error
+            # on:
+            #   mouseenter:()->
+            #     $(this).remove()
+          }).css({
+            'marginLeft':($(this).innerWidth() - 159),
+            'marginTop':-2
+          })
+          $(this).append(div)
+        mouseleave:()->
+          _this.updateTableTextarea($(this).parent().parent())
+
+      }).append($('<div/>',{'class':'mmmmm','html':position[key]})).data('val',position[key])
     return td
   # перебор всех строк и репласе всех textarea
   updateTableTextarea:(table) ->
-
     table.find('textarea').each(()->
-      
         name = $(this).parent().data().val
         $(this).parent().attr('style','').html($('<div/>',{'class':'mmmmm','html':name}))  
       )
@@ -1248,7 +1229,6 @@ class invoiceWindow
     td = $('<td/>',{'colspan':'2'})
 
     if (Number(@options.invoice_num) == 0 or @options.invoice_create_date == '00.00.0000' ) && @access == 2
-
       input = $('<input/>',{
         'val':@options.invoice_num,
         'data-val':@options.invoice_num,
@@ -1260,11 +1240,9 @@ class invoiceWindow
           $(this).val($(this).attr('data-val')) if Number($(this).val()) == 0
           return
         keyup:()->
-
           _this.editSaveObj('number', $(this).val(), _this.options.invoice_num)
-
-
       })
+
       input_date = $('<input/>',{
         'val':@options.invoice_create_date,
         'class':'',
@@ -1277,7 +1255,6 @@ class invoiceWindow
         dayOfWeekStart: 1,
         onSelectDate:(ct,$i)->
           $i.blur();
-
         onGenerate:( ct )->
           $(this).find('.xdsoft_date.xdsoft_weekend')
           .addClass('xdsoft_disabled');
@@ -1357,7 +1334,7 @@ class invoiceWindow
 
 
 ###
-# model from ttn
+# прототип окна ТТН
 ###
 class invoiceTtn
   # checkbox number
@@ -2024,7 +2001,7 @@ class invoiceTtn
   confirmAndCreateTtn:(obj,data_row)->
     _this = @
     row_id = @options.id
-    console.warn @saveObj
+#    console.warn @saveObj
     # check update ttn number
     if @saveObj.number
       @saveObj.id = @defaults.id
@@ -2099,100 +2076,179 @@ class invoiceTtn
 
     defaults:
       start: false
+    showMore: []  # кнопка показать ещё
+    Prange:50
+    PminStart:0
+    Pmin:0
+    Pmax:0
 
-    tabs = {
-      0:'Запрос',
-      1:'Готовые',
-      2:'Част. оплаченные',
-      3:'Оплаченные',
-      4:'Запрос ТТН',
-      5:'Готовые ТТН',
-      6:'Част. отгрузка',
-      7:'Отгрузка',
-      8:'Закрытые'
-    }
+    tabMenu: []   # меню
+
 
 
     access_def: 0
     response_def:{}
     constructor: (el, options) ->
-      # console.log @options
-      @options = $.extend({}, @defaults, jQuery.parseJSON($('#invoceData').html()))
+      self = @
+      new sendAjax 'get_data',{} , (response)->
+#        console.warn response
+        self.options = $.extend({}, self.defaults, response)
+        self.access = response.access
+        self.$el = $(el)
+        ###
+        # добавление меню
+        ###
+        self.addMenu()
 
-      @access = $.extend({}, @access_def, @options.access)
-      @$el = $(el)
+        self.init()
 
-      @init()
-      # @init() for i in [0...10]
+        self.quick_button_div = $('#quick_button_div')
+        console.log(self)
+        if self.access == 2 or self.access == 1
+          self.quick_button_div.append($('<span/>',{
+            'html':'приходы',
+            'class':'button',
+            click:(e)->
+              echo_message_js "Окно с поиском по приходам","successful_message"
+              new modalWindow({
+                html:"Окно с поиском по приходам","successful_message",
+                width:'1000px',
+                maxHeight:'80%',
+                title:'Приходы по счёту'
+              },{
+                closeOnEscape:true
+              })
+          }))
+          self.quick_button_div.append($('<apsn/>',{
+            'html':'расходы',
+            'class':'button',
+            click:(e)->
+              echo_message_js "Окно с поиском по расходам","successful_message"
+              new modalWindow({
+                html:"Окно с поиском по расходам","successful_message",
+                width:'1000px',
+                maxHeight:'80%',
+                title:'Расходы по счёту'
+              },{
+                closeOnEscape:true
+              })
+          }))
 
-    # Additional plugin methods go here
-    myMethod: (echo) ->
-      @$el.html(@options.paramA + ': ' + echo)
-    # Additional plugin methods go here
+
+    # обновление одной строки
     reflesh:(id)->
       if typeof id is 'string'
-        data = $(@$el).find('#tt_'+id).data()
-        return $(@$el).find('#tt_'+id).replaceWith(@createRow(data))
+        if $(@$el).find('#tt_'+id).length >0
+          data = $(@$el).find('#tt_'+id).data()
+          return $(@$el).find('#tt_'+id).replaceWith(@createRow(data))
       else
-        data = $(@$el).find('#tt_'+id.id).data(id)
-        return $(@$el).find('#tt_'+id.id).replaceWith(@createRow(id))
-    init: (echo) ->
-      # echo_message_js(@options)
-      for n in @options.data
-        @$el.find('tbody').append(@createRow(n))
+        if $(@$el).find('#tt_'+id.id).length >0
+          data = $(@$el).find('#tt_'+id.id).data(id)
+          return $(@$el).find('#tt_'+id.id).replaceWith(@createRow(id))
+    addMenu:()->
+      _this = @
+      @tabMenu = $('#js-menu-invoice ul')
+      section = Number($.urlVar('section'))
+      tabs = [
+        'Все',
+        'Запрос',
+        'Готовые',
+        'Част. оплаченные',
+        'Оплаченные',
+        'Запрос ТТН',
+        'Готовые ТТН',
+        'Част. отгрузка',
+        'Отгрузка',
+        'Закрытые'
+      ]
+      for n,i in tabs
+        @tabMenu.append( li = $('<li/>',{
+          click:(e)->
+            # меняем URL
+            $.urlVar('section',$(this).data('index'))
+            # удаляем выделение со старого выбранного элемента
+            _this.tabMenu.find('.selected').removeClass('selected')
+            # выделяем текущий элемент
+            $(this).addClass('selected')
+            # обновляем информацию в таблице
+            _this.updateTable()
+        }) )
+        li.append(span = $('<span/>'))
+        span.append($('<div/>',{'class':'border','html': tabs[i]}))
+        li.data('index',i)
+        if i==0
+          li.css({'float':'right'})
+        if i==section
+          li.addClass('selected')
+    # обновление информации в таблице
+    updateTable:() ->
+      _this = @
+      window_preload_add()
+      new sendAjax 'get_data',{} , (response)->
+        _this.options = $.extend({}, _this.defaults, response)
+        _this.init()
+        window_preload_del()
+
+    init: () ->
+      _this = @
+      # очищаем старое поле
+      @$el.find('tbody').html('')
+      ###
+      # выгрузка первой страницы
+      ###
+      len = Number(@options.data.length)
+      @Pmax = @Prange
+      @Pmin = @PminStart
+#      console.log len,@Prange,@Pmax
+      @Pmax = len if len < @Pmax
+
+      for i in [@Pmin...@Pmax]
+#        console.log @Pmin,@Pmax,i
+##        if @options.data[i] != undefined
+#        console.log @options.data[i]
+        @$el.find('tbody').append(@createRow(@options.data[i]))
+
+      ###
+      # кнопка показать ещё
+      ###
+      $('#js-main-invoice-show-rows').remove() if($('#js-main-invoice-show-rows').length > 0)
+
+      $('#js-main-invoice-div').append(@showMore = $('<div/>',{'id':'js-main-invoice-show-rows','html':'Показать ещё '+@Pmax+'/'+len,'data-c':len}))
+      @showMore.click(()->
+        _this.addMoreRows()
+      )
+
+    addMoreRows:()->
+      text = 'Показать еще ' + @Pmax+'/'+@showMore.data().c
+      Pmin = @Pmax
+      @Pmin = @Pmax+1
+      @Pmax = @Pmax+@Prange
+      if Number(@showMore.data().c) < @Pmax
+        @Pmax = Number(@showMore.data().c)
+        text = 'Показано строк ' + @Pmax+'/'+@showMore.data().c
+
+      if Pmin == @Pmax
+        return echo_message_js("На страницу уже выгружены все счета "+ Pmin + " / " + @Pmax)
+
+      for i in [@Pmin...@Pmax]
+        @$el.find('tbody').append(@createRow(@options.data[i]))
+
+
+
+      @showMore.html(text)
+      # скрол к первой подгруженной строке
+      t = $(window).scrollTop() + $(window).height() - 100
+      $("html, body").animate({ scrollTop: t }, 600)  if t > 0
 
     printOptions:()->
       console.info @options.access
       console.info @options.data
 
-    # обновление сонтента в таблице
+    # обновление сонтента в таблице без запроса
     updateRows:()->
-      @destroyRows();
+      @$el.find('tbody').html('')
       @init();
 
-    # убиваем строки
-    destroyRows:()->
-      @$el.find('tbody').html('')
-
-    # обновление JSON нужен ли ???
-    updateData:()->
-      console.log "updateData"
-      $('#invoceData').html JSON.stringify(@options)
-
-    updateRow:(obj_row)->
-      console.log obj_row
-    ###
-    # get data
-    ###
-    getData:(ajax_name,options={},func = ()->)->
-      _this = @
-      data = {
-          AJAX:ajax_name
-      }
-      for k,v of options
-        # console.log k + " is " + v
-        data[k] = v
-      # console.log data
-      response = {}
-      $.ajax
-        url: ""
-        type: "POST"
-        data:data
-        dataType: "json"
-        error: (jqXHR, textStatus, errorThrown) ->
-          echo_message_js "AJAX Error: #{textStatus}"
-          return
-        success: (data, textStatus, jqXHR) ->
-          # console.log jqXHR.responseJSON
-          # data = JSON.parse jqXHR.responseText
-          # echo_message_js "Successful AJAX call: #{jqXHR.responseText}"
-          response = jqXHR.responseJSON
-          _this.response = $.extend({}, _this.response_def, response)
-          standard_response_handler(response)
-          # update json
-          func()
-          # _this.updateData()
-      return
 
     getTtnRow:(row,ttn,i)->
       _this = @
@@ -2212,9 +2268,9 @@ class invoiceTtn
         click:()->
           t = $(this)
           # окно Запрос ТТН
-          _this.getData('get_ttn',{'id':row.id},()->
+          new sendAjax('get_ttn',{'id':row.id},(response)->
             # создаем экземпляр окна ттн
-            new invoiceTtn(t, row, _this.response.data, _this.options.access ,ttn) if _this.response.data != undefined
+            new invoiceTtn(t, row, response.data, _this.options.access ,ttn) if response.data != undefined
             )
         }).width(_this.defttn[0]))
 
@@ -2224,9 +2280,9 @@ class invoiceTtn
         click:()->
           # окно Запрос ТТН
           t = $(this)
-          _this.getData('get_ttn',{'id':row.id},()->
+          new sendAjax('get_ttn',{'id':row.id},(response)->
             # создаем экземпляр окна ттн
-            new invoiceTtn(t, row, _this.response.data, _this.options.access ,ttn) if _this.response.data != undefined
+            new invoiceTtn(t, row, response.data, _this.options.access ,ttn) if response.data != undefined
             )
         }).width(_this.defttn[1]))
 
@@ -2274,7 +2330,7 @@ class invoiceTtn
       tr
 
     ###
-    # create ttn listing in td
+    # создание TD ттн
     ###
     getTdTtn:(row)->
       if @defttn == undefined
@@ -2300,9 +2356,9 @@ class invoiceTtn
             click:()->
               # окно Запрос ТТН
               t = $(this)
-              _this.getData('get_ttn',{'id':row.id},()->
+              new sendAjax('get_ttn',{'id':row.id},(response)->
                 # создаем экземпляр окна ттн
-                new invoiceTtn(t, row, _this.response.data, _this.options.access) if _this.response.data != undefined
+                new invoiceTtn(t, row, response.data, _this.options.access) if response.data != undefined
                 )
             })
         else
@@ -2339,9 +2395,9 @@ class invoiceTtn
         'class':'invoice-row--fist-td',
         click:()->
           t = $(@)
-          _this.getData('get_ttn',{'id':row.id},()->
+          new sendAjax('get_ttn',{'id':row.id},(response)->
             # создаем экземпляр окна ттн
-            new invoiceWindow(t, row, _this.response.data, _this.options.access )
+            new invoiceWindow(t, row, response.data, _this.options.access )
             )
         })
         .append($('<div/>',{
@@ -2379,10 +2435,10 @@ class invoiceTtn
       td = $('<td/>',{
         click:(e)->
           t = $(@)
-          _this.getData('get_payment',{'id':row.id},()->
+          new sendAjax('get_payment',{'id':row.id},(response)->
 #            console.log "654"
             # создаем экземпляр окна ттн
-            new paymentWindow(t, row, _this.response.data, _this.options.access )
+            new paymentWindow(t, row, response.data, _this.options.access )
             )
         on:
           mouseenter:()->
@@ -2580,6 +2636,14 @@ class invoiceTtn
 ###
 $(window).scroll ()->
   if $(this).scrollTop()>$('#js-main-invoice-table').offset().top
+    # показать ещё
+    if $(this).scrollTop() == $(document).height() - $(window).height()
+      if($('#js-main-invoice-show-rows').length > 0)
+        $('#js-main-invoice-show-rows').stop().animate({'bottom':'15px'},100)
+    else
+      if($('#js-main-invoice-show-rows').length > 0)
+        $('#js-main-invoice-show-rows').stop().animate({'bottom':'-45px'},100)
+
     # шапка таблицы
     if($('#js-main-invoice-table-clone').length == 0)
       el_cloned = $('#js-main-invoice-table thead');

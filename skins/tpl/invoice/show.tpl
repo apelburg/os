@@ -16,63 +16,14 @@
         </li>    
     </ul>
 </div>
-<div id="invoceData" style="display:none">test</div>
+
 <div id="js-menu-invoice" class="cabinet_top_menu" style="background-color:#92b73e">
     <ul class="central_menu" style="padding-left: 19px;padding-right: 19px;">
-        <li class="selected">
-            <a href="#">
-                <div class="border">Запрос</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Готовые</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Част. оплаченные</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Оплаченные</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Запрос ТТН</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Готовые ТТН</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Част. отгрузка</div>
-            </a>
-        </li>   
-        <li class="">
-            <a href="#">
-                <div class="border">Отгрузка</div>
-            </a>
-        </li>    
-        <li class="">
-            <a href="#">
-                <div class="border">Закрытые</div>
-            </a>
-        </li>    
-        <li class="" style="float:right">
-            <a href="#">
-                <div class="border">Все</div>
-            </a>
-        </li>    
+
         
     </ul>
 </div>
-<div id="js-main-invoice">
+<div id="js-main-invoice-div">
 	<table id="js-main-invoice-table">
 		<thead>
 			<tr>
