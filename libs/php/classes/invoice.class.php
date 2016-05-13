@@ -404,10 +404,67 @@
 				'id'=>$this->mysqli->insert_id,
 				'buch_id'=>$this->user_id,
 				'buch_name'=>$userName,
-                'create'=>date('d.m.Y H:i',time()),
-                'del'=>0,
-                'edit'=>1
+				'create'=>date('d.m.Y H:i',time()),
+				'del'=>0,
+				'edit'=>1
 			);
+			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+		}
+		/**
+		 * create costs
+		 *
+		 */
+		protected  function create_costs_AJAX(){
+			$userName = $this->getAuthUserName();
+			// создание строки счёта от поставщика
+			$query = "INSERT INTO `".INVOICE_COSTS."` SET ";
+			$query .= "`invoice_id` =?";
+			$query .= ",`buch_id` =?";
+			$query .= ",`buch_name` =?";
+			$query .= ", `date` = NOW()";
+			$query .= ", `lasttouch` = NOW()";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('iis',$_POST['id'],$this->user_id,$userName) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$insert_id = $this->mysqli->insert_id;
+
+			// создание первой строки оплаты поставщику
+			$query = "INSERT INTO `".INVOICE_COSTS_PAY."` SET ";
+			$query .= "`parent_id` =?";
+			$query .= ",`buch_id` =?";
+			$query .= ",`buch_name` =?";
+			$query .= ", `lasttouch` = NOW()";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('iis',$insert_id,$this->user_id,$userName) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+			$insert_costs_id = $this->mysqli->insert_id;
+
+
+//			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = array(
+				'id'=>$insert_id,
+				'buch_id'=>$this->user_id,
+				'buch_name'=>$userName,
+				'create'=>date('d.m.Y H:i',time()),
+				'del'=>0,
+				'edit'=>1,
+				'payment'=>[
+					'id'=>$insert_costs_id
+				]
+			);
+
+
+
 			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
 
@@ -429,8 +486,27 @@
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
 		}
+		/**
+		 * update percent costs from invoice
+		 */
+		protected function save_percent_costs_invoice_AJAX()
+		{
+
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `percent_payment`=?";
+			$query .= ", `price_out_payment`=?";
+
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('ddi',$_POST['percent_payment'],$_POST['price_out_payment'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+
 
 		/**
 		 * update payment rows
@@ -456,7 +532,7 @@
 					$myReturn = 0;
 				} else {
 //					$this->responseClass->addSimpleWindow($this->printArr($_POST).$query,'tester info');
-					
+
 				}
 
 
@@ -469,20 +545,129 @@
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
-        protected function delete_payment_AJAX(){
-            $query = "DELETE FROM `" . INVOICE_PP . "`";
-            $query .= " WHERE `id` = '".(int)$_POST['id']."'";
-            $result = $this->mysqli->query($query) or die($this->mysqli->error);
-            $this->responseClass->response['response'] = "noClose";
-            $this->responseClass->addMessage('Запись была удалена.','successful_message');
-        }
+		protected function delete_payment_AJAX(){
+			$query = "DELETE FROM `" . INVOICE_PP . "`";
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$this->responseClass->response['response'] = "noClose";
+			$this->responseClass->addMessage('Запись была удалена.','successful_message');
+		}
 
 		/**
 		 * get pp from invoice id
-		 *
 		 */
 		protected function get_payment_AJAX(){
 			$query = "SELECT *, DATE_FORMAT(`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = $data;
+			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+		}
+
+		/**
+		 * update costs rows
+		 *
+		 */
+		protected  function  save_costs_row_AJAX()
+		{
+			$query = "UPDATE `" . INVOICE_COSTS . "` SET ";
+			$i = 0;
+			$mess = '';
+			$myReturn = 1;
+			foreach ($_POST as $key => $val) {
+
+				if ($key != 'id' && $key != 'edit' && $key != 'AJAX' && $key != 'date') {
+//					$mess .= " $key => $val;";
+					$query .= (($i > 0) ? ',' : '') . "`" . $key . "` = '" . $val . "'";
+					$i++;
+					$myReturn = 0;
+				} else if ($key == 'date') {
+//					$mess .= " $key => $val;";
+					$query .= (($i > 0) ? ',' : '') . "`" . $key . "` = '" . date('Y-m-d', strtotime($val)) . "'";
+					$i++;
+					$myReturn = 0;
+				} else {
+//					$this->responseClass->addSimpleWindow($this->printArr($_POST).$query,'tester info');
+
+				}
+
+
+			}
+			if ($myReturn > 0){
+				$this->responseClass->addSimpleWindow($mess . '<br>' . $this->printArr($_POST) . $query, 'tester info');
+				return;
+			}
+			$query .= ", `lasttouch` = NOW()";
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+
+		protected function save_costs_payment_date_AJAX(){
+			$query = "UPDATE `" . INVOICE_COSTS_PAY . "` SET ";
+			$query .= " `date`=?";
+
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$date = date("Y-m-d",strtotime($_POST['date']));
+
+			$stmt->bind_param('si',$date,$_POST['id']) or die($this->mysqli->error);
+
+
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+
+		protected function delete_costs_AJAX(){
+
+			$query = "DELETE FROM `" . INVOICE_COSTS . "`";
+			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$this->responseClass->response['response'] = "noClose";
+
+
+			$query = "SELECT id FROM `".INVOICE_COSTS_PAY."` WHERE parent_id = '".(int)$_POST['id']."'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$ids = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$ids[] = $row['id'];
+				}
+			}
+			$query = "DELETE FROM `" . INVOICE_COSTS . "`";
+			$query .= " WHERE `id` IN ('".implode("','",$ids)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+			$this->responseClass->addMessage('Запись была удалена.','successful_message');
+		}
+		/**
+		 * получаем данные по расходам
+		 */
+		protected function get_costs_AJAX(){
+			$query = " SELECT `".INVOICE_COSTS."`.*, DATE_FORMAT(`".INVOICE_COSTS."`.`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`".INVOICE_COSTS."`.`date`,'%d.%m.%Y')  AS `date`,
+
+				`".INVOICE_COSTS_PAY."`.id AS pay_id,
+				`".INVOICE_COSTS_PAY."`.price AS pay_price,
+				`".INVOICE_COSTS_PAY."`.percent AS pay_percent,
+				DATE_FORMAT(`".INVOICE_COSTS_PAY."`.date,'%d.%m.%Y') AS pay_date,
+				`".INVOICE_COSTS_PAY."`.buch_id AS pay_buch_id,
+				`".INVOICE_COSTS_PAY."`.buch_name AS pay_buch_name
+  				FROM ".INVOICE_COSTS." ";
+			$query .= "LEFT JOIN 
+			";
+			$query .= " ".INVOICE_COSTS_PAY." ON ".INVOICE_COSTS_PAY.".parent_id = ".INVOICE_COSTS.".id 
+			";
+			$query .= " WHERE ".INVOICE_COSTS.".invoice_id = '".(int)$_POST['id']."'";
+
+//			echo $query;
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$data = array();
 			if($result->num_rows > 0){

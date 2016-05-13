@@ -598,7 +598,8 @@ div#js-alert_union{
 	padding: 5px;
 }
 #js--payment-window--head_info-table tr td span.span-greyText{
-	color: #999999
+	color: #999999;
+	font-size:12px;
 }
 #js--payment-window--head_info-table tr td span.span-boldText{
 	font-weight: bold;
@@ -607,7 +608,8 @@ div#js-alert_union{
     font-size: 11px;
     padding: 2px 5px;
 }
-#js--payment-window--head_info-table tr:nth-of-type(1) td:nth-of-type(1){
+#js--payment-window--head_info-table tr:nth-of-type(1) td:nth-of-type(1),
+#js--payment-window--head_info-table tr:nth-of-type(1) td:nth-last-of-type(1){
 	text-align: center;
 }
 #js--payment-window--head_info-table tr:nth-of-type(2) td:nth-of-type(1){
@@ -690,6 +692,7 @@ div#js-alert_union{
     text-align: center;
 	border: 1px solid #ccc;
 }
+
 #js--payment-window--body_info-table tr td:nth-of-type(3){
 	text-align: right;
 }
@@ -722,6 +725,15 @@ div#js-alert_union{
     height: 44px;
     cursor: pointer;
 }
+#js--payment-window--head_info-table  tr td div.invoice-row--icons-calculator{
+	background-image: url(../images/img_design/icon_invoce_calc.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+	height: 16px;
+}
+#js--payment-window--head_info-table tr td div {
+	padding: 3px;
+}
 #js--payment-window--body_info-table tr td:nth-last-of-type(2) div{
     /*width:100%;*/
     text-align: left;
@@ -740,18 +752,16 @@ div#js-alert_union{
     text-align: center;
     height: 100%;
     width: calc(100% - 10px);
-	padding:0 3px;
+	padding:0px 3px 1px 3px;
 }
-#js--payment-window--body_info-table tr td.tdInputHere{
-	padding: 0px;
-}
+
 #js--payment-window--body_info-table tr td.tdInputHere input{
 	border:2px solid #acc494;
 	outline: none;
 }
 #js-main-invoice-show-rows{
 	position: fixed;
-	bottom: -35px;
+	bottom: -45px;
 	padding: 10px;
 	border: 1px solid #F3F1F1;
 	color: #7A7A7A;
@@ -778,4 +788,64 @@ div#js-alert_union{
 	margin: 0;
 	cursor:pointer;
 }
+#js--payment-window--body_info-table tr td.mayBeEdit:hover{
+	background-color: #f1f1f1;
+	cursor: pointer;
+}
+#js--payment-window--body_info-table.costs tr td:nth-of-type(1),
+#js--payment-window--body_info-table.costs tr td:nth-of-type(2){
+	text-align: left;
+}
+#js--payment-window--body_info-table.costs tr td:nth-of-type(3){
+	text-align: center;
+}
+#js--payment-window--body_info-table.costs tr td.ice,
+#js--payment-window--body_info-table.costs tr.deleted td.ice{
+	border: 1px solid #ccc;
+	background-image: url(../images/img_design/icon_invoce_ice.png);
+	background-repeat: no-repeat;
+	background-position: 50%;
+	width: 14px;
+	padding: 2px 10px;
+	cursor: pointer;
+}
+#js--payment-window--body_info-table.costs tr td.ice.checked,
+#js--payment-window--body_info-table.costs tr.deleted td.ice.checked{
+	background-image: url(../images/img_design/icon_invoce_ice_green.png);
+}
+#js--payment-window--body_info-table.costs tr td.ice:hover,
+#js--payment-window--body_info-table.costs tr.deleted td.ice:hover{
+	background-color: #f1f1f1;
+}
+#js--payment-window--body_info-table.costs tr td:nth-last-of-type(2),
+#js--payment-window--body_info-table.costs tr.deleted td:nth-last-of-type(2){
+	padding: 5px;
+}
+#js--payment-window--body_info-table.costs tr td:nth-of-type(3){
+	text-align: center;
+}
 
+#js--payment-window--body_info-table.costs tr.subRow td,
+#js--payment-window--body_info-table.costs tr.deleted.subRow td,
+#js--payment-window--body_info-table.costs tr.subRow td:nth-child(n+1),
+#js--payment-window--body_info-table.costs tr.deleted.subRow td:nth-child(n+3){
+	border: 1px solid #ccc;
+	text-align: center;
+}
+#js--payment-window--body_info-table tr td.tdInputHere,
+#js--payment-window--body_info-table.costs tr td.tdInputHere{
+	padding: 0px;
+}
+#js--payment-window--body_info-table.costs tr td{
+	height: auto;
+}
+#js--payment-window--body_info-table.costs tr.singleRow td{
+	height: 45px;
+}
+#js--payment-window--body_info-table.costs tr th:nth-of-type(5){
+	width:165px;
+}
+#js--payment-window--body_info-table.costs tr.singleRow td:nth-of-type(4),
+#js--payment-window--body_info-table.costs tr.singleRow td:nth-of-type(6){
+	text-align: right;
+}
