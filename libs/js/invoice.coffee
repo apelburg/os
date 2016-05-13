@@ -440,9 +440,12 @@ class costsRow
   init:(data,rData,i,paymentWindowObj,data_row,rowspan)->
     #    if Number(@options.del) == 0 and Number(@options.edit) > 0 and (Number(@access) == 1 or Number(@access) == 2)
     # (data.number == "" || Number(data.price) == 0) - проверка на заполненность номера платежки и суммы, если заполнено - выводим нередактируемую версию
+
     if Number(@options.del) == 0 and (Number(@access) == 1 or Number(@access) == 2)
+      console.log "редактируется",rowspan
       return @createEditingObj(data,rData,i,paymentWindowObj,data_row,rowspan)
     else
+      console.log "НЕЕЕ редактируется",rowspan
       return @createSimpleRow(data,rData,i,paymentWindowObj,data_row,rowspan)
 
 
@@ -450,14 +453,186 @@ class costsRow
   calculateHeader:(rData,i,access=0,paymentWindowObj,data_row)->
     onePercent = Number(data_row.price_out)/100
 
+  # ячейки оплаты
+  createEditingObjPayments:(data,rData,i,paymentWindowObj,data_row,rowspan,tr)->
+    _this = @
+    # дата оплаты
+    tr.append(td1 = $('<td/>',{
+      'html':@options.pay_date
+      'class':'date mayBeEdit',
+      click:()->
+        if($(this).find('input').length == 0)
+          $(this).html(input = $('<input/>',{
+            'type':'text'
+            'val':$(this).html(),
+            change:()->
+              _this.options.pay_date = $(this).val()
+          }))
+          $(this).addClass('tdInputHere')
+          input.datetimepicker({
+            minDate:new Date(),
+            timepicker:false,
+            dayOfWeekStart: 1,
+            onSelectDate:(ct,$i)->
+              $i.blur();
+
+            onGenerate:( ct )->
+              $(this).find('.xdsoft_date.xdsoft_weekend')
+              .addClass('xdsoft_disabled');
+              $(this).find('.xdsoft_date');
+
+            closeOnDateSelect:true,
+            format:'d.m.Y'
+          });
+          input.focus().blur(()->
+            t = $(this)
+            _this.options.pay_date = $(this).val()
+            new sendAjax 'save_costs_payment_date',{id:_this.options.pay_id,date:_this.options.pay_date}, ()->
+              t.parent().removeClass('tdInputHere')
+              t.replaceWith(_this.options.pay_date)
+
+          )
+    }))
+    # сумма оплаты
+    tr.append(td2 = $('<td/>',{
+      'html':@options.pay_price,
+      'class':'mayBeEdit',
+      click:()->
+        if($(this).find('input').length == 0)
+          $(this).html(input = $('<input/>',{
+            'type':'text',
+            'val':$(this).html(),
+            keyup:()->
+              $(this).val($(this).val().replace(/[^-0-9/.]/gim,''))
+
+
+              per = round_money(Number($(this).val())*100/Number(_this.options.price))
+
+              # проверка на деление на ноль ( чтобы не выводилось NaN )
+              per = round_money(0) if Number(_this.options.price) == 0
+              # проверка на деление на ноль ( чтобы не выводилось NaN )
+              per = round_money(0) if Number($(this).val()) == 0
+
+              console.log per
+              _this.percentSpan.html(round_money(per))
+            focus:()->
+              if(Number($(this).val()) == 0)
+# если 0.00 подменяем на пусто
+                $(this).val('')
+              else
+# выделение
+                focusedElement = $(this)
+                setTimeout(()->
+                  focusedElement.select()
+                , 50)
+            change:()->
+              _this.options.pay_price = $(this).val()
+          }))
+
+          # добавление класса-селектора редактирования
+          $(this).addClass('tdInputHere')
+
+          input.css('textAlign',$(this).css('textAlign')).focus().blur(()->
+            input = $(this)
+            if (Number($(this).val()) == 0)
+              _this.options.pay_price =  '0.00'
+            else
+              _this.options.pay_price =  round_money($(this).val())
+
+            per = round_money(Number(_this.options.pay_price)*100/Number(_this.options.price))
+
+            # проверка на деление на ноль ( чтобы не выводилось NaN )
+            per = round_money(0) if Number(_this.options.price) == 0
+            # проверка на деление на ноль ( чтобы не выводилось NaN )
+            per = round_money(0) if Number(_this.options.pay_price) == 0
+
+
+            new sendAjax 'save_costs_payment_row',{id:_this.options.pay_id, price:_this.options.pay_price, percent:per}, ()->
+              console.log _this.options.pay_price
+              # убираем класс-селектор редактирования
+              input.parent().removeClass('tdInputHere')
+              # подмена input на контент
+              input.replaceWith(_this.options.pay_price)
+              # обновляем значение % в строке таблицы расходов
+              _this.percentSpan.html(per)
+              _this.options.pay_percent = per
+              rData[i].pay_percent = per
+              tr.data(data)
+          )
+    }))
+    tr.append(td3 = $('<td/>')
+      .append(@percentSpan = $('<span/>',{'class':'percentSpan','html':@options.pay_percent}))
+      .append($('<span/>',{'html':"%"}))
+    )
+
+    if rowspan >= 1
+      if rowspan > 1
+        td1.addClass('noBorderBottm')
+        td2.addClass('noBorderBottm')
+        td2.addClass('noBorderBottm')
+    # пункт 1 есть везде
+    button2 = []
+    # КНОПКА 1
+    button2.push({
+      'name':'добавить оплату',
+      'class':'',
+      click:(e)->
+        eachTr = tr
+        while eachTr.hasClass('subRow')
+          eachTr = eachTr.prev()
+        r = eachTr.find('td[rowspan]')
+        if(r)
+          r_old = Number(eachTr.find('td[rowspan]').eq(0).attr('rowspan'))
+          eachTr.find('td[rowspan]').attr('rowspan',(r_old+1))
+
+        new sendAjax('new_costs_payment_row',{parent_id:_this.options.id},(response)->
+          newData = $.extend({}, _this.options, response.data)
+          # rData,i,access=0,paymentWindowObj,data_row, rowspan = 1
+          tr.after(new costsRow([newData],0,_this.access,paymentWindowObj,data_row,0))
+        )
+     })
+
+
+    # пункт 2 только для добавленных строк оплаты
+    if tr.hasClass('subRow')
+      button2.push({
+        'name':'удалить оплату',
+        'class':'',
+        click:(e)->
+          eachTr = tr
+          while eachTr.hasClass('subRow')
+            eachTr = eachTr.prev()
+          r = eachTr.find('td[rowspan]')
+          if(r)
+            r_old = Number(eachTr.find('td[rowspan]').eq(0).attr('rowspan'))
+            eachTr.find('td[rowspan]').attr('rowspan',(r_old-1))
+
+          new sendAjax('delete_costs_payment',{id:_this.options.pay_id},()->
+            tr.remove()
+          )
+
+
+      })
+
+    # добавляем на ячейки оплаты меню
+    td1.menuRightClick({'buttons':button2})
+    td2.menuRightClick({'buttons':button2})
+    td3.menuRightClick({'buttons':button2})
+
   # строка с возможностью редактирования
-  createEditingObj:(data,rData,i,paymentWindowObj,data_row,rowspan)->
+  createEditingObj:(data,rData,i,paymentWindowObj,data_row,rowspan )->
     _this = @
     tr = $('<tr/>',{'id':'c_'+data.id}).data(data)
     if rowspan == 0
       tr.addClass('subRow')
     if rowspan == 1
       tr.addClass('singleRow')
+
+    if rowspan > 1
+      tr.addClass('firstGroupRow')
+
+
+
     if rowspan>=1
       # поставщик
       tr.append($('<td/>',{'rowspan':rowspan}))
@@ -467,7 +642,7 @@ class costsRow
         'html':@options.number,
         'class':'mayBeEdit',
         click:()->
-          if($(this).find('input').length == 0)
+          if($(this).find('input').length == 0 && Number($(this).attr('rowspan')) == 1)
             $(this).html(input = $('<input/>',{
               'type':'text',
               'val':$(this).html(),
@@ -489,7 +664,7 @@ class costsRow
         'html':@options.date,
         'class':'date mayBeEdit',
         click:()->
-          if($(this).find('input').length == 0)
+          if($(this).find('input').length == 0 && Number($(this).attr('rowspan')) == 1)
             $(this).html(input = $('<input/>',{
               'type':'text',
               'val':$(this).html(),
@@ -522,107 +697,72 @@ class costsRow
             )
       }))
       # сумма счёта (денежный формат)
-      tr.append($('<td/>',{'rowspan':rowspan,'html':@options.price}))
-    # дата оплаты
-    tr.append(td1 = $('<td/>',{
-      'html':@options.pay_date
-      'class':'date mayBeEdit',
-      click:()->
-        if($(this).find('input').length == 0)
-          $(this).html(input = $('<input/>',{
-            'type':'text',
-#            'css':{
-#              'width':$(this).css({'padding':'0'}).innerWidth()
-#            }
-            'val':$(this).html(),
-            change:()->
-              _this.options.pay_date = $(this).val()
-          }))
-          $(this).addClass('tdInputHere')
-          input.datetimepicker({
-            minDate:new Date(),
-            timepicker:false,
-            dayOfWeekStart: 1,
-            onSelectDate:(ct,$i)->
-              $i.blur();
+      tr.append(td2 = $('<td/>',{
+        'rowspan':rowspan,
+        'html':@options.price,
+        'class':'mayBeEdit',
+        click:()->
+          if($(this).find('input').length == 0 && Number($(this).attr('rowspan')) == 1)
+            $(this).html(input = $('<input/>',{
+              'type':'text',
+              'val':$(this).html(),
+              keyup:()->
+                $(this).val($(this).val().replace(/[^-0-9/.]/gim,''))
+                value = $(this).val()
 
-            onGenerate:( ct )->
-              $(this).find('.xdsoft_date.xdsoft_weekend')
-              .addClass('xdsoft_disabled');
-              $(this).find('.xdsoft_date');
+                per = round_money(Number(_this.options.pay_price)*100/Number($(this).val()))
 
-            closeOnDateSelect:true,
-            format:'d.m.Y'
-          });
-          input.focus().blur(()->
-            t = $(this)
-            _this.options.pay_date = $(this).val()
-            new sendAjax 'save_costs_payment_date',{id:_this.options.pay_id,date:_this.options.pay_date}, ()->
-              t.parent().removeClass('tdInputHere')
-              t.replaceWith(_this.options.pay_date)
+                # проверка на деление на ноль ( чтобы не выводилось NaN )
+                per = round_money(0) if Number(_this.options.pay_price) == 0
+                # проверка на деление на ноль ( чтобы не выводилось NaN )
+                per = round_money(0) if Number($(this).val()) == 0
 
-          )
-    }))
-    tr.append(td2 = $('<td/>',{
-      'html':@options.price,
-      'class':'mayBeEdit',
-      click:()->
-        if($(this).find('input').length == 0)
-          $(this).html(input = $('<input/>',{
-            'type':'text',
-            'val':$(this).html(),
-            keyup:()->
-              $(this).val($(this).val().replace(/[^-0-9/.]/gim,''))
+                _this.percentSpan.html(per)
 
-              per = round_money(Number($(this).val())*100/Number(data_row.price_out))
-              _this.percentSpan.html(per)
-            focus:()->
-              if(Number($(this).val()) == 0)
-                # если 0.00 подменяем на пусто
-                $(this).val('')
+              focus:()->
+                if(Number($(this).val()) == 0)
+                  # если 0.00 подменяем на пусто
+                  $(this).val('')
+                else
+                  # выделение
+                  focusedElement = $(this)
+                  setTimeout(()->
+                    focusedElement.select()
+                  , 50)
+              change:()->
+                _this.options.price = $(this).val()
+            }))
+
+            $(this).addClass('tdInputHere')
+            input.css('textAlign',$(this).css('textAlign')).focus().blur(()->
+              input = $(this)
+              if (Number($(this).val()) == 0)
+                _this.options.price =  '0.00'
               else
-                # выделение
-                focusedElement = $(this)
-                setTimeout(()->
-                  focusedElement.select()
-                , 50)
-            change:()->
-              _this.options.price = $(this).val()
-          }))
-          $(this).addClass('tdInputHere')
-          input.css('textAlign',$(this).css('textAlign')).focus().blur(()->
-            input = $(this)
-            if (Number($(this).val()) == 0)
-              _this.options.price =  '0.00'
-            else
-              _this.options.price =  round_money($(this).val())
+                _this.options.price =  round_money($(this).val())
 
-            per = round_money(Number(_this.options.price)*100/Number(data_row.price_out))
-            new sendAjax 'save_costs_row',{id:_this.options.id, price:_this.options.price, percent:per}, ()->
-              input.parent().removeClass('tdInputHere')
-              input.replaceWith(_this.options.price)
+              per = round_money(Number(_this.options.pay_price)*100/Number(_this.options.price))
+              # проверка на деление на ноль ( чтобы не выводилось NaN )
+              per = round_money(0) if Number(_this.options.pay_price) == 0
+              # проверка на деление на ноль ( чтобы не выводилось NaN )
+              per = round_money(0) if Number(_this.options.price) == 0
 
-              # обновляем значение % в строке таблицы расходов
-              _this.percentSpan.html(per)
+              # запрос на сохранение данных
+              new sendAjax('save_costs_row',{id:_this.options.id, price:_this.options.price}, ()->
+                input.parent().removeClass('tdInputHere')
+                input.replaceWith(_this.options.price)
+              )
+              new sendAjax('save_costs_payment_percent',{id:_this.options.pay_id, percent:per}, ()->
+                _this.percentSpan.html(per)
+              )
 
-              _this.options.percent = per
-              console.log _this.options.percent
-              rData[i].percent = per
-              tr.data(data)
-              # обновляем информацию по строке счёта
-              paymentWindowObj.updateHeaderPercent(data_row)
-          )
-    }))
-    tr.append(td3 = $('<td/>')
-      .append(@percentSpan = $('<span/>',{'html':@options.percent}))
-      .append($('<span/>',{'html':"%"}))
-    )
+            )
+      }))
+
+    @createEditingObjPayments(data,rData,i,paymentWindowObj,data_row,rowspan,tr)
+
 
     if rowspan>=1
-      if rowspan>1
-        td1.addClass('noBorderBottm')
-        td2.addClass('noBorderBottm')
-        td2.addClass('noBorderBottm')
       tr.append($('<td/>',{'rowspan':rowspan,'class':'ice'}))
       tr.append($('<td/>',{'rowspan':rowspan})
         .append($('<div/>',{'html':@options.buch_name}))
@@ -630,6 +770,11 @@ class costsRow
       )
       tr.append(delTd = $('<td/>',{'rowspan':rowspan}))
       @costsDel(delTd,rData,i,data,paymentWindowObj,data_row)
+
+#    console.log tr.find('td:nth-of-type(1)').attr('rowspan')
+
+
+
 
     tr.data(@options)
     tr.addClass('deleted') if Number(@options.del)>0
@@ -640,6 +785,8 @@ class costsRow
       tr.addClass('subRow')
     if rowspan == 1
       tr.addClass('singleRow')
+    if rowspan > 1
+      tr.addClass('firstGroupRow')
     if rowspan>=1
       tr.append($('<td/>',{'rowspan':rowspan}))
       tr.append($('<td/>',{'html':@options.number,'rowspan':rowspan}))
@@ -672,7 +819,7 @@ class costsRow
         @costsDel(td_del,rData,i,data,paymentWindowObj,data_row)
 
     tr.data(@options)
-    console.warn @options
+
 
     tr.addClass('deleted') if Number(@options.del)>0
     return tr
@@ -1073,7 +1220,6 @@ class costsWindow
         responseData[i] = new costsRowObj(responseData[i])
 
         tbl.append(new costsRow(responseData,i,@access,@,data_row,rowspan))
-      console.log responseData[k],rowspan
 
     return tbl
 
@@ -1153,7 +1299,7 @@ class costsWindow
     )
   # шапка таблицы
   createHead:(data_row)->
-    _this = @
+    _this = @kapitonoval2012
     # общий контейнер
     head_info = $('<div>',{id:'head_info'});
     table = $('<table>',{id:'js--payment-window--head_info-table'});
@@ -1238,7 +1384,6 @@ class costsWindow
   createRow:(data_row,responseData)->
     _this = @
     new sendAjax('create_costs',{'id':data_row.id},(response)->
-      console.warn(response.data)
       # добавляем информацию в главный объект
       len = responseData.length
       responseData[len] = new costsRowObj(response.data)
@@ -1251,7 +1396,6 @@ class costsWindow
     oldPer = Number(@head.r_percent.html())
     recalcInvoice = @recalcInvoice();
 
-    console.info oldPer,recalcInvoice.percent_payment
     #    if recalcInvoice.percent_payment != oldPer and oldPer > 0
     send = {}
     send.percent_payment = round_money(recalcInvoice.percent_payment)
@@ -1262,8 +1406,6 @@ class costsWindow
     _this.options.percent_payment   = send.percent_payment
     data_row.price_out_payment      = send.price_out_payment
     _this.options.price_out_payment = send.price_out_payment
-    console.log data_row
-
 
     if send != undefined
       send.id = @options.id
@@ -1273,7 +1415,6 @@ class costsWindow
 
 # подсчёт итого
   recalcInvoice:()->
-    console.log 'updateHeaderPercent'
     # общий % оплаты
     percent_payment = 0
     # общая сумма оплаты
@@ -1282,7 +1423,6 @@ class costsWindow
     @bodyRows.find('tr').each((index)->
       if !$(this).hasClass('deleted') and index > 0
         data = $(this).data()
-        console.log data
         if data.percent != undefined
           percent_payment += Number(data.percent)
         if data.price != undefined
@@ -1306,7 +1446,6 @@ class costsWindow
         text: 'Добавить счёт поставщика',
         class:  'button_yes_or_no yes add_payment_button',
         click: ()->
-          console.warn data_row
           _this.createRow(data_row,responseData)
       )
     buttons.push(
@@ -2850,7 +2989,6 @@ class invoiceTtn
         self.init()
 
         self.quick_button_div = $('#quick_button_div')
-        console.log(self)
         if self.access == 2 or self.access == 1
           self.quick_button_div.append($('<span/>',{
             'html':'приходы',

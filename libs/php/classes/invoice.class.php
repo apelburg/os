@@ -364,8 +364,15 @@
 		 *
 		 */
 		protected function get_ttn_AJAX(){
-			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
+			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+
 			$data = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
@@ -411,8 +418,7 @@
 			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
 		/**
-		 * create costs
-		 *
+		 * занесение строки (счета) расходов по поставщикам
 		 */
 		protected  function create_costs_AJAX(){
 			$userName = $this->getAuthUserName();
@@ -431,41 +437,108 @@
 			$result = $stmt->get_result();
 			$stmt->close();
 
-			$insert_id = $this->mysqli->insert_id;
+			$parent_id = $this->mysqli->insert_id;
 
-			// создание первой строки оплаты поставщику
-			$query = "INSERT INTO `".INVOICE_COSTS_PAY."` SET ";
-			$query .= "`parent_id` =?";
-			$query .= ",`buch_id` =?";
-			$query .= ",`buch_name` =?";
-			$query .= ", `lasttouch` = NOW()";
+			$insert_costs__pay_id = $insert_costs_id = $this->create_coasts_pay_row($parent_id,$userName);
 
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
-			$stmt->bind_param('iis',$insert_id,$this->user_id,$userName) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
-			$insert_costs_id = $this->mysqli->insert_id;
-
-
-//			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			// возвращаем полученные данные
 			$this->responseClass->response['data'] = array(
-				'id'=>$insert_id,
+				'id'=>$parent_id,
 				'buch_id'=>$this->user_id,
 				'buch_name'=>$userName,
 				'create'=>date('d.m.Y H:i',time()),
 				'del'=>0,
 				'edit'=>1,
-				'payment'=>[
-					'id'=>$insert_costs_id
-				]
+				'pay_id'=>$insert_costs__pay_id
 			);
+		}
+
+		/**
+		 * удаление строки оплаты поставщику
+		 */
+		protected function delete_costs_payment_AJAX(){
+			$query = "DELETE FROM `".INVOICE_COSTS_PAY."` WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+		}
+
+		/**
+		 * создание строки оплаты поставщику некоторой суммы
+		 */
+		protected  function new_costs_payment_row_AJAX(){
+			$userName = $this->getAuthUserName();
+			$insert_costs__pay_id = $this->create_coasts_pay_row($_POST['parent_id'],$userName);
+
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = array(
+				'id'=>(int)$_POST['parent_id'],
+				'buch_id'=>$this->user_id,
+				'buch_name'=>$userName,
+				'create'=>date('d.m.Y H:i',time()),
+				'del'=>0,
+				'edit'=>1,
+				'pay_id'=>$insert_costs__pay_id
+			);
+		}
 
 
+		private function create_coasts_pay_row($parent_id,$userName){
+			$query = "INSERT INTO `".INVOICE_COSTS_PAY."` SET ";
+			$query .= "`parent_id` =?";
+			$query .= ",`buch_id` =?";
+			$query .= ",`buch_name` =?";
+			$query .= ", `lasttouch` = NOW()";
+			$query .= ", `date` = NOW()";
 
-			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('iis',$parent_id,$this->user_id,$userName) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+			return $this->mysqli->insert_id;
+		}
+
+//
+
+		/**
+		/**
+		 *	save price and percent in costs payment
+		 */
+		protected function save_costs_payment_row_AJAX()
+		{
+			$query = "UPDATE `" . INVOICE_COSTS_PAY . "` SET ";
+			$query .= " `price`=?";
+			$query .= ", `percent`=?";
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('ddi',$_POST['price'],$_POST['percent'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+		/**
+		 *	save percent in costs
+		 */
+		protected function save_costs_payment_percent_AJAX(){
+			$query = "UPDATE `" . INVOICE_COSTS_PAY . "` SET ";
+			$query .= " `percent`=?";
+
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('di',$_POST['percent'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
 
 		/**
@@ -473,7 +546,6 @@
 		 */
 		protected function save_percent_from_invoice_AJAX()
 		{
-
 			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
 			$query .= " `percent_payment`=?";
 			$query .= ", `price_out_payment`=?";

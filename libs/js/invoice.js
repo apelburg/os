@@ -558,8 +558,10 @@
 
     costsRow.prototype.init = function(data, rData, i, paymentWindowObj, data_row, rowspan) {
       if (Number(this.options.del) === 0 && (Number(this.access) === 1 || Number(this.access) === 2)) {
+        console.log("редактируется", rowspan);
         return this.createEditingObj(data, rData, i, paymentWindowObj, data_row, rowspan);
       } else {
+        console.log("НЕЕЕ редактируется", rowspan);
         return this.createSimpleRow(data, rData, i, paymentWindowObj, data_row, rowspan);
       }
     };
@@ -572,101 +574,9 @@
       return onePercent = Number(data_row.price_out) / 100;
     };
 
-    costsRow.prototype.createEditingObj = function(data, rData, i, paymentWindowObj, data_row, rowspan) {
-      var _this, delTd, td1, td2, td3, tr;
+    costsRow.prototype.createEditingObjPayments = function(data, rData, i, paymentWindowObj, data_row, rowspan, tr) {
+      var _this, button2, td1, td2, td3;
       _this = this;
-      tr = $('<tr/>', {
-        'id': 'c_' + data.id
-      }).data(data);
-      if (rowspan === 0) {
-        tr.addClass('subRow');
-      }
-      if (rowspan === 1) {
-        tr.addClass('singleRow');
-      }
-      if (rowspan >= 1) {
-        tr.append($('<td/>', {
-          'rowspan': rowspan
-        }));
-        tr.append($('<td/>', {
-          'rowspan': rowspan,
-          'html': this.options.number,
-          'class': 'mayBeEdit',
-          click: function() {
-            var input;
-            if ($(this).find('input').length === 0) {
-              $(this).html(input = $('<input/>', {
-                'type': 'text',
-                'val': $(this).html(),
-                change: function() {
-                  return _this.options.number = $(this).val();
-                }
-              }));
-              $(this).addClass('tdInputHere');
-              return input.css('textAlign', $(this).css('textAlign')).focus().blur(function() {
-                var t;
-                t = $(this);
-                _this.options.number = $(this).val();
-                return new sendAjax('save_costs_row', {
-                  id: _this.options.id,
-                  number: _this.options.number
-                }, function() {
-                  t.parent().removeClass('tdInputHere');
-                  return t.replaceWith(_this.options.number);
-                });
-              });
-            }
-          }
-        }));
-        tr.append($('<td/>', {
-          'rowspan': rowspan,
-          'html': this.options.date,
-          'class': 'date mayBeEdit',
-          click: function() {
-            var input;
-            if ($(this).find('input').length === 0) {
-              $(this).html(input = $('<input/>', {
-                'type': 'text',
-                'val': $(this).html(),
-                change: function() {
-                  return _this.options.date = $(this).val();
-                }
-              }));
-              $(this).addClass('tdInputHere');
-              input.datetimepicker({
-                minDate: new Date(),
-                timepicker: false,
-                dayOfWeekStart: 1,
-                onSelectDate: function(ct, $i) {
-                  return $i.blur();
-                },
-                onGenerate: function(ct) {
-                  $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
-                  return $(this).find('.xdsoft_date');
-                },
-                closeOnDateSelect: true,
-                format: 'd.m.Y'
-              });
-              return input.focus().blur(function() {
-                var t;
-                t = $(this);
-                _this.options.date = $(this).val();
-                return new sendAjax('save_costs_row', {
-                  id: _this.options.id,
-                  date: _this.options.date
-                }, function() {
-                  t.parent().removeClass('tdInputHere');
-                  return t.replaceWith(_this.options.date);
-                });
-              });
-            }
-          }
-        }));
-        tr.append($('<td/>', {
-          'rowspan': rowspan,
-          'html': this.options.price
-        }));
-      }
       tr.append(td1 = $('<td/>', {
         'html': this.options.pay_date,
         'class': 'date mayBeEdit',
@@ -711,7 +621,7 @@
         }
       }));
       tr.append(td2 = $('<td/>', {
-        'html': this.options.price,
+        'html': this.options.pay_price,
         'class': 'mayBeEdit',
         click: function() {
           var input;
@@ -722,8 +632,15 @@
               keyup: function() {
                 var per;
                 $(this).val($(this).val().replace(/[^-0-9\/.]/gim, ''));
-                per = round_money(Number($(this).val()) * 100 / Number(data_row.price_out));
-                return _this.percentSpan.html(per);
+                per = round_money(Number($(this).val()) * 100 / Number(_this.options.price));
+                if (Number(_this.options.price) === 0) {
+                  per = round_money(0);
+                }
+                if (Number($(this).val()) === 0) {
+                  per = round_money(0);
+                }
+                console.log(per);
+                return _this.percentSpan.html(round_money(per));
               },
               focus: function() {
                 var focusedElement;
@@ -737,7 +654,7 @@
                 }
               },
               change: function() {
-                return _this.options.price = $(this).val();
+                return _this.options.pay_price = $(this).val();
               }
             }));
             $(this).addClass('tdInputHere');
@@ -745,31 +662,37 @@
               var per;
               input = $(this);
               if (Number($(this).val()) === 0) {
-                _this.options.price = '0.00';
+                _this.options.pay_price = '0.00';
               } else {
-                _this.options.price = round_money($(this).val());
+                _this.options.pay_price = round_money($(this).val());
               }
-              per = round_money(Number(_this.options.price) * 100 / Number(data_row.price_out));
-              return new sendAjax('save_costs_row', {
-                id: _this.options.id,
-                price: _this.options.price,
+              per = round_money(Number(_this.options.pay_price) * 100 / Number(_this.options.price));
+              if (Number(_this.options.price) === 0) {
+                per = round_money(0);
+              }
+              if (Number(_this.options.pay_price) === 0) {
+                per = round_money(0);
+              }
+              return new sendAjax('save_costs_payment_row', {
+                id: _this.options.pay_id,
+                price: _this.options.pay_price,
                 percent: per
               }, function() {
+                console.log(_this.options.pay_price);
                 input.parent().removeClass('tdInputHere');
-                input.replaceWith(_this.options.price);
+                input.replaceWith(_this.options.pay_price);
                 _this.percentSpan.html(per);
-                _this.options.percent = per;
-                console.log(_this.options.percent);
-                rData[i].percent = per;
-                tr.data(data);
-                return paymentWindowObj.updateHeaderPercent(data_row);
+                _this.options.pay_percent = per;
+                rData[i].pay_percent = per;
+                return tr.data(data);
               });
             });
           }
         }
       }));
       tr.append(td3 = $('<td/>').append(this.percentSpan = $('<span/>', {
-        'html': this.options.percent
+        'class': 'percentSpan',
+        'html': this.options.pay_percent
       })).append($('<span/>', {
         'html': "%"
       })));
@@ -779,6 +702,232 @@
           td2.addClass('noBorderBottm');
           td2.addClass('noBorderBottm');
         }
+      }
+      button2 = [];
+      button2.push({
+        'name': 'добавить оплату',
+        'class': '',
+        click: function(e) {
+          var eachTr, r, r_old;
+          eachTr = tr;
+          while (eachTr.hasClass('subRow')) {
+            eachTr = eachTr.prev();
+          }
+          r = eachTr.find('td[rowspan]');
+          if (r) {
+            r_old = Number(eachTr.find('td[rowspan]').eq(0).attr('rowspan'));
+            eachTr.find('td[rowspan]').attr('rowspan', r_old + 1);
+          }
+          return new sendAjax('new_costs_payment_row', {
+            parent_id: _this.options.id
+          }, function(response) {
+            var newData;
+            newData = $.extend({}, _this.options, response.data);
+            return tr.after(new costsRow([newData], 0, _this.access, paymentWindowObj, data_row, 0));
+          });
+        }
+      });
+      if (tr.hasClass('subRow')) {
+        button2.push({
+          'name': 'удалить оплату',
+          'class': '',
+          click: function(e) {
+            var eachTr, r, r_old;
+            eachTr = tr;
+            while (eachTr.hasClass('subRow')) {
+              eachTr = eachTr.prev();
+            }
+            r = eachTr.find('td[rowspan]');
+            if (r) {
+              r_old = Number(eachTr.find('td[rowspan]').eq(0).attr('rowspan'));
+              eachTr.find('td[rowspan]').attr('rowspan', r_old - 1);
+            }
+            return new sendAjax('delete_costs_payment', {
+              id: _this.options.pay_id
+            }, function() {
+              return tr.remove();
+            });
+          }
+        });
+      }
+      td1.menuRightClick({
+        'buttons': button2
+      });
+      td2.menuRightClick({
+        'buttons': button2
+      });
+      return td3.menuRightClick({
+        'buttons': button2
+      });
+    };
+
+    costsRow.prototype.createEditingObj = function(data, rData, i, paymentWindowObj, data_row, rowspan) {
+      var _this, delTd, td2, tr;
+      _this = this;
+      tr = $('<tr/>', {
+        'id': 'c_' + data.id
+      }).data(data);
+      if (rowspan === 0) {
+        tr.addClass('subRow');
+      }
+      if (rowspan === 1) {
+        tr.addClass('singleRow');
+      }
+      if (rowspan > 1) {
+        tr.addClass('firstGroupRow');
+      }
+      if (rowspan >= 1) {
+        tr.append($('<td/>', {
+          'rowspan': rowspan
+        }));
+        tr.append($('<td/>', {
+          'rowspan': rowspan,
+          'html': this.options.number,
+          'class': 'mayBeEdit',
+          click: function() {
+            var input;
+            if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
+              $(this).html(input = $('<input/>', {
+                'type': 'text',
+                'val': $(this).html(),
+                change: function() {
+                  return _this.options.number = $(this).val();
+                }
+              }));
+              $(this).addClass('tdInputHere');
+              return input.css('textAlign', $(this).css('textAlign')).focus().blur(function() {
+                var t;
+                t = $(this);
+                _this.options.number = $(this).val();
+                return new sendAjax('save_costs_row', {
+                  id: _this.options.id,
+                  number: _this.options.number
+                }, function() {
+                  t.parent().removeClass('tdInputHere');
+                  return t.replaceWith(_this.options.number);
+                });
+              });
+            }
+          }
+        }));
+        tr.append($('<td/>', {
+          'rowspan': rowspan,
+          'html': this.options.date,
+          'class': 'date mayBeEdit',
+          click: function() {
+            var input;
+            if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
+              $(this).html(input = $('<input/>', {
+                'type': 'text',
+                'val': $(this).html(),
+                change: function() {
+                  return _this.options.date = $(this).val();
+                }
+              }));
+              $(this).addClass('tdInputHere');
+              input.datetimepicker({
+                minDate: new Date(),
+                timepicker: false,
+                dayOfWeekStart: 1,
+                onSelectDate: function(ct, $i) {
+                  return $i.blur();
+                },
+                onGenerate: function(ct) {
+                  $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+                  return $(this).find('.xdsoft_date');
+                },
+                closeOnDateSelect: true,
+                format: 'd.m.Y'
+              });
+              return input.focus().blur(function() {
+                var t;
+                t = $(this);
+                _this.options.date = $(this).val();
+                return new sendAjax('save_costs_row', {
+                  id: _this.options.id,
+                  date: _this.options.date
+                }, function() {
+                  t.parent().removeClass('tdInputHere');
+                  return t.replaceWith(_this.options.date);
+                });
+              });
+            }
+          }
+        }));
+        tr.append(td2 = $('<td/>', {
+          'rowspan': rowspan,
+          'html': this.options.price,
+          'class': 'mayBeEdit',
+          click: function() {
+            var input;
+            if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
+              $(this).html(input = $('<input/>', {
+                'type': 'text',
+                'val': $(this).html(),
+                keyup: function() {
+                  var per, value;
+                  $(this).val($(this).val().replace(/[^-0-9\/.]/gim, ''));
+                  value = $(this).val();
+                  per = round_money(Number(_this.options.pay_price) * 100 / Number($(this).val()));
+                  if (Number(_this.options.pay_price) === 0) {
+                    per = round_money(0);
+                  }
+                  if (Number($(this).val()) === 0) {
+                    per = round_money(0);
+                  }
+                  return _this.percentSpan.html(per);
+                },
+                focus: function() {
+                  var focusedElement;
+                  if (Number($(this).val()) === 0) {
+                    return $(this).val('');
+                  } else {
+                    focusedElement = $(this);
+                    return setTimeout(function() {
+                      return focusedElement.select();
+                    }, 50);
+                  }
+                },
+                change: function() {
+                  return _this.options.price = $(this).val();
+                }
+              }));
+              $(this).addClass('tdInputHere');
+              return input.css('textAlign', $(this).css('textAlign')).focus().blur(function() {
+                var per;
+                input = $(this);
+                if (Number($(this).val()) === 0) {
+                  _this.options.price = '0.00';
+                } else {
+                  _this.options.price = round_money($(this).val());
+                }
+                per = round_money(Number(_this.options.pay_price) * 100 / Number(_this.options.price));
+                if (Number(_this.options.pay_price) === 0) {
+                  per = round_money(0);
+                }
+                if (Number(_this.options.price) === 0) {
+                  per = round_money(0);
+                }
+                new sendAjax('save_costs_row', {
+                  id: _this.options.id,
+                  price: _this.options.price
+                }, function() {
+                  input.parent().removeClass('tdInputHere');
+                  return input.replaceWith(_this.options.price);
+                });
+                return new sendAjax('save_costs_payment_percent', {
+                  id: _this.options.pay_id,
+                  percent: per
+                }, function() {
+                  return _this.percentSpan.html(per);
+                });
+              });
+            }
+          }
+        }));
+      }
+      this.createEditingObjPayments(data, rData, i, paymentWindowObj, data_row, rowspan, tr);
+      if (rowspan >= 1) {
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'class': 'ice'
@@ -810,6 +959,9 @@
       }
       if (rowspan === 1) {
         tr.addClass('singleRow');
+      }
+      if (rowspan > 1) {
+        tr.addClass('firstGroupRow');
       }
       if (rowspan >= 1) {
         tr.append($('<td/>', {
@@ -862,7 +1014,6 @@
         }
       }
       tr.data(this.options);
-      console.warn(this.options);
       if (Number(this.options.del) > 0) {
         tr.addClass('deleted');
       }
@@ -1337,7 +1488,6 @@
           responseData[i] = new costsRowObj(responseData[i]);
           tbl.append(new costsRow(responseData, i, this.access, this, data_row, rowspan));
         }
-        console.log(responseData[k], rowspan);
       }
       return tbl;
     };
@@ -1416,7 +1566,7 @@
 
     costsWindow.prototype.createHead = function(data_row) {
       var _this, buttonSearch, div1, div2, head_info, inputSearch, table, tr;
-      _this = this;
+      _this = this.kapitonoval2012;
       head_info = $('<div>', {
         id: 'head_info'
       });
@@ -1530,7 +1680,6 @@
         'id': data_row.id
       }, function(response) {
         var len;
-        console.warn(response.data);
         len = responseData.length;
         responseData[len] = new costsRowObj(response.data);
         return $(_this.$el).find('#js--payment-window--body_info-table').append(new costsRow(responseData, len, _this.access, _this, data_row));
@@ -1542,7 +1691,6 @@
       _this = this;
       oldPer = Number(this.head.r_percent.html());
       recalcInvoice = this.recalcInvoice();
-      console.info(oldPer, recalcInvoice.percent_payment);
       send = {};
       send.percent_payment = round_money(recalcInvoice.percent_payment);
       send.price_out_payment = round_money(recalcInvoice.price_out_payment);
@@ -1550,7 +1698,6 @@
       _this.options.percent_payment = send.percent_payment;
       data_row.price_out_payment = send.price_out_payment;
       _this.options.price_out_payment = send.price_out_payment;
-      console.log(data_row);
       if (send !== void 0) {
         send.id = this.options.id;
         this.head.r_percent.html(round_money(recalcInvoice.percent_payment));
@@ -1562,14 +1709,12 @@
 
     costsWindow.prototype.recalcInvoice = function() {
       var percent_payment, price_out_payment;
-      console.log('updateHeaderPercent');
       percent_payment = 0;
       price_out_payment = 0;
       this.bodyRows.find('tr').each(function(index) {
         var data;
         if (!$(this).hasClass('deleted') && index > 0) {
           data = $(this).data();
-          console.log(data);
           if (data.percent !== void 0) {
             percent_payment += Number(data.percent);
           }
@@ -1594,7 +1739,6 @@
           text: 'Добавить счёт поставщика',
           "class": 'button_yes_or_no yes add_payment_button',
           click: function() {
-            console.warn(data_row);
             return _this.createRow(data_row, responseData);
           }
         });
@@ -3303,7 +3447,6 @@
           self.addMenu();
           self.init();
           self.quick_button_div = $('#quick_button_div');
-          console.log(self);
           if (self.access === 2 || self.access === 1) {
             self.quick_button_div.append($('<span/>', {
               'html': 'приходы',
