@@ -673,7 +673,49 @@ class costsRow
     td1.menuRightClick({'buttons':button2})
     td2.menuRightClick({'buttons':button2})
     td3.menuRightClick({'buttons':button2})
+  # добавляем обработчик для на элементы поиска по счетам
+  addHandlerForInputSearchSupplier:(inputSearch)->
+    ###
+    # inputSearch
+    ###
+    _this = @
+    inputSearch.autocomplete({
+      minLength: 2,
+      source: (request, response)->
 
+        $.ajax({
+          type: "POST",
+          dataType: "json",
+          data:
+            AJAX: 'shearch_invoice_autocomlete', # показать
+            search: request.term # поисковая фраза
+          success: (data) ->
+            response(data);
+        })
+      select: ( event, ui ) ->
+        inputSearch.attr('data-id',ui.item.desc)
+        return false;
+
+    })
+    inputSearch.data( "ui-autocomplete" )._renderItem = ( ul, item )->
+      ul.css('z-index',Number($(_this.$el).parent().parent().css( "z-index" ))+1)
+      return $("<li></li>",{
+        click:(e)->
+          inputSearch.attr('data-id',0)
+      })
+      .data("ui-autocomplete-item", item) # для jquery-ui 1.10+
+      #.appe nd( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
+      .append( item.label )
+      .appendTo(ul);
+      # console.log ul
+
+    inputSearch.keydown((e)->
+      if(e.keyCode == 13)#enter
+        if(inputSearch.is(':focus'))#
+          inputSearch.attr('data-id',0)
+          return false;
+      #отправка поиска на enter
+    )
   # строка с возможностью редактирования
   createEditingObj:(data,rData,i,windowObj,data_row,rowspan )->
     _this = @
@@ -690,7 +732,10 @@ class costsRow
 
     if rowspan>=1
       # поставщик
-      tr.append($('<td/>',{'rowspan':rowspan}))
+      tr.append($('<td/>',{'rowspan':rowspan}).append(inp = $('<input/>')))
+      @addHandlerForInputSearchSupplier(inp)
+
+
       # номер счёта
       tr.append($('<td/>',{
         'rowspan':rowspan,

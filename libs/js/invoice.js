@@ -811,8 +811,53 @@
       });
     };
 
+    costsRow.prototype.addHandlerForInputSearchSupplier = function(inputSearch) {
+
+      /*
+       * inputSearch
+       */
+      var _this;
+      _this = this;
+      inputSearch.autocomplete({
+        minLength: 2,
+        source: function(request, response) {
+          return $.ajax({
+            type: "POST",
+            dataType: "json",
+            data: {
+              AJAX: 'shearch_invoice_autocomlete',
+              search: request.term
+            },
+            success: function(data) {
+              return response(data);
+            }
+          });
+        },
+        select: function(event, ui) {
+          inputSearch.attr('data-id', ui.item.desc);
+          return false;
+        }
+      });
+      inputSearch.data("ui-autocomplete")._renderItem = function(ul, item) {
+        ul.css('z-index', Number($(_this.$el).parent().parent().css("z-index")) + 1);
+        return $("<li></li>", {
+          click: function(e) {
+            return inputSearch.attr('data-id', 0);
+          }
+        }).data("ui-autocomplete-item", item).append(item.label).appendTo(ul);
+      };
+      return inputSearch.keydown(function(e) {
+        if (e.keyCode === 13) {
+          if (inputSearch.is(':focus')) {
+            inputSearch.attr('data-id', 0);
+            return false;
+          }
+        }
+      });
+    };
+
     costsRow.prototype.createEditingObj = function(data, rData, i, windowObj, data_row, rowspan) {
-      var _this, delTd, td, td2, tr;
+      var _this, delTd, inp, td, td2, tr;
       _this = this;
       tr = $('<tr/>', {
         'id': 'c_' + data.id
@@ -829,7 +874,8 @@
       if (rowspan >= 1) {
         tr.append($('<td/>', {
           'rowspan': rowspan
-        }));
+        }).append(inp = $('<input/>')));
+        this.addHandlerForInputSearchSupplier(inp);
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'html': this.options.number,
