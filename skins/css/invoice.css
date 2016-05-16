@@ -731,6 +731,9 @@ div#js-alert_union{
 	background-position: 50%;
 	height: 16px;
 }
+#js--payment-window--head_info-table  tr td.checked div.invoice-row--icons-calculator{
+	background-image: url(../images/img_design/icon_invoce_calc_green.png);
+}
 #js--payment-window--head_info-table tr td div {
 	padding: 3px;
 }
@@ -790,6 +793,10 @@ div#js-alert_union{
 }
 #js--payment-window--body_info-table tr td.mayBeEdit:hover{
 	background-color: #f1f1f1;
+	cursor: pointer;
+}
+#js--payment-window--head_info-table tr td.mayBeEdit:hover{
+	background-color: #E4E4E4;
 	cursor: pointer;
 }
 #js--payment-window--body_info-table.costs tr td:nth-of-type(1),
@@ -894,4 +901,32 @@ body #context-menu ul li{
 }
 #context-menu ul li:hover{
 	background-color: #f1f1f1;
+}
+#js--payment-window--body_info-table tr td.warning,
+#js--payment-window--head_info-table tr td.warning,
+#js--payment-window--head_info-table tr td div.warning span,
+#js--payment-window--head_info-table tr td.warning span,
+#js--payment-window--head_info-table tr td span.warning,
+#js--payment-window--head_info-table tr td div.warning{
+	color: red;
+}
+#js--payment-window--body_info-table tr td.bold,
+#js--payment-window--head_info-table tr td.bold div span,
+#js--payment-window--head_info-table tr td div.bold{
+	font-weight: bold;
+}
+#js--payment-window--head_info-table .wating-and-facting-left{
+	border-right:1px solid #F1F2F2;
+}
+#js--payment-window--head_info-table .wating-and-facting-right{
+	text-align: right;
+}
+#js--payment-window--head_info-table .wating-and-facting-right.bold{
+	font-weight: bold;
+}
+#js--payment-window--head_info-table .head-main-info-left{
+	min-width: 150px;
+}
+#js--payment-window--head_info-table .head-main-info-right{
+	min-width: 280px;
 }

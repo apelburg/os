@@ -542,6 +542,24 @@
 		}
 
 		/**
+		 * edit flag ice cost payment
+		 * пометка счёта как проверенный
+		 */
+		protected function edit_glag_ice_costs_pay_AJAX(){
+			$query = "UPDATE `".INVOICE_COSTS."` SET ";
+			$query .= "`flag_ice`=?";
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('ii',$_POST['val'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+
+
+		/**
 		 * update percent payment from invoice
 		 */
 		protected function save_percent_from_invoice_AJAX()
@@ -931,6 +949,7 @@
 			return $num;
 		}
 
+
 		/**
 		 *	check invoice
 		 *
@@ -1011,6 +1030,24 @@
 			$query .= "`flag_ice` = '".(int)$_POST['val']."'";
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+		/**
+		 *  save costs summ
+		 */
+		protected function save_costs_from_invoice_AJAX(){
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `costs`=?";
+
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('di',$_POST['costs'],$_POST['id']) or die($this->mysqli->error);
+
+
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
 		/**
 		 *	edit flag_1c

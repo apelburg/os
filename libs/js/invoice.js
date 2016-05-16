@@ -534,7 +534,7 @@
 
     costsRow.prototype.access = 0;
 
-    function costsRow(rData, i, access, paymentWindowObj, data_row, rowspan) {
+    function costsRow(rData, i, access, windowObj, data_row, rowspan) {
       var data, el, key;
       if (access == null) {
         access = 0;
@@ -552,21 +552,21 @@
         this.options[key] = el;
       }
       this.options = data;
-      this.calculateHeader(rData, i, access = 0, paymentWindowObj, data_row);
-      return this.init(data, rData, i, paymentWindowObj, data_row, rowspan);
+      this.calculateHeader(rData, i, access = 0, windowObj, data_row);
+      return this.init(data, rData, i, windowObj, data_row, rowspan);
     }
 
-    costsRow.prototype.init = function(data, rData, i, paymentWindowObj, data_row, rowspan) {
+    costsRow.prototype.init = function(data, rData, i, windowObj, data_row, rowspan) {
       if (Number(this.options.del) === 0 && (Number(this.access) === 1 || Number(this.access) === 2)) {
         console.log("редактируется", rowspan);
-        return this.createEditingObj(data, rData, i, paymentWindowObj, data_row, rowspan);
+        return this.createEditingObj(data, rData, i, windowObj, data_row, rowspan);
       } else {
         console.log("НЕЕЕ редактируется", rowspan);
-        return this.createSimpleRow(data, rData, i, paymentWindowObj, data_row, rowspan);
+        return this.createSimpleRow(data, rData, i, windowObj, data_row, rowspan);
       }
     };
 
-    costsRow.prototype.calculateHeader = function(rData, i, access, paymentWindowObj, data_row) {
+    costsRow.prototype.calculateHeader = function(rData, i, access, windowObj, data_row) {
       var onePercent;
       if (access == null) {
         access = 0;
@@ -574,7 +574,7 @@
       return onePercent = Number(data_row.price_out) / 100;
     };
 
-    costsRow.prototype.createEditingObjPayments = function(data, rData, i, paymentWindowObj, data_row, rowspan, tr) {
+    costsRow.prototype.createEditingObjPayments = function(data, rData, i, windowObj, data_row, rowspan, tr) {
       var _this, button2, td1, td2, td3;
       _this = this;
       tr.append(td1 = $('<td/>', {
@@ -678,24 +678,74 @@
                 price: _this.options.pay_price,
                 percent: per
               }, function() {
+                var eachTr, eachTrFirst, percent;
                 console.log(_this.options.pay_price);
                 input.parent().removeClass('tdInputHere');
                 input.replaceWith(_this.options.pay_price);
                 _this.percentSpan.html(per);
                 _this.options.pay_percent = per;
                 rData[i].pay_percent = per;
-                return tr.data(data);
+                tr.attr('id', 'myGroupRowDelete');
+                eachTrFirst = $(windowObj.$el).find('#myGroupRowDelete').attr('id', '');
+                eachTrFirst.data(_this.options);
+                while (eachTrFirst.hasClass('subRow')) {
+                  eachTrFirst = eachTrFirst.prev();
+                }
+                percent = Number(eachTrFirst.data().pay_percent);
+                eachTr = eachTrFirst.next();
+                console.info(Number(eachTrFirst.data().pay_percent));
+                while (eachTr.hasClass('subRow')) {
+                  console.info(Number(eachTr.data().pay_percent));
+                  percent += Number(eachTr.data().pay_percent);
+                  eachTr = eachTr.next();
+                }
+                windowObj.calculateCosts();
+                if (percent !== Number(eachTrFirst.data().percent)) {
+                  console.log(" != не равно !!!!");
+                  return new sendAjax("save_costs_row", {
+                    id: _this.options.id,
+                    percent: percent
+                  }, function() {
+                    var results;
+                    data = eachTrFirst.data();
+                    data.percent = percent;
+                    eachTr = eachTrFirst.next();
+                    if (percent !== 100) {
+                      eachTrFirst.find('.percent_payment_inf').addClass('warning');
+                    } else {
+                      eachTrFirst.find('.percent_payment_inf').removeClass('warning');
+                    }
+                    results = [];
+                    while (eachTr.hasClass('subRow')) {
+                      data = eachTr.data();
+                      data.percent = percent;
+                      eachTr.data(data);
+                      if (percent !== 100) {
+                        eachTr.find('.percent_payment_inf').addClass('warning');
+                      } else {
+                        eachTr.find('.percent_payment_inf').removeClass('warning');
+                      }
+                      results.push(eachTr = eachTr.next());
+                    }
+                    return results;
+                  });
+                }
               });
             });
           }
         }
       }));
-      tr.append(td3 = $('<td/>').append(this.percentSpan = $('<span/>', {
+      tr.append(td3 = $('<td/>', {
+        'class': 'percent_payment_inf'
+      }).append(this.percentSpan = $('<span/>', {
         'class': 'percentSpan',
         'html': this.options.pay_percent
       })).append($('<span/>', {
         'html': "%"
       })));
+      if (Number(tr.data().percent) !== 100) {
+        td3.addClass('warning');
+      }
       if (rowspan >= 1) {
         if (rowspan > 1) {
           td1.addClass('noBorderBottm');
@@ -723,7 +773,7 @@
           }, function(response) {
             var newData;
             newData = $.extend({}, _this.options, response.data);
-            return tr.after(new costsRow([newData], 0, _this.access, paymentWindowObj, data_row, 0));
+            return tr.after(new costsRow([newData], 0, _this.access, windowObj, data_row, 0));
           });
         }
       });
@@ -761,8 +811,8 @@
       });
     };
 
-    costsRow.prototype.createEditingObj = function(data, rData, i, paymentWindowObj, data_row, rowspan) {
-      var _this, delTd, td2, tr;
+    costsRow.prototype.createEditingObj = function(data, rData, i, windowObj, data_row, rowspan) {
+      var _this, delTd, td, td2, tr;
       _this = this;
       tr = $('<tr/>', {
         'id': 'c_' + data.id
@@ -926,12 +976,47 @@
           }
         }));
       }
-      this.createEditingObjPayments(data, rData, i, paymentWindowObj, data_row, rowspan, tr);
+      this.createEditingObjPayments(data, rData, i, windowObj, data_row, rowspan, tr);
       if (rowspan >= 1) {
-        tr.append($('<td/>', {
+        td = $('<td/>', {
           'rowspan': rowspan,
-          'class': 'ice'
-        }));
+          'class': 'ice',
+          click: function() {
+            var flag_ice, tbl;
+            if ($(this).hasClass('checked')) {
+              _this.options.flag_ice = 0;
+              $(this).removeClass('checked');
+            } else {
+              _this.options.flag_ice = 1;
+              $(this).addClass('checked');
+            }
+            tbl = $(this).parent().parent();
+            console.log(tbl.find('tr td.ice').length, tbl.find('tr td.ice.checked').length);
+            if (tbl.find('tr td.ice').length === tbl.find('tr td.ice.checked').length && _this.options.flag_ice === 1) {
+              flag_ice = 1;
+            } else {
+              flag_ice = 0;
+            }
+            if (Number(windowObj.options.flag_ice) !== flag_ice) {
+              windowObj.options.flag_ice = flag_ice;
+              new sendAjax("edit_flag_ice", {
+                id: windowObj.options.id,
+                val: windowObj.options.flag_ice
+              }, function() {
+                return $('#js-main-invoice-table').invoice('reflesh', windowObj.options);
+              });
+            }
+            return new sendAjax('edit_glag_ice_costs_pay', {
+              id: _this.options.id,
+              val: _this.options.flag_ice
+            });
+          }
+        });
+        console.warn(this.options.flag_ice);
+        if (Number(_this.options.flag_ice) > 0) {
+          td.addClass('checked');
+        }
+        tr.append(td);
         tr.append($('<td/>', {
           'rowspan': rowspan
         }).append($('<div/>', {
@@ -942,7 +1027,7 @@
         tr.append(delTd = $('<td/>', {
           'rowspan': rowspan
         }));
-        this.costsDel(delTd, rData, i, data, paymentWindowObj, data_row);
+        this.costsDel(delTd, rData, i, data, windowObj, data_row);
       }
       tr.data(this.options);
       if (Number(this.options.del) > 0) {
@@ -951,7 +1036,7 @@
       return tr;
     };
 
-    costsRow.prototype.createSimpleRow = function(data, rData, i, paymentWindowObj, data_row, rowspan) {
+    costsRow.prototype.createSimpleRow = function(data, rData, i, windowObj, data_row, rowspan) {
       var td_del, tr;
       tr = $('<tr/>').data(data);
       if (rowspan === 0) {
@@ -1008,9 +1093,9 @@
           'rowspan': rowspan
         }));
         if (Number(this.access) === 1 && Number(rData[i].del) > 0) {
-          this.realCostsDel(td_del, rData, i, data, paymentWindowObj);
+          this.realCostsDel(td_del, rData, i, data, windowObj);
         } else if (Number(rData[i].del) === 0) {
-          this.costsDel(td_del, rData, i, data, paymentWindowObj, data_row);
+          this.costsDel(td_del, rData, i, data, windowObj, data_row);
         }
       }
       tr.data(this.options);
@@ -1020,7 +1105,7 @@
       return tr;
     };
 
-    costsRow.prototype.costsDel = function(tdObj, rData, i, data, paymentWindowObj, data_row) {
+    costsRow.prototype.costsDel = function(tdObj, rData, i, data, windowObj, data_row) {
       var _this;
       _this = this;
       return tdObj.addClass('ppDel').click(function(e) {
@@ -1030,13 +1115,13 @@
           id: _this.options.id,
           del: 1
         }, function() {
-          var button_changed, n, pause, results, row, rowspan;
+          var button_changed, n, pause, row, rowspan;
           button_changed = $('#js--how_del_payment_button');
           button_changed.data().num = Number(button_changed.data().num) + 1;
           button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
           rowspan = Number(td.attr('rowspan'));
           td.parent().attr('id', 'myGroupRowDelete');
-          row = $(paymentWindowObj.$el).find('#myGroupRowDelete').removeAttr('id').addClass('deleted').data(_this.options);
+          row = $(windowObj.$el).find('#myGroupRowDelete').attr('id', '').addClass('deleted').data(_this.options);
           n = i;
           while (rowspan > 0) {
             rData[n].del = 1;
@@ -1049,7 +1134,7 @@
             'rowspan': Number(td.attr('rowspan'))
           }));
           if (_this.access === 1) {
-            _this.realCostsDel(td, rData, i, data, paymentWindowObj);
+            _this.realCostsDel(td, rData, i, data, windowObj);
           }
           if (button_changed.hasClass('no')) {
             pause = 0;
@@ -1058,23 +1143,22 @@
             }
             rowspan = Number(td.attr('rowspan'));
             td.parent().attr('id', 'myGroupRowDelete');
-            row = $(paymentWindowObj.$el).find('#myGroupRowDelete');
-            results = [];
+            row = $(windowObj.$el).find('#myGroupRowDelete');
             while (rowspan > 0) {
               row.addClass('Delete');
               row.delay(pause).fadeOut(700, function() {
                 return $(this).delay(2000).remove();
               });
               row = row.next();
-              results.push(rowspan = rowspan - 1);
+              rowspan = rowspan - 1;
             }
-            return results;
           }
+          return windowObj.calculateCosts();
         });
       });
     };
 
-    costsRow.prototype.realCostsDel = function(tdObj, rData, i, data, paymentWindowObj) {
+    costsRow.prototype.realCostsDel = function(tdObj, rData, i, data, windowObj) {
       return tdObj.addClass('ppDel').click(function(e) {
         var confirmObj, td;
         td = $(this);
@@ -1087,7 +1171,7 @@
             var button_changed, row, rowspan;
             rowspan = Number(td.attr('rowspan'));
             td.parent().attr('id', 'myGroupRowDelete');
-            row = $(paymentWindowObj.$el).find('#myGroupRowDelete');
+            row = $(windowObj.$el).find('#myGroupRowDelete');
             while (rowspan > 0) {
               row.addClass('Delete');
               row.delay(200).fadeOut(700, function() {
@@ -1421,8 +1505,8 @@
          */
         this.myObj = new modalWindow({
           html: main_div,
-          width: '1200px',
           maxHeight: '100%',
+          width: '1350px',
           title: 'Расходы по счёту',
           buttons: this.getButtons(obj, data_row, responseData)
         }, {
@@ -1431,6 +1515,45 @@
         this.$el = this.myObj.options.html[0];
         return $(this.$el).parent().css('padding', '0');
       }
+    };
+
+    costsWindow.prototype.calculateCosts = function() {
+      var c, percent, profit_f, table;
+      table = $(this.$el).find('#js--payment-window--body_info-table');
+      c = 0;
+      table.find('tr').each(function(index) {
+        if (index > 0) {
+          return c += Number($(this).data().pay_price);
+        }
+      });
+      if (this.options.costs !== round_money(c)) {
+        this.options.costs = round_money(c);
+        this.head.costs.html(this.options.costs);
+        this.calculateCostsSave();
+        this.head.profit.html(round_money(Number(this.options.price_out) - Number(this.options.price_in)));
+        profit_f = Number(this.options.price_out) - Number(this.options.costs);
+        this.head.profit_f.html(round_money(profit_f));
+        percent = round_money((this.options.price_out_payment - Number(this.options.costs)) / this.options.price_out * 100);
+        this.head.r_percent.html(percent);
+        if (profit_f < 0) {
+          this.head.profit_f.parent().addClass('warning');
+          return this.head.r_percent.parent().parent().parent().addClass('warning');
+        } else {
+          this.head.profit_f.parent().removeClass('warning');
+          return this.head.r_percent.parent().parent().parent().removeClass('warning');
+        }
+      }
+    };
+
+    costsWindow.prototype.calculateCostsSave = function() {
+      var self;
+      self = this;
+      return new sendAjax('save_costs_from_invoice', {
+        id: this.options.id,
+        costs: this.options.costs
+      }, function() {
+        return $('#js-main-invoice-table').invoice('reflesh', self.options);
+      });
     };
 
     costsWindow.prototype.updatePaymenContent = function(button, responseData, data_row) {
@@ -1565,8 +1688,8 @@
     };
 
     costsWindow.prototype.createHead = function(data_row) {
-      var _this, buttonSearch, div1, div2, head_info, inputSearch, table, tr;
-      _this = this.kapitonoval2012;
+      var _this, buttonSearch, div1, div2, fact, head_info, inputSearch, table, td, tr;
+      _this = this;
       head_info = $('<div>', {
         id: 'head_info'
       });
@@ -1582,10 +1705,12 @@
       }).append($('<span/>', {
         'html': 'номер счёта',
         'class': 'span-greyText'
-      }))).append($('<td/>')).append($('<td/>', {
-        'colspan': '1'
+      }))).append($('<td/>', {
+        'colspan': '2'
       })).append($('<td/>', {
-        'colspan': '3'
+        'colspan': '4'
+      })).append($('<td/>', {
+        'colspan': '4'
       }).append($('<span/>', {
         'class': 'span-greyText',
         'html': 'Прибыль сделки'
@@ -1615,56 +1740,125 @@
         'html': data_row.invoice_num,
         'class': 'span-boldText'
       })).append($('<span/>', {
-        'html': ' от ',
+        'html': 'от',
         'class': 'span-greyText'
-      }).css('paddingLeft', '10px')).append($('<span/>', {
-        'html': data_row.invoice_create_date
-      }).css('paddingLeft', '10px')).append($('<span/>', {
-        'html': ' на сумму ',
-        'class': 'span-greyText'
-      }).css('paddingLeft', '10px')).append(this.head.price = $('<span/>', {
-        'html': data_row.price_out
       }).css('paddingLeft', '10px'));
       div2 = $('<div/>').append($('<span/>', {
         'html': data_row.manager_name,
         'data-id': data_row.manager_id
-      })).append($('<span/>', {
-        'html': ' ' + data_row.client_name,
+      }));
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-left head-main-info-left'
+      }).append(div1).append(div2));
+      div1 = $('<div/>').append($('<span/>', {
+        'html': data_row.invoice_create_date
+      }).css('paddingLeft', '10px')).append($('<span/>', {
+        'html': ' на сумму ',
+        'class': 'span-greyText',
+        css: {
+          'paddingLeft': '10px'
+        }
+      })).append(this.head.price = $('<span/>', {
+        'html': data_row.price_out
+      }).css('paddingLeft', '10px'));
+      div2 = $('<div/>').append($('<span/>', {
+        'html': data_row.client_name,
         'data-id': data_row.client_id
-      }).css('paddingLeft', '28px'));
-      tr.append($('<td/>').append(div1).append(div2));
+      }));
+      tr.append($('<td/>', {
+        'class': 'head-main-info-right'
+      }).append(div1).append(div2));
       div1 = $('<div/>').append($('<span/>', {
         'html': 'оплачен:',
         'class': 'span-greyText'
-      })).append(this.head.r_percent = $('<span/>', {
-        'html': data_row.percent_payment
-      })).append('%');
+      }));
       div2 = $('<div/>').append($('<span/>', {
         'html': 'условия:',
         'class': 'span-greyText'
-      })).append(this.head.conditions = $('<span/>', {
+      }));
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-left'
+      }).append(div1).append(div2));
+      div1 = $('<div/>').append(this.head.r_percent = $('<span/>', {
+        'html': data_row.percent_payment
+      })).append('%');
+      div2 = $('<div/>').append(this.head.conditions = $('<span/>', {
         'html': data_row.conditions
       })).append('%');
-      tr.append($('<td/>').append(div1).append(div2));
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-right'
+      }).append(div1).append(div2));
       div1 = $('<div/>').append($('<span/>', {
         'html': 'приходы:',
         'class': 'span-greyText'
-      })).append(this.head.r_percent = $('<span/>', {
-        'html': data_row.price_out_payment
-      })).append('р');
+      }));
       div2 = $('<div/>').append($('<span/>', {
         'html': 'расходы:',
         'class': 'span-greyText'
-      })).append(this.head.conditions = $('<span/>', {
+      }));
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-left'
+      }).append(div1).append(div2));
+      div1 = $('<div/>').append(this.head.r_percent = $('<span/>', {
+        'html': data_row.price_out_payment
+      })).append('р');
+      div2 = $('<div/>').append(this.head.costs = $('<span/>', {
         'html': data_row.costs
       })).append('р');
-      tr.append($('<td/>').append(div1).append(div2));
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-right'
+      }).append(div1).append(div2));
+      div1 = $('<div/>').append($('<span/>', {
+        'html': 'ожидаемая:',
+        'class': 'span-greyText'
+      }));
+      div2 = $('<div/>').append($('<span/>', {
+        'html': 'фактическая:',
+        'class': 'span-greyText'
+      }));
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-left'
+      }).append(div1).append(div2));
+      div1 = $('<div/>').append(this.head.profit = $('<span/>', {
+        'html': round_money(Number(data_row.price_out) - Number(data_row.price_in))
+      })).append('р');
+      fact = round_money(Number(data_row.price_out) - Number(data_row.costs));
+      div2 = $('<div/>').append(this.head.profit_f = $('<span/>', {
+        'html': fact
+      })).append('р');
+      tr.append($('<td/>', {
+        'class': 'wating-and-facting-right bold'
+      }).append(div1).append(div2));
       div1 = $('<div/>').append($('<div/>', {
         'class': 'invoice-row--icons-calculator'
       })).append($('<div/>').append(this.head.r_percent = $('<span/>', {
-        'html': data_row.price_out_payment
+        'html': round_money((this.options.price_out_payment - Number(this.options.costs)) / this.options.price_out * 100)
       })).append('%'));
-      tr.append($('<td/>').append(div1));
+      tr.append(td = $('<td/>', {
+        'class': 'bold mayBeEdit our_p',
+        click: function() {
+          if ($(this).hasClass('checked')) {
+            _this.options.flag_calc = 0;
+            $(this).removeClass('checked');
+          } else {
+            _this.options.flag_calc = 1;
+            $(this).addClass('checked');
+          }
+          return new sendAjax('edit_flag_calc', {
+            id: _this.options.id,
+            val: _this.options.flag_calc
+          }, function() {
+            return $('#js-main-invoice-table').invoice('reflesh', _this.options);
+          });
+        }
+      }).append(div1));
+      if (Number(_this.options.flag_calc > 0)) {
+        td.addClass('checked');
+      }
+      if (Number(fact) < 0) {
+        this.head.profit_f.parent().addClass('warning');
+        this.head.r_percent.parent().parent().parent().addClass('warning');
+      }
       table.append(tr);
 
       /*
@@ -1739,7 +1933,8 @@
           text: 'Добавить счёт поставщика',
           "class": 'button_yes_or_no yes add_payment_button',
           click: function() {
-            return _this.createRow(data_row, responseData);
+            _this.createRow(data_row, responseData);
+            return _this.calculateCosts();
           }
         });
       }
@@ -3933,46 +4128,20 @@
         td = $('<td/>', {
           'class': 'invoice-row--ice'
         });
-        td.click(function() {
-          if ($(this).hasClass('checked')) {
-            row.flag_ice = 0;
-            $(this).removeClass('checked');
-          } else {
-            row.flag_ice = 1;
-            $(this).addClass('checked');
-          }
-          new sendAjax('edit_flag_ice', {
-            id: row.id,
-            val: row.flag_ice
-          });
-        });
         if (Number(row.flag_ice > 0)) {
           td.addClass('checked');
         }
         tr.append(td);
         td = $('<td/>').append($('<div/>', {
           'class': 'invoice-row--price-our-profit',
-          'html': round_money(row.price_out - row.price_in)
+          'html': round_money(row.price_out - Number(row.costs))
         })).append($('<div/>', {
           'class': 'invoice-row--price-our-profit-percent',
-          'html': round_money(((row.price_out - row.price_in) / row.price_out * 100).toString()) + '%'
+          'html': round_money(((row.price_out - Number(row.costs)) / row.price_out * 100).toString()) + '%'
         }));
         tr.append(td);
         td = $('<td/>', {
           'class': 'invoice-row--icons-calculator'
-        });
-        td.click(function() {
-          if ($(this).hasClass('checked')) {
-            row.flag_calc = 0;
-            $(this).removeClass('checked');
-          } else {
-            row.flag_calc = 1;
-            $(this).addClass('checked');
-          }
-          new sendAjax('edit_flag_calc', {
-            id: row.id,
-            val: row.flag_calc
-          });
         });
         if (Number(row.flag_calc > 0)) {
           td.addClass('checked');
