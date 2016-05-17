@@ -869,6 +869,9 @@ div#js-alert_union{
 	text-align: center;
 	width: 150px;
 }
+#js--payment-window--body_info-table.costs tr th:nth-of-type(1){
+	width:200px;
+}
 /*
 	context-menu
 */
@@ -929,4 +932,13 @@ body #context-menu ul li{
 }
 #js--payment-window--head_info-table .head-main-info-right{
 	min-width: 280px;
+}
+#window--new_supplier input,
+#window--new_supplier textarea{
+	width: calc(100% - 10px);
+	padding: 5px;
+	margin: 0 0 15px 0;
+}
+#window--new_supplier textarea{
+	height:100px;
 }

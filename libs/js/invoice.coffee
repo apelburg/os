@@ -674,48 +674,134 @@ class costsRow
     td2.menuRightClick({'buttons':button2})
     td3.menuRightClick({'buttons':button2})
   # добавляем обработчик для на элементы поиска по счетам
-  addHandlerForInputSearchSupplier:(inputSearch)->
-    ###
-    # inputSearch
-    ###
+  supplierSearch:(td)->
+
     _this = @
-    inputSearch.autocomplete({
-      minLength: 2,
-      source: (request, response)->
 
-        $.ajax({
-          type: "POST",
-          dataType: "json",
-          data:
-            AJAX: 'shearch_invoice_autocomlete', # показать
-            search: request.term # поисковая фраза
-          success: (data) ->
-            response(data);
+    td.click(()->
+      if($(this).find('input').length == 0)
+        $(this).html(inputSearch = $('<input/>',{
+          'type':'text',
+          'val':$(this).html(),
+          keyup:()->
+            console.log Number $(this).attr('data-id')
+          change:()->
+#            _this.options.number = $(this).val()
+          blur:()->
+            t = $(this)
+            name = $(this).val()
+            id = Number $(this).attr('data-id')
+            console.log id
+
+            if(_this.options.supplier_id != id && id > 0)
+              _this.options.supplier_name = name
+              _this.options.supplier_id = id
+              new sendAjax 'save_supplier_name',{id:_this.options.id,supplier_name:_this.options.supplier_name,supplier_id:id}, ()->
+                t.parent().removeClass('tdInputHere').attr('data-id',id)
+                t.replaceWith(_this.options.supplier_name)
+            else if ( !id ) && name != '' && name != _this.options.supplier_name
+
+              new modalConfirm({html:'Такого имени не было найдено в системе, Вы хотите добавить нового поставщика'},()->
+                obj = $('<div/>',{'id':'window--new_supplier'})
+                obj.append(nickName = $('<input/>',{
+                  'type':'text',
+                  'name':'nick_name',
+                  'val':name,
+                  'placeholder':'Сокращённое название'
+                }))
+                obj.append(fullName = $('<input/>',{
+                  'type':'text',
+                  'name':'full_name',
+                  'placeholder':'Полное название'
+                }))
+                obj.append(dop_info = $('<textarea/>',{
+                  'name':'dop_info',
+                  'placeholder':'Дополнительная информацияе'
+                }))
+
+                buttons = [{
+                    text:   'Отмена',
+                    class:  'button_yes_or_no no',
+                    style:  'float:right;'
+                    click:  ()->
+                      t.parent().removeClass('tdInputHere').attr('data-id',_this.options.supplier_id)
+                      t.replaceWith(_this.options.supplier_name)
+                      $(_this.supplier_window.winDiv).dialog('destroy').remove()
+                  },{
+                    text:   'Создать',
+                    class:  'button_yes_or_no yes',
+                    style:  'float:right;',
+                    click:  ()->
+                      if nickName.val()!= ''
+                        new sendAjax('create_new_supplier',{nick_name:nickName.val(),full_name:fullName.val(),dop_info:dop_info.val()},(response)->
+                          new sendAjax 'save_supplier_name',{id:_this.options.id,supplier_name:nickName.val(),supplier_id:id}, ()->
+                            t.parent().removeClass('tdInputHere').attr('data-id',response.supplier_id)
+                            _this.options.supplier_name = nickName.val()
+                            t.replaceWith(_this.options.supplier_name)
+                            echo_message_js "создание"
+                            $(_this.supplier_window.winDiv).dialog('destroy').remove()
+                        )
+                }]
+
+
+                _this.supplier_window = new modalWindow({
+                  html:obj,
+                  title:'Создать поставщика',
+                  buttons:buttons
+                },{single:false})
+              ,()->
+                t.parent().removeClass('tdInputHere')
+                t.replaceWith(_this.options.supplier_name)
+              )
+            else
+              t.parent().removeClass('tdInputHere')
+              t.replaceWith(_this.options.supplier_name)
+        }))
+        $(this).addClass('tdInputHere')
+
+        inputSearch.css('textAlign',$(this).css('textAlign')).focus()
+
+        inputSearch.autocomplete({
+          minLength: 2,
+          source: (request, response)->
+
+            $.ajax({
+              type: "POST",
+              dataType: "json",
+              data:
+                AJAX: 'shearch_supplier_autocomlete', # показать
+                search: request.term # поисковая фраза
+              success: (data) ->
+                response(data);
+            })
+          select: ( event, ui ) ->
+            inputSearch.attr('data-id',ui.item.desc).val(ui.item.label).blur()
+            return false;
+
         })
-      select: ( event, ui ) ->
-        inputSearch.attr('data-id',ui.item.desc)
-        return false;
+        inputSearch.data( "ui-autocomplete" )._renderItem = ( ul, item )->
+          ul.css('z-index',Number($(_this.$el).parent().parent().css( "z-index" ))+1)
+          return $("<li></li>",{
+            click:(e)->
+              inputSearch.attr('data-id',0)
+          })
+          .data("ui-autocomplete-item", item) # для jquery-ui 1.10+
+          #.appe nd( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
+          .append( item.label )
+          .appendTo(ul);
+           # console.log ul
 
-    })
-    inputSearch.data( "ui-autocomplete" )._renderItem = ( ul, item )->
-      ul.css('z-index',Number($(_this.$el).parent().parent().css( "z-index" ))+1)
-      return $("<li></li>",{
-        click:(e)->
-          inputSearch.attr('data-id',0)
-      })
-      .data("ui-autocomplete-item", item) # для jquery-ui 1.10+
-      #.appe nd( "<a>" + item.label + "<span> (" + item.desc + ")</span></a>" )
-      .append( item.label )
-      .appendTo(ul);
-      # console.log ul
-
-    inputSearch.keydown((e)->
-      if(e.keyCode == 13)#enter
-        if(inputSearch.is(':focus'))#
-          inputSearch.attr('data-id',0)
-          return false;
-      #отправка поиска на enter
+        inputSearch.keydown((e)->
+          if(e.keyCode == 13)#enter
+            if(inputSearch.is(':focus'))#
+              inputSearch.attr('data-id',0)
+              inputSearch.blur()
+              return false;
+              #отправка поиска на enter
+        )
     )
+
+
   # строка с возможностью редактирования
   createEditingObj:(data,rData,i,windowObj,data_row,rowspan )->
     _this = @
@@ -728,12 +814,10 @@ class costsRow
     if rowspan > 1
       tr.addClass('firstGroupRow')
 
-
-
     if rowspan>=1
       # поставщик
-      tr.append($('<td/>',{'rowspan':rowspan}).append(inp = $('<input/>')))
-      @addHandlerForInputSearchSupplier(inp)
+      tr.append(td = $('<td/>',{'rowspan':rowspan,'html':@options.supplier_name,'data-id':@options.supplier_id}))
+      @supplierSearch(td)
 
 
       # номер счёта
@@ -1105,7 +1189,10 @@ class modalConfirm
     title: 'Подтвердите действие',
     html:'Вы уверены',
 
-  constructor:(data = {},func = ()->)->
+  constructor:(data = {},
+    func = ()-> ,
+    func2=()->
+  )->
     # get options
     _this = @
     @options = $.extend({}, @defaults, data)
@@ -1121,6 +1208,7 @@ class modalConfirm
         class:  'button_yes_or_no no',
         style:  'float:right;',
         click:  ()->
+          func2()
           $(_this.selfObj.winDiv).dialog('destroy').remove()
 #          $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
       }]

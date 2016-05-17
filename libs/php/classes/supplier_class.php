@@ -258,7 +258,7 @@ class Supplier extends aplStdAJAXMethod{
 	  *	@author  	Алексей Капитонов
 	  *	@version 	00:20 11.01.2016
 	  */
-	static function create($name,$fullname,$dop_info){
+	static function create($name,$fullname = '',$dop_info = ''){
 		global $mysqli;
 		$query ="INSERT INTO `".SUPPLIERS_TBL."` SET
 			`nickName` = '".$name."',

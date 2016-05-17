@@ -811,53 +811,158 @@
       });
     };
 
-    costsRow.prototype.addHandlerForInputSearchSupplier = function(inputSearch) {
-
-      /*
-       * inputSearch
-       */
+    costsRow.prototype.supplierSearch = function(td) {
       var _this;
       _this = this;
-      inputSearch.autocomplete({
-        minLength: 2,
-        source: function(request, response) {
-          return $.ajax({
-            type: "POST",
-            dataType: "json",
-            data: {
-              AJAX: 'shearch_invoice_autocomlete',
-              search: request.term
+      return td.click(function() {
+        var inputSearch;
+        if ($(this).find('input').length === 0) {
+          $(this).html(inputSearch = $('<input/>', {
+            'type': 'text',
+            'val': $(this).html(),
+            keyup: function() {
+              return console.log(Number($(this).attr('data-id')));
             },
-            success: function(data) {
-              return response(data);
+            change: function() {},
+            blur: function() {
+              var id, name, t;
+              t = $(this);
+              name = $(this).val();
+              id = Number($(this).attr('data-id'));
+              console.log(id);
+              if (_this.options.supplier_id !== id && id > 0) {
+                _this.options.supplier_name = name;
+                _this.options.supplier_id = id;
+                return new sendAjax('save_supplier_name', {
+                  id: _this.options.id,
+                  supplier_name: _this.options.supplier_name,
+                  supplier_id: id
+                }, function() {
+                  t.parent().removeClass('tdInputHere').attr('data-id', id);
+                  return t.replaceWith(_this.options.supplier_name);
+                });
+              } else if ((!id) && name !== '' && name !== _this.options.supplier_name) {
+                return new modalConfirm({
+                  html: 'Такого имени не было найдено в системе, Вы хотите добавить нового поставщика'
+                }, function() {
+                  var buttons, dop_info, fullName, nickName, obj;
+                  obj = $('<div/>', {
+                    'id': 'window--new_supplier'
+                  });
+                  obj.append(nickName = $('<input/>', {
+                    'type': 'text',
+                    'name': 'nick_name',
+                    'val': name,
+                    'placeholder': 'Сокращённое название'
+                  }));
+                  obj.append(fullName = $('<input/>', {
+                    'type': 'text',
+                    'name': 'full_name',
+                    'placeholder': 'Полное название'
+                  }));
+                  obj.append(dop_info = $('<textarea/>', {
+                    'name': 'dop_info',
+                    'placeholder': 'Дополнительная информацияе'
+                  }));
+                  buttons = [
+                    {
+                      text: 'Отмена',
+                      "class": 'button_yes_or_no no',
+                      style: 'float:right;',
+                      click: function() {
+                        t.parent().removeClass('tdInputHere').attr('data-id', _this.options.supplier_id);
+                        t.replaceWith(_this.options.supplier_name);
+                        return $(_this.supplier_window.winDiv).dialog('destroy').remove();
+                      }
+                    }, {
+                      text: 'Создать',
+                      "class": 'button_yes_or_no yes',
+                      style: 'float:right;',
+                      click: function() {
+                        if (nickName.val() !== '') {
+                          return new sendAjax('create_new_supplier', {
+                            nick_name: nickName.val(),
+                            full_name: fullName.val(),
+                            dop_info: dop_info.val()
+                          }, function(response) {
+                            return new sendAjax('save_supplier_name', {
+                              id: _this.options.id,
+                              supplier_name: nickName.val(),
+                              supplier_id: id
+                            }, function() {
+                              t.parent().removeClass('tdInputHere').attr('data-id', response.supplier_id);
+                              _this.options.supplier_name = nickName.val();
+                              t.replaceWith(_this.options.supplier_name);
+                              echo_message_js("создание");
+                              return $(_this.supplier_window.winDiv).dialog('destroy').remove();
+                            });
+                          });
+                        }
+                      }
+                    }
+                  ];
+                  return _this.supplier_window = new modalWindow({
+                    html: obj,
+                    title: 'Создать поставщика',
+                    buttons: buttons
+                  }, {
+                    single: false
+                  });
+                }, function() {
+                  t.parent().removeClass('tdInputHere');
+                  return t.replaceWith(_this.options.supplier_name);
+                });
+              } else {
+                t.parent().removeClass('tdInputHere');
+                return t.replaceWith(_this.options.supplier_name);
+              }
+            }
+          }));
+          $(this).addClass('tdInputHere');
+          inputSearch.css('textAlign', $(this).css('textAlign')).focus();
+          inputSearch.autocomplete({
+            minLength: 2,
+            source: function(request, response) {
+              return $.ajax({
+                type: "POST",
+                dataType: "json",
+                data: {
+                  AJAX: 'shearch_supplier_autocomlete',
+                  search: request.term
+                },
+                success: function(data) {
+                  return response(data);
+                }
+              });
+            },
+            select: function(event, ui) {
+              inputSearch.attr('data-id', ui.item.desc).val(ui.item.label).blur();
+              return false;
             }
           });
-        },
-        select: function(event, ui) {
-          inputSearch.attr('data-id', ui.item.desc);
-          return false;
-        }
-      });
-      inputSearch.data("ui-autocomplete")._renderItem = function(ul, item) {
-        ul.css('z-index', Number($(_this.$el).parent().parent().css("z-index")) + 1);
-        return $("<li></li>", {
-          click: function(e) {
-            return inputSearch.attr('data-id', 0);
-          }
-        }).data("ui-autocomplete-item", item).append(item.label).appendTo(ul);
-      };
-      return inputSearch.keydown(function(e) {
-        if (e.keyCode === 13) {
-          if (inputSearch.is(':focus')) {
-            inputSearch.attr('data-id', 0);
-            return false;
-          }
+          inputSearch.data("ui-autocomplete")._renderItem = function(ul, item) {
+            ul.css('z-index', Number($(_this.$el).parent().parent().css("z-index")) + 1);
+            return $("<li></li>", {
+              click: function(e) {
+                return inputSearch.attr('data-id', 0);
+              }
+            }).data("ui-autocomplete-item", item).append(item.label).appendTo(ul);
+          };
+          return inputSearch.keydown(function(e) {
+            if (e.keyCode === 13) {
+              if (inputSearch.is(':focus')) {
+                inputSearch.attr('data-id', 0);
+                inputSearch.blur();
+                return false;
+              }
+            }
+          });
         }
       });
     };
 
     costsRow.prototype.createEditingObj = function(data, rData, i, windowObj, data_row, rowspan) {
-      var _this, delTd, inp, td, td2, tr;
+      var _this, delTd, td, td2, tr;
       _this = this;
       tr = $('<tr/>', {
         'id': 'c_' + data.id
@@ -872,10 +977,12 @@
         tr.addClass('firstGroupRow');
       }
       if (rowspan >= 1) {
-        tr.append($('<td/>', {
-          'rowspan': rowspan
-        }).append(inp = $('<input/>')));
-        this.addHandlerForInputSearchSupplier(inp);
+        tr.append(td = $('<td/>', {
+          'rowspan': rowspan,
+          'html': this.options.supplier_name,
+          'data-id': this.options.supplier_id
+        }));
+        this.supplierSearch(td);
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'html': this.options.number,
@@ -1321,13 +1428,16 @@
       html: 'Вы уверены'
     };
 
-    function modalConfirm(data, func) {
+    function modalConfirm(data, func, func2) {
       var _this;
       if (data == null) {
         data = {};
       }
       if (func == null) {
         func = function() {};
+      }
+      if (func2 == null) {
+        func2 = function() {};
       }
       _this = this;
       this.options = $.extend({}, this.defaults, data);
@@ -1345,6 +1455,7 @@
           "class": 'button_yes_or_no no',
           style: 'float:right;',
           click: function() {
+            func2();
             return $(_this.selfObj.winDiv).dialog('destroy').remove();
           }
         }

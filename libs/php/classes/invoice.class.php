@@ -504,9 +504,8 @@
 			return $this->mysqli->insert_id;
 		}
 
-//
 
-		/**
+
 		/**
 		 *	save price and percent in costs payment
 		 */
@@ -673,17 +672,17 @@
 			foreach ($_POST as $key => $val) {
 
 				if ($key != 'id' && $key != 'edit' && $key != 'AJAX' && $key != 'date') {
-//					$mess .= " $key => $val;";
+					//					$mess .= " $key => $val;";
 					$query .= (($i > 0) ? ',' : '') . "`" . $key . "` = '" . $val . "'";
 					$i++;
 					$myReturn = 0;
 				} else if ($key == 'date') {
-//					$mess .= " $key => $val;";
+					//					$mess .= " $key => $val;";
 					$query .= (($i > 0) ? ',' : '') . "`" . $key . "` = '" . date('Y-m-d', strtotime($val)) . "'";
 					$i++;
 					$myReturn = 0;
 				} else {
-//					$this->responseClass->addSimpleWindow($this->printArr($_POST).$query,'tester info');
+					//					$this->responseClass->addSimpleWindow($this->printArr($_POST).$query,'tester info');
 
 				}
 
@@ -757,7 +756,7 @@
 			";
 			$query .= " WHERE ".INVOICE_COSTS.".invoice_id = '".(int)$_POST['id']."'";
 
-//			echo $query;
+			//			echo $query;
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$data = array();
 			if($result->num_rows > 0){
@@ -949,6 +948,33 @@
 			return $num;
 		}
 
+		/**
+		 * создание поставщи ка
+		 */
+		protected function create_new_supplier_AJAX(){
+
+			$query ="INSERT INTO `".SUPPLIERS_TBL."` SET";
+			$query .= " `nickName`=?";
+			$query .= ", `fullName`=?";
+			$query .= ", `dop_info`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('sss',$_POST['nick_name'],$_POST['full_name'],$_POST['dop_info']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+
+
+			$data = array(
+				'supplier_id' => $this->mysqli->insert_id
+			);
+
+			$this->responseClass->response['data'] = $data;
+		}
+
 
 		/**
 		 *	check invoice
@@ -997,6 +1023,23 @@
 				
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			}
+		}
+
+		/**
+		 * save supplier name
+		 */
+		protected function save_supplier_name_AJAX(){
+			$query = "UPDATE `" . INVOICE_COSTS . "` SET ";
+			$query .= " `supplier_name`=?";
+			$query .= ", `supplier_id`=?";
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('sii',$_POST['supplier_name'],$_POST['supplier_id'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
 		/**
 		 *	edit spf_return
