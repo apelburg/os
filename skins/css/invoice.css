@@ -942,3 +942,6 @@ body #context-menu ul li{
 #window--new_supplier textarea{
 	height:100px;
 }
+.quick_bar_tbl td .quick_button_div .button.checked{
+	background-color: #CECECE;
+}
