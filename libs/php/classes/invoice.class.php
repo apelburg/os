@@ -99,6 +99,17 @@
 			echo json_encode($response);
 			exit;
 		}
+		/**
+		 * получение данных для склада
+		 */
+		protected  function get_data_sklad_AJAX(){
+			$response = array(
+				'access' => $this->user_access,
+				'data' => $this->get_data_sklad()
+			);
+			echo json_encode($response);
+			exit;
+		}
 
 		/**
 		 * create new ttn
@@ -255,7 +266,7 @@
 			//  получаем информацию по строкам
 			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."`";
 			// $query = "  SORT BY `id` DESC";
-			if($this->user_access != 1 && $this->user_access != 2){
+			if($this->user_access == 5){
 				$query .= ($w>0?' AND ':' WHERE ');
 				$query .= " `manager_id` = '".$this->user_id."' ";
 				$w++;
@@ -340,11 +351,12 @@
 
 			}
 
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$this->data =$this->depending['id']= array();
 
 			$data_id_s = array();
 			$i = 0;
+
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
 					$this->data[$i] = $row;
@@ -356,6 +368,74 @@
 			}
 			// запрос ттн
 			$this->get_ttn_rows($data_id_s,$curSearch);
+			return $this->data;
+		}
+		/**
+		 * запрос из базы строк для приложения склад
+		 *
+		 * @param int $id
+		 * @return array
+		 */
+		private function get_data_sklad($curSearch = array('invoice_num'=>'','id'=>0)){
+			$w = 0;
+			//  получаем информацию по строкам
+			$query = "SELECT `".INVOICE_TTN."`.*,`".INVOICE_TBL."`.*,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date";
+
+			$query .= ",`".INVOICE_TTN."`.`id` as ttn_id ";
+			$query .= ",`".INVOICE_TTN."`.`position_id`";
+			$query .= ",`".INVOICE_TTN."`.`positions_num`";
+			$query .= ",`".INVOICE_TTN."`.`number` ";
+			$query .= ", DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y') as ttn_date ";
+			$query .= ",`".INVOICE_TTN."`.`date_return` ";
+			$query .= ",`".INVOICE_TTN."`.`return` ";
+			$query .= ",`".INVOICE_TTN."`.`comments` ";
+			$query .= ",`".INVOICE_TTN."`.`delivery` ";
+			$query .= ",`".INVOICE_TTN."`.`buch_id` ";
+			$query .= ",`".INVOICE_TTN."`.`buch_name` ";
+			$query .= ",`".INVOICE_TTN."`.`date_shipment` ";
+			$query .= ",`".INVOICE_TTN."`.`shipment_employee`";
+			$query .= ",`".INVOICE_TTN."`.`shipment_employee_id`";
+
+
+			$query .= " FROM `".INVOICE_TBL."`";
+			$query .= " INNER JOIN `".INVOICE_TTN."` ON `".INVOICE_TTN."`.`invoice_id` = `".INVOICE_TBL."`.`id`";
+			// $query = "  SORT BY `id` DESC";
+			if($this->user_access == 5){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `manager_id` = '".$this->user_id."' ";
+				$w++;
+			}
+//			echo $query;
+
+
+			if((int)$curSearch['id'] > 0){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `".INVOICE_TBL."`.`id` = '".$curSearch['id']."' ";
+				$w++;
+			}else if( $curSearch['invoice_num'] != '' ){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `".INVOICE_TBL."`.`invoice_num` = '".$curSearch['invoice_num']."' ";
+				$w++;
+			}
+			$query .= " ORDER BY `".INVOICE_TBL."`.`id` ASC";
+
+
+
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$this->data = $this->depending['id']= array();
+
+			$data_id_s = array();
+			$i = 0;
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$this->data[$i] = $row;
+					$data_id_s[] = $row['id'] ;
+					// зависимости в id
+					$this->depending['id'][$row['id']] = $i++;
+				}
+			}
+
+
 			return $this->data;
 		}
 
@@ -519,6 +599,21 @@
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 
 			$stmt->bind_param('ddi',$_POST['price'],$_POST['percent'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+		/**
+		 * редактирование информации по отгрузке для отдельных артикулов
+		 */
+		protected function not_shipped_edit_AJAX(){
+			$query = "UPDATE `" . INVOICE_ROWS . "` SET ";
+			$query .= " `not_shipped`=?";
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('ii',$_POST['not_shipped'],$_POST['id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();

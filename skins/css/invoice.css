@@ -195,8 +195,8 @@
 	padding-right: 15px;
 }
 /*исконка флаг*/
-#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5),
-#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(5){
+#js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5).flag,
+#js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(5).flag{
 	background-image:url(../images/img_design/icon_invoce_1.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
@@ -537,6 +537,10 @@ div#js-alert_union{
 .ttn_created td{
 	background-color: #c6e1aa;
 	color: #9eb488;
+}
+.not_shipped td{
+	background-color: #f2f2f2;
+	color: #000;
 }
 .ui-dialog .ui-dialog-buttonpane {
     text-align: left;
@@ -944,4 +948,113 @@ body #context-menu ul li{
 }
 .quick_bar_tbl td .quick_button_div .button.checked{
 	background-color: #CECECE;
+}
+/**
+*	sklad
+*/
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(5),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(5){
+	text-align: center;
+	border-right:1px solid #CAC7C7;
+}
+/*
+	выравнивание thead
+*/
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(3),
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(4),
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(6),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(2),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(3),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(4),
+#-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(6){
+	padding: 5px;
+	border-right:1px solid #CAC7C7;
+	text-align: left;
+}
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(1),
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(7),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(1),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(7){
+	text-align: right;
+	border-right:1px solid #CAC7C7;
+}
+#js-main-invoice-table.sklad thead tr:nth-of-type(1) th:nth-of-type(6),
+#js-main-invoice-table-clone.sklad thead tr:nth-of-type(1) th:nth-of-type(6){
+	border-bottom: 1px solid #CAC7C7;
+}
+/*
+	выравнивание tbody
+*/
+#js-main-invoice-table.sklad tbody tr td,
+#js-main-invoice-table.sklad tbody tr td div,
+#js-main-invoice-table.sklad tbody tr td:nth-of-type(3) div{
+	text-align: left;
+}
+#js-main-invoice-table.sklad tbody tr th:nth-of-type(7),
+#js-main-invoice-table.sklad tbody tr td:nth-of-type(1) div{
+	text-align: right;
+}
+#js-main-invoice-table.sklad tbody tr th:nth-of-type(6){
+	text-align: center;
+}
+/*
+	border tbody
+*/
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(5),
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(2){
+	border-right: 1px solid #F3F1F1;
+}
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(6),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(7),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(8){
+	border-right: 1px solid transparent;
+}
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(1),
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(3),
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(4){
+	border-right: 1px solid transparent;
+}
+#js-main-invoice-table.sklad tbody tr td:nth-of-type(1){
+	width: 150px;
+}
+#js-main-invoice-table.sklad tbody tr td:nth-of-type(2){
+	width: 150px;
+}
+#js-main-invoice-table.sklad tbody tr td:nth-of-type(3){
+	width: 250px;
+}
+#js-main-invoice-table.sklad tbody tr td:nth-last-of-type(1){
+	width: 250px;
+}
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(2),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(5),
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(4),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(7){
+	text-align: center;
+	width: 83px;
+}
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(3),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(6){
+	text-align: right;
+	width: 100px;
+}
+#js-main-invoice-table.sklad tbody tr.subRow td:nth-of-type(5),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(8){
+	width: 100px;
+}
+.mayBeClick{
+	cursor: pointer;
+}
+.mayBeClick:hover{
+	background-color: #f2f2f2;
+}
+.invoice-row--order-number{
+	color:#000
+	padding-bottom: 5px;
+}
+.invoice-row--client--name{
+	color:#000;
+	text-decoration: underline;
+	padding-bottom: 5px;
 }

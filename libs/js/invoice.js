@@ -10,21 +10,12 @@
 
 
 /*
- * Запуск модуля счета
+ * возвращяет текущую дату в читабельном формате
  */
 
 (function() {
-  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, rowRowData, sendAjax, ttnObj,
+  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, rowRowData, sendAjax, skladRow, ttnObj,
     slice = [].slice;
-
-  $(document).ready(function() {
-    return $('#js-main-invoice-table').sklad();
-  });
-
-
-  /*
-   * возвращяет текущую дату в читабельном формате
-   */
 
   getDateNow = function() {
     var d, dd, mm, yy;
@@ -2598,6 +2589,8 @@
   invoiceWindow = (function() {
     invoiceWindow.prototype.saveObj = {};
 
+    invoiceWindow.prototype.posNum = 1;
+
     invoiceWindow.prototype.defaults = {
       id: 0,
       number: '0000',
@@ -3008,7 +3001,7 @@
         /*
          * добавляем таблицу
          */
-        main_div.append(this.createTable(responseData));
+        main_div.append(this.contentTbl = this.createTable(responseData));
 
         /*
          * добавление шапки окна
@@ -3345,8 +3338,110 @@
       }
     };
 
+    invoiceTtn.prototype.getFirstTdCheck = function(position) {
+      var check, self, td;
+      self = this;
+      if (Number(position.ttn_id) === 0 && Number(position.not_shipped) === 0) {
+        this.checkNumber++;
+        check = $('<input/>', {
+          'type': 'checkbox',
+          change: function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if ($(this).prop('checked')) {
+              $(this).prop('checked', false);
+              $(this).parent().removeClass('checked');
+            } else {
+              $(this).prop('checked', true);
+              $(this).parent().addClass('checked');
+            }
+            return self.checkMainCheckbox();
+          }
+        });
+        td = $('<td/>', {
+          click: function() {
+            var input;
+            input = $(this).find('input');
+            if (input.prop('checked')) {
+              input.prop('checked', false);
+              td.removeClass('checked');
+            } else {
+              input.prop('checked', true);
+              td.addClass('checked');
+            }
+            return self.checkMainCheckbox();
+          }
+        });
+        td.append(check);
+      } else {
+        td = $('<td/>');
+      }
+      return td;
+    };
+
+    invoiceTtn.prototype.tblManRow = function(position) {
+      var button2, pr_out, self, td, td_name, tr;
+      self = this;
+      tr = $('<tr/>').data(position).attr('data-id', position.id);
+      if (Number(position.not_shipped) > 0) {
+        tr.addClass('not_shipped');
+      } else if (Number(position.ttn_id) > 0) {
+        tr.addClass('ttn_created');
+      }
+      tr.append(td = this.getFirstTdCheck(position));
+      button2 = [];
+      button2.push({
+        'name': 'нужна отгрузка',
+        'class': '',
+        click: function(e) {
+          var not_shipped;
+          not_shipped = 0;
+          return new sendAjax('not_shipped_edit', {
+            id: position.id,
+            not_shipped: not_shipped
+          }, function() {
+            position.not_shipped = not_shipped;
+            return tr.replaceWith(self.tblManRow(position));
+          });
+        }
+      });
+      button2.push({
+        'name': 'отгрузка не требуется',
+        'class': '',
+        click: function(e) {
+          var not_shipped;
+          echo_message_js("test");
+          console.log(tr);
+          not_shipped = 1;
+          return new sendAjax('not_shipped_edit', {
+            id: position.id,
+            not_shipped: not_shipped
+          }, function() {
+            position.not_shipped = not_shipped;
+            return tr.replaceWith(self.tblManRow(position));
+          });
+        }
+      });
+      tr.append($('<td/>', {
+        'html': position.num
+      }));
+      tr.append(td_name = $('<td/>').append(position.name));
+      td_name.menuRightClick({
+        'buttons': button2
+      });
+      tr.append($('<td/>').append(position.quantity));
+      pr_out = calc_price_with_discount(position.price, position.discount);
+      tr.append($('<td/>').append(round_money(pr_out) + ' р.'));
+      if (position.quantity === 0) {
+        position.quantity = 1;
+      }
+      this.main_price += pr_out * position.quantity;
+      this.nds += Number(round_money(pr_out * position.quantity / 118 * 18));
+      return tr.append($('<td/>').append(round_money(pr_out * position.quantity) + ' р.'));
+    };
+
     invoiceTtn.prototype.createTableManager = function(responseData) {
-      var _this, check, i, j, len1, main_checkbox, main_price, nds, position, pr_out, table, td, td_main_check, tr;
+      var _this, i, j, len1, main_checkbox, position, table, td, td_main_check, tr;
       _this = this;
       table = $('<table/>', {
         'id': 'js-invoice--window--ttn-table'
@@ -3390,68 +3485,14 @@
         'html': 'Общая<br>стоимость'
       });
       tr.append(td);
-      main_price = 0;
-      nds = 0;
-      i = 1;
+      this.main_price = 0;
+      this.nds = 0;
+      this.posNum = 1;
       this.checkNumber = 0;
-      for (j = 0, len1 = responseData.length; j < len1; j++) {
-        position = responseData[j];
-        tr = $('<tr/>').data(position).attr('data-id', position.id);
-        if (Number(position.ttn_id) === 0) {
-          this.checkNumber++;
-          check = $('<input/>', {
-            'type': 'checkbox',
-            change: function(event) {
-              event.preventDefault();
-              event.stopPropagation();
-              if ($(this).prop('checked')) {
-                $(this).prop('checked', false);
-                $(this).parent().removeClass('checked');
-              } else {
-                $(this).prop('checked', true);
-                $(this).parent().addClass('checked');
-              }
-              return _this.checkMainCheckbox(table);
-            }
-          });
-          td = $('<td/>', {
-            click: function() {
-              var input;
-              input = $(this).find('input');
-              if (input.prop('checked')) {
-                input.prop('checked', false);
-                $(this).removeClass('checked');
-              } else {
-                input.prop('checked', true);
-                $(this).addClass('checked');
-              }
-              return _this.checkMainCheckbox(table);
-            }
-          });
-          td.append(check);
-        } else {
-          td = $('<td/>');
-          tr.addClass('ttn_created');
-        }
-        tr.append(td);
-        td = $('<td/>').append(i);
-        tr.append(td);
-        td = $('<td/>').append(position.name);
-        tr.append(td);
-        td = $('<td/>').append(position.quantity);
-        tr.append(td);
-        pr_out = calc_price_with_discount(position.price, position.discount);
-        td = $('<td/>').append(round_money(pr_out) + ' р.');
-        tr.append(td);
-        if (position.quantity === 0) {
-          position.quantity = 1;
-        }
-        main_price += pr_out * position.quantity;
-        nds += Number(round_money(pr_out * position.quantity / 118 * 18));
-        td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.');
-        tr.append(td);
-        i++;
-        table.append(tr);
+      for (i = j = 0, len1 = responseData.length; j < len1; i = ++j) {
+        position = responseData[i];
+        responseData[i].num = this.posNum++;
+        table.append(this.tblManRow(responseData[i]));
       }
       if (this.checkNumber > 0) {
         td_main_check.append(main_checkbox);
@@ -3467,7 +3508,7 @@
       });
       tr.append(td);
       td = $('<th/>', {
-        'html': round_money(main_price) + ' р.'
+        'html': round_money(this.main_price) + ' р.'
       });
       tr.append(td);
       table.append(tr);
@@ -3475,16 +3516,15 @@
       td = $('<th/>');
       tr.append(td);
       td = $('<th/>', {
-        'colspan': '4',
+        'colspan': 4,
         'html': 'В т.ч. НДС 18%'
       });
       tr.append(td);
       td = $('<th/>', {
-        'html': round_money(nds) + ' р.'
+        'html': round_money(this.nds) + ' р.'
       });
       tr.append(td);
-      table.append(tr);
-      return table;
+      return table.append(tr);
     };
 
     invoiceTtn.prototype.createTableAdmin = function(responseData) {
@@ -3624,13 +3664,13 @@
       }
     };
 
-    invoiceTtn.prototype.checkMainCheckbox = function(table) {
+    invoiceTtn.prototype.checkMainCheckbox = function() {
       var main_check;
-      main_check = table.find('th input');
-      if (table.find('td input:checked').length === table.find('td input').length) {
+      main_check = this.contentTbl.find('th input');
+      if (this.contentTbl.find('td input:checked').length === this.contentTbl.find('td input').length) {
         main_check.prop('checked', true).removeClass('checked_no_full');
         return main_check.parent().addClass('checked');
-      } else if (table.find('td input:checked').length > 0) {
+      } else if (this.contentTbl.find('td input:checked').length > 0) {
         main_check.prop('checked', false).addClass('checked_no_full');
         return main_check.parent().addClass('checked');
       } else {
@@ -3928,9 +3968,97 @@
         });
       };
 
+      invoice.prototype.greateHead = function() {
+        var thead, tr;
+        thead = $('<thead/>');
+        tr = $('<tr/>');
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': '№, дата'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': '1C'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'выручка,<br>платежи'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'заказ,<br>менеджер'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'class': 'flag'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'клиент: название и юр. лицо'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'себестоимость'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'class': 'ice'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'прибыль'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'class': 'calculator'
+        }));
+        tr.append($('<th/>', {
+          'colspan': 3,
+          'html': 'ТТН'
+        }));
+        tr.append($('<th/>', {
+          'colspan': 2,
+          'html': 'СПФ'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'статус заказа'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'class': 'dindin'
+        }));
+        thead.append(tr);
+        tr = $('<tr/>');
+        tr.append($('<th/>', {
+          'id': 'defttn1',
+          'html': '№'
+        }));
+        tr.append($('<th/>', {
+          'id': 'defttn2',
+          'html': 'дата'
+        }));
+        tr.append($('<th/>', {
+          'id': 'defttn3',
+          'html': 'в-т'
+        }));
+        tr.append($('<th/>', {
+          'html': '№'
+        }));
+        tr.append($('<th/>', {
+          'html': 'в-т'
+        }));
+        return thead.append(tr);
+      };
+
+      invoice.prototype.updateHead = function() {
+        return this.$el.find('thead').replaceWith(this.greateHead);
+      };
+
       invoice.prototype.init = function() {
         var _this, i, j, len, ref, ref1;
         _this = this;
+        this.updateHead();
         this.$el.find('tbody').html('');
 
         /*
@@ -4426,7 +4554,7 @@
       function sklad(el, options) {
         var self;
         self = this;
-        new sendAjax('get_data', {}, function(response) {
+        new sendAjax('get_data_sklad', {}, function(response) {
           self.options = $.extend({}, self.defaults, response);
           self.access = response.access;
           self.$el = $(el);
@@ -4435,24 +4563,7 @@
            * добавление меню
            */
           self.addMenu();
-          self.init();
-          self.quick_button_div = $('#quick_button_div');
-          if (self.access === 2 || self.access === 1) {
-            self.quick_button_div.append($('<span/>', {
-              'html': 'приходы',
-              'class': 'button',
-              click: function(e) {
-                return new paymentWindow(new rowRowData(), {});
-              }
-            }));
-            return self.quick_button_div.append($('<apsn/>', {
-              'html': 'расходы',
-              'class': 'button',
-              click: function(e) {
-                return new costsWindow(new rowRowData(), {});
-              }
-            }));
-          }
+          return self.init();
         });
       }
 
@@ -4516,7 +4627,7 @@
               'float': 'right'
             });
           }
-          if (i === section) {
+          if (tabs[i].index === section) {
             results.push(li.addClass('selected'));
           } else {
             results.push(void 0);
@@ -4529,15 +4640,74 @@
         var _this;
         _this = this;
         window_preload_add();
-        return new sendAjax('get_data', {}, function(response) {
+        return new sendAjax('get_data_sklad', {}, function(response) {
           _this.options = $.extend({}, _this.defaults, response);
           _this.init();
           return window_preload_del();
         });
       };
 
+      sklad.prototype.greateHead = function() {
+        var thead, tr;
+        thead = $('<thead/>');
+        tr = $('<tr/>');
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': '№ счёта, дата'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'заказ,<br>менеджер'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'клиент: название и юр. лицо'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'отгрузка'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'дата'
+        }));
+        tr.append($('<th/>', {
+          'colspan': 4,
+          'html': 'Товарно-транспортные накладные'
+        }));
+        tr.append($('<th/>', {
+          'rowspan': 2,
+          'html': 'статус заказа'
+        }));
+        thead.append(tr);
+        tr = $('<tr/>');
+        tr.append($('<th/>', {
+          'id': 'defttn1',
+          'html': '№'
+        }));
+        tr.append($('<th/>', {
+          'id': 'defttn2',
+          'html': 'дата'
+        }));
+        tr.append($('<th/>', {
+          'id': 'defttn3',
+          'html': 'статус'
+        }));
+        tr.append($('<th/>', {
+          'html': 'кем, когда'
+        }));
+        return thead.append(tr);
+      };
+
+      sklad.prototype.updateHead = function() {
+        return this.$el.find('thead').replaceWith(this.greateHead);
+      };
+
       sklad.prototype.init = function() {
-        var _this, i, j, len, ref, ref1;
+        var _this, i, id, j, k, len, ref, ref1, rowspan;
+        _this = this;
+        this.$el.addClass('sklad');
+        this.updateHead();
         _this = this;
         this.$el.find('tbody').html('');
 
@@ -4550,8 +4720,21 @@
         if (len < this.Pmax) {
           this.Pmax = len;
         }
+        id = 0;
         for (i = j = ref = this.Pmin, ref1 = this.Pmax; ref <= ref1 ? j < ref1 : j > ref1; i = ref <= ref1 ? ++j : --j) {
-          this.$el.find('tbody').append(this.createRow(this.options.data[i]));
+          rowspan = 0;
+          if (id !== this.options.data[i].invoice_id) {
+            rowspan = 1;
+            console.log("id != @options.data.id", id, this.options.data[i].invoice_id);
+            id = this.options.data[i].invoice_id;
+            k = i + 1;
+            while (this.options.data[k] !== void 0 && this.options.data[k].invoice_id === id) {
+              rowspan++;
+              k++;
+            }
+          }
+          console.log("rowspan", rowspan);
+          this.$el.find('tbody').append(new skladRow(this.options.data[i], this.access, rowspan));
         }
 
         /*
@@ -4593,11 +4776,6 @@
             scrollTop: t
           }, 600);
         }
-      };
-
-      sklad.prototype.printOptions = function() {
-        console.info(this.options.access);
-        return console.info(this.options.data);
       };
 
       sklad.prototype.updateRows = function() {
@@ -4685,293 +4863,6 @@
         return tr;
       };
 
-
-      /*
-       * создание TD ттн
-       */
-
-      sklad.prototype.getTdTtn = function(row) {
-        var _this, i, j, len1, ref, table, td, ttn;
-        if (this.defttn === void 0) {
-          this.defttn = {
-            0: $('#defttn1').width(),
-            1: $('#defttn2').width(),
-            2: $('#defttn3').width()
-          };
-        }
-        _this = this;
-        table = $('<div/>', {
-          'class': 'table',
-          'style': 'width:100%'
-        });
-        ref = row.ttn;
-        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
-          ttn = ref[i];
-          table.append(this.getTtnRow(row, ttn, i));
-        }
-        if (row.ttn.length <= 0) {
-          if (_this.options.access === 5) {
-            td = $('<td/>', {
-              'colspan': '3',
-              'class': 'js-query-ttn',
-              'html': 'Запросить',
-              click: function() {
-                var t;
-                t = $(this);
-                return new sendAjax('get_ttn', {
-                  'id': row.id
-                }, function(response) {
-                  if (response.data !== void 0) {
-                    return new invoiceTtn(t, row, response.data, _this.options.access);
-                  }
-                });
-              }
-            });
-          } else {
-            td = $('<td/>', {
-              'colspan': '3',
-              'class': 'js-query-ttn'
-            });
-          }
-        } else {
-          td = $('<td/>', {
-            'colspan': '3',
-            'class': 'js-query-ttn-rows'
-          }).append(table);
-        }
-        return td;
-      };
-
-
-      /*
-       * create tr
-       */
-
-      sklad.prototype.createRow = function(row) {
-        var _this, doc_type, td, tr;
-        _this = this;
-        tr = $('<tr/>', {
-          id: 'tt_' + row.id
-        }).data(row);
-        if (row.doc_type === 'spec') {
-          row.spf_num = row.doc_num;
-          doc_type = 'счёт';
-        } else {
-          row.spf_num = 'оф';
-          doc_type = 'счёт - оферта';
-        }
-        td = $('<td/>', {
-          'class': 'invoice-row--fist-td',
-          click: function() {
-            var t;
-            t = $(this);
-            return new sendAjax('get_ttn', {
-              'id': row.id
-            }, function(response) {
-              return new invoiceWindow(t, row, response.data, _this.options.access);
-            });
-          }
-        }).append($('<div/>', {
-          'class': 'invoice-row--number',
-          'html': '<span>' + row.invoice_num + '</span>  ' + row.invoice_create_date
-        })).append($('<div/>', {
-          'class': 'invoice-row--type',
-          'html': doc_type
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--checkboxtd'
-        }).append($('<div/>', {
-          'class': 'invoice-row--checkboxtd-div'
-        }));
-        td.click(function() {
-          if ($(this).hasClass('checked')) {
-            row.flag_1c = 0;
-            $(this).removeClass('checked');
-          } else {
-            row.flag_1c = 1;
-            $(this).addClass('checked');
-          }
-          new sendAjax('edit_flag_1c', {
-            id: row.id,
-            val: row.flag_1c
-          });
-        });
-        if (Number(row.flag_1c > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>', {
-          click: function(e) {
-            var t;
-            t = $(this);
-            return new sendAjax('get_payment', {
-              'id': row.id
-            }, function(response) {
-              return new paymentWindow(row, response.data, _this.options.access);
-            });
-          },
-          on: {
-            mouseenter: function() {
-              return $(this).css({
-                'backgroundColor': '#f1f1f1'
-              });
-            },
-            mouseleave: function() {
-              return $(this).attr('style', '');
-            }
-          }
-        }).css('cursor', 'pointer');
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-profit',
-          'html': round_money(row.price_out)
-        }));
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-payment',
-          'html': round_money(row.price_out_payment)
-        }));
-        tr.append(td);
-        td = $('<td/>').append($('<div/>', {
-          'class': 'invoice-row--order-number',
-          'html': row.invoice_num
-        })).append($('<div/>', {
-          'class': 'invoice-row--meneger--full-name',
-          'html': row.manager_name
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--icons-flag'
-        }).append($('<div/>', {
-          'class': 'invoice-row--checkboxtd-div'
-        }));
-        td.click(function() {
-          var t;
-          if ($(this).hasClass('checked')) {
-            if (Number(_this.options.access) !== 1) {
-              console.log(_this.options.access);
-              echo_message_js('Снять рекламацию может только администратор', 'error_message');
-              return false;
-            }
-            row.flag_flag = 0;
-            $(this).removeClass('checked');
-            new sendAjax('edit_flag_flag', {
-              id: row.id,
-              val: row.flag_flag
-            });
-          } else {
-            if (Number(_this.options.access) !== 5 && Number(_this.options.access) !== 1) {
-              echo_message_js('Рекламацию устанавливает только менеджер', 'error_message');
-              return false;
-            }
-            t = $(this);
-            new modalConfirm({
-              html: 'Вы уверены, что хотите установить флаг рекламации?'
-            }, function() {
-              row.flag_flag = 1;
-              t.addClass('checked');
-              return new sendAjax('edit_flag_flag', {
-                id: row.id,
-                val: row.flag_flag
-              });
-            });
-          }
-        });
-        if (Number(row.flag_flag > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>').append($('<div/>', {
-          'class': 'invoice-row--client--name',
-          'html': row.client_name
-        })).append($('<div/>', {
-          'class': 'invoice-row--client--requsits',
-          'data-id': row.client_requisit_id,
-          'html': row.client_requisit_name
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          click: function(e) {
-            var t;
-            t = $(this);
-            return new sendAjax('get_costs', {
-              'id': row.id
-            }, function(response) {
-              return new costsWindow(row, response.data, _this.options.access);
-            });
-          },
-          on: {
-            mouseenter: function() {
-              return $(this).css({
-                'backgroundColor': '#f1f1f1'
-              });
-            },
-            mouseleave: function() {
-              return $(this).attr('style', '');
-            }
-          }
-        }).css('cursor', 'pointer');
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-start',
-          'html': row.price_in
-        }));
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-our-pyment',
-          'html': row.costs
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--ice'
-        });
-        if (Number(row.flag_ice > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>').append($('<div/>', {
-          'class': 'invoice-row--price-our-profit',
-          'html': round_money(row.price_out - Number(row.costs))
-        })).append($('<div/>', {
-          'class': 'invoice-row--price-our-profit-percent',
-          'html': round_money(((row.price_out - Number(row.costs)) / row.price_out * 100).toString()) + '%'
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--icons-calculator'
-        });
-        if (Number(row.flag_calc > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = this.getTdTtn(row);
-        tr.append(td);
-        td = $('<td/>').append($('<div/>').html(row.spf_num));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--ttn--vt invoice-row--checkboxtd'
-        });
-        td.click(function() {
-          if ($(this).hasClass('checked')) {
-            row.flag_spf_return = 0;
-            $(this).removeClass('checked');
-          } else {
-            row.flag_spf_return = 1;
-            $(this).addClass('checked');
-          }
-          new sendAjax('edit_flag_spf_return', {
-            id: row.id,
-            val: row.flag_spf_return
-          });
-        });
-        if (Number(row.flag_spf_return > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>');
-        tr.append(td);
-        td = $('<td/>');
-        tr.append(td);
-        return tr;
-      };
-
       return sklad;
 
     })();
@@ -4993,6 +4884,170 @@
       }
     });
   })(window.jQuery, window);
+
+
+  /*
+   * прототип html строки прихода
+   */
+
+  skladRow = (function() {
+    skladRow.prototype.defaults = {
+      id: 0,
+      invoice_id: 0,
+      invoice_number: 0,
+      number: 0,
+      date: getDateNow(),
+      price: 0,
+      percent: 0,
+      create: getDateNow(),
+      buch_id: 0,
+      buch_name: 'Default Name',
+      edit: 0,
+      del: 0
+    };
+
+    skladRow.prototype.enterObj = {};
+
+    skladRow.prototype.options = {};
+
+    skladRow.prototype.access = 0;
+
+    function skladRow(data, access, rowspan) {
+      var el, key;
+      if (rowspan == null) {
+        rowspan = 1;
+      }
+      if (data.edit === void 0) {
+        data.edit = 1;
+      }
+      this.access = access;
+      for (key in data) {
+        el = data[key];
+        this.options[key] = el;
+      }
+      this.options = data;
+      return this.init(rowspan);
+    }
+
+    skladRow.prototype.firstRow = function(rowspan) {
+      var doc_type, self, td, tr;
+      self = this;
+      console.log(654);
+      tr = $('<tr/>', {
+        'class': 'firstRow',
+        id: 'sklad_row_' + self.options.invoice_id
+      }).data(self.options);
+      if (self.options.doc_type === 'spec') {
+        self.options.spf_num = self.options.doc_num;
+        doc_type = 'счёт';
+      } else {
+        self.options.spf_num = 'оф';
+        doc_type = 'счёт - оферта';
+      }
+      td = $('<td/>', {
+        'rowspan': rowspan,
+        'class': 'invoice-row--fist-td',
+        click: function() {
+          var t;
+          t = $(this);
+          return new sendAjax('get_ttn', {
+            'id': self.options.id
+          }, function(response) {
+            return new invoiceWindow(t, self.options, response.data, self.options.access);
+          });
+        }
+      });
+      td.append($('<div/>', {
+        'class': 'invoice-row--number',
+        'html': '<span>' + self.options.invoice_num + '</span>  ' + self.options.invoice_create_date
+      }));
+      tr.append(td);
+      tr.append($('<td/>', {
+        'rowspan': rowspan
+      }).append($('<div/>', {
+        'class': 'invoice-row--order-number',
+        'html': self.options.invoice_num
+      })).append($('<div/>', {
+        'class': 'invoice-row--meneger--full-name',
+        'html': self.options.manager_name
+      })));
+      td = $('<td/>', {
+        'rowspan': rowspan
+      }).append($('<div/>', {
+        'class': 'invoice-row--client--name',
+        'html': self.options.client_name
+      })).append($('<div/>', {
+        'class': 'invoice-row--client--requsits',
+        'data-id': self.options.client_requisit_id,
+        'html': self.options.client_requisit_name
+      }));
+      tr.append(td);
+      tr.append(self.subRow(rowspan));
+      return tr.append($('<td/>', {
+        'rowspan': rowspan,
+        'html': self.options.status
+      }));
+    };
+
+    skladRow.prototype.subRow = function(rowspan) {
+      var delivery_td, self, tr;
+      self = this;
+      tr = [];
+      tr.push(delivery_td = $('<td/>'));
+      if (self.options.delivery === 'no_delivery') {
+        delivery_td.html('Самовывоз');
+      } else {
+        delivery_td.html('Доставка');
+      }
+      tr.push($('<td/>', {
+        'html': self.options.date_shipment
+      }));
+      tr.push($('<td/>', {
+        'html': self.options.number,
+        click: function() {
+          var t;
+          t = $(this);
+          return new sendAjax('get_ttn', {
+            'id': self.options.ttn_id
+          }, function(response) {
+            if (response.data !== void 0) {
+              return new invoiceTtn(t, self.options, response.data, self.options.access, self.options);
+            }
+          });
+        }
+      }));
+      tr.push($('<td/>', {
+        'html': self.options.ttn_date
+      }));
+      tr.push($('<td/>', {
+        'html': self.options.shipment_status,
+        'class': 'mayBeClick',
+        click: function() {
+          return echo_message_js("смена статуса отгрузки");
+        }
+      }));
+      tr.push($('<td/>'));
+      console.log(tr);
+      if (rowspan === 0) {
+        tr = $('<tr/>', {
+          'class': 'subRow'
+        }).data(self.options).append(tr);
+      }
+      return tr;
+    };
+
+    skladRow.prototype.init = function(rowspan) {
+      console.log(rowspan);
+      if (rowspan >= 1) {
+        return this.firstRow(rowspan);
+      } else {
+        return this.subRow(rowspan);
+      }
+    };
+
+    return skladRow;
+
+  })();
 
 
   /*
@@ -5037,6 +5092,9 @@
           'width': '100%'
         });
         div.appendTo('body');
+        if ($('#js-main-invoice-table').hasClass('sklad')) {
+          div.addClass('sklad');
+        }
       } else {
         $('#js-main-invoice-table-clone').css({
           'display': 'block'
