@@ -13,7 +13,6 @@
 	 */
 
 	$(document).ready(function(){
-
 		<?php
 			if($Invoice->user['access'] == 7){
 				?>$('#js-main-invoice-table').sklad()<?php

@@ -4206,8 +4206,6 @@ class invoiceTtn
           rowNew = new skladRow(dataFirstRow,@aceess,rowspan)
           firstRow.replaceWith(rowNew)
           new sendAjax("save_shipped_status",{id:data.id,status:dataFirstRow.status})
-        
-
 
     getData:(id)->
       data = []

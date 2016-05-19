@@ -238,7 +238,7 @@
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `status`=?";
 			$query .= " `shipped_date`=NOW()";
-
+			
 			$query .= " WHERE `id`=?";
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$stmt->bind_param('si',$_POST['status'],$_POST['id']) or die($this->mysqli->error);
