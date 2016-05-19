@@ -127,6 +127,7 @@
 			    $query .= ",`position_id` = '".$_POST['positions']."'";
 			    $query .= ",`positions_num` = '".$_POST['position_numbers']."'";
 			    $query .= ",`delivery` = '".$_POST['delivery']."'";
+				$query .= ",`date_shipment` = '".date('Y-m-d',strtotime($_POST['date_shipment']))."'";
 			    $query .= ",`invoice_id` = '".$_POST['invoise_id']."'";
 
 			$message .= '<br>'.$query;
@@ -207,16 +208,16 @@
         	return $name;
         }
 
-        /**
-         * save invoice number	
-         *
-         */
-        protected function confirm_create_bill_AJAX(){
-        	$i = 0;
-        	$query = "UPDATE `".INVOICE_TBL."` SET ";
-        	if(isset($_POST['date'])){
+		/**
+		 * save invoice number
+		 *
+		 */
+		protected function confirm_create_bill_AJAX(){
+			$i = 0;
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			if(isset($_POST['date'])){
 				$query .= (($i>0)?',':'')." `invoice_create_date` = '".date('Y-m-d',strtotime($_POST['date']))."'";$i++;
-        	}
+			}
 			if(isset($_POST['number'])){
 				$query .= (($i>0)?',':'')." `invoice_num` = '".$_POST['number']."'";$i++;
 			}
@@ -227,7 +228,24 @@
 			}else{
 				$this->responseClass->addMessage('Вы не указали данные для сохранения');
 			}
-        }
+		}
+
+		/**
+		 * save status
+		 *
+		 */
+		protected function save_shipped_status_AJAX(){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `status`=?";
+			$query .= " `shipped_date`=NOW()";
+
+			$query .= " WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('si',$_POST['status'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
 
 		protected function getInvoceRow_AJAX(){
 			if (isset($_POST['invoice_num'])){
@@ -328,19 +346,19 @@
 						// Част. отгрузка
 						case 7:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `shipped` <>  `need_shipping` ";
+							$query .= " `status` =  'частично отгружен' ";
 							$w++;
 							break;
 						// Отгрузка
 						case 8:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `shipped` >  0 ";
+							$query .= " `status` =  'отгружен' ";
 							$w++;
 							break;
 						// Закрытые
 						case 9:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `shipped_date` > (NOW() - interval 10 day) AND `flag_calc` > 0 ";
+							$query .= " `shipped_date` > (NOW() - interval 10 day) AND `flag_calc` > 0  AND `status` = 'отгружен'";
 							$w++;
 							break;
 						// все остальные
@@ -392,9 +410,10 @@
 			$query .= ",`".INVOICE_TTN."`.`delivery` ";
 			$query .= ",`".INVOICE_TTN."`.`buch_id` ";
 			$query .= ",`".INVOICE_TTN."`.`buch_name` ";
-			$query .= ",`".INVOICE_TTN."`.`date_shipment` ";
+			$query .= ", DATE_FORMAT(`".INVOICE_TTN."`.`date_shipment`,'%d.%m.%Y') as date_shipment ";
 			$query .= ",`".INVOICE_TTN."`.`shipment_employee`";
 			$query .= ",`".INVOICE_TTN."`.`shipment_employee_id`";
+			$query .= ", DATE_FORMAT(`".INVOICE_TTN."`.`shipment_status_last_edit`,'%d.%m.%Y %H:%i') as shipment_status_last_edit ";
 
 
 			$query .= " FROM `".INVOICE_TBL."`";
@@ -416,6 +435,37 @@
 				$query .= ($w>0?' AND ':' WHERE ');
 				$query .= " `".INVOICE_TBL."`.`invoice_num` = '".$curSearch['invoice_num']."' ";
 				$w++;
+			}else{
+				if (isset($_GET['section'])){
+					switch ((int)$_GET['section']){
+
+						// Част. отгрузка
+						case 7:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `".INVOICE_TBL."`.`status` =  'частично отгружен' ";
+							$w++;
+							break;
+						// Отгрузка
+						case 8:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `".INVOICE_TBL."`.`status` =  'отгружен' ";
+							$w++;
+							break;
+						case 11:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `".INVOICE_TTN."`.`delivery` =  'no_delivery' ";
+							$w++;
+							break;
+						case 12:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `".INVOICE_TTN."`.`delivery` =  'our_delivery' ";
+							$w++;
+							break;
+						// все остальные
+						default:
+							break;
+					}
+				}
 			}
 			$query .= " ORDER BY `".INVOICE_TBL."`.`id` ASC";
 
@@ -599,6 +649,25 @@
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 
 			$stmt->bind_param('ddi',$_POST['price'],$_POST['percent'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+		protected function edit_ttn_status_AJAX(){
+			$query = "UPDATE `" . INVOICE_TTN . "` SET ";
+			$query .= " `shipment_employee`=?";
+			$query .= ", `shipment_employee_id`=?";
+			$query .= ", `shipment_status`=?";
+			$query .= ", `shipment_status_last_edit`= NOW()";
+			$query .= " WHERE `id`=?";
+
+			$user_name = $this->getAuthUserName();
+
+			$this->responseClass->response['data'] = ['when_ho'=>$user_name.'; '.date('d.m.Y H:i',time())];
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('sisi',$user_name,$this->user_id,$_POST['shipment_status'],$_POST['id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
@@ -874,7 +943,7 @@
 			if(count($id_s) == 0){
 				return;
 			}
-			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$w = 1;
 
 			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
@@ -1132,6 +1201,19 @@
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 
 			$stmt->bind_param('sii',$_POST['supplier_name'],$_POST['supplier_id'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+
+		protected  function edit_date_shipment_ttn_AJAX(){
+			$query = "UPDATE `" . INVOICE_TTN . "` SET ";
+			$query .= " `date_shipment`=?";
+			$query .= " WHERE `id`=?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$date = date("Y-m-d",strtotime($_POST['date_shipment']));
+			$stmt->bind_param('si', $date, $_POST['id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();

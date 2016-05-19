@@ -7,7 +7,6 @@
 ###
 
 
-
 ###
 # возвращяет текущую дату в читабельном формате
 ###
@@ -927,7 +926,6 @@ class costsRow
               'val':$(this).html(),
               keyup:()->
                 $(this).val($(this).val().replace(/[^-0-9/.]/gim,''))
-                value = $(this).val()
 
                 per = round_money(Number(_this.options.pay_price)*100/Number($(this).val()))
 
@@ -2613,37 +2611,127 @@ class invoiceTtn
     return
   # ранее созданные ттн
   alreadyWasСreated:()->
-    # console.log 'alreadyWasСreated',@options
     content = $('<div/>',{
-      'class':"ttn--already-was-created"
+      'class': "ttn--already-was-created"
       });
-    # console.log @options.ttn.length
 
     if(@options.ttn && @options.ttn.length > 0)
       content.append($('<div/>',{
         'class':'ttn--already-was-created--head',
         'html':'Ранее оформленные ТТН:'
       }));
+      content.append(tbl = $('<table/>',{
+        'id':'ttn--already-was-created--old-ttn-tbl'
+      }))
 
-      # console.log @options
       for oldTtn in @options.ttn
-        if oldTtn.positions_num != null
-          if oldTtn.positions_num.split(',').length>1
-            end = 'и '
-          else
-            end = 'я '
-          positions = ' позици'+end
-          positions = positions+oldTtn.positions_num
-        else
-          positions = ''
-        number = oldTtn.number
-        if oldTtn.number == null || oldTtn.number == undefined
-          number = '<b>не выставлен</b>'
-        content.append($('<div/>',{
-          'html': '№'+number+' от '+oldTtn.date+positions
-          }))
-      # console.log(654)
-      #
+        tbl.append(@createTtnDiv(oldTtn))
+
+  # создаёт строки ранее созданных ттн
+  createTtnDiv:(oldTtn)->
+    self = @
+    tr = $('<tr/>')
+
+    if oldTtn.positions_num != null
+      if oldTtn.positions_num.split(',').length>1
+        end = 'и '
+      else
+        end = 'я '
+      positions = ' позици'+end
+      positions = positions+oldTtn.positions_num
+    else
+      positions = ''
+
+    number = oldTtn.number
+    if oldTtn.number == null || oldTtn.number == undefined
+      number = '<b>не выставлен</b>'
+    tr.append($('<td/>',{
+      'html': '№'+number
+    }))
+
+    tr.append($('<td/>',{
+      'html': ' от '+oldTtn.date
+    }))
+    tr.append($('<td/>',{
+      'html': positions
+    }))
+    if oldTtn.delivery == 'our_delivery'
+      delivery = 'Доставка'
+    else
+      delivery = 'Самовывоз'
+    tr.append($('<td/>',{
+      'html': delivery,
+      'class':oldTtn.delivery
+    }))
+
+  
+
+    tr.append(date_shipment_td = $('<td/>',{
+      'html': oldTtn.date_shipment
+    }))
+    if @access == 1
+      tr.addClass('editDate')
+      tr.click(()->
+        content = $('<div/>').append($('<div/>',{
+          'html':'Укажите приблизительную дату отгрузки/доставки',
+
+        })).append($('<div/>',{
+          'css':{
+            'padding':'5px',
+            'margin': '10px 0 0 0'
+          }
+        }).append(date_shipment=$('<input/>',{
+          'val':getDateNow(),
+          'css':{
+            'padding':'5px'
+          }
+        })))
+        date_shipment.datetimepicker({
+          minDate: new Date(),
+          timepicker:false,
+          dayOfWeekStart: 1,
+          onSelectDate:(ct,$i)->
+            $i.blur();
+
+          onGenerate:( ct )->
+            $(this).find('.xdsoft_date.xdsoft_weekend')
+            .addClass('xdsoft_disabled');
+            $(this).find('.xdsoft_date');
+
+          closeOnDateSelect:true,
+          format:'d.m.Y'
+        }).blur();
+
+        wDate = new modalWindow({
+          html:content,
+          title:'Укажите дату',
+          buttons:[{
+            text: 'Отмена',
+            class:  'button_yes_or_no no',
+            click: ()->
+              $(wDate.winDiv).dialog('close').dialog('destroy').remove()
+          },{
+            text: 'OK',
+            class:  'button_yes_or_no yes',
+            click:()->
+              $(wDate.winDiv).dialog('close').dialog('destroy').remove()
+              # отправляем запрос
+              new sendAjax 'edit_date_shipment_ttn',{id:oldTtn.id,date_shipment:date_shipment.val()}, (response)->
+                # при положительном ответе
+                oldTtn.date_shipment = date_shipment.val()
+                tr.replaceWith(self.createTtnDiv(oldTtn))
+                # перезагрузка строки счёта
+                # $('#js-main-invoice-table').invoice('reflesh',oldTtn.invoice_id)
+          }]
+        },{single:false})
+      )
+    
+    tr
+
+
+
+
+
   ###
   # выбор способа доставки
   ###
@@ -3188,6 +3276,7 @@ class invoiceTtn
         )
   # проверка и поправка состояния главного чекбокса
   checkMainCheckbox:()->
+
     main_check = @contentTbl.find('th input');
     # отработка главного checkbox
     if @contentTbl.find('td input:checked').length == @contentTbl.find('td input').length
@@ -3203,8 +3292,8 @@ class invoiceTtn
   # запрос новой ттн (нажатие на кнопку запросить)
   # менеджер хочет создать новую ттн
   # в базу заводится строка ттн
-  queryNewTtn:(obj,data_row)->
-    _this = @
+  queryNewTtn:(obj,data_row,_this)->
+    self = @
     console.log obj
     options = []
     position_numbers = []
@@ -3233,22 +3322,69 @@ class invoiceTtn
       echo_message_js('Выберите способ доставки выбранных позиций.','error_message')
       return false
 
-    # отправляем запрос
-    new sendAjax 'create_new_ttn',{invoise_id:@options.id,positions:options.join(','),position_numbers:position_numbers.join(','), delivery:delivery.join('')}, (response)->
-      # при положительном ответе
-      _this.destroy()
-      # сервер должен вернуть информацию по новой ТТН
-      if(response.data)
-        # если успешно вернул - записываем новую информацию в объект
-        data_row.ttn[data_row.ttn.length] = new ttnObj(response.data);
-        # обновляем информацию в DOM
-        $('#js-main-invoice-table').invoice('reflesh',data_row.id)
-        # console.log
+    content = $('<div/>').append($('<div/>',{
+      'html':'Укажите приблизительную дату отгрузки/доставки',
 
-      if(delivery.join('') == 'our_delivery')
-        new modalConfirm({html:'Открыть карту курьера в новой вкладке?'},()->
-          window.open(window.location.origin+'/dostavka_new/', '_blank');
-          )
+    })).append($('<div/>',{
+      'css':{
+        'padding':'5px',
+        'margin': '10px 0 0 0'
+      }
+    }).append(date_shipment=$('<input/>',{
+      'val':getDateNow(),
+      'css':{
+        'padding':'5px'
+      }
+    })))
+    date_shipment.datetimepicker({
+      minDate: new Date(),
+      timepicker:false,
+      dayOfWeekStart: 1,
+      onSelectDate:(ct,$i)->
+        $i.blur();
+
+      onGenerate:( ct )->
+        $(this).find('.xdsoft_date.xdsoft_weekend')
+        .addClass('xdsoft_disabled');
+        $(this).find('.xdsoft_date');
+
+      closeOnDateSelect:true,
+      format:'d.m.Y'
+    }).blur();
+
+    wDate = new modalWindow({
+      html:content,
+      title:'Укажите дату',
+      buttons:[{
+        text: 'Отмена',
+        class:  'button_yes_or_no no',
+        click: ()->
+          $(wDate.winDiv).dialog('close').dialog('destroy').remove()
+      },{
+        text: 'OK',
+        class:  'button_yes_or_no yes',
+        click:()->
+          $(wDate.winDiv).dialog('close').dialog('destroy').remove()
+          # отправляем запрос
+          new sendAjax 'create_new_ttn',{invoise_id:self.options.id,positions:options.join(','),position_numbers:position_numbers.join(','),date_shipment:date_shipment.val(), delivery:delivery.join('')}, (response)->
+            # при положительном ответе
+            self.destroy()
+            # сервер должен вернуть информацию по новой ТТН
+            if(response.data)
+              # если успешно вернул - записываем новую информацию в объект
+              data_row.ttn[data_row.ttn.length] = new ttnObj(response.data);
+              # обновляем информацию в DOM
+              $('#js-main-invoice-table').invoice('reflesh',data_row.id)
+            # console.log
+
+            if(delivery.join('') == 'our_delivery')
+              new modalConfirm({html:'Открыть карту курьера в новой вкладке?'},()->
+                window.open(window.location.origin+'/dostavka_new/dostavka_podrobno.php?date='+date_shipment.val(), '_blank');
+              )
+      }]
+    },{single:false})
+    
+
 
         # Вы уверены, что хотите установить флаг рекламации?
   # убиваем окно
@@ -3938,7 +4074,7 @@ class invoiceTtn
       td.addClass('checked') if Number row.flag_spf_return>0
       tr.append(td)
       # статус
-      td = $('<td/>')
+      td = $('<td/>',{'html':row.status})
       tr.append(td)
       # диндин
       td = $('<td/>')
@@ -4009,14 +4145,80 @@ class invoiceTtn
 
     # обновление одной строки
     reflesh:(id)->
-      if typeof id is 'string'
-        if $(@$el).find('#tt_'+id).length >0
-          data = $(@$el).find('#tt_'+id).data()
-          return $(@$el).find('#tt_'+id).replaceWith(@createRow(data))
+      if id.ttn_id != undefined
+        data = id
+        id = data.ttn_id
+        console.log "принят объект ",data.shipment_status
       else
-        if $(@$el).find('#tt_'+id.id).length >0
-          data = $(@$el).find('#tt_'+id.id).data(id)
-          return $(@$el).find('#tt_'+id.id).replaceWith(@createRow(id))
+        console.log "принят id "
+        data = $(@$el).find('#sklad_row_'+id).data()
+
+      if $(@$el).find('#sklad_row_'+id).length >0
+        if $(@$el).find('#sklad_row_'+id).hasClass('subRow')
+          rowspan = 0
+        else
+          rowspan = Number($(@$el).find('#sklad_row_'+id+' td').eq(1).attr('rowspan'))
+
+        console.log "Новая информация по строке: ->>  ",data
+        $(@$el).find('#sklad_row_'+id).replaceWith(new skladRow(data,@aceess,rowspan))
+        #проверка статуса
+        @checkGlobalStatus(data)
+
+
+
+    checkGlobalStatus:(data)->
+      if $(@$el).find('#sklad_row_'+data.ttn_id).length >0
+        echo_message_js "метод checkGlobalStatus >>> "
+        row = $(@$el).find('#sklad_row_'+data.ttn_id)
+        while row.hasClass('subRow')
+          row = row.prev()
+
+        firstRow = row
+        console.log firstRow
+
+
+        dataFirstRow = firstRow.data()
+        rowspan = 1
+
+        shipment_status = Number(dataFirstRow.shipment_status)
+
+        console.log "Статус отгрузки "+rowspan+" строки : ",shipment_status
+        # подсчёт строк
+        while row.next() != undefined and row.next().hasClass('subRow')
+          row = row.next()
+          rData = row.data()
+          shipment_status += Number(rData.shipment_status)
+          rowspan++
+          console.log "Статус отгрузки "+rowspan+" строки : ",shipment_status
+
+
+        console.log '>//> ',shipment_status , rowspan
+        if shipment_status == 0
+          status = 'не отгружен'
+        else if shipment_status != rowspan
+          status = 'частично отгружен'
+        else
+          status = 'отгружен'
+          
+        if dataFirstRow.status != status
+          dataFirstRow.status = status
+#
+          rowNew = new skladRow(dataFirstRow,@aceess,rowspan)
+          firstRow.replaceWith(rowNew)
+          new sendAjax("save_shipped_status",{id:data.id,status:dataFirstRow.status})
+        
+
+
+    getData:(id)->
+      data = []
+      if typeof id is 'string'
+        if $(@$el).find('#sklad_row_'+id).length >0
+          data = $(@$el).find('#sklad_row_'+id).data()
+
+      else
+        if $(@$el).find('#sklad_row_'+id.id).length >0
+          data = $(@$el).find('#sklad_row_'+id.id).data(id)
+      return data
     addMenu:()->
       _this = @
       @tabMenu = $('#js-menu-invoice ul')
@@ -4140,7 +4342,6 @@ class invoiceTtn
         rowspan = 0
         if id != @options.data[i].invoice_id
           rowspan = 1
-          console.log "id != @options.data.id",id, @options.data[i].invoice_id
           id = @options.data[i].invoice_id
           k = i + 1
           
@@ -4148,7 +4349,6 @@ class invoiceTtn
             rowspan++
             k++
 
-        console.log "rowspan",rowspan
         @$el.find('tbody').append(new skladRow(@options.data[i],@access,rowspan))
 
 
@@ -4328,10 +4528,9 @@ class skladRow
     return @init(rowspan)
   firstRow:(rowspan)->
     self = @
-    console.log 654
     tr = $('<tr/>',{
       'class':'firstRow',
-      id:'sklad_row_'+self.options.invoice_id
+      id:'sklad_row_'+self.options.ttn_id
     }).data(self.options);
 
 
@@ -4391,7 +4590,10 @@ class skladRow
     tr.append(self.subRow(rowspan))
     tr.append($('<td/>',{
       'rowspan':rowspan,
-      'html':self.options.status
+      'html':self.options.status,
+        # 'click':()->
+        # echo_message_js "обновление TESt = "+self.options.id
+
     }))
 
 
@@ -4414,35 +4616,78 @@ class skladRow
     # № ттн
     tr.push($('<td/>',{
       'html':self.options.number,
+      'class':'mayBeClick',
       click:()->
         # окно Запрос ТТН
         t = $(this)
         new sendAjax('get_ttn',{'id':self.options.ttn_id},(response)->
           # создаем экземпляр окна ттн
+
           new invoiceTtn(t, self.options, response.data, self.options.access ,self.options) if response.data != undefined
         )
     }))
     # дата из ттн
     tr.push($('<td/>',{'html':self.options.ttn_date}))
     # статус ттн
-    tr.push($('<td/>',{
-      'html':self.options.shipment_status,
+    status_str = 'Отгружено'
+    if Number(self.options.shipment_status) == 0
+      status_str = 'Не отгружено'
+    tr.push(status_shipment = $('<td/>',{
+      'html': status_str,
       'class':'mayBeClick',
       click:()->
         echo_message_js "смена статуса отгрузки"
-    }))
-    # кем выставлен статус отгрузки
-    tr.push($('<td/>'))
 
-    console.log tr
+    }))
+
+
+    # кем выставлен статус отгрузки
+    tr.push(when_ho = $('<td/>'))
+    if Number(self.options.shipment_employee_id) > 0
+      when_ho.html(self.options.shipment_employee+'; '+self.options.shipment_status_last_edit)
+    button2 = []
+    btn1 = {
+      'name':'Отгружено',
+      'class':'',
+      click:(e)->
+        self.options.shipment_status = 1
+        status_shipment.html($(this).html())
+
+        new sendAjax('edit_ttn_status',{'id':self.options.ttn_id,shipment_status:self.options.shipment_status},(response)->
+          when_ho.html(response.data.when_ho)
+          console.log "отправлен объект ",self.options.shipment_status
+          $('#js-main-invoice-table').sklad('reflesh',self.options)
+        )
+    }
+    btn2 = {
+      'name': 'Не отгружено',
+      'class': '',
+      click: (e)->
+        self.options.shipment_status = 0
+        status_shipment.html($(this).html())
+        new sendAjax('edit_ttn_status',{'id':self.options.ttn_id,shipment_status:self.options.shipment_status},(response)->
+          when_ho.html(response.data.when_ho)
+          
+          $('#js-main-invoice-table').sklad('reflesh',self.options)
+        )
+    }
+
+    button2.push(btn1)
+    button2.push(btn2)
+    
+    status_shipment.menuRightClick({'buttons':button2})
+
+
+
+#    console.log tr
     # возвращаем либо строку дибо td
     if rowspan == 0
       tr = $('<tr/>',{
-        'class':'subRow'
+        'class':'subRow',
+        id:'sklad_row_'+self.options.ttn_id
       }).data(self.options).append(tr);
     return tr
   init:(rowspan)->
-    console.log rowspan
     if rowspan >=1
       return @firstRow(rowspan)
     else
@@ -4512,4 +4757,3 @@ $(window).scroll ()->
 
 $(document).on 'click','#invoice-button-top', (event) ->
   $("html, body").animate({ scrollTop: 0 }, 600);
-

@@ -194,7 +194,36 @@
 	width: 50px;
 	padding-right: 15px;
 }
-/*исконка флаг*/
+#ttn--already-was-created--old-ttn-tbl{
+	border-collapse: collapse;
+}
+#ttn--already-was-created--old-ttn-tbl tr td {
+	padding: 3px 19px 3px 3px;
+	border: none;
+}
+#ttn--already-was-created--old-ttn-tbl tr td.our_delivery{
+	background-image: url(../images/img_design/our_delivery.png);
+	padding-left: 34px;
+	background-position: 0px 4px;
+	background-size: 35px;
+	background-repeat: no-repeat;
+	font-size: 12px;
+}
+#ttn--already-was-created--old-ttn-tbl tr td.no_delivery{
+	 background-image: url(../images/img_design/no_delivery.png);
+	 padding-left: 34px;
+	 background-position: 0px 4px;
+	 background-size: 35px;
+	 background-repeat: no-repeat;
+	font-size: 12px;
+	color: #aaa;
+ }
+#ttn--already-was-created--old-ttn-tbl tr.editDate:hover td{
+	cursor: pointer;
+	background-color: #f1f1f1;
+
+}
+	/*исконка флаг*/
 #js-main-invoice-table thead tr:nth-of-type(1) th:nth-of-type(5).flag,
 #js-main-invoice-table-clone thead tr:nth-of-type(1) th:nth-of-type(5).flag{
 	background-image:url(../images/img_design/icon_invoce_1.png);

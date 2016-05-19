@@ -1111,9 +1111,8 @@
                 'type': 'text',
                 'val': $(this).html(),
                 keyup: function() {
-                  var per, value;
+                  var per;
                   $(this).val($(this).val().replace(/[^-0-9\/.]/gim, ''));
-                  value = $(this).val();
                   per = round_money(Number(_this.options.pay_price) * 100 / Number($(this).val()));
                   if (Number(_this.options.pay_price) === 0) {
                     per = round_money(0);
@@ -3046,7 +3045,7 @@
     };
 
     invoiceTtn.prototype.alreadyWasСreated = function() {
-      var content, end, j, len1, number, oldTtn, positions, ref, results;
+      var content, j, len1, oldTtn, ref, results, tbl;
       content = $('<div/>', {
         'class': "ttn--already-was-created"
       });
@@ -3055,31 +3054,121 @@
           'class': 'ttn--already-was-created--head',
           'html': 'Ранее оформленные ТТН:'
         }));
+        content.append(tbl = $('<table/>', {
+          'id': 'ttn--already-was-created--old-ttn-tbl'
+        }));
         ref = this.options.ttn;
         results = [];
         for (j = 0, len1 = ref.length; j < len1; j++) {
           oldTtn = ref[j];
-          if (oldTtn.positions_num !== null) {
-            if (oldTtn.positions_num.split(',').length > 1) {
-              end = 'и ';
-            } else {
-              end = 'я ';
-            }
-            positions = ' позици' + end;
-            positions = positions + oldTtn.positions_num;
-          } else {
-            positions = '';
-          }
-          number = oldTtn.number;
-          if (oldTtn.number === null || oldTtn.number === void 0) {
-            number = '<b>не выставлен</b>';
-          }
-          results.push(content.append($('<div/>', {
-            'html': '№' + number + ' от ' + oldTtn.date + positions
-          })));
+          results.push(tbl.append(this.createTtnDiv(oldTtn)));
         }
         return results;
       }
+    };
+
+    invoiceTtn.prototype.createTtnDiv = function(oldTtn) {
+      var date_shipment_td, delivery, end, number, positions, self, tr;
+      self = this;
+      tr = $('<tr/>');
+      if (oldTtn.positions_num !== null) {
+        if (oldTtn.positions_num.split(',').length > 1) {
+          end = 'и ';
+        } else {
+          end = 'я ';
+        }
+        positions = ' позици' + end;
+        positions = positions + oldTtn.positions_num;
+      } else {
+        positions = '';
+      }
+      number = oldTtn.number;
+      if (oldTtn.number === null || oldTtn.number === void 0) {
+        number = '<b>не выставлен</b>';
+      }
+      tr.append($('<td/>', {
+        'html': '№' + number
+      }));
+      tr.append($('<td/>', {
+        'html': ' от ' + oldTtn.date
+      }));
+      tr.append($('<td/>', {
+        'html': positions
+      }));
+      if (oldTtn.delivery === 'our_delivery') {
+        delivery = 'Доставка';
+      } else {
+        delivery = 'Самовывоз';
+      }
+      tr.append($('<td/>', {
+        'html': delivery,
+        'class': oldTtn.delivery
+      }));
+      tr.append(date_shipment_td = $('<td/>', {
+        'html': oldTtn.date_shipment
+      }));
+      if (this.access === 1) {
+        tr.addClass('editDate');
+        tr.click(function() {
+          var content, date_shipment, wDate;
+          content = $('<div/>').append($('<div/>', {
+            'html': 'Укажите приблизительную дату отгрузки/доставки'
+          })).append($('<div/>', {
+            'css': {
+              'padding': '5px',
+              'margin': '10px 0 0 0'
+            }
+          }).append(date_shipment = $('<input/>', {
+            'val': getDateNow(),
+            'css': {
+              'padding': '5px'
+            }
+          })));
+          date_shipment.datetimepicker({
+            minDate: new Date(),
+            timepicker: false,
+            dayOfWeekStart: 1,
+            onSelectDate: function(ct, $i) {
+              return $i.blur();
+            },
+            onGenerate: function(ct) {
+              $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+              return $(this).find('.xdsoft_date');
+            },
+            closeOnDateSelect: true,
+            format: 'd.m.Y'
+          }).blur();
+          return wDate = new modalWindow({
+            html: content,
+            title: 'Укажите дату',
+            buttons: [
+              {
+                text: 'Отмена',
+                "class": 'button_yes_or_no no',
+                click: function() {
+                  return $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+                }
+              }, {
+                text: 'OK',
+                "class": 'button_yes_or_no yes',
+                click: function() {
+                  $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+                  return new sendAjax('edit_date_shipment_ttn', {
+                    id: oldTtn.id,
+                    date_shipment: date_shipment.val()
+                  }, function(response) {
+                    oldTtn.date_shipment = date_shipment.val();
+                    return tr.replaceWith(self.createTtnDiv(oldTtn));
+                  });
+                }
+              }
+            ]
+          }, {
+            single: false
+          });
+        });
+      }
+      return tr;
     };
 
 
@@ -3679,9 +3768,9 @@
       }
     };
 
-    invoiceTtn.prototype.queryNewTtn = function(obj, data_row) {
-      var _this, delivery, options, position_numbers;
-      _this = this;
+    invoiceTtn.prototype.queryNewTtn = function(obj, data_row, _this) {
+      var content, date_shipment, delivery, options, position_numbers, self, wDate;
+      self = this;
       console.log(obj);
       options = [];
       position_numbers = [];
@@ -3705,24 +3794,73 @@
         echo_message_js('Выберите способ доставки выбранных позиций.', 'error_message');
         return false;
       }
-      return new sendAjax('create_new_ttn', {
-        invoise_id: this.options.id,
-        positions: options.join(','),
-        position_numbers: position_numbers.join(','),
-        delivery: delivery.join('')
-      }, function(response) {
-        _this.destroy();
-        if (response.data) {
-          data_row.ttn[data_row.ttn.length] = new ttnObj(response.data);
-          $('#js-main-invoice-table').invoice('reflesh', data_row.id);
+      content = $('<div/>').append($('<div/>', {
+        'html': 'Укажите приблизительную дату отгрузки/доставки'
+      })).append($('<div/>', {
+        'css': {
+          'padding': '5px',
+          'margin': '10px 0 0 0'
         }
-        if (delivery.join('') === 'our_delivery') {
-          return new modalConfirm({
-            html: 'Открыть карту курьера в новой вкладке?'
-          }, function() {
-            return window.open(window.location.origin + '/dostavka_new/', '_blank');
-          });
+      }).append(date_shipment = $('<input/>', {
+        'val': getDateNow(),
+        'css': {
+          'padding': '5px'
         }
+      })));
+      date_shipment.datetimepicker({
+        minDate: new Date(),
+        timepicker: false,
+        dayOfWeekStart: 1,
+        onSelectDate: function(ct, $i) {
+          return $i.blur();
+        },
+        onGenerate: function(ct) {
+          $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+          return $(this).find('.xdsoft_date');
+        },
+        closeOnDateSelect: true,
+        format: 'd.m.Y'
+      }).blur();
+      return wDate = new modalWindow({
+        html: content,
+        title: 'Укажите дату',
+        buttons: [
+          {
+            text: 'Отмена',
+            "class": 'button_yes_or_no no',
+            click: function() {
+              return $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+            }
+          }, {
+            text: 'OK',
+            "class": 'button_yes_or_no yes',
+            click: function() {
+              $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+              return new sendAjax('create_new_ttn', {
+                invoise_id: self.options.id,
+                positions: options.join(','),
+                position_numbers: position_numbers.join(','),
+                date_shipment: date_shipment.val(),
+                delivery: delivery.join('')
+              }, function(response) {
+                self.destroy();
+                if (response.data) {
+                  data_row.ttn[data_row.ttn.length] = new ttnObj(response.data);
+                  $('#js-main-invoice-table').invoice('reflesh', data_row.id);
+                }
+                if (delivery.join('') === 'our_delivery') {
+                  return new modalConfirm({
+                    html: 'Открыть карту курьера в новой вкладке?'
+                  }, function() {
+                    return window.open(window.location.origin + '/dostavka_new/dostavka_podrobno.php?date=' + date_shipment.val(), '_blank');
+                  });
+                }
+              });
+            }
+          }
+        ]
+      }, {
+        single: false
       });
     };
 
@@ -4485,7 +4623,9 @@
           td.addClass('checked');
         }
         tr.append(td);
-        td = $('<td/>');
+        td = $('<td/>', {
+          'html': row.status
+        });
         tr.append(td);
         td = $('<td/>');
         tr.append(td);
@@ -4568,18 +4708,81 @@
       }
 
       sklad.prototype.reflesh = function(id) {
-        var data;
-        if (typeof id === 'string') {
-          if ($(this.$el).find('#tt_' + id).length > 0) {
-            data = $(this.$el).find('#tt_' + id).data();
-            return $(this.$el).find('#tt_' + id).replaceWith(this.createRow(data));
-          }
+        var data, rowspan;
+        if (id.ttn_id !== void 0) {
+          data = id;
+          id = data.ttn_id;
+          console.log("принят объект ", data.shipment_status);
         } else {
-          if ($(this.$el).find('#tt_' + id.id).length > 0) {
-            data = $(this.$el).find('#tt_' + id.id).data(id);
-            return $(this.$el).find('#tt_' + id.id).replaceWith(this.createRow(id));
+          console.log("принят id ");
+          data = $(this.$el).find('#sklad_row_' + id).data();
+        }
+        if ($(this.$el).find('#sklad_row_' + id).length > 0) {
+          if ($(this.$el).find('#sklad_row_' + id).hasClass('subRow')) {
+            rowspan = 0;
+          } else {
+            rowspan = Number($(this.$el).find('#sklad_row_' + id + ' td').eq(1).attr('rowspan'));
+          }
+          console.log("Новая информация по строке: ->>  ", data);
+          $(this.$el).find('#sklad_row_' + id).replaceWith(new skladRow(data, this.aceess, rowspan));
+          return this.checkGlobalStatus(data);
+        }
+      };
+
+      sklad.prototype.checkGlobalStatus = function(data) {
+        var dataFirstRow, firstRow, rData, row, rowNew, rowspan, shipment_status, status;
+        if ($(this.$el).find('#sklad_row_' + data.ttn_id).length > 0) {
+          echo_message_js("метод checkGlobalStatus >>> ");
+          row = $(this.$el).find('#sklad_row_' + data.ttn_id);
+          while (row.hasClass('subRow')) {
+            row = row.prev();
+          }
+          firstRow = row;
+          console.log(firstRow);
+          dataFirstRow = firstRow.data();
+          rowspan = 1;
+          shipment_status = Number(dataFirstRow.shipment_status);
+          console.log("Статус отгрузки " + rowspan + " строки : ", shipment_status);
+          while (row.next() !== void 0 && row.next().hasClass('subRow')) {
+            row = row.next();
+            rData = row.data();
+            shipment_status += Number(rData.shipment_status);
+            rowspan++;
+            console.log("Статус отгрузки " + rowspan + " строки : ", shipment_status);
+          }
+          console.log('>//> ', shipment_status, rowspan);
+          if (shipment_status === 0) {
+            status = 'не отгружен';
+          } else if (shipment_status !== rowspan) {
+            status = 'частично отгружен';
+          } else {
+            status = 'отгружен';
+          }
+          if (dataFirstRow.status !== status) {
+            dataFirstRow.status = status;
+            rowNew = new skladRow(dataFirstRow, this.aceess, rowspan);
+            firstRow.replaceWith(rowNew);
+            return new sendAjax("save_shipped_status", {
+              id: data.id,
+              status: dataFirstRow.status
+            });
           }
         }
+      };
+
+      sklad.prototype.getData = function(id) {
+        var data;
+        data = [];
+        if (typeof id === 'string') {
+          if ($(this.$el).find('#sklad_row_' + id).length > 0) {
+            data = $(this.$el).find('#sklad_row_' + id).data();
+          }
+        } else {
+          if ($(this.$el).find('#sklad_row_' + id.id).length > 0) {
+            data = $(this.$el).find('#sklad_row_' + id.id).data(id);
+          }
+        }
+        return data;
       };
 
       sklad.prototype.addMenu = function() {
@@ -4725,7 +4928,6 @@
           rowspan = 0;
           if (id !== this.options.data[i].invoice_id) {
             rowspan = 1;
-            console.log("id != @options.data.id", id, this.options.data[i].invoice_id);
             id = this.options.data[i].invoice_id;
             k = i + 1;
             while (this.options.data[k] !== void 0 && this.options.data[k].invoice_id === id) {
@@ -4733,7 +4935,6 @@
               k++;
             }
           }
-          console.log("rowspan", rowspan);
           this.$el.find('tbody').append(new skladRow(this.options.data[i], this.access, rowspan));
         }
 
@@ -4932,10 +5133,9 @@
     skladRow.prototype.firstRow = function(rowspan) {
       var doc_type, self, td, tr;
       self = this;
-      console.log(654);
       tr = $('<tr/>', {
         'class': 'firstRow',
-        id: 'sklad_row_' + self.options.invoice_id
+        id: 'sklad_row_' + self.options.ttn_id
       }).data(self.options);
       if (self.options.doc_type === 'spec') {
         self.options.spf_num = self.options.doc_num;
@@ -4990,7 +5190,7 @@
     };
 
     skladRow.prototype.subRow = function(rowspan) {
-      var delivery_td, self, tr;
+      var btn1, btn2, button2, delivery_td, self, status_shipment, status_str, tr, when_ho;
       self = this;
       tr = [];
       tr.push(delivery_td = $('<td/>'));
@@ -5004,6 +5204,7 @@
       }));
       tr.push($('<td/>', {
         'html': self.options.number,
+        'class': 'mayBeClick',
         click: function() {
           var t;
           t = $(this);
@@ -5019,25 +5220,68 @@
       tr.push($('<td/>', {
         'html': self.options.ttn_date
       }));
-      tr.push($('<td/>', {
-        'html': self.options.shipment_status,
+      status_str = 'Отгружено';
+      if (Number(self.options.shipment_status) === 0) {
+        status_str = 'Не отгружено';
+      }
+      tr.push(status_shipment = $('<td/>', {
+        'html': status_str,
         'class': 'mayBeClick',
         click: function() {
           return echo_message_js("смена статуса отгрузки");
         }
       }));
-      tr.push($('<td/>'));
-      console.log(tr);
+      tr.push(when_ho = $('<td/>'));
+      if (Number(self.options.shipment_employee_id) > 0) {
+        when_ho.html(self.options.shipment_employee + '; ' + self.options.shipment_status_last_edit);
+      }
+      button2 = [];
+      btn1 = {
+        'name': 'Отгружено',
+        'class': '',
+        click: function(e) {
+          self.options.shipment_status = 1;
+          status_shipment.html($(this).html());
+          return new sendAjax('edit_ttn_status', {
+            'id': self.options.ttn_id,
+            shipment_status: self.options.shipment_status
+          }, function(response) {
+            when_ho.html(response.data.when_ho);
+            console.log("отправлен объект ", self.options.shipment_status);
+            return $('#js-main-invoice-table').sklad('reflesh', self.options);
+          });
+        }
+      };
+      btn2 = {
+        'name': 'Не отгружено',
+        'class': '',
+        click: function(e) {
+          self.options.shipment_status = 0;
+          status_shipment.html($(this).html());
+          return new sendAjax('edit_ttn_status', {
+            'id': self.options.ttn_id,
+            shipment_status: self.options.shipment_status
+          }, function(response) {
+            when_ho.html(response.data.when_ho);
+            return $('#js-main-invoice-table').sklad('reflesh', self.options);
+          });
+        }
+      };
+      button2.push(btn1);
+      button2.push(btn2);
+      status_shipment.menuRightClick({
+        'buttons': button2
+      });
       if (rowspan === 0) {
         tr = $('<tr/>', {
-          'class': 'subRow'
+          'class': 'subRow',
+          id: 'sklad_row_' + self.options.ttn_id
         }).data(self.options).append(tr);
       }
       return tr;
     };
 
     skladRow.prototype.init = function(rowspan) {
-      console.log(rowspan);
       if (rowspan >= 1) {
         return this.firstRow(rowspan);
       } else {
