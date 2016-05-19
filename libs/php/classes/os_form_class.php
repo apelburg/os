@@ -1015,7 +1015,7 @@ PS было бы неплохо взять взять это за правило
                // поиск артикула
                private function search_articule_Database($art){
                     global $mysqli;
-                    $query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".trim($art)."%';";
+                    $query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".trim($art)."%' AND `deleted` <> 1;";
                     $arr = array();
                     $result = $mysqli->query($query) or die($mysqli->error);
                     if($result->num_rows > 0){
