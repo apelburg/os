@@ -8,7 +8,9 @@
 
 	$quick_button = '<div class="quick_button_div"  id="quick_button_div" style="background:none"></div>';
 
+//	echo 'test';
 	include_once './libs/php/classes/invoice.class.php';
+//	echo 'test';
 	$Invoice = new Invoice();
 
 

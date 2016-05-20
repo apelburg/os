@@ -155,6 +155,7 @@
 	$ACCESS_SHABLON[2] = array(
 						'agreement'=> array('access'=> true),
 						'invoice'=> array('access'=> true),
+						'cabinet'=> array('access'=> false),
 				        'clients'=> array(
 							'access'=> true,
 							'full_clients_delete'=> true,

@@ -51,8 +51,10 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
         <tr>
             <td>
                 <div>
-                    <?php 
-                        echo get_worked_link_for_cabinet();
+                    <?php
+                        if(@$ACCESS['cabinet']['access']){
+                            echo get_worked_link_for_cabinet();
+                        }
                     ?>
 
                     <?php if(@$ACCESS['invoice']['access'] && $_SESSION['access']['access'] == 1){ ?>

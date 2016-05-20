@@ -1881,7 +1881,7 @@ class Client extends aplStdAJAXMethod{
 		include './skins/tpl/clients/client_list/condensed_information_on_the_client.tpl';
 		
 		if($template == 'default'){
-			include './skins/tpl/clients/client_list/default_menu.tpl';	
+			include './skins/tpl/clients/client_list/default_menu.tpl';
 		}
 		
 		return;
