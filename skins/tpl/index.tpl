@@ -54,35 +54,24 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                     <?php 
                         echo get_worked_link_for_cabinet();
                     ?>
+
+                    <?php if(@$ACCESS['invoice']['access']){ ?>
                     <a href="?page=invoice&section=1" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
+                    <?php } ?>
+                    <?php if(@$ACCESS['clients']['access']){ ?>
+                        <a href="?page=clients&section=clients_list" class="<?php if($page=='clients')echo'selected'; ?>">Клиенты</a>
+                    <?php } ?>
+                    <?php if(@$ACCESS['suppliers']['access']){ ?>
+                        <a href="?page=suppliers&section=suppliers_list" class="<?php if($page=='suppliers')echo'selected'; ?>">Поставщики</a>
+                    <?php } ?>
 
-                    <a href="?page=clients&section=clients_list" class="<?php if($page=='clients')echo'selected'; ?>">Клиенты</a>
-                
-                    <a href="?page=suppliers&section=suppliers_list" class="<?php if($page=='suppliers')echo'selected'; ?>">Поставщики</a>
-                
+                    <?php if(@$ACCESS['planner']['access']){ ?>
                     <a href="?page=planner" class="<?php if($page=='planner')echo'selected'; ?>">Планы</a>
-                
-                    <!-- <a href="?page=orders" class="<?php if($page=='orders')echo'selected'; ?>">Заказы</a>
-                
-                    <a href="?page=documents" class="<?php if($page=='documents')echo'selected'; ?>">Документы</a>-->
+                    <?php } ?>
 
-                
-                    <!--<a href="?page=samples&sample_page=start" class="<?php if($page=='samples')echo'selected'; ?>">Образцы</a>
-                
-                    <a href="?page=delivery" class="<?php if($page=='delivery')echo'selected'; ?>">Доставка</a>
-                
-                    <a href="?page=design" class="<?php if($page=='design')echo'selected'; ?>">Дизайн</a>
-                
-                    <a href="?page=empty2" class="<?php if($page=='empty2')echo'selected'; ?>">Производство</a>
-                
-                    <a href="?page=empty3" class="<?php if($page=='empty3')echo'selected'; ?>">Уведомления</a>-->
-
-                   <!--  <a href="?page=cabinet&section=requests&subsection=no_worcked" class="<?php //if($page=='cabinet')echo'selected'; ?>">Кабинет</a> -->
-
-                   
-                   <?php if(@$ACCESS['admin']['access']){ ?> 
-                       <a href="?page=admin" class="<?php if($page=='admin')echo'selected'; ?>">Админка</a>
-                   <?php } ?>
+                    <?php if(@$ACCESS['admin']['access']){ ?>
+                        <a href="?page=admin" class="<?php if($page=='admin')echo'selected'; ?>">Админка</a>
+                    <?php } ?>
                     <!--<a href="?page=_test_rt" class="<?php if($page=='empty4')echo'selected'; ?>">test_rt</a>-->
                 </div>
             </td>
@@ -127,9 +116,8 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
 </div>
 <!-- Планнер (dialog_window_minimized_container) -->
 <?php 
-if(isset($_SESSION['access']['user_id'])){ echo Planner::$warnings_container; }
-?> 
-
+    if(isset($_SESSION['access']['user_id'])){ echo Planner::$warnings_container; }
+?>
 <!-- / Планнер -->  
 <!--<div style="position:absolute;right:0px;bottom:0px;"><a href="#" onclick="alert(error_report);return false;">ошибки</a></div>-->
 </body>

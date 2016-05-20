@@ -39,7 +39,8 @@ function timing_save_input(fancName,obj){
     if(!obj.hasClass('saved')){
         window[fancName](obj);
         obj.addClass('saved');                  
-    }else{// стоит запрет, проверяем очередь по сейву данной функции        
+    }else{
+        // стоит запрет, проверяем очередь по сейву данной функции
         if(obj.hasClass(fancName)){ //стоит в очереди на сохранение
             // стоит очередь, значит мимо... всё и так сохранится
         }else{

@@ -1,6 +1,6 @@
 ﻿<?php
-header('Content-type: text/html; charset=utf-8');
-ini_set('error_reporting', E_ALL ^ E_DEPRECATED);
+//header('Content-type: text/html; charset=utf-8');
+ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
@@ -9,8 +9,7 @@ ini_set('display_startup_errors', 1);
 пользоваться файлом опасно ввиду возможной потери введённой в новую ОС информации
 */
 
-exit('окончательный импорт завершен!!!!
-пользоваться файлом опасно ввиду возможной потери введённой в новую ОС информации');
+exit('окончательный импорт завершен!!!! пользоваться файлом опасно ввиду возможной потери введённой в новую ОС информации');
 
 
 
@@ -31,8 +30,8 @@ class Update extends aplStdAJAXMethod
 		// подключение к базе
 		$this->db();
 
-		// $this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
-		// $this->user_access = $this->get_user_access_Database_Int($this->user_id);
+//		$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
+//		$this->user_access = $this->get_user_access_Database_Int($this->user_id);
 
 		// получаем информацию по пользователю
 		$this->user = $this->aplStdUser();	
@@ -53,8 +52,8 @@ class Update extends aplStdAJAXMethod
 			// получаем данные пользователя
 			$User = $this->user;
 			
-			$this->user_last_name = $User['last_name'];
-			$this->user_name = $User['name'];
+//			$this->user_last_name = $User['last_name'];
+//			$this->user_name = $User['name'];
 
 			$this->_AJAX_($_POST['AJAX']);
 		}
@@ -68,11 +67,9 @@ class Update extends aplStdAJAXMethod
 
 		/**
 		  *	удаление таблиц клиента
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	15:32 11.01.2016
 		  */
 		protected function drop_old_client_tbl_AJAX(){
+			return $this->returnF();
 			// удаляем таблицу № 1
 			$query = "DROP TABLE os__contact_information";
 			$result = $this->mysqli->query($query);
@@ -112,11 +109,9 @@ class Update extends aplStdAJAXMethod
 
 		/**
 		  *	создание новых таблиц клиента
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	15:32 11.01.2016
 		  */
 		protected function create_client_tbl_AJAX(){
+			return $this->returnF();
 			//  № 1
 			$query = "
 				CREATE TABLE `os__contact_information` (
@@ -182,11 +177,9 @@ class Update extends aplStdAJAXMethod
 
 		/**
 		  *	копируем данные из таблицы CLINTS_TBL
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	16:09 11.01.2016
 		  */
 		function copy_client_contact_info_AJAX(){
+			return $this->returnF();
 			//получаем данные из основной таблицы
 			$query = "SELECT * FROM `".CLIENTS_TBL."`";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -256,13 +249,16 @@ class Update extends aplStdAJAXMethod
 			}
 		}
 
+		function returnF(){
+			$html = "В целях безопасности данное действие запрещено";
+			$this->responseClass->addMessage($html,'error_message');
+		}
+
 		/**
 		  *	копируем адреса клиентов
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	16:17 11.01.2016
 		  */
 		function copy_client_addres_AJAX(){
+			return $this->returnF();
 			//получаем данные из основной таблицы
 			$query = "SELECT `id`,`addres`,`delivery_address` FROM `".CLIENTS_TBL."`";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -323,7 +319,7 @@ class Update extends aplStdAJAXMethod
 		}
 
 		protected function copy_client_contact_info_contact_face_AJAX(){
-			
+			return $this->returnF();
 			//получаем данные из основной таблицы
 			$query = "SELECT * FROM `".CLIENT_CONT_FACES_TBL."`";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -380,11 +376,11 @@ class Update extends aplStdAJAXMethod
 			// echo "<br>";
 		}
 
+
+
+
 		/**
 		  *	Скопировать данные (site, phone, email) из основной таблицы по поставщикам
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	00:47 12.01.2016
 		  */
 		protected function copy_supplier_contact_info_AJAX(){
 			//получаем данные из основной таблицы
@@ -457,10 +453,40 @@ class Update extends aplStdAJAXMethod
 		}
 
 		/**
+		 * удаление информации по поставщикам из новой ОС
+		 */
+		protected function delete_supplier_contact_info_AJAX(){
+			// (1) удаление адреса поставщиков
+			$query = "SELECT * FROM os__addres_tbl where `table_name` = 'SUPPLIERS_TBL'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$arr = [];
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$arr[] = $row['id'];
+				}
+			}
+
+			$query = "DELETE FROM os__addres_tbl WHERE id IN ('".implode("','",$arr)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+			// (2) удаляем данные (site, phone, email) по контактным лицам поставщиков
+			$query = "SELECT * FROM  `os__contact_information` where `table` = 'SUPPLIERS_TBL' OR  `table` = 'SUPPLIERS_CONT_FACES_TBL'";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$arr = [];
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$arr[] = $row['id'];
+				}
+			}
+//			$this->responseClass->addSimpleWindow($query.''.$this->printArr($arr));
+
+			$query = "DELETE FROM os__contact_information WHERE id IN ('".implode("','",$arr)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+
+		/**
 		  *	Скопировать адреса поставщиков в новую структуру
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	00:47 12.01.2016
 		  */
 		protected function copy_supplier_addres_AJAX(){
 			//получаем данные из основной таблицы
@@ -523,9 +549,6 @@ class Update extends aplStdAJAXMethod
 
 		/**
 		  *	Скопировать данные (site, phone, email) по контактным лицам поставщиков
-		  *
-		  *	@author  	Alexey Kapitonov
-		  *	@version 	00:47 12.01.2016
 		  */
 		protected function copy_supplier_contact_info_contact_face_AJAX(){
 			//получаем данные из основной таблицы
@@ -660,8 +683,6 @@ function rebuild_rate(){
 			echo "Ребилд таблицы произведён успешно";
 		}
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -733,10 +754,15 @@ function rebuild_rate(){
 	<div class="steep_contaner">
 		<div class="command_name">Скопировать данные (site, phone, email) по контактным лицам</div>
 		<button id="copy_client_contact_info_contact_face" value="1">скопировать</button>
-	</div>	
+	</div>
 
 	<div class="steep_contaner">
-		<div class="command_name"><strong>Импорт общей информации по поставщикам</strong></div>		
+		<div class="command_name"><strong style="color:red">УДАЛЕНИЕ из новой ОС информации по поставщикам</strong></div>
+		<button id="delete_supplier_contact_info" value="1">удалить</button>
+	</div>
+
+	<div class="steep_contaner">
+		<div class="command_name"><strong>Импорт общей информации по поставщикам</strong></div>
 	</div>
 
 	<div class="steep_contaner">

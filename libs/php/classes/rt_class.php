@@ -785,7 +785,7 @@
 			$dop_info_arr = json_decode($dop_info,true);
 			$dop_info_arr = (count($dop_info_arr)>0)?$dop_info_arr:false;
 			
-			$query_num = RT::add_data_from_basket($client_id,$manager_id_arr,FALSE,$dop_info_arr);
+			$query_num = RT::add_data_from_basket($client_id,$manager_id_arr,FALSE,$dop_info_arr,'os');
 			
 			////////////////////
 			//	определяем вкладку для переадресации подльзователя
@@ -828,7 +828,7 @@
 
 		
 		}
-		static function add_data_from_basket($client_id,$manager_id_arr,$customer_data=FALSE,$dop_info=FALSE){
+		static function add_data_from_basket($client_id,$manager_id_arr,$customer_data=FALSE,$dop_info=FALSE,$sourse=FALSE){
 		
 			global $mysqli;
 			
@@ -841,6 +841,25 @@
 			
 			// содержимое корзины
 			$basket_arr = $_SESSION['basket'];
+			
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// сохранение данных корзины в файл для экстернных случаев (часть скрипта в modoles/basket/content_basket.php)
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			/*
+			if(@$_SESSION['access']['user_id']==18){ 
+				//echo 11;
+				$file_name = 'jsn.txt';
+				$fd = fopen($file_name,'r');
+				$jsn = fread($fd,filesize($file_name));
+				//echo $jsn;
+				
+				$basket_arr  = json_decode($jsn,true);
+				//echo '<pre>'; print_r($basket_arr); echo '</pre>';
+			}
+			*/
+			//
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			
 			//print_r($dop_info_arr);
 			//exit;
@@ -870,7 +889,10 @@
 				$result = $mysqli->query($query)or die($mysqli->error);
 				while($item = $result->fetch_assoc()) $characteristics['materials'][] = $item['material'];
 				
-				require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+				// здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется с основного сайта
+				// и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
+				if($sourse && $sourse == 'os') require_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+				else require_once(ROOT."/os/libs/php/classes/rt_calculators_class.php");
 				$characteristics =(count($characteristics)>0)?RT::json_fix_cyr(json_encode($characteristics)):'';
 				
 				//print_r($dop_info);
@@ -924,7 +946,7 @@
                */
 			}		
 			
-			$query_num = RT::create_new_query($client_id,$manager_id_arr,$data_arr);
+			$query_num = RT::create_new_query($client_id,$manager_id_arr,$data_arr,$sourse);
 
 
 			/**
@@ -941,7 +963,10 @@
 			
 			// -->  START  <-- //
 			if($customer_data){
-				include_once(ROOT."/libs/php/classes/comments_class.php");
+			    // здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется с основного сайта
+				// и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
+				if($sourse && $sourse == 'os') include_once(ROOT."/libs/php/classes/comments_class.php");
+				else include_once(ROOT."/os/libs/php/classes/comments_class.php");
 				$COMMENTS = new Comments_for_query_class;
 	
 				$text = (trim($customer_data['name'])!='')?'Имя: '.$customer_data['name'].'<br>':'';
@@ -996,7 +1021,7 @@
 
 
 		// создание запроса
-		static function create_new_query($client_id,$manager_arr,$data_arr,$query_status = 'new_query'){
+		static function create_new_query($client_id,$manager_arr,$data_arr,$query_status = 'new_query',$sourse=FALSE){
 			global $mysqli;
 
 
@@ -1028,7 +1053,11 @@
 							// шлем оповещение менеджерам на почту
 							//////////////////////////////////
 								// получаем информацию по клиенту
-							 	include_once(ROOT."/libs/php/classes/client_class.php");
+								// здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется 
+								// с основного сайта и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
+								if($sourse && $sourse == 'os') include_once(ROOT."/libs/php/classes/client_class.php");
+								else include_once(ROOT."/os/libs/php/classes/client_class.php");
+							 	
 			    				$Client = Client::get_client_informationDatabase($client_id);
 			    					
 								// получаем информацию по кураторам + пользователю, который добавил запрос
@@ -1058,7 +1087,10 @@
 							// шлем оповещение менеджерам на почту (всем кроме того у которого заказ в работе)
 							//////////////////////////////////
 								// получаем информацию по клиенту
-							 	include_once(ROOT."/libs/php/classes/client_class.php");
+								// здесь адрес ссылки должен быть именно таким потому-что обращение к этой функции осущесвляется 
+								// с основного сайта и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
+								if($sourse && $sourse == 'os') include_once(ROOT."/libs/php/classes/client_class.php");
+								else include_once(ROOT."/os/libs/php/classes/client_class.php");
 			    				$Client = Client::get_client_informationDatabase($client_id);
 
 			    				// получаем информацию по кураторам + пользователю, который добавил запрос

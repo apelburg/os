@@ -1872,12 +1872,29 @@
 			$('input[name=marker_for_item]').each(function(index){ 
 														var art_id = this.getAttribute("art_id");
 														// checking on similar articles
-														if(artIds.join(',').indexOf(art_id)>=0) similarArts = true;
+														//if(artIds.join(',').indexOf(art_id)>=0) similarArts = true;
+														if(in_array(art_id,artIds)) similarArts = true;
 														if(!similarArts) artIds.push(art_id);
 														dopInfo[this.value] = {art_id:art_id,chkd:Number(this.checked)};
 														
 												  });
 			return {similarArts:similarArts,dopInfo:dopInfo};
+		}
+		
+		function in_array(needle, haystack, strict) {	
+			// Checks if a value exists in an array
+			// original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+		
+			var found = false, key, strict = !!strict;
+		
+			for (key in haystack) {
+				if ((strict && haystack[key] === needle) || (!strict && haystack[key] == needle)) {
+					found = true;
+					break;
+				}
+			}
+		
+			return found;
 		}
 		
 		function send(client_data,manager_login,dopInfo){
@@ -1888,12 +1905,20 @@
 			
 			var regexp = /%20/g; // Регулярное выражение соответствующее закодированному пробелу
 			var request = HTTP.newRequest();
-			var url =  HOST+"/os/?add_data_to_rt_from_basket=1&client_data=" + encodeURIComponent(client_data).replace(regexp,"+") +  "&dop_info=" + JSON.stringify(dopInfo) +  "&manager_login=" + encodeURIComponent(manager_login).replace(regexp,"+");
-			// alert(url);
+			//var url =  HOST+"/os/?add_data_to_rt_from_basket=1&client_data=" + encodeURIComponent(client_data).replace(regexp,"+") +  "&dop_info=" + JSON.stringify(dopInfo) +  "&manager_login=" + encodeURIComponent(manager_login).replace(regexp,"+");
+			
+			
+			var url =  HOST+"/os/";
+			//alert(url);
+			var pairs = "add_data_to_rt_from_basket=1&client_data=" + encodeURIComponent(client_data).replace(regexp,"+") +  "&dop_info=" + JSON.stringify(dopInfo) +  "&manager_login=" + encodeURIComponent(manager_login).replace(regexp,"+");
 			// return;
 			// производим запрос
-			request.open("GET", url, true);
-			request.send(null);
+			//request.open("GET", url, true);
+			//request.send(null);
+			//alert(pairs);
+			request.open("POST", url); 
+	        request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	        request.send(pairs);
 	
 			request.onreadystatechange = function(){ // создаем обработчик события
 			   if(request.readyState == 4){ // проверяем состояние запроса если запрос == 4 значит ответ получен полностью
@@ -1902,8 +1927,8 @@
 					  // обрабатываем ответ сервера
 					  //  alert(22);
 					  var request_response = request.responseText;
-					   // alert(request_response);
-					   // console.log(request_response);
+					  // alert(request_response);
+					  // console.log(request_response);
 					  
 					  //return;
 					 

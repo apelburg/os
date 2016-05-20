@@ -28,6 +28,11 @@
     </tr>
     </table>
     <div class="border_in_table"></div>
-    <div id="client_delete" data-id="<?php echo $supplier_id; ?>">Удалить поставщика</div>
+    <?php
+        if(isset($ACCESS['suppliers']['full_suppliers_delete']) && $ACCESS['suppliers']['full_suppliers_delete']){
+            ?><div id="client_delete" data-id="<?php echo $supplier_id; ?>">Удалить поставщика</div><?php
+        }
+    ?>
+
 </div>
 <!-- <?php echo __FILE__; ?> -- END-->

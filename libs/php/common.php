@@ -87,10 +87,10 @@ if(isset($_SESSION['access']['user_id'])){ // && ($_SESSION['access']['access']=
 	}
 }
    
-    if(isset($_GET['add_data_to_rt_from_basket'])){
+    if(isset($_POST['add_data_to_rt_from_basket'])){
 		 include_once ROOT.'/libs/php/classes/rt_class.php';
-		 //echo $_GET['client_data'].' - '.$_GET['manager_login'];
-		 echo RT::add_data_from_basket_directly($_GET['client_data'],$_GET['dop_info'],$_GET['manager_login']);
+		 //echo $_POST['client_data'].' - '.$_POST['manager_login'];
+		 echo RT::add_data_from_basket_directly($_POST['client_data'],$_POST['dop_info'],$_POST['manager_login']);
 		 exit;
 	}
 	if(isset($_GET['subquery_for_planner_window'])){
