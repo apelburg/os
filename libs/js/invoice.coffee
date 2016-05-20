@@ -1862,6 +1862,7 @@ class paymentWindow
     # запоминаем уровень допуска
     @access = access
     # сохраняем информацию по строке
+    console.log access
     @options = data_row
     # сборка окна счёта
     @init( data_row, responseData)
@@ -3854,234 +3855,13 @@ class invoiceTtn
         }).append(table)
 
       td
-
+    
     ###
     # create tr
     ###
     createRow:(row)->
-      _this = @
-      # console.log 654
-      tr = $('<tr/>',{
-        id:'tt_'+row.id
-      }).data(row);
-      # номер, дата
-      if row.doc_type=='spec'
-        row.spf_num  = row.doc_num
-        doc_type = 'счёт'
-      else
-        row.spf_num  = 'оф'
-        doc_type = 'счёт - оферта'
-
-      td = $('<td/>',{
-        'class':'invoice-row--fist-td',
-        click:()->
-          t = $(@)
-          new sendAjax('get_ttn',{'id':row.id},(response)->
-# создаем экземпляр окна ттн
-            new invoiceWindow(t, row, response.data, _this.options.access )
-          )
-      })
-      .append($('<div/>',{
-        'class':'invoice-row--number',
-        'html':'<span>'+row.invoice_num+'</span>  '+row.invoice_create_date
-
-      }))
-      .append($('<div/>',{
-        'class':'invoice-row--type',
-        'html': doc_type
-      }))
-
-      tr.append(td)
-
-      # 1с
-      td = $('<td/>',{'class':'invoice-row--checkboxtd'})
-      .append($('<div/>',{
-        'class':'invoice-row--checkboxtd-div'
-      }))
-      td.click ()->
-        if $(this).hasClass('checked')
-          row.flag_1c = 0;
-          $(this).removeClass('checked')
-        else
-          row.flag_1c = 1;
-          $(this).addClass('checked')
-
-        # сохраняем значение флага
-        new sendAjax 'edit_flag_1c',{id:row.id,val:row.flag_1c}
-        return
-
-      td.addClass('checked') if Number row.flag_1c>0
-      tr.append(td)
-      # выручка, платежи
-      td = $('<td/>',{
-        click:(e)->
-          t = $(@)
-          new sendAjax('get_payment',{'id':row.id},(response)->
-# создаем экземпляр окна ттн
-            new paymentWindow(row, response.data, _this.options.access )
-          )
-        on:
-          mouseenter:()->
-            $(this).css('backgroundColor':'#f1f1f1')
-          mouseleave:()->
-            $(this).attr('style','')
-      }).css('cursor','pointer')
-      td.append($('<div/>',{
-        'class':'invoice-row--price-profit',
-        'html':round_money row.price_out
-      }))
-      td.append($('<div/>',{
-        'class':'invoice-row--price-payment',
-        'html': round_money row.price_out_payment
-      }))
-      tr.append(td)
-      # заказ, менеджер
-      td = $('<td/>')
-      .append($('<div/>',{
-        'class':'invoice-row--order-number'
-        'html':row.invoice_num
-      }))
-      .append($('<div/>',{
-        'class':'invoice-row--meneger--full-name',
-        'html': row.manager_name
-      }))
-      tr.append(td)
-      # флаг рекламация
-      td = $('<td/>',{
-        'class':'invoice-row--icons-flag'
-      })
-      .append($('<div/>',{
-        'class':'invoice-row--checkboxtd-div'
-      }))
-
-      td.click ()->
-        if $(this).hasClass('checked')
-          if(Number(_this.options.access) != 1)
-            console.log _this.options.access
-            echo_message_js('Снять рекламацию может только администратор','error_message')
-            return false;
-
-          row.flag_flag = 0;
-          $(this).removeClass('checked')
-          # сохраняем значение флага
-          new sendAjax 'edit_flag_flag',{id:row.id,val:row.flag_flag}
-        else
-          if(Number(_this.options.access) != 5 && Number(_this.options.access) != 1)
-            echo_message_js('Рекламацию устанавливает только менеджер','error_message')
-            return false;
-
-          t = $(@)
-
-
-          new modalConfirm({html:'Вы уверены, что хотите установить флаг рекламации?'},()->
-            row.flag_flag = 1;
-            t.addClass('checked')
-            # сохраняем значение флага
-            new sendAjax 'edit_flag_flag',{id:row.id,val:row.flag_flag}
-          )
-
-        return
-
-      td.addClass('checked') if Number row.flag_flag>0
-      tr.append(td)
-      # клиент, юрлицо
-      td = $('<td/>')
-      .append($('<div/>',{
-        'class':'invoice-row--client--name',
-        'html':row.client_name
-      }))
-      .append($('<div/>',{
-        'class':'invoice-row--client--requsits',
-        'data-id':row.client_requisit_id,
-        'html': row.client_requisit_name
-      }))
-      tr.append(td)
-      # себестоимость
-      td = $('<td/>',{
-        click:(e)->
-          t = $(@)
-          new sendAjax('get_costs',{'id':row.id},(response)->
-            new costsWindow( row, response.data, _this.options.access )
-          )
-        on:
-          mouseenter:()->
-            $(this).css('backgroundColor':'#f1f1f1')
-          mouseleave:()->
-            $(this).attr('style','')
-      }).css('cursor','pointer')
-      td.append($('<div/>',{
-        'class':'invoice-row--price-start',
-        'html':row.price_in
-      }))
-      td.append($('<div/>',{
-        'class':'invoice-row--price-our-pyment',
-        'html': row.costs
-      }))
-      tr.append(td)
-      # глаз
-      td = $('<td/>',{
-        'class':'invoice-row--ice'
-      })
-
-
-      td.addClass('checked') if Number row.flag_ice>0
-      tr.append(td)
-      # прибыль
-      td = $('<td/>')
-      .append($('<div/>',{
-        'class':'invoice-row--price-our-profit',
-        'html':round_money(row.price_out - Number(row.costs))
-      }))
-      .append($('<div/>',{
-        'class':'invoice-row--price-our-profit-percent',
-        'html':round_money(((row.price_out - Number(row.costs))/row.price_out*100).toString())+'%'
-
-      }))
-      tr.append(td)
-      # калькулятор
-      td = $('<td/>',{'class':'invoice-row--icons-calculator'})
-
-
-
-      td.addClass('checked') if Number row.flag_calc>0
-      tr.append(td)
-      # ттн
-
-      td = @getTdTtn(row)
-
-
-      tr.append(td)
-
-      # спф дата
-      td = $('<td/>')
-      .append($('<div/>').html(row.spf_num))
-      tr.append(td)
-      # спф checkbox
-      td = $('<td/>',{'class':'invoice-row--ttn--vt invoice-row--checkboxtd'})
-
-      td.click ()->
-        if $(this).hasClass('checked')
-          row.flag_spf_return = 0;
-          $(this).removeClass('checked')
-        else
-          row.flag_spf_return = 1;
-          $(this).addClass('checked')
-
-        # сохраняем значение флага
-        new sendAjax 'edit_flag_spf_return',{id:row.id,val:row.flag_spf_return}
-        return
-
-      td.addClass('checked') if Number row.flag_spf_return>0
-      tr.append(td)
-      # статус
-      td = $('<td/>',{'html':row.status})
-      tr.append(td)
-      # диндин
-      td = $('<td/>')
-      tr.append(td)
-
-
-      return tr
+      console.log @access
+      new invoiceRow(row,@access,@getTdTtn(row))
 
 
 
@@ -4485,7 +4265,292 @@ class invoiceTtn
         data[option].apply(data, args)
 
 ) window.jQuery, window
+###
+# прототип html строки прихода
+###
+class invoiceRow
+  enterObj:{}
+  options:{}
+  access:0
 
+
+  constructor:(data,access,ttn)->
+    console.log access
+    @access = access
+    @options = data
+    console.log @access
+
+
+
+    return @init(ttn)
+  init:(ttn)->
+    _this = @
+    # console.log 654
+    tr = $('<tr/>',{
+      id:'tt_'+@options.id
+    }).data(@options);
+    # номер, дата
+    if @options.doc_type=='spec'
+      @options.spf_num  = @options.doc_num
+      doc_type = 'счёт'
+    else
+      @options.spf_num  = 'оф'
+      doc_type = 'счёт - оферта'
+
+    td = $('<td/>',{
+      'class':'invoice-row--fist-td',
+      click:()->
+        t = $(@)
+        new sendAjax('get_ttn',{'id':_this.options.id},(response)->
+# создаем экземпляр окна ттн
+          new invoiceWindow(t, _this.options, response.data, _this.access )
+        )
+    })
+    .append($('<div/>',{
+      'class':'invoice-row--number',
+      'html':'<span>'+@options.invoice_num+'</span>  '+@options.invoice_create_date
+
+    }))
+    .append($('<div/>',{
+      'class':'invoice-row--type',
+      'html': doc_type
+    }))
+
+    tr.append(td)
+
+    # 1с
+    td = $('<td/>',{'class':'invoice-row--checkboxtd'})
+    .append($('<div/>',{
+      'class':'invoice-row--checkboxtd-div'
+    }))
+    td.click ()->
+      if $(this).hasClass('checked')
+        @options.flag_1c = 0;
+        $(this).removeClass('checked')
+      else
+        @options.flag_1c = 1;
+        $(this).addClass('checked')
+
+      # сохраняем значение флага
+      new sendAjax 'edit_flag_1c',{id:_this.options.id,val:_this.options.flag_1c}
+      return
+
+    td.addClass('checked') if Number @options.flag_1c>0
+    tr.append(td)
+
+    # выручка, платежи
+    div1 = $('<div/>',{
+      'class':'invoice-row--price-profit',
+      'html':round_money @options.price_out
+    })
+
+    div2 = $('<div/>',{
+      'class':'invoice-row--price-payment',
+      'html': round_money(@options.price_out_payment)
+    })
+
+    td = $('<td/>',{
+      'data-id':@options.id,
+      click:(e)->
+        t = $(@)
+        new sendAjax('get_payment',{'id':_this.options.id},(response)->
+# создаем экземпляр окна ттн
+          console.log _this.options.access
+          new paymentWindow(_this.options, response.data, _this.access )
+        )
+      on:
+        mouseenter:()->
+
+          t = $(this)
+          #            div2.css('backgroundColor':'red')
+
+          $(this).css('backgroundColor':'#f1f1f1','cursor':'posinter')
+          if !div2.hasClass('notify')
+            div2.addClass('notify')
+
+            setTimeout(()->
+#              echo_message_js _this.options.id
+              if div2.hasClass('notify')
+
+                new sendAjax('get_payment',{'id':_this.options.id,'not_deleted_row':1},(response)->
+                  div2.notify( notifyContent = $('<div/>',{'html':'нет платежей'}) ,{position:"right",className:'invoice_12px',autoHide: false })
+                  if response.data.length > 0
+
+                    tbl = $('<table/>',{'class':'notify-table','id':'invoice-row--price-payment-table'})
+                    tbl.append(ptr = $('<tr/>'))
+                    ptr.append($('<td/>',{'html':'сумма'}))
+                    ptr.append($('<td/>',{'html':'%'}))
+                    ptr.append($('<td/>',{'html':'№'}))
+                    ptr.append($('<td/>',{'html':'дата'}))
+                    for row,i in response.data
+                      tbl.append(ptr = $('<tr/>'))
+                      ptr.append($('<td/>',{'html':round_money(response.data[i].price)}))
+                      ptr.append($('<td/>',{'html':round_money(response.data[i].percent) + '%'}))
+                      ptr.append($('<td/>',{'html':response.data[i].number}))
+                      ptr.append($('<td/>',{'html':response.data[i].date}))
+                    notifyContent.html(tbl)
+
+                    if Number(_this.options.conditions) > Number(_this.options.percent_payment)
+                      dopText = $('<div/>',{'class':'invoice-row--price-payment-dopText'})
+                      dopText.append($('<div/>',{'style':'text-align:left;color:red;','html':'Внимание!'}))
+                      dopText.append($('<div/>',{'style':'text-align:left;','html':'Не выполнены условия договора:'}))
+                      dopText.append($('<div/>',{'style':'text-align:left;','html':'график оплаты: '+round_money(_this.options.conditions)+'-'+round_money(100-Number(_this.options.conditions))+'%'}))
+                      notifyContent.append(dopText)
+                )
+            ,1000)
+
+        mouseleave:()->
+          $(this).find('div.notifyjs-wrapper').remove()
+          $(this).attr('style','')
+          div2.removeClass('notify')
+
+    }).css('cursor','pointer')
+    td.append(div1)
+    td.append(div2)
+    tr.append(td)
+    # заказ, менеджер
+    td = $('<td/>')
+    .append($('<div/>',{
+      'class':'invoice-row--order-number'
+      'html':@options.invoice_num
+    }))
+    .append($('<div/>',{
+      'class':'invoice-row--meneger--full-name',
+      'html': @options.manager_name
+    }))
+    tr.append(td)
+    # флаг рекламация
+    td = $('<td/>',{
+      'class':'invoice-row--icons-flag'
+    })
+    .append($('<div/>',{
+      'class':'invoice-row--checkboxtd-div'
+    }))
+
+    td.click ()->
+      if $(this).hasClass('checked')
+        if(Number(_this.options.access) != 1)
+          console.log _this.options.access
+          echo_message_js('Снять рекламацию может только администратор','error_message')
+          return false;
+
+        _this.options.flag_flag = 0;
+        $(this).removeClass('checked')
+        # сохраняем значение флага
+        new sendAjax 'edit_flag_flag',{id:_this.options.id,val:_this.options.flag_flag}
+      else
+        if(Number(_this.options.access) != 5 && Number(_this.options.access) != 1)
+          echo_message_js('Рекламацию устанавливает только менеджер','error_message')
+          return false;
+
+        t = $(@)
+
+
+        new modalConfirm({html:'Вы уверены, что хотите установить флаг рекламации?'},()->
+          _this.options.flag_flag = 1;
+          t.addClass('checked')
+          # сохраняем значение флага
+          new sendAjax 'edit_flag_flag',{id:_this.options.id,val:_this.options.flag_flag}
+        )
+
+      return
+
+    td.addClass('checked') if Number @options.flag_flag>0
+    tr.append(td)
+    # клиент, юрлицо
+    td = $('<td/>')
+    .append($('<div/>',{
+      'class':'invoice-row--client--name',
+      'html':@options.client_name
+    }))
+    .append($('<div/>',{
+      'class':'invoice-row--client--requsits',
+      'data-id':@options.client_requisit_id,
+      'html': @options.client_requisit_name
+    }))
+    tr.append(td)
+    # себестоимость
+    td = $('<td/>',{
+      click:(e)->
+        t = $(@)
+        new sendAjax('get_costs',{'id':_this.options.id},(response)->
+          new costsWindow( _this.options, response.data, _this.options.access )
+        )
+      on:
+        mouseenter:()->
+          $(this).css('backgroundColor':'#f1f1f1')
+        mouseleave:()->
+          $(this).attr('style','')
+    }).css('cursor','pointer')
+    td.append($('<div/>',{
+      'class':'invoice-row--price-start',
+      'html':_this.options.price_in
+    }))
+    td.append($('<div/>',{
+      'class':'invoice-row--price-our-pyment',
+      'html': _this.options.costs
+    }))
+    tr.append(td)
+    # глаз
+    td = $('<td/>',{
+      'class':'invoice-row--ice'
+    })
+
+
+    td.addClass('checked') if Number @options.flag_ice>0
+    tr.append(td)
+    # прибыль
+    td = $('<td/>')
+    .append($('<div/>',{
+      'class':'invoice-row--price-our-profit',
+      'html':round_money(@options.price_out - Number(@options.costs))
+    }))
+    .append($('<div/>',{
+      'class':'invoice-row--price-our-profit-percent',
+      'html':round_money(((@options.price_out - Number(@options.costs))/@options.price_out*100).toString())+'%'
+
+    }))
+    tr.append(td)
+    # калькулятор
+    td = $('<td/>',{'class':'invoice-row--icons-calculator'})
+
+
+
+    td.addClass('checked') if Number @options.flag_calc>0
+    tr.append(td)
+    # ттн
+
+
+    tr.append(ttn)
+
+    # спф дата
+    td = $('<td/>')
+    .append($('<div/>').html(@options.spf_num))
+    tr.append(td)
+    # спф checkbox
+    td = $('<td/>',{'class':'invoice-row--ttn--vt invoice-row--checkboxtd'})
+
+    td.click ()->
+      if $(this).hasClass('checked')
+        _this.options.flag_spf_return = 0;
+        $(this).removeClass('checked')
+      else
+        _this.options.flag_spf_return = 1;
+        $(this).addClass('checked')
+
+      # сохраняем значение флага
+      new sendAjax 'edit_flag_spf_return',{id:_this.options.id,val:_this.options.flag_spf_return}
+      return
+
+    td.addClass('checked') if Number @options.flag_spf_return>0
+    tr.append(td)
+    # статус
+    td = $('<td/>',{'html':@options.status})
+    tr.append(td)
+    # диндин
+    td = $('<td/>')
+    tr.append(td)
+    return tr
 
 ###
 # прототип html строки прихода

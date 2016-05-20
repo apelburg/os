@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, rowRowData, sendAjax, skladRow, ttnObj,
+  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceRow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, rowRowData, sendAjax, skladRow, ttnObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -2212,6 +2212,7 @@
     function paymentWindow(data_row, responseData, access) {
       console.warn('старт окна');
       this.access = access;
+      console.log(access);
       this.options = data_row;
       this.init(data_row, responseData);
     }
@@ -4406,230 +4407,8 @@
        */
 
       invoice.prototype.createRow = function(row) {
-        var _this, doc_type, td, tr;
-        _this = this;
-        tr = $('<tr/>', {
-          id: 'tt_' + row.id
-        }).data(row);
-        if (row.doc_type === 'spec') {
-          row.spf_num = row.doc_num;
-          doc_type = 'счёт';
-        } else {
-          row.spf_num = 'оф';
-          doc_type = 'счёт - оферта';
-        }
-        td = $('<td/>', {
-          'class': 'invoice-row--fist-td',
-          click: function() {
-            var t;
-            t = $(this);
-            return new sendAjax('get_ttn', {
-              'id': row.id
-            }, function(response) {
-              return new invoiceWindow(t, row, response.data, _this.options.access);
-            });
-          }
-        }).append($('<div/>', {
-          'class': 'invoice-row--number',
-          'html': '<span>' + row.invoice_num + '</span>  ' + row.invoice_create_date
-        })).append($('<div/>', {
-          'class': 'invoice-row--type',
-          'html': doc_type
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--checkboxtd'
-        }).append($('<div/>', {
-          'class': 'invoice-row--checkboxtd-div'
-        }));
-        td.click(function() {
-          if ($(this).hasClass('checked')) {
-            row.flag_1c = 0;
-            $(this).removeClass('checked');
-          } else {
-            row.flag_1c = 1;
-            $(this).addClass('checked');
-          }
-          new sendAjax('edit_flag_1c', {
-            id: row.id,
-            val: row.flag_1c
-          });
-        });
-        if (Number(row.flag_1c > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>', {
-          click: function(e) {
-            var t;
-            t = $(this);
-            return new sendAjax('get_payment', {
-              'id': row.id
-            }, function(response) {
-              return new paymentWindow(row, response.data, _this.options.access);
-            });
-          },
-          on: {
-            mouseenter: function() {
-              return $(this).css({
-                'backgroundColor': '#f1f1f1'
-              });
-            },
-            mouseleave: function() {
-              return $(this).attr('style', '');
-            }
-          }
-        }).css('cursor', 'pointer');
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-profit',
-          'html': round_money(row.price_out)
-        }));
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-payment',
-          'html': round_money(row.price_out_payment)
-        }));
-        tr.append(td);
-        td = $('<td/>').append($('<div/>', {
-          'class': 'invoice-row--order-number',
-          'html': row.invoice_num
-        })).append($('<div/>', {
-          'class': 'invoice-row--meneger--full-name',
-          'html': row.manager_name
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--icons-flag'
-        }).append($('<div/>', {
-          'class': 'invoice-row--checkboxtd-div'
-        }));
-        td.click(function() {
-          var t;
-          if ($(this).hasClass('checked')) {
-            if (Number(_this.options.access) !== 1) {
-              console.log(_this.options.access);
-              echo_message_js('Снять рекламацию может только администратор', 'error_message');
-              return false;
-            }
-            row.flag_flag = 0;
-            $(this).removeClass('checked');
-            new sendAjax('edit_flag_flag', {
-              id: row.id,
-              val: row.flag_flag
-            });
-          } else {
-            if (Number(_this.options.access) !== 5 && Number(_this.options.access) !== 1) {
-              echo_message_js('Рекламацию устанавливает только менеджер', 'error_message');
-              return false;
-            }
-            t = $(this);
-            new modalConfirm({
-              html: 'Вы уверены, что хотите установить флаг рекламации?'
-            }, function() {
-              row.flag_flag = 1;
-              t.addClass('checked');
-              return new sendAjax('edit_flag_flag', {
-                id: row.id,
-                val: row.flag_flag
-              });
-            });
-          }
-        });
-        if (Number(row.flag_flag > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>').append($('<div/>', {
-          'class': 'invoice-row--client--name',
-          'html': row.client_name
-        })).append($('<div/>', {
-          'class': 'invoice-row--client--requsits',
-          'data-id': row.client_requisit_id,
-          'html': row.client_requisit_name
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          click: function(e) {
-            var t;
-            t = $(this);
-            return new sendAjax('get_costs', {
-              'id': row.id
-            }, function(response) {
-              return new costsWindow(row, response.data, _this.options.access);
-            });
-          },
-          on: {
-            mouseenter: function() {
-              return $(this).css({
-                'backgroundColor': '#f1f1f1'
-              });
-            },
-            mouseleave: function() {
-              return $(this).attr('style', '');
-            }
-          }
-        }).css('cursor', 'pointer');
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-start',
-          'html': row.price_in
-        }));
-        td.append($('<div/>', {
-          'class': 'invoice-row--price-our-pyment',
-          'html': row.costs
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--ice'
-        });
-        if (Number(row.flag_ice > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>').append($('<div/>', {
-          'class': 'invoice-row--price-our-profit',
-          'html': round_money(row.price_out - Number(row.costs))
-        })).append($('<div/>', {
-          'class': 'invoice-row--price-our-profit-percent',
-          'html': round_money(((row.price_out - Number(row.costs)) / row.price_out * 100).toString()) + '%'
-        }));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--icons-calculator'
-        });
-        if (Number(row.flag_calc > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = this.getTdTtn(row);
-        tr.append(td);
-        td = $('<td/>').append($('<div/>').html(row.spf_num));
-        tr.append(td);
-        td = $('<td/>', {
-          'class': 'invoice-row--ttn--vt invoice-row--checkboxtd'
-        });
-        td.click(function() {
-          if ($(this).hasClass('checked')) {
-            row.flag_spf_return = 0;
-            $(this).removeClass('checked');
-          } else {
-            row.flag_spf_return = 1;
-            $(this).addClass('checked');
-          }
-          new sendAjax('edit_flag_spf_return', {
-            id: row.id,
-            val: row.flag_spf_return
-          });
-        });
-        if (Number(row.flag_spf_return > 0)) {
-          td.addClass('checked');
-        }
-        tr.append(td);
-        td = $('<td/>', {
-          'html': row.status
-        });
-        tr.append(td);
-        td = $('<td/>');
-        tr.append(td);
-        return tr;
+        console.log(this.access);
+        return new invoiceRow(row, this.access, this.getTdTtn(row));
       };
 
       return invoice;
@@ -5085,6 +4864,340 @@
       }
     });
   })(window.jQuery, window);
+
+
+  /*
+   * прототип html строки прихода
+   */
+
+  invoiceRow = (function() {
+    invoiceRow.prototype.enterObj = {};
+
+    invoiceRow.prototype.options = {};
+
+    invoiceRow.prototype.access = 0;
+
+    function invoiceRow(data, access, ttn) {
+      console.log(access);
+      this.access = access;
+      this.options = data;
+      console.log(this.access);
+      return this.init(ttn);
+    }
+
+    invoiceRow.prototype.init = function(ttn) {
+      var _this, div1, div2, doc_type, td, tr;
+      _this = this;
+      tr = $('<tr/>', {
+        id: 'tt_' + this.options.id
+      }).data(this.options);
+      if (this.options.doc_type === 'spec') {
+        this.options.spf_num = this.options.doc_num;
+        doc_type = 'счёт';
+      } else {
+        this.options.spf_num = 'оф';
+        doc_type = 'счёт - оферта';
+      }
+      td = $('<td/>', {
+        'class': 'invoice-row--fist-td',
+        click: function() {
+          var t;
+          t = $(this);
+          return new sendAjax('get_ttn', {
+            'id': _this.options.id
+          }, function(response) {
+            return new invoiceWindow(t, _this.options, response.data, _this.access);
+          });
+        }
+      }).append($('<div/>', {
+        'class': 'invoice-row--number',
+        'html': '<span>' + this.options.invoice_num + '</span>  ' + this.options.invoice_create_date
+      })).append($('<div/>', {
+        'class': 'invoice-row--type',
+        'html': doc_type
+      }));
+      tr.append(td);
+      td = $('<td/>', {
+        'class': 'invoice-row--checkboxtd'
+      }).append($('<div/>', {
+        'class': 'invoice-row--checkboxtd-div'
+      }));
+      td.click(function() {
+        if ($(this).hasClass('checked')) {
+          this.options.flag_1c = 0;
+          $(this).removeClass('checked');
+        } else {
+          this.options.flag_1c = 1;
+          $(this).addClass('checked');
+        }
+        new sendAjax('edit_flag_1c', {
+          id: _this.options.id,
+          val: _this.options.flag_1c
+        });
+      });
+      if (Number(this.options.flag_1c > 0)) {
+        td.addClass('checked');
+      }
+      tr.append(td);
+      div1 = $('<div/>', {
+        'class': 'invoice-row--price-profit',
+        'html': round_money(this.options.price_out)
+      });
+      div2 = $('<div/>', {
+        'class': 'invoice-row--price-payment',
+        'html': round_money(this.options.price_out_payment)
+      });
+      td = $('<td/>', {
+        'data-id': this.options.id,
+        click: function(e) {
+          var t;
+          t = $(this);
+          return new sendAjax('get_payment', {
+            'id': _this.options.id
+          }, function(response) {
+            console.log(_this.options.access);
+            return new paymentWindow(_this.options, response.data, _this.access);
+          });
+        },
+        on: {
+          mouseenter: function() {
+            var t;
+            t = $(this);
+            $(this).css({
+              'backgroundColor': '#f1f1f1',
+              'cursor': 'posinter'
+            });
+            if (!div2.hasClass('notify')) {
+              div2.addClass('notify');
+              return setTimeout(function() {
+                if (div2.hasClass('notify')) {
+                  return new sendAjax('get_payment', {
+                    'id': _this.options.id,
+                    'not_deleted_row': 1
+                  }, function(response) {
+                    var dopText, i, j, len1, notifyContent, ptr, ref, row, tbl;
+                    div2.notify(notifyContent = $('<div/>', {
+                      'html': 'нет платежей'
+                    }), {
+                      position: "right",
+                      className: 'invoice_12px',
+                      autoHide: false
+                    });
+                    if (response.data.length > 0) {
+                      tbl = $('<table/>', {
+                        'class': 'notify-table',
+                        'id': 'invoice-row--price-payment-table'
+                      });
+                      tbl.append(ptr = $('<tr/>'));
+                      ptr.append($('<td/>', {
+                        'html': 'сумма'
+                      }));
+                      ptr.append($('<td/>', {
+                        'html': '%'
+                      }));
+                      ptr.append($('<td/>', {
+                        'html': '№'
+                      }));
+                      ptr.append($('<td/>', {
+                        'html': 'дата'
+                      }));
+                      ref = response.data;
+                      for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+                        row = ref[i];
+                        tbl.append(ptr = $('<tr/>'));
+                        ptr.append($('<td/>', {
+                          'html': round_money(response.data[i].price)
+                        }));
+                        ptr.append($('<td/>', {
+                          'html': round_money(response.data[i].percent) + '%'
+                        }));
+                        ptr.append($('<td/>', {
+                          'html': response.data[i].number
+                        }));
+                        ptr.append($('<td/>', {
+                          'html': response.data[i].date
+                        }));
+                      }
+                      notifyContent.html(tbl);
+                      if (Number(_this.options.conditions) > Number(_this.options.percent_payment)) {
+                        dopText = $('<div/>', {
+                          'class': 'invoice-row--price-payment-dopText'
+                        });
+                        dopText.append($('<div/>', {
+                          'style': 'text-align:left;color:red;',
+                          'html': 'Внимание!'
+                        }));
+                        dopText.append($('<div/>', {
+                          'style': 'text-align:left;',
+                          'html': 'Не выполнены условия договора:'
+                        }));
+                        dopText.append($('<div/>', {
+                          'style': 'text-align:left;',
+                          'html': 'график оплаты: ' + round_money(_this.options.conditions) + '-' + round_money(100 - Number(_this.options.conditions)) + '%'
+                        }));
+                        return notifyContent.append(dopText);
+                      }
+                    }
+                  });
+                }
+              }, 1000);
+            }
+          },
+          mouseleave: function() {
+            $(this).find('div.notifyjs-wrapper').remove();
+            $(this).attr('style', '');
+            return div2.removeClass('notify');
+          }
+        }
+      }).css('cursor', 'pointer');
+      td.append(div1);
+      td.append(div2);
+      tr.append(td);
+      td = $('<td/>').append($('<div/>', {
+        'class': 'invoice-row--order-number',
+        'html': this.options.invoice_num
+      })).append($('<div/>', {
+        'class': 'invoice-row--meneger--full-name',
+        'html': this.options.manager_name
+      }));
+      tr.append(td);
+      td = $('<td/>', {
+        'class': 'invoice-row--icons-flag'
+      }).append($('<div/>', {
+        'class': 'invoice-row--checkboxtd-div'
+      }));
+      td.click(function() {
+        var t;
+        if ($(this).hasClass('checked')) {
+          if (Number(_this.options.access) !== 1) {
+            console.log(_this.options.access);
+            echo_message_js('Снять рекламацию может только администратор', 'error_message');
+            return false;
+          }
+          _this.options.flag_flag = 0;
+          $(this).removeClass('checked');
+          new sendAjax('edit_flag_flag', {
+            id: _this.options.id,
+            val: _this.options.flag_flag
+          });
+        } else {
+          if (Number(_this.options.access) !== 5 && Number(_this.options.access) !== 1) {
+            echo_message_js('Рекламацию устанавливает только менеджер', 'error_message');
+            return false;
+          }
+          t = $(this);
+          new modalConfirm({
+            html: 'Вы уверены, что хотите установить флаг рекламации?'
+          }, function() {
+            _this.options.flag_flag = 1;
+            t.addClass('checked');
+            return new sendAjax('edit_flag_flag', {
+              id: _this.options.id,
+              val: _this.options.flag_flag
+            });
+          });
+        }
+      });
+      if (Number(this.options.flag_flag > 0)) {
+        td.addClass('checked');
+      }
+      tr.append(td);
+      td = $('<td/>').append($('<div/>', {
+        'class': 'invoice-row--client--name',
+        'html': this.options.client_name
+      })).append($('<div/>', {
+        'class': 'invoice-row--client--requsits',
+        'data-id': this.options.client_requisit_id,
+        'html': this.options.client_requisit_name
+      }));
+      tr.append(td);
+      td = $('<td/>', {
+        click: function(e) {
+          var t;
+          t = $(this);
+          return new sendAjax('get_costs', {
+            'id': _this.options.id
+          }, function(response) {
+            return new costsWindow(_this.options, response.data, _this.options.access);
+          });
+        },
+        on: {
+          mouseenter: function() {
+            return $(this).css({
+              'backgroundColor': '#f1f1f1'
+            });
+          },
+          mouseleave: function() {
+            return $(this).attr('style', '');
+          }
+        }
+      }).css('cursor', 'pointer');
+      td.append($('<div/>', {
+        'class': 'invoice-row--price-start',
+        'html': _this.options.price_in
+      }));
+      td.append($('<div/>', {
+        'class': 'invoice-row--price-our-pyment',
+        'html': _this.options.costs
+      }));
+      tr.append(td);
+      td = $('<td/>', {
+        'class': 'invoice-row--ice'
+      });
+      if (Number(this.options.flag_ice > 0)) {
+        td.addClass('checked');
+      }
+      tr.append(td);
+      td = $('<td/>').append($('<div/>', {
+        'class': 'invoice-row--price-our-profit',
+        'html': round_money(this.options.price_out - Number(this.options.costs))
+      })).append($('<div/>', {
+        'class': 'invoice-row--price-our-profit-percent',
+        'html': round_money(((this.options.price_out - Number(this.options.costs)) / this.options.price_out * 100).toString()) + '%'
+      }));
+      tr.append(td);
+      td = $('<td/>', {
+        'class': 'invoice-row--icons-calculator'
+      });
+      if (Number(this.options.flag_calc > 0)) {
+        td.addClass('checked');
+      }
+      tr.append(td);
+      tr.append(ttn);
+      td = $('<td/>').append($('<div/>').html(this.options.spf_num));
+      tr.append(td);
+      td = $('<td/>', {
+        'class': 'invoice-row--ttn--vt invoice-row--checkboxtd'
+      });
+      td.click(function() {
+        if ($(this).hasClass('checked')) {
+          _this.options.flag_spf_return = 0;
+          $(this).removeClass('checked');
+        } else {
+          _this.options.flag_spf_return = 1;
+          $(this).addClass('checked');
+        }
+        new sendAjax('edit_flag_spf_return', {
+          id: _this.options.id,
+          val: _this.options.flag_spf_return
+        });
+      });
+      if (Number(this.options.flag_spf_return > 0)) {
+        td.addClass('checked');
+      }
+      tr.append(td);
+      td = $('<td/>', {
+        'html': this.options.status
+      });
+      tr.append(td);
+      td = $('<td/>');
+      tr.append(td);
+      return tr;
+    };
+
+    return invoiceRow;
+
+  })();
 
 
   /*

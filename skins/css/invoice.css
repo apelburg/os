@@ -329,10 +329,27 @@
 .defttn3{
 	padding:5px;
 }
-#js-main-invoice-table tbody tr td div.defttn2{
+#js-main-invoice-table tbody tr td{
+	padding: 5px 0;
+}
+#js-main-invoice-table tbody tr td > div{
+	padding: 2px 5px;
+}
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(4),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(5),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(6),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(7),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(8),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(9),
+#js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(10),
+#js-main-invoice-table.sklad tbody tr.subRow td{
+	padding: 5px;
+}
+
+#js-main-invoice-table tr td div.defttn2{
 	text-align: center;
 }
-#js-main-invoice-table tbody tr td div.defttn3{
+#js-main-invoice-table  tr td div.defttn3{
 	background-position: 50%;
 }
 #js-main-invoice-table tbody tr td.js-query-ttn{
@@ -1080,11 +1097,38 @@ body #context-menu ul li{
 	background-color: #f2f2f2;
 }
 .invoice-row--order-number{
-	color:#000
+	color:#000;
 	padding-bottom: 5px;
 }
 .invoice-row--client--name{
 	color:#000;
 	text-decoration: underline;
 	padding-bottom: 5px;
+}
+.js-td-hover{
+	background-color: #C1C1C1;
+}
+#js-main-invoice-table tbody tr td #invoice-row--price-payment-table{
+	border-collapse: collapse;
+}
+#js-main-invoice-table tbody tr td #invoice-row--price-payment-table tr td{
+	padding: 5px;
+	border:1px solid transparent;
+	color:#fff;
+	font-weight: normal;
+	background: none;
+	background-image: none;
+	border: none;
+	border-collapse: collapse;
+	color: #ECEDEE;
+	text-shadow: none;
+}
+#js-main-invoice-table tbody tr td #invoice-row--price-payment-table tr:nth-of-type(1) td{
+	border-bottom: 1px solid grey;
+}
+#js-main-invoice-table tbody tr td .invoice-row--price-payment-dopText{
+	color:#fff;
+	font-weight: normal;
+	color: #ECEDEE;
+	text-shadow: none;
 }

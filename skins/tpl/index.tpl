@@ -55,7 +55,7 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                         echo get_worked_link_for_cabinet();
                     ?>
 
-                    <?php if(@$ACCESS['invoice']['access']){ ?>
+                    <?php if(@$ACCESS['invoice']['access'] && $_SESSION['access']['access'] == 1){ ?>
                     <a href="?page=invoice&section=1" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
                     <?php } ?>
                     <?php if(@$ACCESS['clients']['access']){ ?>

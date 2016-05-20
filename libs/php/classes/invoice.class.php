@@ -810,8 +810,22 @@
 		 * get pp from invoice id
 		 */
 		protected function get_payment_AJAX(){
-			$query = "SELECT *, DATE_FORMAT(`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_PP."` WHERE `invoice_id` = '".(int)$_POST['id']."'";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$query = "SELECT *, DATE_FORMAT(`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`date`,'%d.%m.%Y')  AS `date` FROM `".INVOICE_PP."` ";
+			$query .= " WHERE `invoice_id` =?";
+			if(isset($_POST['not_deleted_row'])){
+				$query .= " AND `del` = 0";
+			}
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$types = 'i';
+
+
+			$stmt->bind_param($types,$_POST['id']) or die($this->mysqli->error);
+
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
 			$data = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
