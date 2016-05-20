@@ -4355,7 +4355,7 @@ class invoiceRow
         t = $(@)
         new sendAjax('get_payment',{'id':_this.options.id},(response)->
 # создаем экземпляр окна ттн
-          console.log _this.options.access
+          console.log _this.access
           new paymentWindow(_this.options, response.data, _this.access )
         )
       on:
@@ -4429,8 +4429,8 @@ class invoiceRow
 
     td.click ()->
       if $(this).hasClass('checked')
-        if(Number(_this.options.access) != 1)
-          console.log _this.options.access
+        if(Number(_this.access) != 1)
+          console.log _this.access
           echo_message_js('Снять рекламацию может только администратор','error_message')
           return false;
 
@@ -4439,7 +4439,7 @@ class invoiceRow
         # сохраняем значение флага
         new sendAjax 'edit_flag_flag',{id:_this.options.id,val:_this.options.flag_flag}
       else
-        if(Number(_this.options.access) != 5 && Number(_this.options.access) != 1)
+        if(Number(_this.access) != 5 && Number(_this.access) != 1)
           echo_message_js('Рекламацию устанавливает только менеджер','error_message')
           return false;
 
@@ -4474,7 +4474,7 @@ class invoiceRow
       click:(e)->
         t = $(@)
         new sendAjax('get_costs',{'id':_this.options.id},(response)->
-          new costsWindow( _this.options, response.data, _this.options.access )
+          new costsWindow( _this.options, response.data, _this.access )
         )
       on:
         mouseenter:()->
@@ -4612,7 +4612,7 @@ class skladRow
         t = $(@)
         new sendAjax('get_ttn',{'id':self.options.id},(response)->
           # создаем экземпляр окна ттн
-          new invoiceWindow(t, self.options, response.data, self.options.access )
+          new invoiceWindow(t, self.options, response.data, self.access )
         )
     })
     td.append($('<div/>',{
@@ -4686,7 +4686,7 @@ class skladRow
         new sendAjax('get_ttn',{'id':self.options.ttn_id},(response)->
           # создаем экземпляр окна ттн
 
-          new invoiceTtn(t, self.options, response.data, self.options.access ,self.options) if response.data != undefined
+          new invoiceTtn(t, self.options, response.data, self.access ,self.options) if response.data != undefined
         )
     }))
     # дата из ттн
