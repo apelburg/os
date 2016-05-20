@@ -1044,6 +1044,9 @@
 			if(!isset($_POST['doc']) || $_POST['doc'] == ''){
 				$this->responseClass->addMessage('Не получен тип документа');return;
 			}
+			if($_SESSION['access']['access'] != 1){
+				$this->responseClass->addMessage('Данный модуль находится в режиме тестирования и временно не доступен.');return;
+			}
 
 			switch ($_POST['doc']) {
 				// спецификация
@@ -1062,15 +1065,20 @@
 					// получаем данные по спецификации
 					$positions = $this->getSpecificationRows($data['agreement_id'], $data['doc_num']);
 					$agr = $this->getAgreement($data['agreement_id']);
-					
+
+//					$message .= $this->printArr($positions);
+//					$this->responseClass->addSimpleWindow($message);
+//					return;
+
 					// $message .= $this->printArr($agr);
-					$message .= $this->printArr($positions);
+//					$message .= $this->printArr($positions);
 					// $this->responseClass->addSimpleWindow($message,'Создание счета',$options);
 					// return
 					$data['client_id'] = $agr[0]['client_id'];
 					$data['requisit_id'] = $agr[0]['client_requisit_id'];
 					$data['price_in'] = $this->getPriceIn($positions);
 					$data['price_out'] = $this->getPriceOut($positions);
+					$data['conditions'] = $positions[0]['prepayment'];
 					$this->responseClass->addMessage('Счёт запрошен','successful_message');
 					break;
 				// оферта
@@ -1383,7 +1391,13 @@
 		 * @see 		requisits name
 		 */
 		private function getRequisitsName($requisit_id){
-			return 'метод получения названия реквизитов';
+			include_once('client_class.php');
+			$requesit = Client::get_requesit($this->mysqli, $requisit_id);
+			if (isset($requesit['comp_full_name'])){
+				return $requesit['comp_full_name'];
+			}
+
+			return 'метод получения названия реквизитов реквизиты не найдены ID ='.$requisit_id;
 		}
 
 		/**
@@ -1392,8 +1406,9 @@
 		 * @param $client_id
 		 * @return string
 		 */
-		private function getCLientName($client_id){
-			return 'метод получения названия клиента';
+		private function getCLientName($id){
+			include_once('client_class.php');
+			return Client::get_client_name($id);
 		}
 
 		/**
@@ -1425,7 +1440,8 @@
 			    $query .= "`client_requisit_name` = '".$this->getRequisitsName($add_data['requisit_id'])."',";				
 				// оплачено
 				$query .= "`price_costs_all` = '0.00',";
-				// $query .= "`status` = '',";
+				// условия первоначальной оплаты
+				$query .= "`conditions` = '".$add_data['conditions']."',";
 
 				$query .= "`agreement_id` = '".$add_data['agreement_id']."',";
 				$query .= "`doc_type` = '".$add_data['doc_type']."',";
@@ -1473,6 +1489,7 @@
 					$spec_arr[] = $row;
 				}
 			}
+
 			return $spec_arr;
 		}
 
