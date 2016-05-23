@@ -41,5 +41,16 @@
                             <div class="border">Оферты</div>
                         </a>
                     </li>
+                    <li <?php 
+                    if($_GET['section'] == 'page' || $_GET['page'] =='invoice'){echo 'class="selected"';} 
+                    ?>>
+                        <a href="<?php echo HOST; ?>/?page=invoice&section=1<?php
+                            if(isset($_GET['client_id'])){
+                                echo '&client_id='.$_GET['client_id'];
+                            }
+                         ?>">
+                            <div class="border">Счета</div>
+                        </a>
+                    </li>
                 </ul>
             </div>

@@ -275,6 +275,11 @@
 	background-repeat: no-repeat;
 	background-position: 50%;
 }
+#js-main-invoice-table tbody tr td.invoice-row--icons-calculator:hover,
+#js-main-invoice-table tbody tr td.invoice-row--ice:hover{
+	background-color: #f1f1f1;
+	cursor: pointer;
+}
 #js-main-invoice-table tbody tr td.invoice-row--icons-calculator.checked{
 	background-image:url(../images/img_design/icon_invoce_calc_green.png);
 }
@@ -842,7 +847,18 @@ div#js-alert_union{
 	margin: 0;
 	cursor:pointer;
 }
-#js--payment-window--body_info-table tr td.mayBeEdit:hover{
+#js-main-invoice-table tr td.tdLink{
+	text-decoration: underline;
+}
+#js-main-invoice-table tr td div.invoice-row--number{
+	/*color: #000;*/
+}
+#js-main-invoice-table tr td.invoice-row--checkboxtd.red1c{
+	background-color: rgba(255, 0, 0, 0.31);
+}
+#js--payment-window--body_info-table tr td.mayBeEdit:hover,
+#js-main-invoice-table tr td.mayBeEdit:hover,
+#js-main-invoice-table tr td.tdLink:hover{
 	background-color: #f1f1f1;
 	cursor: pointer;
 }
@@ -1097,13 +1113,17 @@ body #context-menu ul li{
 	background-color: #f2f2f2;
 }
 .invoice-row--order-number{
-	color:#000;
+	/*color:#000;*/
 	padding-bottom: 5px;
 }
 .invoice-row--client--name{
-	color:#000;
+	/*color:#000;*/
 	text-decoration: underline;
 	padding-bottom: 5px;
+}
+.invoice-row--client--name:hover{
+	background-color: #f1f1f1;
+	cursor: pointer;
 }
 .js-td-hover{
 	background-color: #C1C1C1;

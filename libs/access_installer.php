@@ -156,11 +156,11 @@
 						'agreement'=> array('access'=> true),
 						'invoice'=> array('access'=> true),
 						'cabinet'=> array('access'=> false),
-				        'clients'=> array(
-							'access'=> true,
-							'full_clients_delete'=> true,
-							'show___foo___'=> false
-							)
+		'clients'=> array(
+			'access'=> true,
+			'full_clients_delete'=> true,
+			'show___foo___'=> false
+		),
 				       );
 	// ПРО-ВО
 	$ACCESS_SHABLON[4] = array(

@@ -14,7 +14,15 @@ else {
     $url_string.= "&client_edit";
 }
 
-$quick_button = '<div class="quick_button_div"><a href="' . $url_string . '" id="" class="button ' . ((isset($_GET['client_edit'])) ? 'add' : 'edit') . '">' . ((isset($_GET['client_edit'])) ? 'Сохранить' : 'Редактировать') . '</a></div>';
+
+$clientClass = new Client($client_id);
+
+
+
+if ($clientClass->user_access != '2'){
+
+    $quick_button = '<div class="quick_button_div"><a href="' . $url_string . '" id="" class="button ' . ((isset($_GET['client_edit'])) ? 'add' : 'edit') . '">' . ((isset($_GET['client_edit'])) ? 'Сохранить' : 'Редактировать') . '</a></div>';
+}
 
 $view_button = '<div class="quick_view_button_div"><a href="#11" class="button">&nbsp;</a></div>';
 
@@ -24,7 +32,7 @@ $view_button = '<div class="quick_view_button_div"><a href="#11" class="button">
 
 /////////////////////////////////////  AJAX END /////////////////////////////////
 
-$clientClass = new Client($client_id);
+
 
 $cont_company_phone = $clientClass->cont_company_phone;
 $cont_company_other = $clientClass->cont_company_other;

@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceRow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, round_money, rowRowData, sendAjax, skladRow, ttnObj,
+  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceRow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, requesitContent, round_money, rowRowData, sendAjax, skladRow, ttnObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -121,16 +121,16 @@
     ppRowObj.prototype.defaults = {
       id: 0,
       invoice_id: 0,
-      invoice_number: 0,
-      number: 0,
+      invoice_number: '',
+      number: "",
       date: getDateNow(),
-      price: 0,
-      percent: 0,
+      price: '0.00',
+      percent: '0.00',
       create: getDateNow(),
-      buch_id: 0,
+      buch_id: '0.00',
       buch_name: 'Default Name',
-      edit: 0,
-      del: 0
+      edit: '0.00',
+      del: '0.00'
     };
 
     ppRowObj.prototype.enterObj = {};
@@ -142,6 +142,7 @@
       if (data == null) {
         data = {};
       }
+      this.options = {};
       if (data.edit === void 0) {
         data.edit = 1;
       }
@@ -212,6 +213,265 @@
    * прототип html строки прихода
    */
 
+  requesitContent = (function() {
+    requesitContent.prototype.defaults = {
+      id: 0
+    };
+
+    requesitContent.prototype.enterObj = {};
+
+    requesitContent.prototype.options = {};
+
+    requesitContent.prototype.access = 0;
+
+    function requesitContent(obj) {
+      this.options = $.extend({}, this.defaults, obj);
+      return this.init();
+    }
+
+    requesitContent.prototype.init = function() {
+      var div, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9, self, tbl, td, tr;
+      self = this;
+      console.info(self);
+      console.log((ref = this.options.company) != null ? ref.length : void 0, this.options.company);
+      tbl = $('<table/>', {
+        'css': {
+          'width': '100%'
+        }
+      });
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td/>', {
+        'colspan': 2
+      }).append(div = $('<div/>', {
+        'style': 'border-bottom:1px solid #cecece;font-size:18px;',
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      })));
+      if ((ref1 = this.options.company) != null ? ref1.length : void 0) {
+        div.html(this.options.company);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'Полное наименование'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref2 = this.options.comp_full_name) != null ? ref2.length : void 0) {
+        td.html(this.options.comp_full_name);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'ИНН'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref3 = this.options.inn) != null ? ref3.length : void 0) {
+        td.html(this.options.inn);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'КПП'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref4 = this.options.kpp) != null ? ref4.length : void 0) {
+        td.html(this.options.kpp);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td/>', {
+        'colspan': 2
+      }).append($('<div/>', {
+        'html': 'Адрес и телефон',
+        'style': 'border-bottom:1px solid #cecece;font-size:18px;'
+      })));
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'Юридический адрес'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref5 = this.options.legal_address) != null ? ref5.length : void 0) {
+        td.html(this.options.legal_address);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'Фактический адрес'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref6 = this.options.postal_address) != null ? ref6.length : void 0) {
+        td.html(this.options.postal_address);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'Телефоны'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref7 = this.options.phone1) != null ? ref7.length : void 0) {
+        td.html(this.options.phone1);
+      }
+      if ((ref8 = this.options.phone1) != null ? ref8.length : void 0) {
+        td.append(' ' + this.options.phone2);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td/>', {
+        'colspan': 2
+      }).append($('<div/>', {
+        'html': 'Банковские реквизиты',
+        'style': 'border-bottom:1px solid #cecece;font-size:18px;'
+      })));
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'БАНК'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if (((ref9 = this.options.bank) != null ? ref9.length : void 0) || +((ref10 = this.options.bank_address) != null ? ref10.length : void 0)) {
+        td.html(this.options.postal_address);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'Р/С'
+      }));
+      tr.append($('<td>', {
+        'html': (ref11 = this.options.r_account) != null ? typeof ref11.length === "function" ? ref11.length({
+          '<span style="color:#D8D3D3">Информация отсутствует</span>': this.options.r_account
+        }) : void 0 : void 0
+      }));
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'КОРР/С'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref12 = this.options.cor_account) != null ? ref12.length : void 0) {
+        td.html(this.options.cor_account);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'БИК'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref13 = this.options.bik) != null ? ref13.length : void 0) {
+        td.html(this.options.bik);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'ОГРН'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref14 = this.options.ogrn) != null ? ref14.length : void 0) {
+        td.html(this.options.ogrn);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'ОКПО'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref15 = this.options.okpo) != null ? ref15.length : void 0) {
+        td.html(this.options.okpo);
+      }
+      tbl.append(tr = $('<tr/>'));
+      tr.append($('<td>', {
+        'html': 'Доп. инфо'
+      }));
+      tr.append(td = $('<td>', {
+        'html': $('<span/>', {
+          'css': {
+            'color': '#D8D3D3'
+          },
+          'html': 'Информация отсутствует'
+        })
+      }));
+      if ((ref16 = this.options.dop_info) != null ? ref16.length : void 0) {
+        td.html(this.options.dop_info);
+      }
+      return tbl;
+    };
+
+    return requesitContent;
+
+  })();
+
+
+  /*
+   * прототип html строки прихода
+   */
+
   ppRow = (function() {
     ppRow.prototype.defaults = {
       id: 0,
@@ -254,7 +514,7 @@
     }
 
     ppRow.prototype.init = function(data, rData, i, paymentWindowObj, data_row) {
-      if (Number(this.options.del) === 0 && Number(this.options.edit) > 0 && (Number(this.access) === 1 || Number(this.access) === 2) && (this.options.number === "" || Number(this.options.number) === 0)) {
+      if (Number(this.options.del) === 0 && Number(this.options.edit) > 0 && (Number(this.access) === 1 || Number(this.access) === 2)) {
         return this.createEditingObj(data, rData, i, paymentWindowObj, data_row);
       } else {
         return this.createSimpleRow(data, rData, i, paymentWindowObj, data_row);
@@ -521,8 +781,8 @@
     costsRowObj.prototype.defaults = {
       id: 0,
       invoice_id: 0,
-      invoice_number: 0,
-      number: 0,
+      invoice_number: '',
+      number: '',
       date: getDateNow(),
       price: 0,
       percent: 0,
@@ -549,6 +809,7 @@
       if (data == null) {
         data = {};
       }
+      this.options = {};
       if (data.edit === void 0) {
         data.edit = 1;
       }
@@ -1401,14 +1662,17 @@
   sendAjax = (function() {
     sendAjax.prototype.defaults = {
       AJAX: 'test',
-      options: {},
-      func: function() {}
+      options: {}
+    };
+
+    sendAjax.prototype.func = function() {
+      return true;
     };
 
     sendAjax.prototype.response = {};
 
     function sendAjax(ajaxName, options, func) {
-      var data;
+      var opt;
       if (options == null) {
         options = {};
       }
@@ -1417,12 +1681,17 @@
           return true;
         };
       }
-      data = {
+      this.href = window.location.href;
+      if (options.url) {
+        this.href = options.url;
+        options.url = void 0;
+      }
+      opt = {
         AJAX: ajaxName,
-        options: options,
-        func: func
+        options: options
       };
-      this.options = $.extend({}, this.defaults, data);
+      this.func = func;
+      this.options = $.extend({}, this.defaults, opt);
       this.sendAjax();
     }
 
@@ -1438,7 +1707,7 @@
         data[k] = v;
       }
       return $.ajax({
-        url: window.location.href,
+        url: this.href,
         type: "POST",
         data: data,
         dataType: "json",
@@ -1448,7 +1717,7 @@
         success: function(data, textStatus, jqXHR) {
           _this.response = $.extend({}, _this.response, jqXHR.responseJSON);
           standard_response_handler(_this.response);
-          return _this.options.func(_this.response);
+          return _this.func(_this.response);
         }
       });
     };
@@ -1551,7 +1820,6 @@
       }
       this.options = $.extend({}, this.defaults, data);
       this.sittings = $.extend({}, this.sittings, sittings);
-      console.warn(this.sittings.single, sittings);
       if (this.options.maxWidth && this.options.maxWidth.indexOf('%') + 1) {
         this.options.maxWidth = $(window).width() / 100 * Number(this.options.maxWidth.substring(this.options.maxWidth.length - 1, 0));
       }
@@ -1723,7 +1991,7 @@
         this.myObj = new modalWindow({
           html: main_div,
           maxHeight: '100%',
-          width: '1350px',
+          maxWidth: '90%',
           title: 'Расходы по счёту',
           buttons: this.getButtons(data_row, responseData)
         }, {
@@ -2467,8 +2735,9 @@
       }, function(response) {
         var len;
         len = responseData.length;
+        console.warn(response.data);
         responseData[len] = new ppRowObj(response.data);
-        console.warn(responseData[len]);
+        console.warn(responseData[len], len);
         return $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(responseData, len, _this.access, _this, data_row));
       });
     };
@@ -2555,7 +2824,7 @@
       });
       buttons.push({
         text: 'Закрыть',
-        "class": 'button_yes_or_no no',
+        "class": 'button_yes_or_no yes',
         click: function() {
           return _this.destroy();
         }
@@ -2824,8 +3093,20 @@
       tr.append($('<td/>', {
         'html': this.options.client_requisit_name,
         'class': 'ttn_requisits',
-        'click': function() {
-          return echo_message_js('Вызов окна просмотра реквизитов');
+        click: function() {
+          return new sendAjax('show_requesit', {
+            'id': _this.options.client_requisit_id
+          }, function(response) {
+            return new modalWindow({
+              html: new requesitContent(response.data),
+              maxHeight: '100%',
+              width: '650px',
+              title: 'Реквизиты'
+            }, {
+              closeOnEscape: true,
+              single: false
+            });
+          });
         }
       }));
       table.append(tr);
@@ -2876,7 +3157,7 @@
           closeOnDateSelect: true,
           format: 'd.m.Y'
         });
-        td.append('№ ТТН ').append($('<span/>').append(input));
+        td.append('№ Счёта ').append($('<span/>').append(input));
         td.append($('<span/>').append(input_date));
       } else {
         span_invoice = $('<span/>', {
@@ -2942,6 +3223,8 @@
       if (reload) {
         obj.parent().data({}).data(data_row);
         $('#js-main-invoice-table').invoice('reflesh', data_row.id);
+        this.saveObj['doc_type'] = data_row.doc_type;
+        this.saveObj['doc_id'] = data_row.doc_id;
         return new sendAjax('confirm_create_bill', this.saveObj, function() {
           return _this.destroy();
         });
@@ -4121,7 +4404,7 @@
         }));
         tr.append($('<th/>', {
           'rowspan': 2,
-          'html': 'выручка,<br>платежи'
+          'html': 'приходы по счету'
         }));
         tr.append($('<th/>', {
           'rowspan': 2,
@@ -4137,7 +4420,7 @@
         }));
         tr.append($('<th/>', {
           'rowspan': 2,
-          'html': 'себестоимость'
+          'html': 'расходы по счету'
         }));
         tr.append($('<th/>', {
           'rowspan': 2,
@@ -4886,7 +5169,7 @@
     }
 
     invoiceRow.prototype.init = function(ttn) {
-      var _this, div1, div2, doc_type, td, tr;
+      var _this, div1, div2, div22, doc_type, pr, td, tr;
       _this = this;
       tr = $('<tr/>', {
         id: 'tt_' + this.options.id
@@ -4923,12 +5206,25 @@
         'class': 'invoice-row--checkboxtd-div'
       }));
       td.click(function() {
-        if ($(this).hasClass('checked')) {
-          this.options.flag_1c = 0;
-          $(this).removeClass('checked');
-        } else {
-          this.options.flag_1c = 1;
-          $(this).addClass('checked');
+        var t;
+        if (_this.access === 2) {
+          if ($(this).hasClass('checked')) {
+            _this.options.flag_1c = 0;
+            $('#js-main-invoice-table').invoice('reflesh', _this.options);
+          } else {
+            if (Number(_this.options.invoice_num) === 0 || _this.options.invoice_create_date === '00.00.0000') {
+              echo_message_js("введите номер счёта и дату");
+              t = $(this);
+              new sendAjax('get_ttn', {
+                'id': _this.options.id
+              }, function(response) {
+                return new invoiceWindow(t, _this.options, response.data, _this.access);
+              });
+            } else {
+              _this.options.flag_1c = 1;
+              $('#js-main-invoice-table').invoice('reflesh', _this.options);
+            }
+          }
         }
         new sendAjax('edit_flag_1c', {
           id: _this.options.id,
@@ -4937,6 +5233,9 @@
       });
       if (Number(this.options.flag_1c > 0)) {
         td.addClass('checked');
+      }
+      if (Number(this.options.flag_1c) === 0 && (Number(this.options.invoice_num) === 0 || this.options.invoice_create_date === '00.00.0000')) {
+        td.addClass('red1c');
       }
       tr.append(td);
       div1 = $('<div/>', {
@@ -5104,7 +5403,10 @@
       tr.append(td);
       td = $('<td/>').append($('<div/>', {
         'class': 'invoice-row--client--name',
-        'html': this.options.client_name
+        'html': this.options.client_name,
+        click: function() {
+          return window.open('http://' + location.hostname + '/os/?page=clients&section=client_folder&subsection=client_card_table&client_id=' + _this.options.client_id, '_blank');
+        }
       })).append($('<div/>', {
         'class': 'invoice-row--client--requsits',
         'data-id': this.options.client_requisit_id,
@@ -5113,8 +5415,6 @@
       tr.append(td);
       td = $('<td/>', {
         click: function(e) {
-          var t;
-          t = $(this);
           return new sendAjax('get_costs', {
             'id': _this.options.id
           }, function(response) {
@@ -5142,46 +5442,108 @@
       }));
       tr.append(td);
       td = $('<td/>', {
-        'class': 'invoice-row--ice'
+        'class': 'invoice-row--ice mayBeEdit',
+        click: function(e) {
+          return new sendAjax('get_costs', {
+            'id': _this.options.id
+          }, function(response) {
+            return new costsWindow(_this.options, response.data, _this.access);
+          });
+        }
       });
       if (Number(this.options.flag_ice > 0)) {
         td.addClass('checked');
       }
       tr.append(td);
+      pr = round_money(((this.options.price_out - Number(this.options.costs)) / this.options.price_out * 100).toString());
+      if (Number(this.options.price_out) === 0) {
+        pr = '0.00';
+      }
       td = $('<td/>').append($('<div/>', {
         'class': 'invoice-row--price-our-profit',
         'html': round_money(this.options.price_out - Number(this.options.costs))
       })).append($('<div/>', {
         'class': 'invoice-row--price-our-profit-percent',
-        'html': round_money(((this.options.price_out - Number(this.options.costs)) / this.options.price_out * 100).toString()) + '%'
+        'html': pr + '%'
       }));
       tr.append(td);
       td = $('<td/>', {
-        'class': 'invoice-row--icons-calculator'
+        'class': 'invoice-row--icons-calculator mayBeEdit',
+        click: function(e) {
+          return new sendAjax('get_costs', {
+            'id': _this.options.id
+          }, function(response) {
+            return new costsWindow(_this.options, response.data, _this.access);
+          });
+        }
       });
       if (Number(this.options.flag_calc > 0)) {
         td.addClass('checked');
       }
       tr.append(td);
       tr.append(ttn);
-      td = $('<td/>').append($('<div/>').html(this.options.spf_num));
-      tr.append(td);
       td = $('<td/>', {
-        'class': 'invoice-row--ttn--vt invoice-row--checkboxtd'
-      });
-      td.click(function() {
-        if ($(this).hasClass('checked')) {
-          _this.options.flag_spf_return = 0;
-          $(this).removeClass('checked');
-        } else {
-          _this.options.flag_spf_return = 1;
-          $(this).addClass('checked');
+        'class': 'tdLink mayBeEdit',
+        click: function() {
+          if (_this.options.doc_type === 'spec') {
+            return window.open('http://' + location.hostname + '/os/?page=agreement&section=agreement_editor&client_id=' + _this.options.client_id + '&agreement_id=' + _this.options.doc_id + '&agreement_type=long_term&open=specification&specification_num=' + _this.options.doc_num + '&dateDataObj={"doc_type":"spec"}', '_blank');
+          } else {
+            return window.open('http://' + location.hostname + '/os/?page=agreement&section=agreement_editor&client_id=' + _this.options.client_id + '&oferta_id=' + _this.options.doc_id + '&dateDataObj={"doc_type":"oferta"}', '_blank');
+          }
         }
-        new sendAjax('edit_flag_spf_return', {
-          id: _this.options.id,
-          val: _this.options.flag_spf_return
-        });
+      }).append($('<div/>').html(this.options.spf_num));
+      tr.append(td);
+      div22 = $('<div/>');
+      td = $('<td/>', {
+        'class': 'invoice-row--ttn--vt invoice-row--checkboxtd',
+        click: function() {
+          if ($(this).hasClass('checked')) {
+            _this.options.flag_spf_return = 0;
+            _this.options.spf_return_date = '';
+            $(this).removeClass('checked');
+          } else {
+            _this.options.flag_spf_return = 1;
+            _this.options.spf_return_date = getDateNow();
+            $(this).addClass('checked');
+          }
+          return new sendAjax('edit_flag_spf_return', {
+            id: _this.options.id,
+            val: _this.options.flag_spf_return
+          });
+        },
+        on: {
+          mouseenter: function() {
+            var t;
+            t = $(this);
+            $(this).css({
+              'backgroundColor': '#f1f1f1',
+              'cursor': 'posinter'
+            });
+            if (!div22.hasClass('notify')) {
+              div22.addClass('notify');
+              return setTimeout(function() {
+                var notifyContent;
+                echo_message_js(_this.options.spf_return_date);
+                if (div22.hasClass('notify') && _this.options.spf_return_date && _this.options.spf_return_date !== '') {
+                  return div22.notify(notifyContent = $('<div/>', {
+                    'html': _this.options.spf_return_date
+                  }), {
+                    position: "right",
+                    className: 'invoice_12px',
+                    autoHide: false
+                  });
+                }
+              }, 1000);
+            }
+          },
+          mouseleave: function() {
+            $(this).find('div.notifyjs-wrapper').remove();
+            $(this).attr('style', '');
+            return div22.removeClass('notify');
+          }
+        }
       });
+      td.append(div22);
       if (Number(this.options.flag_spf_return > 0)) {
         td.addClass('checked');
       }

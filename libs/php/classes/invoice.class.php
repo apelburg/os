@@ -222,6 +222,10 @@
 				$query .= (($i>0)?',':'')." `invoice_num` = '".$_POST['number']."'";$i++;
 			}
 
+			if(isset($_POST['doc_type']) && isset($_POST['doc_id']) && $_POST['doc_type'] != 'spec'){
+				$this->save_specification_number( $_POST['number'], date('Y-m-d',strtotime($_POST['date'])), $_POST['doc_id'] );
+			}
+
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			if ($i>0){
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -237,9 +241,9 @@
 		protected function save_shipped_status_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `status`=?";
-			$query .= " `shipped_date`=NOW()";
-			
+			$query .= ", `shipped_date`=NOW()";
 			$query .= " WHERE `id`=?";
+
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$stmt->bind_param('si',$_POST['status'],$_POST['id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
@@ -301,6 +305,13 @@
 				$query .= " `invoice_num` = '".$curSearch['invoice_num']."' ";
 				$w++;
 			}else{
+				// если мы в клиенте
+				if(isset($_GET['client_id'])){
+					$query .= ($w>0?' AND ':' WHERE ');
+					$query .= " `client_id` = '".(int)$_GET['client_id']."' ";
+					$w++;
+				}
+
 				// если мы не используем поиск
 				// правила выборки счетов по вкладкам
 				if (isset($_GET['section'])){
@@ -1056,7 +1067,7 @@
 					$data['doc_type'] = $_POST['doc'];
 					// номер спецификации к данному договору
 					$data['doc_num'] = $_POST['specification_num'];
-					$data['doc_id'] = 0;
+					$data['doc_id'] = $data['agreement_id'];
 					// проверка на существования запроса по данному документу
 					// if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
 					// 	$this->responseClass->addMessage('Дла данного документа счёт уже запрошен.');
@@ -1092,7 +1103,7 @@
 
 					// проверка на существования запроса по данному документу
 					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
-						$this->responseClass->addMessage('Дла данного документа номер уже запрошен.');
+						$this->responseClass->addMessage('Для данного документа номер уже запрошен.');
 						return;
 					}
 
@@ -1100,9 +1111,14 @@
 					// получаем данные по спецификации
 					$Oferta = $this->getOferta($data['doc_id']);
 					$positions = $this->getOfertaRows($data['doc_id']);
-					
-					
-					// $message .= $this->printArr($Oferta);
+
+					$data['conditions'] = $Oferta[0]['prepayment'];
+//					 $message .= $this->printArr($Oferta);
+//
+//					$message .= $this->printArr($positions);
+//					$this->responseClass->addSimpleWindow($message);
+//					return;
+
 					// $message .= $this->printArr($positions);
 
 					$data['client_id'] = $Oferta[0]['client_id'];
@@ -1110,7 +1126,7 @@
 					$data['price_in'] = $this->getPriceIn($positions);
 					$data['price_out'] = $this->getPriceOut($positions);
 
-					$this->responseClass->addMessage('Номер счёта запрошен','successful_message');
+					$this->responseClass->addMessage('Номер счёта запрошен', 'successful_message');
 					break;
 				
 				default:
@@ -1132,6 +1148,28 @@
 		private function calc_price_width_discount($price_out, $discount){
 			$num = ($price_out / 100) * (100 + $discount);
 			return $num;
+		}
+
+		/**
+		 * сохранение номера оферты
+		 * @param $invoice_num
+		 * @param $id
+		 */
+		private function save_specification_number($invoice_num,$date ,$id){
+
+
+			$query = "UPDATE `" . OFFERTS_TBL . "` SET ";
+			$query .= " `num`=?";
+			$query .= ", `date_time`=?";
+			$query .= " WHERE `id`=?";
+
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('ssi',$invoice_num,$date ,$id) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
 		}
 
 		/**
@@ -1247,6 +1285,12 @@
 		protected function edit_flag_spf_return_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= "`flag_spf_return` = '".(int)$_POST['val']."'";
+
+			if ($_POST['val'] == 0){
+				$query .= ", `spf_return_date` = NULL";
+			}else{
+				$query .= ", `spf_return_date` = NOW()";
+			}
 			  	
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";				
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -1341,7 +1385,7 @@
 		 * @param 		id
 		 */
 		private function getOferta($id){
-			$query = "SELECT * FROM `".OFFERTS_TBL."`";
+			$query = "SELECT * FROM `".OFFERTS_TBL."` WHERE id = '".$id."'";
 			// if($this->user_access != 1 || $this->user_access != 2){
 			// 	$query .= "WHERE `manager_id` = '".$this->user_id."' ";
 			// }
@@ -1398,6 +1442,14 @@
 			}
 
 			return 'метод получения названия реквизитов реквизиты не найдены ID ='.$requisit_id;
+		}
+
+		/**
+		 * окно просмотра реквизитов
+		 */
+		protected function show_requesit_AJAX() {
+			include_once('client_class.php');
+			$this->responseClass->response['data'] = Client::get_requesit($this->mysqli, (int)$_POST['id']);
 		}
 
 		/**

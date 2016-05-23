@@ -84,20 +84,21 @@ class ppRowObj
   defaults:
     id:0
     invoice_id:0
-    invoice_number:0
-    number:0
+    invoice_number:''
+    number:""
     date: getDateNow()
-    price: 0
-    percent: 0
+    price: '0.00'
+    percent: '0.00'
     create: getDateNow()
-    buch_id:0
+    buch_id:'0.00'
     buch_name:'Default Name'
-    edit:0
-    del:0
+    edit:'0.00'
+    del:'0.00'
   enterObj:{}
   options:{}
 
   constructor:(data = {})->
+    @options = {}
     if data.edit == undefined
       data.edit = 1
     for key,el of data
@@ -145,6 +146,198 @@ class rowRowData
 
     return $.extend({}, @defaults, @options)
 
+###
+# прототип html строки прихода
+###
+class requesitContent
+  defaults:
+    id:0
+  enterObj:{}
+  options:{}
+  access:0
+
+
+  constructor:(obj)->
+    @options =  $.extend({}, @defaults, obj)
+
+    return @init()
+
+  init:()->
+
+    self = @
+    console.info self
+    console.log @options.company?.length,@options.company
+    tbl = $('<table/>',{'css':{'width':'100%'}});
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td/>',{'colspan':2}).append(div = $('<div/>',{
+      'style':'border-bottom:1px solid #cecece;font-size:18px;',
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    })))
+    if @options.company?.length
+      div.html(@options.company)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'Полное наименование'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.comp_full_name?.length
+      td.html(@options.comp_full_name)
+
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'ИНН'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.inn?.length
+      td.html(@options.inn)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'КПП'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.kpp?.length
+      td.html(@options.kpp)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td/>',{'colspan':2}).append($('<div/>',{
+      'html':'Адрес и телефон',
+      'style':'border-bottom:1px solid #cecece;font-size:18px;'
+    })))
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'Юридический адрес'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.legal_address?.length
+      td.html(@options.legal_address)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'Фактический адрес'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.postal_address?.length
+      td.html(@options.postal_address)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'Телефоны'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+
+    if @options.phone1?.length
+      td.html(@options.phone1)
+    if @options.phone1?.length
+      td.append(' '+@options.phone2)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td/>',{'colspan':2}).append($('<div/>',{
+      'html':'Банковские реквизиты',
+      'style':'border-bottom:1px solid #cecece;font-size:18px;'
+    })))
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'БАНК'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.bank?.length || +@options.bank_address?.length
+      td.html(@options.postal_address)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'Р/С'
+    }))
+    tr.append($('<td>',{
+      'html':@options.r_account?.length?'<span style="color:#D8D3D3">Информация отсутствует</span>':@options.r_account,
+    }))
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'КОРР/С'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.cor_account?.length
+      td.html(@options.cor_account)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'БИК'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.bik?.length
+      td.html(@options.bik)
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'ОГРН'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.ogrn?.length
+      td.html(@options.ogrn)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'ОКПО'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.okpo?.length
+      td.html(@options.okpo)
+
+    ##
+    tbl.append(tr = $('<tr/>'))
+    tr.append($('<td>',{
+      'html':'Доп. инфо'
+    }))
+    tr.append(td = $('<td>',{
+      'html':$('<span/>',{'css':{'color':'#D8D3D3'},'html':'Информация отсутствует'})
+    }))
+    if @options.dop_info?.length
+      td.html(@options.dop_info)
+
+
+    return tbl
 
 
 ###
@@ -190,7 +383,7 @@ class ppRow
   init:(data,rData,i,paymentWindowObj,data_row)->
     #    if Number(@options.del) == 0 and Number(@options.edit) > 0 and (Number(@access) == 1 or Number(@access) == 2)
     # (data.number == "" || Number(data.price) == 0) - проверка на заполненность номера платежки и суммы, если заполнено - выводим нередактируемую версию
-    if Number(@options.del) == 0 and Number(@options.edit) > 0 and (Number(@access) == 1 or Number(@access) == 2) and (@options.number == "" || Number(@options.number) == 0)
+    if Number(@options.del) == 0 and Number(@options.edit) > 0 and (Number(@access) == 1 or Number(@access) == 2)
       return @createEditingObj(data,rData,i,paymentWindowObj,data_row)
     else
       return @createSimpleRow(data,rData,i,paymentWindowObj,data_row)
@@ -412,8 +605,8 @@ class costsRowObj
   defaults:
     id:0
     invoice_id:0
-    invoice_number:0
-    number:0
+    invoice_number:''
+    number:''
     date: getDateNow()
     price: 0
     percent: 0
@@ -436,6 +629,8 @@ class costsRowObj
   options:{}
 
   constructor:(data = {})->
+    @options = {}
+
     if data.edit == undefined
       data.edit = 1
     for key,el of data
@@ -475,8 +670,8 @@ class costsRow
     #    if Number(@options.del) == 0 and Number(@options.edit) > 0 and (Number(@access) == 1 or Number(@access) == 2)
     # (data.number == "" || Number(data.price) == 0) - проверка на заполненность номера платежки и суммы, если заполнено - выводим нередактируемую версию
 
-    if Number(@options.del) == 0 and (Number(@access) == 1 or Number(@access) == 2)
-      console.log "редактируется",rowspan
+    if Number(@options.del) == 0 and ( Number(@access) == 1 or Number(@access) == 2 )
+      console.log "редактируется", rowspan
       return @createEditingObj(data,rData,i,windowObj,data_row,rowspan)
     else
       console.log "НЕЕЕ редактируется",rowspan
@@ -1169,20 +1364,28 @@ class costsRow
 class sendAjax
   defaults:
     AJAX:'test',
-    options:{},
-    func:()->
+    options:{}
+  func:()->
+    true
 
   response:{}
 
   constructor:(ajaxName,options={},func=()->true)->
-    data={
-        AJAX:ajaxName,
-        options:options,
-        func:func
-      }
+    @href = window.location.href
+    if options.url
+      @href = options.url
+      options.url = undefined
+
+    opt= {
+      AJAX: ajaxName,
+      options: options,
+    }
+    @func = func
+
+
 
     # console.log
-    @options = $.extend({}, @defaults, data)
+    @options = $.extend({}, @defaults, opt)
     @sendAjax()
 
   # отправка запроса
@@ -1194,8 +1397,10 @@ class sendAjax
     for k,v of @options.options
       # console.log k + " is " + v
       data[k] = v
+
+
     $.ajax
-      url: window.location.href
+      url: @href
       type: "POST"
       data:data
       dataType: "json"
@@ -1209,7 +1414,7 @@ class sendAjax
         _this.response = $.extend({}, _this.response, jqXHR.responseJSON)
         standard_response_handler(_this.response)
         # выполняемая функия ы случае успеха
-        _this.options.func(_this.response)
+        _this.func(_this.response)
 
 ###
 # прототип окна Confirm
@@ -1279,8 +1484,8 @@ class modalWindow
     # get options
     @options = $.extend({}, @defaults, data)
     # get sittings
-    @sittings = $.extend({}, @sittings,sittings)
-    console.warn @sittings.single,sittings
+    @sittings = $.extend({}, @sittings, sittings)
+    # console.warn @sittings.single,sittings
     if @options.maxWidth && @options.maxWidth .indexOf('%') + 1
       @options.maxWidth  = $(window).width()/100*Number(@options.maxWidth .substring(@options.maxWidth .length-1,0));
     if @options.maxHeight && @options.maxHeight.indexOf('%') + 1
@@ -1447,7 +1652,7 @@ class costsWindow
       @myObj = new modalWindow({
         html:main_div,
         maxHeight:'100%',
-        width:'1350px',
+        maxWidth:'90%',
         title:'Расходы по счёту',
         buttons: @getButtons(data_row,responseData),
       },{
@@ -2073,9 +2278,10 @@ class paymentWindow
     _this = @
     new sendAjax('create_payment',{'id':data_row.id},(response)->
       len = responseData.length
+      console.warn response.data
       responseData[len] = new ppRowObj(response.data)
 
-      console.warn responseData[len]
+      console.warn responseData[len],len
       # добавляем строку в таблицу в окне
       $(_this.$el).find('#js--payment-window--body_info-table').append(new ppRow(responseData,len,_this.access,_this,data_row))
     )
@@ -2161,7 +2367,7 @@ class paymentWindow
     )
     buttons.push(
       text: 'Закрыть',
-      class:'button_yes_or_no no',
+      class:'button_yes_or_no yes',
       click:()->
         _this.destroy()
     )
@@ -2413,8 +2619,20 @@ class invoiceWindow
     tr.append($('<td/>',{
       'html':@options.client_requisit_name,
       'class':'ttn_requisits',
-      'click':()->
-        echo_message_js('Вызов окна просмотра реквизитов')
+      click:()->
+        new sendAjax('show_requesit',{
+          'id':_this.options.client_requisit_id
+        },(response)->
+          new modalWindow({
+            html: new requesitContent(response.data),
+            maxHeight:'100%',
+            width:'650px',
+            title:'Реквизиты',
+          },{
+            closeOnEscape:true,
+            single:false
+          })
+        )
       }))
     table.append(tr)
 
@@ -2465,7 +2683,7 @@ class invoiceWindow
       });
 
       # номер ттн
-      td.append('№ ТТН ').append($('<span/>').append(input))
+      td.append('№ Счёта ').append($('<span/>').append(input))
       # дата ттн
       td.append($('<span/>').append(input_date))
 
@@ -2524,6 +2742,8 @@ class invoiceWindow
       # обновляем дом в строке
       $('#js-main-invoice-table').invoice('reflesh',data_row.id)
       # отправляем запрос
+      @saveObj['doc_type'] = data_row.doc_type
+      @saveObj['doc_id'] = data_row.doc_id
       new sendAjax 'confirm_create_bill',@saveObj, ()->
         _this.destroy()
     else
@@ -3603,7 +3823,7 @@ class invoiceTtn
       }))
       tr.append($('<th/>',{
         'rowspan':2,
-        'html':'выручка,<br>платежи'
+        'html':'приходы по счету'
       }))
       tr.append($('<th/>',{
         'rowspan':2,
@@ -3619,7 +3839,7 @@ class invoiceTtn
       }))
       tr.append($('<th/>',{
         'rowspan':2,
-        'html':'себестоимость'
+        'html':'расходы по счету'
       }))
       tr.append($('<th/>',{
         'rowspan':2,
@@ -3928,7 +4148,7 @@ class invoiceTtn
       if id.ttn_id != undefined
         data = id
         id = data.ttn_id
-        console.log "принят объект ",data.shipment_status
+        console.log "принят объект ", data.shipment_status
       else
         console.log "принят id "
         data = $(@$el).find('#sklad_row_'+id).data()
@@ -4302,7 +4522,7 @@ class invoiceRow
       click:()->
         t = $(@)
         new sendAjax('get_ttn',{'id':_this.options.id},(response)->
-# создаем экземпляр окна ттн
+          # создаем экземпляр окна ттн
           new invoiceWindow(t, _this.options, response.data, _this.access )
         )
     })
@@ -4319,23 +4539,36 @@ class invoiceRow
     tr.append(td)
 
     # 1с
-    td = $('<td/>',{'class':'invoice-row--checkboxtd'})
-    .append($('<div/>',{
+    td = $('<td/>',{
+      'class':'invoice-row--checkboxtd'
+    }).append($('<div/>',{
       'class':'invoice-row--checkboxtd-div'
     }))
+
     td.click ()->
-      if $(this).hasClass('checked')
-        @options.flag_1c = 0;
-        $(this).removeClass('checked')
-      else
-        @options.flag_1c = 1;
-        $(this).addClass('checked')
+      if _this.access == 2
+        if $(this).hasClass('checked')
+          _this.options.flag_1c = 0;
+          $('#js-main-invoice-table').invoice('reflesh',_this.options)
+        else
+          if (Number(_this.options.invoice_num) == 0 || _this.options.invoice_create_date == '00.00.0000'  )
+            echo_message_js("введите номер счёта и дату")
+            t = $(@)
+            new sendAjax('get_ttn',{'id':_this.options.id},(response)->
+              # создаем экземпляр окна ттн
+              new invoiceWindow(t, _this.options, response.data, _this.access )
+            )
+          else
+            _this.options.flag_1c = 1;
+            $('#js-main-invoice-table').invoice('reflesh',_this.options)
 
       # сохраняем значение флага
       new sendAjax 'edit_flag_1c',{id:_this.options.id,val:_this.options.flag_1c}
       return
 
-    td.addClass('checked') if Number @options.flag_1c>0
+    td.addClass('checked') if Number @options.flag_1c > 0
+    td.addClass('red1c') if(Number(@options.flag_1c) == 0 && (Number(@options.invoice_num) == 0 || @options.invoice_create_date == '00.00.0000'  ))
+
     tr.append(td)
 
     # выручка, платежи
@@ -4461,7 +4694,12 @@ class invoiceRow
     td = $('<td/>')
     .append($('<div/>',{
       'class':'invoice-row--client--name',
-      'html':@options.client_name
+      'html':@options.client_name,
+      click:()->
+        window.open(
+          'http://'+location.hostname+'/os/?page=clients&section=client_folder&subsection=client_card_table&client_id='+_this.options.client_id,
+          '_blank'
+        );
     }))
     .append($('<div/>',{
       'class':'invoice-row--client--requsits',
@@ -4469,10 +4707,9 @@ class invoiceRow
       'html': @options.client_requisit_name
     }))
     tr.append(td)
-    # себестоимость
+    # расходы по счёту
     td = $('<td/>',{
       click:(e)->
-        t = $(@)
         new sendAjax('get_costs',{'id':_this.options.id},(response)->
           new costsWindow( _this.options, response.data, _this.access )
         )
@@ -4493,13 +4730,20 @@ class invoiceRow
     tr.append(td)
     # глаз
     td = $('<td/>',{
-      'class':'invoice-row--ice'
+      'class':'invoice-row--ice mayBeEdit',
+      click:(e)->
+        new sendAjax('get_costs',{'id':_this.options.id},(response)->
+          new costsWindow( _this.options, response.data, _this.access )
+        )
     })
 
 
     td.addClass('checked') if Number @options.flag_ice>0
     tr.append(td)
     # прибыль
+    pr = round_money(((@options.price_out - Number(@options.costs))/@options.price_out*100).toString())
+    if Number(@options.price_out) == 0
+      pr = '0.00'
     td = $('<td/>')
     .append($('<div/>',{
       'class':'invoice-row--price-our-profit',
@@ -4507,12 +4751,18 @@ class invoiceRow
     }))
     .append($('<div/>',{
       'class':'invoice-row--price-our-profit-percent',
-      'html':round_money(((@options.price_out - Number(@options.costs))/@options.price_out*100).toString())+'%'
+      'html':pr+'%'
 
     }))
     tr.append(td)
     # калькулятор
-    td = $('<td/>',{'class':'invoice-row--icons-calculator'})
+    td = $('<td/>',{
+      'class':'invoice-row--icons-calculator mayBeEdit',
+      click:(e)->
+        new sendAjax('get_costs',{'id':_this.options.id},(response)->
+          new costsWindow( _this.options, response.data, _this.access )
+        )
+    })
 
 
 
@@ -4524,23 +4774,70 @@ class invoiceRow
     tr.append(ttn)
 
     # спф дата
-    td = $('<td/>')
+    td = $('<td/>',{
+      'class':'tdLink mayBeEdit',
+      click:()->
+        if _this.options.doc_type == 'spec'
+          window.open(
+            'http://'+location.hostname+'/os/?page=agreement&section=agreement_editor&client_id='+_this.options.client_id+'&agreement_id='+_this.options.doc_id+'&agreement_type=long_term&open=specification&specification_num='+_this.options.doc_num+'&dateDataObj={"doc_type":"spec"}',
+            '_blank'
+          );
+        else
+          window.open(
+            'http://'+location.hostname+'/os/?page=agreement&section=agreement_editor&client_id='+_this.options.client_id+'&oferta_id='+_this.options.doc_id+'&dateDataObj={"doc_type":"oferta"}',
+            '_blank'
+          );
+
+    })
     .append($('<div/>').html(@options.spf_num))
+
     tr.append(td)
     # спф checkbox
-    td = $('<td/>',{'class':'invoice-row--ttn--vt invoice-row--checkboxtd'})
 
-    td.click ()->
-      if $(this).hasClass('checked')
-        _this.options.flag_spf_return = 0;
-        $(this).removeClass('checked')
-      else
-        _this.options.flag_spf_return = 1;
-        $(this).addClass('checked')
+    div22 = $('<div/>')
+    td = $('<td/>',{
+      'class':'invoice-row--ttn--vt invoice-row--checkboxtd',
+      click: ()->
+        if $(this).hasClass('checked')
+          _this.options.flag_spf_return = 0;
+          _this.options.spf_return_date = '';
+          $(this).removeClass('checked')
+        else
+          _this.options.flag_spf_return = 1;
+          _this.options.spf_return_date = getDateNow();
+          $(this).addClass('checked')
+        # сохраняем значение флага
+        new sendAjax 'edit_flag_spf_return',{id:_this.options.id,val:_this.options.flag_spf_return}
 
-      # сохраняем значение флага
-      new sendAjax 'edit_flag_spf_return',{id:_this.options.id,val:_this.options.flag_spf_return}
-      return
+      on:
+        mouseenter:()->
+
+          t = $(this)
+          #            div2.css('backgroundColor':'red')
+
+          $(this).css('backgroundColor':'#f1f1f1','cursor':'posinter')
+          if !div22.hasClass('notify')
+            div22.addClass('notify')
+
+            setTimeout(()->
+              echo_message_js _this.options.spf_return_date
+              if div22.hasClass('notify') && _this.options.spf_return_date && _this.options.spf_return_date != ''
+
+                div22.notify( notifyContent = $('<div/>',{'html':_this.options.spf_return_date}) ,{position:"right",className:'invoice_12px',autoHide: false })
+
+
+            ,1000)
+
+        mouseleave:()->
+          $(this).find('div.notifyjs-wrapper').remove()
+          $(this).attr('style','')
+          div22.removeClass('notify')
+    })
+
+    td.append(div22)
+
+
+
 
     td.addClass('checked') if Number @options.flag_spf_return>0
     tr.append(td)

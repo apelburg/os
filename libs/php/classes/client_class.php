@@ -101,7 +101,7 @@ class Client extends aplStdAJAXMethod{
 
 	*/
 
-	private $user_access = 0;
+	public $user_access = 0;
 	private $user_id = 0;
 	
 	
@@ -275,9 +275,11 @@ class Client extends aplStdAJAXMethod{
 								<td>
 								".++$key.". <a class=\"show_requesit\" href=\"#\" data-id=\"".$value['id']."\" title=\"".$value['company']."\">".$value['company']."</a>
 								</td>
-								<td ".$edit_buttons_all.">
-									<img title=\"Редактировать реквизиты\" class=\"edit_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/edit.png\" >
-									<img title=\"Удалить реквизиты\" class=\"delete_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/delete.png\" ".$edit_buttons.">
+								<td ".$edit_buttons_all.">";
+								if ($this->user_access != '2'){
+									$html .= "<img title=\"Редактировать реквизиты\" class=\"edit_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/edit.png\" >";
+								}
+								$html .="<img title=\"Удалить реквизиты\" class=\"delete_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/delete.png\" ".$edit_buttons.">
 								</td>
 							</tr>";
 					}

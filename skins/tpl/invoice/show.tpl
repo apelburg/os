@@ -23,15 +23,10 @@
 	});
 
 </script>
-<div class="cabinet_top_menu first_line">
-    <ul class="central_menu" style="padding-left: 19px;">
-        <li class="selected">
-            <a href="#">
-                <div class="border">Счета</div>
-            </a>
-        </li>    
-    </ul>
-</div>
+<?php
+	include_once __DIR__."../../clients/client_list/default_menu.tpl";
+
+?>
 
 <div id="js-menu-invoice" class="cabinet_top_menu" style="background-color:#92b73e">
     <ul class="central_menu" style="padding-left: 19px;padding-right: 19px;">
