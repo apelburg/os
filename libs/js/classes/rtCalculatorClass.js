@@ -430,10 +430,11 @@ var rtCalculator = {
 				rtCalculator.send_ajax(url,callback);
 				
 				function callback(response){
+					//alert(response);
 					var img = document.createElement('IMG');
 					img.style.height = '90px';
-					//img.src = 'http://www.apelburg.ru/img/'+response;
-					img.src = 'http://www.apelburg.ru/img/no_image.jpg';
+					img.src = 'http://www.apelburg.ru/img/'+response;
+					//img.src = 'http://www.apelburg.ru/img/no_image.jpg';
 					container.appendChild(img);
 				    document.body.appendChild(container);
 				}
@@ -445,7 +446,7 @@ var rtCalculator = {
 			}
 			var pos = rtCalculator.getPos(cur_cell);
 			container.style.top = (pos[0]+20)+"px";
-			container.style.left =(pos[1]+120)+"px";
+			container.style.left =(pos[1]+40)+"px";
 			///alert(11);
 		}
 	}
