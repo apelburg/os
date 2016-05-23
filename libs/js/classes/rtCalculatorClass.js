@@ -395,13 +395,67 @@ var rtCalculator = {
 								if(tds_arr[j].getAttribute('print_exists_flag') == '1' || tds_arr[j].getAttribute('uslugi_exists_flag') == '1'){
 									$(tds_arr[j]).mouseenter(function() {this.getElementsByTagName('div')[0].style.display = 'block';}).mouseleave(function() {this.getElementsByTagName('div')[0].style.display = 'none';});
 								}
-								
 							}
+							if(tds_arr[j].getAttribute('type') && tds_arr[j].getAttribute('type')=='name'){
+								var art_link = tds_arr[j].getElementsByTagName('A')[0];
+								if(art_link) $(art_link).hover( rtCalculator.show_good_preview, rtCalculator.hide_good_preview );
+							}	
 						}
 					}
 				}
 			}
 		}
+	}
+	,
+	show_good_preview:function(e){
+	    e = e || window.event;
+		var cur_cell = e.target || e.srcElement;
+		//alert();	
+		rtCalculator.show_good_row_id = $(cur_cell).parents('tr').attr('row_id');
+		rtCalculator.good_preview_timer = setTimeout(show,200); 
+		function show(){
+			//alert(222);
+			var container = document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id);
+			if(!container){
+				var container = document.createElement('DIV');
+				container.id = 'goodPreviewWin'+rtCalculator.show_good_row_id;
+				container.style.position = 'absolute';
+
+				//container.style.width = '50px';
+				//container.style.height = '50px';
+				container.style.border = '#CCC solid 2px';
+				container.style.backgroundColor = 'grey';
+				
+				var url = OS_HOST+'?' + addOrReplaceGetOnURL('show_good_preview='+rtCalculator.show_good_row_id);
+				rtCalculator.send_ajax(url,callback);
+				
+				function callback(response){
+					var img = document.createElement('IMG');
+					img.style.height = '90px';
+					//img.src = 'http://www.apelburg.ru/img/'+response;
+					img.src = 'http://www.apelburg.ru/img/no_image.jpg';
+					container.appendChild(img);
+				    document.body.appendChild(container);
+				}
+				
+				
+			}
+			else{
+			    container.style.display = 'block';
+			}
+			var pos = rtCalculator.getPos(cur_cell);
+			container.style.top = (pos[0]+20)+"px";
+			container.style.left =(pos[1]+120)+"px";
+			///alert(11);
+		}
+	}
+	,
+	hide_good_preview:function(e){
+		if(rtCalculator.good_preview_timer) clearTimeout(rtCalculator.good_preview_timer);
+		if(document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id)){
+			document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id).style.display = 'none';
+		}
+		//alert('goodPreviewWin'+rtCalculator.show_good_row_id);
 	}
 	,
 	launch_uslugi_panel:function(e){

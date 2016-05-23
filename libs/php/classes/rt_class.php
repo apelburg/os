@@ -1805,6 +1805,19 @@ echo $query;
 			}
 			else  return false;
 		}
+		
+		static function show_good_preview($row_id){
+			global $mysqli;  
+		
+			$query="SELECT name FROM `".IMAGES_TBL."` WHERE `art_id` = '".$row_id."' AND  `size` = 'small' ORDER BY id";
+			$result = $mysqli->query($query)or die($mysqli->error);
+			if($result->num_rows>0){
+			    $row = $result->fetch_assoc();
+				return $row['name'];
+			}
+			return 'no_image.jpg';
+		}
+
 
 		/**
 		 *	сохранение ресорта
