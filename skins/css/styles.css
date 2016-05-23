@@ -264,6 +264,7 @@ button.CommonRightBtn{
 #quick_button_back a{
   float: left; 
   width: 33px;
+  padding-right:35px;
   height: 44px;background: url(../images/img_design/quick_button_back.png);background-repeat:no-repeat;
 }
 .quick_bar_tbl td .quick_button_div:hover{
@@ -273,19 +274,21 @@ button.CommonRightBtn{
   text-decoration:none;
   line-height:30px;
   font-size: 14px; float: left;
-  padding: 0 35px 0 10px;
+  padding: 0 10px 0 10px;
   margin-top: 6px;
   margin-left: 20px;
   
-  
+  cursor: pointer;
   background-color: #CD2328;
   color: #fff;
 }
 .quick_bar_tbl td .quick_button_div .button.edit{
+  padding-right:35px;
   background: url(../images/img_design/button_edit.png); 
   background-position: top right; background-repeat: no-repeat;background-color: #CD2328;
 }
 .quick_bar_tbl td .quick_button_div .button.add{
+  padding-right:35px;
   background: url(../images/img_design/button_add.png);
   background-position: top right; background-repeat: no-repeat;background-color: #CD2328;
 

@@ -595,6 +595,21 @@
 				"background-repeat": "no-repeat",
 				"background-position": "3px 7px"
 			},
+			invoice_12px: {
+				"font-family":" Arial, Helvetica, sans-serif",
+				"font-weight": "normal",
+				"font-size":"12px",
+				"color":"#fff",
+				"padding": "8px 15px 8px 14px",
+				"text-shadow": "0 1px 0 rgba(255, 255, 255, 0.5)",
+				"background-color": "#5B5C61",
+				"border": "1px solid #828388",
+				"border-radius": "0px",
+				"white-space": "nowrap",
+				"padding-left": "25px",
+				"background-repeat": "no-repeat",
+				"background-position": "3px 7px"
+			},
 			total_10px: {
 				"font-weight": "normal",
 				"font-size":"12px",
@@ -653,6 +668,8 @@
 	$(function() {
 		insertCSS(coreStyle.css).attr("id", "core-notify");
 		$(document).on("click", "." + pluginClassName + "-hidable", function(e) {
+			e.stopPropagation()
+			e.preventDefault()
 			$(this).trigger("notify-hide");
 		});
 		$(document).on("notify-hide", "." + pluginClassName + "-wrapper", function(e) {
@@ -667,9 +684,11 @@
 
 
 // закрытие на rhtcnbr
-$(document).on('click', '.notifyjs-foo-base .notify-no', function() {
-  //programmatically trigger propogating hide event
-  $(this).trigger('notify-hide');
+$(document).on('click', '.notifyjs-foo-base .notify-no', function(e) {
+  	//programmatically trigger propogating hide event
+	e.stopPropagation()
+	e.preventDefault()
+  	$(this).trigger('notify-hide');
 });
 
 

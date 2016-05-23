@@ -281,7 +281,7 @@
 						 }
 						 
 				         // записываем ряд
-						 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$dop_data['quantity'],$dop_data['price_out'],$dop_data['discount']);
+						 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$dop_data['quantity'],$dop_data['price_in'],$dop_data['price_out'],$dop_data['discount']);
 						 
 						 
 						 $query3="SELECT*FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$dop_id."' ORDER BY glob_type DESC";
@@ -306,7 +306,7 @@
 										  $name = $print_details_arr['print_type'].' '.base64_decode($print_details_arr['commentForClient']);
 									  }
 									 // записываем ряд
-									 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount']);
+									 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$uslugi_data['quantity'],$uslugi_data['price_in'],$uslugi_data['price_out'],$uslugi_data['discount']);
 								 }
 								 if($uslugi_data['glob_type'] == 'extra' && !(!!$expel["dop"])){
 									 // если альтернативное название отсутствует (вводится при заведении услуги "НЕТ В СПИСКЕ")
@@ -321,7 +321,7 @@
 									 // меняем количество на 1(еденицу) если это надбавка на всю стоимость
 									 $uslugi_data['quantity'] = ($uslugi_data['for_how']=='for_all')? 1: $uslugi_data['quantity'];
 									 // записываем ряд
-									 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount']);
+									 $specIdsArr[] =  self::insert_row_in_oferta($oferta_id,$name,$uslugi_data['quantity'],$uslugi_data['price_in'],$uslugi_data['price_out'],$uslugi_data['discount']);
 								 }/**/
 								 
 								  
@@ -662,13 +662,14 @@
 				
 				return array('table'=>$table,'itogo'=>$itogo,'nds'=>$nds,'items_num'=>$items_num);
 		}
-		static function insert_row_in_oferta($oferta_id,$name,$quantity,$price,$discount){
+		static function insert_row_in_oferta($oferta_id,$name,$quantity,$price_in,$price,$discount){
 			global $mysqli;
 			
 			$query = "INSERT INTO `".OFFERTS_ROWS_TBL."` SET 
 						  oferta_id='".$oferta_id."',
 						  name='".$name."',
 						  quantity='".$quantity."',
+						  price_in='".$price_in."',
 						  price='".$price."',
 						  summ='".$quantity*$price."',
 						  discount='".$discount."'
@@ -776,6 +777,7 @@
 					
 						 $summ_out = $dop_data['quantity']*$dop_data['price_out'];
 						 $name= (($main_data['art']!='')? 'арт.'.$main_data['art']:'')." ".$main_data['name'];					 
+						 $price_in =   $dop_data['price_in']; 
 						 $price =   $dop_data['price_out']; 
 
 						 // прежде чем записать ряд в спецификацию сверим совпадает ли количество в расчете и в услугах
@@ -842,7 +844,7 @@
 
 						 
 				         // записываем ряд
-						 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$dop_data['quantity'],$price,$dop_data['discount'],$date,$dateDataObj,$dates_data);
+						 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$dop_data['quantity'],$price,$price_in,$dop_data['discount'],$date,$dateDataObj,$dates_data);
 						 
 						 
 						 $query3="SELECT*FROM `".RT_DOP_USLUGI."` WHERE `dop_row_id` = '".$dop_id."' ORDER BY glob_type DESC";
@@ -868,7 +870,7 @@
 									  }
 									  
 									 // записываем ряд
-									 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount'],$date,$dateDataObj,$dates_data);
+									 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['price_in'],$uslugi_data['discount'],$date,$dateDataObj,$dates_data);
 								 }
 								 if($uslugi_data['glob_type'] == 'extra' && !(!!$expel["dop"])){
 									 // если альтернативное название отсутствует (вводится при заведении услуги "НЕТ В СПИСКЕ")
@@ -882,7 +884,7 @@
 									 // меняем количество на 1(еденицу) если это надбавка на всю стоимость
 									 $uslugi_data['quantity'] = ($uslugi_data['for_how']=='for_all')? 1: $uslugi_data['quantity'];
 									 // записываем ряд
-									 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['discount'],$date,$dateDataObj,$dates_data);
+									 $specIdsArr[] =  Agreement::insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$uslugi_data['quantity'],$uslugi_data['price_out'],$uslugi_data['price_in'],$uslugi_data['discount'],$date,$dateDataObj,$dates_data);
 								 }/**/
 								 
 								  
@@ -995,7 +997,7 @@
 			else return false;
 	
 	    }
-		static function insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$quantity,$price,$discount,$date,$dateDataObj,$dates_data){
+		static function insert_row($client_id,$agreement_id,$our_firm_acting_manegement_face,$client_firm_acting_manegement_face,$specification_num,$short_description,$address,$prepayment,$name,$quantity,$price,$price_in,$discount,$date,$dateDataObj,$dates_data){
 			global $mysqli;
 			
 			$query = "INSERT INTO `".GENERATED_SPECIFICATIONS_TBL."` SET 
@@ -1025,6 +1027,7 @@
 						  discount='".$discount."',
 						  quantity='".$quantity."',
 						  price='".$price."',
+						  price_in='".$price_in."',
 						  summ='".$quantity*$price."'
 						  ";
 						  

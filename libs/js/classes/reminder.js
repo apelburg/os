@@ -158,7 +158,7 @@ $(document).on('click', '.leter_div', function(event) {
 
 var warning_messages;
 function get_ui_window(){
-  console.log('get_ui_window')
+  // console.log('get_ui_window')
   // убиваем старые окна
   if($('.reminder_win').length){
     $('.reminder_win').each(function(index, el) {

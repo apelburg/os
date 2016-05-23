@@ -210,15 +210,7 @@ class Client extends aplStdAJAXMethod{
 
 		// окно просмотра реквизитов
 		protected function show_requesit_AJAX() {
-	        $query = "SELECT * FROM `" . CLIENT_REQUISITES_TBL . "` WHERE `id` = '" . $_POST['id'] . "'";
-	        $requesit = array();
-	        
-	        $result = $this->mysqli->query($query) or die($this->mysqli->error);
-	        if ($result->num_rows > 0) {
-	            while ($row = $result->fetch_assoc()) {
-	                $requesit = $row;
-	            }
-	        }
+			$requesit = self::get_requesit($this->mysqli, (int)$_POST['id']);
 	        ob_start();
 		    include ('./skins/tpl/clients/client_folder/client_card/show_requsits.tpl');
 		    $html = ob_get_contents();
@@ -227,6 +219,20 @@ class Client extends aplStdAJAXMethod{
 	        $options['width'] = 1200;
 			$this->responseClass->addSimpleWindow($html,$_POST['title'],$options);	        
 	    }
+
+		static function get_requesit($mysqli,$id){
+
+			$query = "SELECT * FROM `" . CLIENT_REQUISITES_TBL . "` WHERE `id` = '" .(int)$id . "'";
+			$requesit = array();
+
+			$result = $mysqli->query($query) or die($mysqli->error);
+			if ($result->num_rows > 0) {
+				while ($row = $result->fetch_assoc()) {
+					$requesit = $row;
+				}
+			}
+			return $requesit;
+		}
 
 	    /**
 	     *	получить окно со списком реквизитов
@@ -1790,7 +1796,7 @@ class Client extends aplStdAJAXMethod{
 	}
 
 	// вывод краткой информации о клиенте
-	static function get_client__information($id){
+	static function get_client__information($id,$template = 'default'){
 		// получаем информацию по клиенту
 		global $mysqli;		
 
@@ -1871,7 +1877,13 @@ class Client extends aplStdAJAXMethod{
 		}
 		$back_without_client = '<a id="back_without_client" href="./'.$get_str.'"></a>';
 		$back_without_client = '';
+		
 		include './skins/tpl/clients/client_list/condensed_information_on_the_client.tpl';
+		
+		if($template == 'default'){
+			include './skins/tpl/clients/client_list/default_menu.tpl';
+		}
+		
 		return;
 	}
 	
