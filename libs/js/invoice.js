@@ -720,6 +720,9 @@
           button_changed = $('#js--how_del_payment_button');
           button_changed.data().num = Number(button_changed.data().num) + 1;
           button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
+          if (button_changed.data().num > 0) {
+            button_changed.addClass('lightGreen');
+          }
           row.addClass('deleted').data(_this.options);
           td.replaceWith(td = $('<td/>'));
           if (_this.access === 1) {
@@ -761,7 +764,7 @@
             button_changed.data().num = Number(button_changed.data().num) - 1;
             button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
             if (button_changed.data().num === 0) {
-              return button_changed.addClass('no');
+              return button_changed.addClass('no lightGreen');
             }
           });
         });
@@ -1575,6 +1578,9 @@
           button_changed = $('#js--how_del_payment_button');
           button_changed.data().num = Number(button_changed.data().num) + 1;
           button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
+          if (button_changed.data().num > 0) {
+            button_changed.addClass('lightGreen');
+          }
           rowspan = Number(td.attr('rowspan'));
           td.parent().attr('id', 'myGroupRowDelete');
           row = $(windowObj.$el).find('#myGroupRowDelete').attr('id', '').addClass('deleted').data(_this.options);
@@ -1643,7 +1649,7 @@
             button_changed.data().num = Number(button_changed.data().num) - 1;
             button_changed.text('Показать удалённые(' + button_changed.data().num + ')');
             if (button_changed.data().num === 0) {
-              return button_changed.addClass('no');
+              return button_changed.addClass('no lightGreen');
             }
           });
         });
@@ -1856,7 +1862,6 @@
           "class": "js-alert_union"
         }));
       }
-      console.log(this.winDiv);
       self = this.winDiv.dialog({
         width: this.options.width,
         height: this.options.height,
@@ -2403,7 +2408,7 @@
     };
 
     costsWindow.prototype.getButtons = function(data_row, responseData) {
-      var _this, buttons;
+      var _this, buttons, className;
       _this = this;
       this.saveObj = {};
       buttons = [];
@@ -2417,9 +2422,14 @@
           }
         });
       }
+      if (_this.countDelRow > 0) {
+        className = 'button_yes_or_no no show_del_payment_button lightGreen';
+      } else {
+        className = 'button_yes_or_no no show_del_payment_button';
+      }
       buttons.push({
         text: 'Показать удалённые(' + _this.countDelRow + ')',
-        "class": 'button_yes_or_no no show_del_payment_button',
+        "class": className,
         id: 'js--how_del_payment_button',
         data: {
           num: _this.countDelRow
@@ -2430,6 +2440,9 @@
               $(this).removeClass('no').html('Скрыть удалённые (' + $(this).data('num') + ')');
             } else {
               $(this).addClass('no').html('Показать удалённые (' + $(this).data('num') + ')');
+              if (Number($(this).data('num')) > 0) {
+                $(this).addClass('lightGreen');
+              }
             }
           }
           return _this.updatePaymenContent($(this), responseData, data_row);
@@ -2790,7 +2803,7 @@
     };
 
     paymentWindow.prototype.getButtons = function(data_row, responseData) {
-      var _this, buttons;
+      var _this, buttons, className;
       _this = this;
       this.saveObj = {};
       buttons = [];
@@ -2804,9 +2817,14 @@
           }
         });
       }
+      if (_this.countDelRow > 0) {
+        className = 'button_yes_or_no no show_del_payment_button lightGreen';
+      } else {
+        className = 'button_yes_or_no no show_del_payment_button';
+      }
       buttons.push({
         text: 'Показать удалённые(' + _this.countDelRow + ')',
-        "class": 'button_yes_or_no no show_del_payment_button',
+        "class": className,
         id: 'js--how_del_payment_button',
         data: {
           num: _this.countDelRow
@@ -2817,6 +2835,9 @@
               $(this).removeClass('no').html('Скрыть удалённые (' + $(this).data('num') + ')');
             } else {
               $(this).addClass('no').html('Показать удалённые (' + $(this).data('num') + ')');
+              if (Number($(this).data('num') > 0)) {
+                $(this).addClass('lightGreen');
+              }
             }
           }
           return _this.updatePaymenContent($(this), responseData, data_row);
@@ -3118,6 +3139,26 @@
       td = $('<td/>', {
         'colspan': '2'
       });
+      input_date = $('<input/>', {
+        'val': this.options.invoice_create_date,
+        'class': '',
+        blur: function() {
+          return _this.editSaveObj('date', $(this).val(), _this.options.invoice_create_date);
+        }
+      }).datetimepicker({
+        minDate: new Date(),
+        timepicker: false,
+        dayOfWeekStart: 1,
+        onSelectDate: function(ct, $i) {
+          return $i.blur();
+        },
+        onGenerate: function(ct) {
+          $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+          return $(this).find('.xdsoft_date');
+        },
+        closeOnDateSelect: true,
+        format: 'd.m.Y'
+      });
       if ((Number(this.options.invoice_num) === 0 || this.options.invoice_create_date === '00.00.0000') && this.access === 2) {
         input = $('<input/>', {
           'val': this.options.invoice_num,
@@ -3126,36 +3167,23 @@
           focus: function() {
             if (Number($(this).val()) === 0) {
               $(this).val('');
+              return $(_this.myObj.buttonDiv).find('#create_bill_button').addClass('no');
             }
           },
           blur: function() {
             if (Number($(this).val()) === 0) {
               $(this).val($(this).attr('data-val'));
+              $(_this.myObj.buttonDiv).find('#create_bill_button').addClass('no');
             }
           },
           keyup: function() {
+            if (Number($(this).val())) {
+              $(_this.myObj.buttonDiv).find('#create_bill_button').removeClass('no');
+            } else {
+              $(_this.myObj.buttonDiv).find('#create_bill_button').addClass('no');
+            }
             return _this.editSaveObj('number', $(this).val(), _this.options.invoice_num);
           }
-        });
-        input_date = $('<input/>', {
-          'val': this.options.invoice_create_date,
-          'class': '',
-          blur: function() {
-            return _this.editSaveObj('date', $(this).val(), _this.options.invoice_create_date);
-          }
-        }).datetimepicker({
-          minDate: new Date(),
-          timepicker: false,
-          dayOfWeekStart: 1,
-          onSelectDate: function(ct, $i) {
-            return $i.blur();
-          },
-          onGenerate: function(ct) {
-            $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
-            return $(this).find('.xdsoft_date');
-          },
-          closeOnDateSelect: true,
-          format: 'd.m.Y'
         });
         td.append('№ Счёта ').append($('<span/>').append(input));
         td.append($('<span/>').append(input_date));
@@ -3178,23 +3206,25 @@
       var _this, buttons;
       _this = this;
       this.saveObj = {};
+      buttons = [];
       if (Number(data_row.invoice_num) <= 0 || data_row.invoice_create_date === '00.00.0000') {
-        return buttons = [
-          {
-            text: 'Отмена',
-            "class": 'button_yes_or_no no',
-            click: function() {
-              return _this.destroy();
-            }
-          }, {
-            text: 'Создать',
-            "class": 'button_yes_or_no',
-            click: function() {
-              return _this.confirmAndCreateBill(obj, data_row);
-            }
+        buttons.push({
+          text: 'Отмена',
+          "class": 'button_yes_or_no no',
+          click: function() {
+            return _this.destroy();
           }
-        ];
+        });
+        buttons.push({
+          text: 'Создать',
+          "class": 'button_yes_or_no no',
+          id: 'create_bill_button',
+          click: function() {
+            return _this.confirmAndCreateBill(obj, data_row);
+          }
+        });
       }
+      return buttons;
     };
 
     invoiceWindow.prototype.editSaveObj = function(key, value, old_value) {
@@ -3284,7 +3314,7 @@
         /*
          * добавляем таблицу
          */
-        main_div.append(this.contentTbl = this.createTable(responseData));
+        main_div.append(this.contentTbl = this.createTable(responseData, ttn));
 
         /*
          * добавление шапки окна
@@ -3294,7 +3324,7 @@
         /*
          * выбор способа доставки
          */
-        if (this.access === 5 && this.checkNumber > 0) {
+        if (this.access === 5 && this.checkNumber > 0 && ttn === void 0) {
           main_div.append(this.createDeliveryChoose());
         }
 
@@ -3311,7 +3341,7 @@
           width: '1000px',
           maxHeight: '100%',
           title: 'Запрос ТТН',
-          buttons: this.getButtons(obj, data_row)
+          buttons: this.getButtons(obj, data_row, ttn)
         }, {
           closeOnEscape: true
         });
@@ -3330,6 +3360,7 @@
 
     invoiceTtn.prototype.alreadyWasСreated = function() {
       var content, j, len1, oldTtn, ref, results, tbl;
+      console.log("предыдущие ттн ---Ю");
       content = $('<div/>', {
         'class': "ttn--already-was-created"
       });
@@ -3534,7 +3565,7 @@
        * с формой назначения номера ТТН и даты от которой эта ТТН выставлена
        */
       span_invoice = $('<span/>', {
-        'html': "№ Счёта " + this.options.invoice_num + " от " + this.options.invoice_create_date
+        'html': "№ ТТН " + this.options.invoice_num + " от " + this.options.invoice_create_date
       });
       td = $('<td/>', {
         'colspan': '2'
@@ -3578,7 +3609,7 @@
           closeOnDateSelect: true,
           format: 'd.m.Y'
         });
-        td.append('№ Счёта ').append($('<span/>').append(input));
+        td.append('№ ТТН ').append($('<span/>').append(input));
         td.append($('<span/>').append(input_date));
       }
       td.append(span_invoice);
@@ -3668,9 +3699,16 @@
 
     invoiceTtn.prototype.createHeadManager = function(ttn) {
       var span_invoice, span_ttn, table, tr;
-      span_ttn = $('<span/>', {
-        'html': "№ ТТН " + this.defaults.number + " от "
-      }).append(this.spanDate());
+      if (ttn === void 0) {
+        span_ttn = $('<span/>', {
+          'html': "№ ТТН " + this.defaults.number + " от "
+        }).append(this.spanDate());
+      } else {
+        console.warn(ttn);
+        span_ttn = $('<span/>', {
+          'html': "№ ТТН " + this.defaults.number + " от "
+        }).append(ttn.date);
+      }
       span_invoice = $('<span/>', {
         'html': "№ Счёта " + this.options.invoice_num + " от " + this.options.invoice_create_date
       });
@@ -3689,12 +3727,10 @@
           return echo_message_js('Вызов окна просмотра реквизитов');
         }
       }));
-      if (this.checkNumber > 0) {
-        table.append(tr = $('<tr/>'));
-        tr.append($('<td/>', {
-          'colspan': '2'
-        }).append(span_ttn).append(span_invoice));
-      }
+      table.append(tr = $('<tr/>'));
+      tr.append($('<td/>', {
+        'colspan': '2'
+      }).append(span_ttn).append(span_invoice));
       return $('<div>', {
         id: 'ttn_head_info'
       }).append(table);
@@ -3711,10 +3747,11 @@
       }
     };
 
-    invoiceTtn.prototype.getFirstTdCheck = function(position) {
+    invoiceTtn.prototype.getFirstTdCheck = function(position, ttn) {
       var check, self, td;
       self = this;
-      if (Number(position.ttn_id) === 0 && Number(position.not_shipped) === 0) {
+      console.log(ttn);
+      if (Number(position.ttn_id) === 0 && Number(position.not_shipped) === 0 && ttn === void 0) {
         this.checkNumber++;
         check = $('<input/>', {
           'type': 'checkbox',
@@ -3752,7 +3789,7 @@
       return td;
     };
 
-    invoiceTtn.prototype.tblManRow = function(position) {
+    invoiceTtn.prototype.tblManRow = function(position, ttn) {
       var button2, pr_out, self, td, td_name, tr;
       self = this;
       tr = $('<tr/>').data(position).attr('data-id', position.id);
@@ -3761,7 +3798,8 @@
       } else if (Number(position.ttn_id) > 0) {
         tr.addClass('ttn_created');
       }
-      tr.append(td = this.getFirstTdCheck(position));
+      console.info(ttn);
+      tr.append(td = this.getFirstTdCheck(position, ttn));
       button2 = [];
       button2.push({
         'name': 'нужна отгрузка',
@@ -3774,7 +3812,7 @@
             not_shipped: not_shipped
           }, function() {
             position.not_shipped = not_shipped;
-            return tr.replaceWith(self.tblManRow(position));
+            return tr.replaceWith(self.tblManRow(position, ttn));
           });
         }
       });
@@ -3791,7 +3829,7 @@
             not_shipped: not_shipped
           }, function() {
             position.not_shipped = not_shipped;
-            return tr.replaceWith(self.tblManRow(position));
+            return tr.replaceWith(self.tblManRow(position, ttn));
           });
         }
       });
@@ -3813,7 +3851,7 @@
       return tr.append($('<td/>').append(round_money(pr_out * position.quantity) + ' р.'));
     };
 
-    invoiceTtn.prototype.createTableManager = function(responseData) {
+    invoiceTtn.prototype.createTableManager = function(responseData, ttn) {
       var _this, i, j, len1, main_checkbox, position, table, td, td_main_check, tr;
       _this = this;
       table = $('<table/>', {
@@ -3861,11 +3899,12 @@
       this.main_price = 0;
       this.nds = 0;
       this.posNum = 1;
+      console.log('до создания таблицы строк  -> ', ttn);
       this.checkNumber = 0;
       for (i = j = 0, len1 = responseData.length; j < len1; i = ++j) {
         position = responseData[i];
         responseData[i].num = this.posNum++;
-        table.append(this.tblManRow(responseData[i]));
+        table.append(this.tblManRow(responseData[i], ttn));
       }
       if (this.checkNumber > 0) {
         td_main_check.append(main_checkbox);
@@ -3901,7 +3940,7 @@
     };
 
     invoiceTtn.prototype.createTableAdmin = function(responseData) {
-      var _this, i, j, len1, main_checkbox, main_price, nds, position, pr_out, table, td, tr;
+      var _this, arr, che, i, j, len1, len2, m, main_checkbox, main_price, n, nds, position, pr_out, table, td, tr;
       _this = this;
       table = $('<table/>', {
         'id': 'js-invoice--window--ttn-table'
@@ -3924,7 +3963,7 @@
           return _this.clickMainCheckbox(table, td, input);
         }
       });
-      if (this.access !== 1 && this.access !== 2) {
+      if (this.access !== 1 && this.access !== 2 && this.access !== 7) {
         td.append(main_checkbox);
       } else {
         td.width('20px');
@@ -3956,10 +3995,29 @@
       for (j = 0, len1 = responseData.length; j < len1; j++) {
         position = responseData[j];
         tr = $('<tr/>').data(position).attr('data-id', position.id);
-        if (Number(_this.defaults.id) === Number(position.ttn_id)) {
-          td = $('<td/>').addClass('checked buh_style');
+        if (this.access !== 7) {
+          if (Number(_this.defaults.id) === Number(position.ttn_id)) {
+            td = $('<td/>').addClass('checked buh_style');
+          } else {
+            td = $('<td/>');
+            if (Number(position.ttn_id) > 0) {
+              tr.addClass('ttn_created');
+            }
+          }
         } else {
+          arr = _this.defaults.positions_num.split(',');
+          che = false;
+          for (m = 0, len2 = arr.length; m < len2; m++) {
+            n = arr[m];
+            console.log(i, n);
+            if (Number(n) === i) {
+              che = true;
+            }
+          }
           td = $('<td/>');
+          if (che) {
+            td.addClass('checked buh_style');
+          }
           if (Number(position.ttn_id) > 0) {
             tr.addClass('ttn_created');
           }
@@ -4010,14 +4068,19 @@
       return table;
     };
 
-    invoiceTtn.prototype.createTable = function(responseData) {
+    invoiceTtn.prototype.createTable = function(responseData, ttn) {
+      if (ttn !== void 0) {
+        return this.createTableAdmin(responseData);
+      }
       switch (this.access) {
         case 1:
+          return this.createTableAdmin(responseData);
+        case 7:
           return this.createTableAdmin(responseData);
         case 2:
           return this.createTableAdmin(responseData);
         default:
-          return this.createTableManager(responseData);
+          return this.createTableManager(responseData, ttn);
       }
     };
 
@@ -4119,9 +4182,12 @@
             text: 'OK',
             "class": 'button_yes_or_no yes',
             click: function() {
+              var positions_in_ttn;
               $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+              positions_in_ttn = Number(data_row.positions_in_ttn) + Number(options.length);
               return new sendAjax('create_new_ttn', {
                 invoise_id: self.options.id,
+                positions_in_ttn: positions_in_ttn,
                 positions: options.join(','),
                 position_numbers: position_numbers.join(','),
                 date_shipment: date_shipment.val(),
@@ -4130,7 +4196,8 @@
                 self.destroy();
                 if (response.data) {
                   data_row.ttn[data_row.ttn.length] = new ttnObj(response.data);
-                  $('#js-main-invoice-table').invoice('reflesh', data_row.id);
+                  data_row.positions_in_ttn = positions_in_ttn;
+                  $('#js-main-invoice-table').invoice('reflesh', data_row);
                 }
                 if (delivery.join('') === 'our_delivery') {
                   return new modalConfirm({
@@ -4178,47 +4245,43 @@
       }
     };
 
-    invoiceTtn.prototype.getButtons = function(obj, data_row) {
-      var _this, buttons;
+    invoiceTtn.prototype.getButtons = function(obj, data_row, ttn) {
+      var _this, buttons, firstButton;
       _this = this;
       this.saveObj = {};
+      buttons = [];
+      firstButton = {
+        text: 'Отмена',
+        "class": 'button_yes_or_no no',
+        click: function() {
+          return _this.destroy();
+        }
+      };
+      buttons.push(firstButton);
       if (this.access === 2 || this.access === 1) {
         if (Number(this.defaults.number) !== void 0 && Number(this.defaults.number) === 0) {
-          return buttons = [
-            {
-              text: 'Отмена',
-              "class": 'button_yes_or_no no',
-              click: function() {
-                return _this.destroy();
-              }
-            }, {
-              text: 'Создать',
-              "class": 'button_yes_or_no',
-              click: function() {
-                return _this.confirmAndCreateTtn(obj, data_row);
-              }
+          buttons.push({
+            text: 'Создать',
+            "class": 'button_yes_or_no',
+            click: function() {
+              return _this.confirmAndCreateTtn(obj, data_row);
             }
-          ];
+          });
         }
       } else {
         if (this.checkNumber > 0) {
-          return buttons = [
-            {
-              text: 'Отмена',
-              "class": 'button_yes_or_no no',
-              click: function() {
-                return _this.destroy();
-              }
-            }, {
+          if (this.access === 5 && ttn === void 0) {
+            buttons.push({
               text: 'Запросить',
               "class": 'button_yes_or_no',
               click: function() {
                 return _this.queryNewTtn(obj, data_row);
               }
-            }
-          ];
+            });
+          }
         }
       }
+      return buttons;
     };
 
     return invoiceTtn;
@@ -4329,7 +4392,7 @@
             index: 3,
             name: 'Част. оплаченные'
           }, {
-            index: 5,
+            index: 4,
             name: 'Оплаченные'
           }, {
             index: 5,
@@ -4548,7 +4611,7 @@
       };
 
       invoice.prototype.getTtnRow = function(row, ttn, i) {
-        var _this, check, divw, number, tr;
+        var _this, check, d, divw, number, tr;
         _this = this;
         tr = $('<div/>', {
           'id': ttn.id,
@@ -4559,7 +4622,7 @@
         } else {
           number = ttn.number;
         }
-        tr.append($('<div/>', {
+        tr.append(d = $('<div/>', {
           'class': 'defttn1 cell',
           'html': number,
           click: function() {
@@ -4574,6 +4637,9 @@
             });
           }
         }).width(_this.defttn[0]));
+        if (ttn.number <= 0) {
+          d.addClass('redTD');
+        }
         tr.append($('<div/>', {
           'class': 'defttn2 cell',
           'html': ttn.date,
@@ -4623,6 +4689,10 @@
             }
           }
         }).width(_this.defttn[2]);
+        console.log(Number(ttn.shipment_status), Number(ttn.number));
+        if (Number(ttn.shipment_status) === 1 && Number(ttn.number) > 0) {
+          divw.addClass('redTD');
+        }
         tr.append(divw).data(ttn);
         return tr;
       };
@@ -4633,7 +4703,8 @@
        */
 
       invoice.prototype.getTdTtn = function(row) {
-        var _this, i, j, len1, ref, table, td, ttn;
+        var _this, i, j, len1, ref, table, td, ttn, windowClick;
+        windowClick = function(event) {};
         if (this.defttn === void 0) {
           this.defttn = {
             0: $('#defttn1').width(),
@@ -4649,14 +4720,26 @@
         ref = row.ttn;
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           ttn = ref[i];
-          table.append(this.getTtnRow(row, ttn, i));
+          table.prepend(this.getTtnRow(row, ttn, i));
         }
         if (row.ttn.length <= 0) {
-          if (_this.options.access === 5) {
-            td = $('<td/>', {
-              'colspan': '3',
-              'class': 'js-query-ttn',
-              'html': 'Запросить',
+          td = $('<td/>', {
+            'colspan': '3',
+            'class': 'js-query-ttn'
+          });
+        } else {
+          td = $('<td/>', {
+            'colspan': '3',
+            'class': 'js-query-ttn-rows'
+          }).append(table);
+        }
+        if (_this.options.access === 5) {
+          console.log(row);
+          console.log(row.positions_num, row.positions_in_ttn);
+          if (Number(row.positions_num) !== Number(row.positions_in_ttn) && Number(row.positions_in_ttn) > 0) {
+            td.append($('<div/>', {
+              'html': 'Заропсить',
+              'class': 'js-query-ttn-div mayBeEdit',
               click: function() {
                 var t;
                 t = $(this);
@@ -4668,18 +4751,26 @@
                   }
                 });
               }
-            });
-          } else {
+            }));
+          } else if (Number(row.positions_num) !== Number(row.positions_in_ttn)) {
+            console.log(654);
             td = $('<td/>', {
               'colspan': '3',
-              'class': 'js-query-ttn'
+              'class': 'js-query-ttn',
+              'html': 'Запросить',
+              click: function(e) {
+                var t;
+                t = $(this);
+                return new sendAjax('get_ttn', {
+                  'id': row.id
+                }, function(response) {
+                  if (response.data !== void 0) {
+                    return new invoiceTtn(t, row, response.data, _this.options.access);
+                  }
+                });
+              }
             });
           }
-        } else {
-          td = $('<td/>', {
-            'colspan': '3',
-            'class': 'js-query-ttn-rows'
-          }).append(table);
         }
         return td;
       };
@@ -4792,43 +4883,36 @@
       };
 
       sklad.prototype.checkGlobalStatus = function(data) {
-        var dataFirstRow, firstRow, rData, row, rowNew, rowspan, shipment_status, status;
+        var dataFirstRow, firstRow, number_positions, rData, row, rowspan, shipment_status;
         if ($(this.$el).find('#sklad_row_' + data.ttn_id).length > 0) {
-          echo_message_js("метод checkGlobalStatus >>> ");
           row = $(this.$el).find('#sklad_row_' + data.ttn_id);
           while (row.hasClass('subRow')) {
             row = row.prev();
           }
           firstRow = row;
-          console.log(firstRow);
           dataFirstRow = firstRow.data();
           rowspan = 1;
           shipment_status = Number(dataFirstRow.shipment_status);
-          console.log("Статус отгрузки " + rowspan + " строки : ", shipment_status);
+          number_positions = dataFirstRow.positions_num.split(',').length;
           while (row.next() !== void 0 && row.next().hasClass('subRow')) {
             row = row.next();
             rData = row.data();
+            number_positions += rData.positions_num.split(',').length;
             shipment_status += Number(rData.shipment_status);
             rowspan++;
-            console.log("Статус отгрузки " + rowspan + " строки : ", shipment_status);
           }
-          console.log('>//> ', shipment_status, rowspan);
-          if (shipment_status === 0) {
-            status = 'не отгружен';
-          } else if (shipment_status !== rowspan) {
-            status = 'частично отгружен';
-          } else {
-            status = 'отгружен';
-          }
-          if (dataFirstRow.status !== status) {
-            dataFirstRow.status = status;
-            rowNew = new skladRow(dataFirstRow, this.aceess, rowspan);
-            firstRow.replaceWith(rowNew);
-            return new sendAjax("save_shipped_status", {
-              id: data.id,
-              status: dataFirstRow.status
-            });
-          }
+          return new sendAjax('check_chipment_global_status', {
+            invoice_id: dataFirstRow.id,
+            positions_num: Number(dataFirstRow.invoice_positions_num),
+            positions_in_ttn: Number(dataFirstRow.positions_in_ttn)
+          }, function(response) {
+            var rowNew;
+            if (dataFirstRow.status !== response.data.status) {
+              dataFirstRow.status = response.data.status;
+              rowNew = new skladRow(dataFirstRow, this.aceess, rowspan);
+              return firstRow.replaceWith(rowNew);
+            }
+          });
         }
       };
 
@@ -5047,18 +5131,18 @@
       };
 
       sklad.prototype.getTtnRow = function(row, ttn, i) {
-        var _this, check, divw, number, tr;
+        var _this, check, d, divw, number, tr;
         _this = this;
         tr = $('<div/>', {
           'id': ttn.id,
           'class': 'row'
         }).data(ttn);
         if (ttn.number <= 0) {
-          number = 'запрос';
+          number = 'запрос33';
         } else {
           number = ttn.number;
         }
-        tr.append($('<div/>', {
+        tr.append(d = $('<div/>', {
           'class': 'defttn1 cell',
           'html': number,
           click: function() {
@@ -5073,6 +5157,9 @@
             });
           }
         }).width(_this.defttn[0]));
+        if (ttn.number <= 0) {
+          d.addClass('redTD');
+        }
         tr.append($('<div/>', {
           'class': 'defttn2 cell',
           'html': ttn.date,
@@ -5169,7 +5256,7 @@
     }
 
     invoiceRow.prototype.init = function(ttn) {
-      var _this, div1, div2, div22, doc_type, pr, td, tr;
+      var _this, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
       _this = this;
       tr = $('<tr/>', {
         id: 'tt_' + this.options.id
@@ -5413,7 +5500,16 @@
         'html': this.options.client_requisit_name
       }));
       tr.append(td);
+      div31 = $('<div/>', {
+        'class': 'invoice-row--price-start',
+        'html': _this.options.price_in
+      });
+      div3 = $('<div/>', {
+        'class': 'invoice-row--price-our-pyment',
+        'html': _this.options.costs
+      });
       td = $('<td/>', {
+        'class': 'mayBeEdit',
         click: function(e) {
           return new sendAjax('get_costs', {
             'id': _this.options.id
@@ -5423,23 +5519,67 @@
         },
         on: {
           mouseenter: function() {
-            return $(this).css({
-              'backgroundColor': '#f1f1f1'
+            var t;
+            t = $(this);
+            $(this).css({
+              'backgroundColor': '#f1f1f1',
+              'cursor': 'posinter'
             });
+            if (!div3.hasClass('notify')) {
+              div3.addClass('notify');
+              return setTimeout(function() {
+                if (div3.hasClass('notify')) {
+                  return new sendAjax('get_costs', {
+                    'id': _this.options.id,
+                    'not_deleted_row': 1
+                  }, function(response) {
+                    var i, j, len1, notifyContent, ptr, ref, row, tbl;
+                    div3.notify(notifyContent = $('<div/>', {
+                      'html': 'нет платежей'
+                    }), {
+                      position: "right",
+                      className: 'invoice_12px',
+                      autoHide: false
+                    });
+                    if (response.data.length > 0) {
+                      tbl = $('<table/>', {
+                        'class': 'notify-table',
+                        'id': 'invoice-row--price-payment-table'
+                      });
+                      tbl.append(ptr = $('<tr/>'));
+                      ptr.append($('<td/>', {
+                        'html': 'Поставщик'
+                      }));
+                      ptr.append($('<td/>', {
+                        'html': 'Сумма долга'
+                      }));
+                      ref = response.data;
+                      for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+                        row = ref[i];
+                        tbl.append(ptr = $('<tr/>'));
+                        ptr.append($('<td/>', {
+                          'html': response.data[i].supplier_name
+                        }));
+                        ptr.append($('<td/>', {
+                          'html': round_money(response.data[i].price)
+                        }));
+                      }
+                      return notifyContent.html(tbl);
+                    }
+                  });
+                }
+              }, 1000);
+            }
           },
           mouseleave: function() {
-            return $(this).attr('style', '');
+            $(this).find('div.notifyjs-wrapper').remove();
+            $(this).attr('style', '');
+            return div3.removeClass('notify');
           }
         }
       }).css('cursor', 'pointer');
-      td.append($('<div/>', {
-        'class': 'invoice-row--price-start',
-        'html': _this.options.price_in
-      }));
-      td.append($('<div/>', {
-        'class': 'invoice-row--price-our-pyment',
-        'html': _this.options.costs
-      }));
+      td.append(div31);
+      td.append(div3);
       tr.append(td);
       td = $('<td/>', {
         'class': 'invoice-row--ice mayBeEdit',
@@ -5523,10 +5663,12 @@
               div22.addClass('notify');
               return setTimeout(function() {
                 var notifyContent;
-                echo_message_js(_this.options.spf_return_date);
                 if (div22.hasClass('notify') && _this.options.spf_return_date && _this.options.spf_return_date !== '') {
                   return div22.notify(notifyContent = $('<div/>', {
-                    'html': _this.options.spf_return_date
+                    'css': {
+                      'textAlign': 'left'
+                    },
+                    'html': 'дата возврата:<br>' + _this.options.spf_return_date
                   }), {
                     position: "right",
                     className: 'invoice_12px',
@@ -5684,7 +5826,7 @@
           var t;
           t = $(this);
           return new sendAjax('get_ttn', {
-            'id': self.options.ttn_id
+            'id': self.options.id
           }, function(response) {
             if (response.data !== void 0) {
               return new invoiceTtn(t, self.options, response.data, self.access, self.options);
@@ -5701,10 +5843,7 @@
       }
       tr.push(status_shipment = $('<td/>', {
         'html': status_str,
-        'class': 'mayBeClick',
-        click: function() {
-          return echo_message_js("смена статуса отгрузки");
-        }
+        'class': 'mayBeClick'
       }));
       tr.push(when_ho = $('<td/>'));
       if (Number(self.options.shipment_employee_id) > 0) {
@@ -5731,14 +5870,18 @@
         'name': 'Не отгружено',
         'class': '',
         click: function(e) {
-          self.options.shipment_status = 0;
-          status_shipment.html($(this).html());
-          return new sendAjax('edit_ttn_status', {
-            'id': self.options.ttn_id,
-            shipment_status: self.options.shipment_status
-          }, function(response) {
-            when_ho.html(response.data.when_ho);
-            return $('#js-main-invoice-table').sklad('reflesh', self.options);
+          return new modalConfirm({
+            html: 'Уверены, что неотгружено?<br>продолжить?'
+          }, function() {
+            self.options.shipment_status = 0;
+            status_shipment.html($(this).html());
+            return new sendAjax('edit_ttn_status', {
+              'id': self.options.ttn_id,
+              shipment_status: self.options.shipment_status
+            }, function(response) {
+              when_ho.html(response.data.when_ho);
+              return $('#js-main-invoice-table').sklad('reflesh', self.options);
+            });
           });
         }
       };
