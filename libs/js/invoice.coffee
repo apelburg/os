@@ -1599,6 +1599,157 @@ class modalWindow
         }).append(buttons_html))
 
     # $('#js-alert_union').after();
+###
+# прототип опубликованного комментариев
+###
+class commentsRow
+  enterObj:{}
+  options:{}
+  access:0
+
+
+  constructor:(data,access)->
+    console.log access
+    @access = access
+    @options = data
+    console.log @access
+
+
+
+    return @init()
+
+  init:()->
+    main = $('<div/>',{'class':'comment table'})
+
+    #column 1
+    main.append(tr = $('<div/>',{'class':'row'}))
+    cell1 = $('<div/>',{'class':'cell user_name_comments'})
+    cell1.append($('<div/>',{
+      'class':'user_name',
+      'html':@option.user_name
+    })).append($('<div/>',{
+      'class':'create_time_message',
+      'html':@option.create_time
+    }))
+    tr.append(cell1)
+
+    cell2 = $('<div/>',{'class':'cell comment_text'})
+    cell2.append($('<div/>',{
+      'html':@option.comment_text
+    }))
+    tr.append(cell2)
+    return main
+
+    
+###
+# прототип окна комментариев
+#  costsWindow
+###
+class commentWindow
+  defaults:
+    id:0
+
+  constructor: ( data_row, responseData, access) ->
+    # запоминаем уровень допуска
+    @access = access
+    # сохраняем информацию по строке
+    @options = data_row
+    @data = responseData
+
+    @init( data_row)
+
+  # собираем окно счёт
+  init:( data_row )->
+    # запрос данных
+    ###
+    # создание контейнера
+    ###
+    main_div = $('<div/>',{'id':'dialog_gen_window_form'})
+    ###
+    # добавление шапки окна
+    ###
+    main_div.append(@getContent( data_row ))
+
+    main_div.append(@getForm( data_row ))
+
+
+    ###
+    # создание окна
+    ###
+
+
+    @myObj = new modalWindow({
+      html:main_div,
+      maxHeight:'100%',
+      width:'600px',
+      title:'Переписка по счёту № '+@options.invoice_num+' от '+@options.invoice_create_date,
+      buttons: @getButtons( data_row ),
+    },{
+      closeOnEscape:true,
+      single:true,
+      close: ( event, ui ) ->
+        $('#js-main-invoice-table').invoice('reflesh',data_row)
+    })
+    @$el = @myObj.options.html[0]
+    $(@$el).parent().css('padding','0')
+
+  getForm:(data_row)->
+    self = @
+    main = $('<div/>',{'class':'comment table','html':'<h1>В разработке</h1>'})
+
+    #column 1
+    main.append(tr = $('<div/>',{'class':'row'}))
+    cell1 = $('<div/>',{'class':'cell user_name_comments'})
+    cell1.append($('<div/>',{
+      'class':'user_name',
+      'html':'Вы...'
+    })).append($('<div/>',{
+      'class':'create_time_message',
+      'html':getDateNow()
+    }))
+    tr.append(cell1)
+
+    cell2 = $('<div/>',{'class':'cell comment_text'})
+    cell2.append(textarea = $('<textarea/>',{
+      'name':'comment_text'
+    }))
+
+    tr.append(cell2)
+
+
+    main
+  getContent:(data_row)->
+      main = $('<div/>')
+      self = @
+      for row,i in data_row
+        main.append(new commentsRow(data_row,@access))
+
+
+
+  getButtons:(data_row,responseData)->
+    _this = @
+    @saveObj = {}
+    buttons = []
+
+    buttons.push(
+      text: 'Отправить',
+      class:  'button_yes_or_no no',
+      id:'js--send_comment'
+      click: ()->
+        _this.destroy()
+    )
+
+    buttons.push(
+      text: 'Закрыть',
+      class:'button_yes_or_no no',
+      click:()->
+        _this.destroy()
+    )
+
+    return buttons
+
+  destroy:()->
+    $(@$el).parent().dialog('close').dialog('destroy').remove()
 
 
 ###
@@ -2671,6 +2822,9 @@ class invoiceWindow
     input_date = $('<input/>',{
       'val':@options.invoice_create_date,
       'class':'',
+      onchange:()->
+        if(Number($(this).parent().parent().find('.ttn_number_input').val())  &&  $(this).val() != '00.00.0000')
+          $(_this.myObj.buttonDiv).find('#create_bill_button').removeClass('no')
       blur:()->
         _this.editSaveObj('date', $(this).val(), _this.options.invoice_create_date)
 
@@ -2684,6 +2838,7 @@ class invoiceWindow
         $(this).find('.xdsoft_date.xdsoft_weekend')
         .addClass('xdsoft_disabled');
         $(this).find('.xdsoft_date');
+        
 
       closeOnDateSelect:true,
       format:'d.m.Y'
@@ -2704,7 +2859,7 @@ class invoiceWindow
             $(_this.myObj.buttonDiv).find('#create_bill_button').addClass('no')
           return
         keyup:()->
-          if(Number($(this).val()))
+          if(Number($(this).val()) && input_date.val()!='00.00.0000')
             $(_this.myObj.buttonDiv).find('#create_bill_button').removeClass('no')
           else
             $(_this.myObj.buttonDiv).find('#create_bill_button').addClass('no')
@@ -2764,15 +2919,15 @@ class invoiceWindow
     console.log data_row
     @saveObj.id = data_row.id
     # check update ttn number
-    reload = false
+    reload = 0
     if @saveObj.number
-      reload = true
+      reload++
       data_row.invoice_num = @saveObj.number
     if @saveObj.date
-      reload = true
+      reload++
       data_row.invoice_create_date = @saveObj.date
 
-    if(reload)
+    if(reload<2)
       # обновляем информацию по строке
       obj.parent().data({}).data(data_row)
       # обновляем дом в строке
@@ -2783,7 +2938,7 @@ class invoiceWindow
       new sendAjax 'confirm_create_bill',@saveObj, ()->
         _this.destroy()
     else
-      echo_message_js('Для создания счёта необходимо ввести его номер','error_message')
+      echo_message_js('Для создания счёта необходимо ввести его номер и дату','error_message')
   # убиваем окно
   destroy:()->
     $(@$el).parent().dialog('close').dialog('destroy').remove()
@@ -2884,7 +3039,7 @@ class invoiceTtn
       }))
 
       for oldTtn in @options.ttn
-        tbl.append(@createTtnDiv(oldTtn))
+        tbl.prepend(@createTtnDiv(oldTtn))
 
   # создаёт строки ранее созданных ттн
   createTtnDiv:(oldTtn)->
@@ -3032,8 +3187,20 @@ class invoiceTtn
     tr.append($('<td/>',{
       'html':@options.client_requisit_name,
       'class':'ttn_requisits',
-      'click':()->
-        echo_message_js('Вызов окна просмотра реквизитов')
+      click:()->
+        new sendAjax('show_requesit',{
+          'id':_this.options.client_requisit_id
+        },(response)->
+          new modalWindow({
+            html: new requesitContent(response.data),
+            maxHeight:'100%',
+            width:'650px',
+            title:'Реквизиты',
+          },{
+            closeOnEscape:true,
+            single:false
+          })
+        )
       }))
     table.append(tr)
 
@@ -3154,6 +3321,7 @@ class invoiceTtn
         });
   # сборка шапки МЕНЕДЖЕР и остальные
   createHeadManager:(ttn)->
+    self = @
     # ttn number & date
     if ttn == undefined
       span_ttn = $('<span/>',{'html':"№ ТТН "+@defaults.number+" от "}).append(@spanDate())
@@ -3171,8 +3339,20 @@ class invoiceTtn
     tr.append($('<td/>',{
       'html':@options.client_requisit_name,
       'class':'ttn_requisits',
-      'click':()->
-        echo_message_js('Вызов окна просмотра реквизитов')
+      click:()->
+        new sendAjax('show_requesit',{
+          'id':self.options.client_requisit_id
+        },(response)->
+          new modalWindow({
+            html: new requesitContent(response.data),
+            maxHeight:'100%',
+            width:'650px',
+            title:'Реквизиты',
+          },{
+            closeOnEscape:true,
+            single:false
+          })
+        )
       }))
     # если есть что выбирать
 #    if @checkNumber > 0
@@ -4666,7 +4846,7 @@ class invoiceRow
       return
 
     td.addClass('checked') if Number @options.flag_1c > 0
-    td.addClass('red1c') if(Number(@options.flag_1c) == 0 && (Number(@options.invoice_num) == 0 || @options.invoice_create_date == '00.00.0000'  ))
+    td.addClass('red1c') if(Number(@options.flag_1c) == 0 && (Number(@options.invoice_num) > 0 and @options.invoice_create_date != '00.00.0000'  ))
 
     tr.append(td)
 
@@ -4974,6 +5154,18 @@ class invoiceRow
     # диндин
     td = $('<td/>')
     tr.append(td)
+    td.append(commentDiv = $('<div/>',{
+      'class':'invoice-row-icon invoice-row--comment',
+      click:()->
+        new sendAjax('get_comments_module',{invoice_id:_this.options.id},(response)->
+          new commentWindow(_this.options,response.data,_this.access)
+        )
+    }))
+    # если заполнено
+    if Number(@options.comments_num) > 0
+      commentDiv.addClass('isfull')
+
+
     return tr
 
 ###

@@ -42,7 +42,7 @@
                         </a>
                     </li>
                     <li <?php 
-                    if($_GET['section'] == 'page' || $_GET['page'] =='invoice'){echo 'class="selected"';} 
+                    if((isset($_GET['section']) && $_GET['section'] == 'page') || $_GET['page'] =='invoice'){echo 'class="selected"';}
                     ?>>
                         <a href="<?php echo HOST; ?>/?page=invoice&section=1<?php
                             if(isset($_GET['client_id'])){

@@ -224,17 +224,19 @@
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			if(isset($_POST['date'])){
 				$query .= (($i>0)?',':'')." `invoice_create_date` = '".date('Y-m-d',strtotime($_POST['date']))."'";$i++;
+
+				if(isset($_POST['doc_type']) && isset($_POST['doc_id']) && $_POST['doc_type'] != 'spec'){
+					$this->save_specification_number( $_POST['number'], date('Y-m-d',strtotime($_POST['date'])), $_POST['doc_id'] );
+				}
 			}
 			if(isset($_POST['number'])){
 				$query .= (($i>0)?',':'')." `invoice_num` = '".$_POST['number']."'";$i++;
 			}
 
-			if(isset($_POST['doc_type']) && isset($_POST['doc_id']) && $_POST['doc_type'] != 'spec'){
-				$this->save_specification_number( $_POST['number'], date('Y-m-d',strtotime($_POST['date'])), $_POST['doc_id'] );
-			}
+
 
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
-			if ($i>0){
+			if ($i>1){
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			}else{
 				$this->responseClass->addMessage('Вы не указали данные для сохранения');
@@ -587,6 +589,26 @@
 			$this->responseClass->response['data'] = $data;
 
 
+		}
+
+		/**
+		 * получаем комментарии по выбранному счёту
+		 */
+		protected function get_comments_module_AJAX(){
+			$query = "SELECT * FROM `".INVOICE_COMMENTS."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			$this->responseClass->response['data'] = $data;
 		}
 
 

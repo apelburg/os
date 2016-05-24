@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceRow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, requesitContent, round_money, rowRowData, sendAjax, skladRow, ttnObj,
+  var calc_price_with_discount, commentWindow, commentsRow, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceRow, invoiceTtn, invoiceWindow, modalConfirm, modalWindow, paymentWindow, ppRow, ppRowObj, requesitContent, round_money, rowRowData, sendAjax, skladRow, ttnObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -1938,6 +1938,187 @@
 
 
   /*
+   * прототип опубликованного комментариев
+   */
+
+  commentsRow = (function() {
+    commentsRow.prototype.enterObj = {};
+
+    commentsRow.prototype.options = {};
+
+    commentsRow.prototype.access = 0;
+
+    function commentsRow(data, access) {
+      console.log(access);
+      this.access = access;
+      this.options = data;
+      console.log(this.access);
+      return this.init();
+    }
+
+    commentsRow.prototype.init = function() {
+      var cell1, cell2, main, tr;
+      main = $('<div/>', {
+        'class': 'comment table'
+      });
+      main.append(tr = $('<div/>', {
+        'class': 'row'
+      }));
+      cell1 = $('<div/>', {
+        'class': 'cell user_name_comments'
+      });
+      cell1.append($('<div/>', {
+        'class': 'user_name',
+        'html': this.option.user_name
+      })).append($('<div/>', {
+        'class': 'create_time_message',
+        'html': this.option.create_time
+      }));
+      tr.append(cell1);
+      cell2 = $('<div/>', {
+        'class': 'cell comment_text'
+      });
+      cell2.append($('<div/>', {
+        'html': this.option.comment_text
+      }));
+      tr.append(cell2);
+      return main;
+    };
+
+    return commentsRow;
+
+  })();
+
+
+  /*
+   * прототип окна комментариев
+   *  costsWindow
+   */
+
+  commentWindow = (function() {
+    commentWindow.prototype.defaults = {
+      id: 0
+    };
+
+    function commentWindow(data_row, responseData, access) {
+      this.access = access;
+      this.options = data_row;
+      this.data = responseData;
+      this.init(data_row);
+    }
+
+    commentWindow.prototype.init = function(data_row) {
+
+      /*
+       * создание контейнера
+       */
+      var main_div;
+      main_div = $('<div/>', {
+        'id': 'dialog_gen_window_form'
+      });
+
+      /*
+       * добавление шапки окна
+       */
+      main_div.append(this.getContent(data_row));
+      main_div.append(this.getForm(data_row));
+
+      /*
+       * создание окна
+       */
+      this.myObj = new modalWindow({
+        html: main_div,
+        maxHeight: '100%',
+        width: '600px',
+        title: 'Переписка по счёту № ' + this.options.invoice_num + ' от ' + this.options.invoice_create_date,
+        buttons: this.getButtons(data_row)
+      }, {
+        closeOnEscape: true,
+        single: true,
+        close: function(event, ui) {
+          return $('#js-main-invoice-table').invoice('reflesh', data_row);
+        }
+      });
+      this.$el = this.myObj.options.html[0];
+      return $(this.$el).parent().css('padding', '0');
+    };
+
+    commentWindow.prototype.getForm = function(data_row) {
+      var cell1, cell2, main, self, textarea, tr;
+      self = this;
+      main = $('<div/>', {
+        'class': 'comment table',
+        'html': '<h1>В разработке</h1>'
+      });
+      main.append(tr = $('<div/>', {
+        'class': 'row'
+      }));
+      cell1 = $('<div/>', {
+        'class': 'cell user_name_comments'
+      });
+      cell1.append($('<div/>', {
+        'class': 'user_name',
+        'html': 'Вы...'
+      })).append($('<div/>', {
+        'class': 'create_time_message',
+        'html': getDateNow()
+      }));
+      tr.append(cell1);
+      cell2 = $('<div/>', {
+        'class': 'cell comment_text'
+      });
+      cell2.append(textarea = $('<textarea/>', {
+        'name': 'comment_text'
+      }));
+      tr.append(cell2);
+      return main;
+    };
+
+    commentWindow.prototype.getContent = function(data_row) {
+      var i, j, len1, main, results, row, self;
+      main = $('<div/>');
+      self = this;
+      results = [];
+      for (i = j = 0, len1 = data_row.length; j < len1; i = ++j) {
+        row = data_row[i];
+        results.push(main.append(new commentsRow(data_row, this.access)));
+      }
+      return results;
+    };
+
+    commentWindow.prototype.getButtons = function(data_row, responseData) {
+      var _this, buttons;
+      _this = this;
+      this.saveObj = {};
+      buttons = [];
+      buttons.push({
+        text: 'Отправить',
+        "class": 'button_yes_or_no no',
+        id: 'js--send_comment',
+        click: function() {
+          return _this.destroy();
+        }
+      });
+      buttons.push({
+        text: 'Закрыть',
+        "class": 'button_yes_or_no no',
+        click: function() {
+          return _this.destroy();
+        }
+      });
+      return buttons;
+    };
+
+    commentWindow.prototype.destroy = function() {
+      return $(this.$el).parent().dialog('close').dialog('destroy').remove();
+    };
+
+    return commentWindow;
+
+  })();
+
+
+  /*
    * прототип окна расходов
    *  costsWindow
    */
@@ -3142,6 +3323,11 @@
       input_date = $('<input/>', {
         'val': this.options.invoice_create_date,
         'class': '',
+        onchange: function() {
+          if (Number($(this).parent().parent().find('.ttn_number_input').val()) && $(this).val() !== '00.00.0000') {
+            return $(_this.myObj.buttonDiv).find('#create_bill_button').removeClass('no');
+          }
+        },
         blur: function() {
           return _this.editSaveObj('date', $(this).val(), _this.options.invoice_create_date);
         }
@@ -3177,7 +3363,7 @@
             }
           },
           keyup: function() {
-            if (Number($(this).val())) {
+            if (Number($(this).val()) && input_date.val() !== '00.00.0000') {
               $(_this.myObj.buttonDiv).find('#create_bill_button').removeClass('no');
             } else {
               $(_this.myObj.buttonDiv).find('#create_bill_button').addClass('no');
@@ -3241,16 +3427,16 @@
       _this = this;
       console.log(data_row);
       this.saveObj.id = data_row.id;
-      reload = false;
+      reload = 0;
       if (this.saveObj.number) {
-        reload = true;
+        reload++;
         data_row.invoice_num = this.saveObj.number;
       }
       if (this.saveObj.date) {
-        reload = true;
+        reload++;
         data_row.invoice_create_date = this.saveObj.date;
       }
-      if (reload) {
+      if (reload < 2) {
         obj.parent().data({}).data(data_row);
         $('#js-main-invoice-table').invoice('reflesh', data_row.id);
         this.saveObj['doc_type'] = data_row.doc_type;
@@ -3259,7 +3445,7 @@
           return _this.destroy();
         });
       } else {
-        return echo_message_js('Для создания счёта необходимо ввести его номер', 'error_message');
+        return echo_message_js('Для создания счёта необходимо ввести его номер и дату', 'error_message');
       }
     };
 
@@ -3376,7 +3562,7 @@
         results = [];
         for (j = 0, len1 = ref.length; j < len1; j++) {
           oldTtn = ref[j];
-          results.push(tbl.append(this.createTtnDiv(oldTtn)));
+          results.push(tbl.prepend(this.createTtnDiv(oldTtn)));
         }
         return results;
       }
@@ -3554,8 +3740,20 @@
       tr.append($('<td/>', {
         'html': this.options.client_requisit_name,
         'class': 'ttn_requisits',
-        'click': function() {
-          return echo_message_js('Вызов окна просмотра реквизитов');
+        click: function() {
+          return new sendAjax('show_requesit', {
+            'id': _this.options.client_requisit_id
+          }, function(response) {
+            return new modalWindow({
+              html: new requesitContent(response.data),
+              maxHeight: '100%',
+              width: '650px',
+              title: 'Реквизиты'
+            }, {
+              closeOnEscape: true,
+              single: false
+            });
+          });
         }
       }));
       table.append(tr);
@@ -3698,7 +3896,8 @@
     };
 
     invoiceTtn.prototype.createHeadManager = function(ttn) {
-      var span_invoice, span_ttn, table, tr;
+      var self, span_invoice, span_ttn, table, tr;
+      self = this;
       if (ttn === void 0) {
         span_ttn = $('<span/>', {
           'html': "№ ТТН " + this.defaults.number + " от "
@@ -3723,8 +3922,20 @@
       tr.append($('<td/>', {
         'html': this.options.client_requisit_name,
         'class': 'ttn_requisits',
-        'click': function() {
-          return echo_message_js('Вызов окна просмотра реквизитов');
+        click: function() {
+          return new sendAjax('show_requesit', {
+            'id': self.options.client_requisit_id
+          }, function(response) {
+            return new modalWindow({
+              html: new requesitContent(response.data),
+              maxHeight: '100%',
+              width: '650px',
+              title: 'Реквизиты'
+            }, {
+              closeOnEscape: true,
+              single: false
+            });
+          });
         }
       }));
       table.append(tr = $('<tr/>'));
@@ -5256,7 +5467,7 @@
     }
 
     invoiceRow.prototype.init = function(ttn) {
-      var _this, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
+      var _this, commentDiv, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
       _this = this;
       tr = $('<tr/>', {
         id: 'tt_' + this.options.id
@@ -5321,7 +5532,7 @@
       if (Number(this.options.flag_1c > 0)) {
         td.addClass('checked');
       }
-      if (Number(this.options.flag_1c) === 0 && (Number(this.options.invoice_num) === 0 || this.options.invoice_create_date === '00.00.0000')) {
+      if (Number(this.options.flag_1c) === 0 && (Number(this.options.invoice_num) > 0 && this.options.invoice_create_date !== '00.00.0000')) {
         td.addClass('red1c');
       }
       tr.append(td);
@@ -5696,6 +5907,19 @@
       tr.append(td);
       td = $('<td/>');
       tr.append(td);
+      td.append(commentDiv = $('<div/>', {
+        'class': 'invoice-row-icon invoice-row--comment',
+        click: function() {
+          return new sendAjax('get_comments_module', {
+            invoice_id: _this.options.id
+          }, function(response) {
+            return new commentWindow(_this.options, response.data, _this.access);
+          });
+        }
+      }));
+      if (Number(this.options.comments_num) > 0) {
+        commentDiv.addClass('isfull');
+      }
       return tr;
     };
 
