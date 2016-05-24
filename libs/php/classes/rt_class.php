@@ -1805,6 +1805,26 @@ echo $query;
 			}
 			else  return false;
 		}
+		
+		static function show_good_preview($art_id,$dop_row_id){
+			global $mysqli;  
+		    
+			if($art_id!='0'){
+				$query="SELECT name FROM `".IMAGES_TBL."`
+							  WHERE art_id = '".$art_id."' AND  size = 'small' ORDER BY id";			  
+				$result = $mysqli->query($query)or die($mysqli->error);
+				if($result->num_rows>0){
+					$row = $result->fetch_assoc();
+					return $row['name'];
+				}
+			}
+			return 'no_image.jpg';
+			/*$query="SELECT img.name name FROM `".RT_MAIN_ROWS."` main 
+							  INNER JOIN `".RT_DOP_DATA."` dop ON main.id = dop.row_id
+							  INNER JOIN `".IMAGES_TBL."` img ON main.art_id = img.art_id
+							  WHERE dop.id = '".$row_id."' AND  img.size = 'small' ORDER BY img.id";*/
+		}
+
 
 		/**
 		 *	сохранение ресорта

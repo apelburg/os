@@ -297,27 +297,31 @@
 		RT::set_cont_face($_GET['set_cont_face'],$_GET['query_num']);
 		exit;
 	}
-   	
+	
+   	if(isset($_GET['show_good_preview'])){
+        echo RT::show_good_preview($_GET['art_id'],$_GET['dop_row_id']);
+		exit;
+	}
 
-		if(isset($_POST['AJAX'])){				
-		    if($_POST['AJAX']=='edit_query_theme'){
-		        RT::save_theme($_POST['query_num'],$_POST['theme']);
-				echo '{"response":"OK"}';
-				exit;
-			}
-			if($_POST['AJAX']=='update_new_sort_rt'){
-		        RT::update_new_sort_rt_AJAX();
-				exit;
-			}
-			if($_POST['AJAX']=='change_main_rows_color'){
-				global $mysqli;
-  				$query ="UPDATE `".RT_MAIN_ROWS."` SET 
-  					`rt_row_color` = '".$_POST['val']."'";
-  				$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
-  				$result = $mysqli->query($query) or die($mysqli->error);
-			}
-
+	if(isset($_POST['AJAX'])){				
+		if($_POST['AJAX']=='edit_query_theme'){
+			RT::save_theme($_POST['query_num'],$_POST['theme']);
+			echo '{"response":"OK"}';
+			exit;
 		}
+		if($_POST['AJAX']=='update_new_sort_rt'){
+			RT::update_new_sort_rt_AJAX();
+			exit;
+		}
+		if($_POST['AJAX']=='change_main_rows_color'){
+			global $mysqli;
+			$query ="UPDATE `".RT_MAIN_ROWS."` SET 
+				`rt_row_color` = '".$_POST['val']."'";
+			$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
+			$result = $mysqli->query($query) or die($mysqli->error);
+		}
+
+	}
 	/////////////////////  END  AJAX  ////////////////////// 
 	
 	
