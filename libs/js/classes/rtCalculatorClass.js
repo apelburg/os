@@ -275,11 +275,18 @@ var rtCalculator = {
 		
 		for(var i in trs_arr){
 			if(trs_arr[i].getAttribute){
-			    if(trs_arr[i].getAttribute("row_id")!='0'){
-					var block = (trs_arr[i].hasAttribute("block") && trs_arr[i].getAttribute("block")=='1')?true:false;
-					var tds_arr = $(trs_arr[i]).children('td');
-					for(var j in tds_arr){
-						if(tds_arr[j].getAttribute){
+				var block = (trs_arr[i].hasAttribute("block") && trs_arr[i].getAttribute("block")=='1')?true:false;
+				var tds_arr = $(trs_arr[i]).children('td');
+				for(var j in tds_arr){
+					if(tds_arr[j].getAttribute){
+						if(trs_arr[i].getAttribute("pos_id") && trs_arr[i].getAttribute("pos_id")!='0'){
+							if(tds_arr[j].getAttribute('type') && tds_arr[j].getAttribute('type')=='name'){
+								console.log('show_good_preview_set_up');
+								var art_link = tds_arr[j].getElementsByTagName('A')[0];
+								if(art_link) $(art_link).hover( rtCalculator.show_good_preview, rtCalculator.hide_good_preview );
+							}	
+						}
+						if(trs_arr[i].getAttribute("row_id") && trs_arr[i].getAttribute("row_id")!='0'){
 							if(tds_arr[j].getAttribute('editable') && !block){
 								//tds_arr[j].onkeyup = this.make_calculations;
 								tds_arr[j].onclick = function(e){ 
@@ -396,10 +403,6 @@ var rtCalculator = {
 									$(tds_arr[j]).mouseenter(function() {this.getElementsByTagName('div')[0].style.display = 'block';}).mouseleave(function() {this.getElementsByTagName('div')[0].style.display = 'none';});
 								}
 							}
-							if(tds_arr[j].getAttribute('type') && tds_arr[j].getAttribute('type')=='name'){
-								var art_link = tds_arr[j].getElementsByTagName('A')[0];
-								if(art_link) $(art_link).hover( rtCalculator.show_good_preview, rtCalculator.hide_good_preview );
-							}	
 						}
 					}
 				}
@@ -409,28 +412,29 @@ var rtCalculator = {
 	,
 	show_good_preview:function(e){
 	    e = e || window.event;
+        var cursor_pos_left = e.clientX;
 		var cur_cell = e.target || e.srcElement;
-		//alert();	
+        //console.log('show_good_preview_start');
 		rtCalculator.show_good_row_id = $(cur_cell).parents('tr').attr('row_id');
+		var art_id = $(cur_cell).parents('tr').attr('art_id');
 		rtCalculator.good_preview_timer = setTimeout(show,200); 
+		//console.log('show_good_preview',art_id);
 		function show(){
-			//alert(222);
+
 			var container = document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id);
 			if(!container){
 				var container = document.createElement('DIV');
 				container.id = 'goodPreviewWin'+rtCalculator.show_good_row_id;
 				container.style.position = 'absolute';
-
-				//container.style.width = '50px';
-				//container.style.height = '50px';
 				container.style.border = '#CCC solid 2px';
-				container.style.backgroundColor = 'grey';
 				
-				var url = OS_HOST+'?' + addOrReplaceGetOnURL('show_good_preview='+rtCalculator.show_good_row_id);
+				var url = OS_HOST+'?' + addOrReplaceGetOnURL('show_good_preview=1&art_id='+art_id+'&dop_row_id='+rtCalculator.show_good_row_id);
+				//console.log('show_good_preview_url',url);
 				rtCalculator.send_ajax(url,callback);
 				
 				function callback(response){
 					//alert(response);
+					//console.log('show_good_preview_response',response);
 					var img = document.createElement('IMG');
 					img.style.height = '90px';
 					img.src = 'http://www.apelburg.ru/img/'+response;
@@ -438,16 +442,15 @@ var rtCalculator = {
 					container.appendChild(img);
 				    document.body.appendChild(container);
 				}
-				
-				
 			}
 			else{
 			    container.style.display = 'block';
 			}
 			var pos = rtCalculator.getPos(cur_cell);
+			
 			container.style.top = (pos[0]+20)+"px";
-			container.style.left =(pos[1]+40)+"px";
-			///alert(11);
+			container.style.left = (typeof cursor_pos_left != 'undefined')? (cursor_pos_left+2)+"px" :(pos[1]+40)+"px";
+			
 		}
 	}
 	,
@@ -456,7 +459,6 @@ var rtCalculator = {
 		if(document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id)){
 			document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id).style.display = 'none';
 		}
-		//alert('goodPreviewWin'+rtCalculator.show_good_row_id);
 	}
 	,
 	launch_uslugi_panel:function(e){

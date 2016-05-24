@@ -299,7 +299,7 @@
 	}
 	
    	if(isset($_GET['show_good_preview'])){
-        echo RT::show_good_preview($_GET['show_good_preview']);
+        echo RT::show_good_preview($_GET['art_id'],$_GET['dop_row_id']);
 		exit;
 	}
 
