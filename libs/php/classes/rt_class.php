@@ -1806,7 +1806,7 @@ echo $query;
 			else  return false;
 		}
 		
-		static function show_good_preview($art_id,$dop_row_id){
+		static function show_good_preview($art_id,$main_row_id){
 			global $mysqli;  
 		    
 			if($art_id!='0'){
@@ -1815,14 +1815,18 @@ echo $query;
 				$result = $mysqli->query($query)or die($mysqli->error);
 				if($result->num_rows>0){
 					$row = $result->fetch_assoc();
-					return $row['name'];
+					return 'img/'.$row['name'];
 				}
 			}
-			return 'no_image.jpg';
-			/*$query="SELECT img.name name FROM `".RT_MAIN_ROWS."` main 
-							  INNER JOIN `".RT_DOP_DATA."` dop ON main.id = dop.row_id
-							  INNER JOIN `".IMAGES_TBL."` img ON main.art_id = img.art_id
-							  WHERE dop.id = '".$row_id."' AND  img.size = 'small' ORDER BY img.id";*/
+			else if($main_row_id!='0'){
+			    $query = "SELECT folder, img_name FROM `".RT_MAIN_ROWS_GALLERY."` WHERE parent_id = ".(int)$main_row_id.";";
+				$result = $mysqli->query($query)or die($mysqli->error);
+				if($result->num_rows>0){
+					$row = $result->fetch_assoc();
+					return ($row['folder'] == 'img')? $row['folder'].'/'.$row['img_name']:'os/data/images/'.$row['folder'].'/'.$row['img_name'];
+				}			
+			}
+			return 'img/no_image.jpg';
 		}
 
 
