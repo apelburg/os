@@ -1806,29 +1806,34 @@ echo $query;
 			else  return false;
 		}
 		
-		static function show_good_preview($art_id,$main_row_id){
-			global $mysqli;  
-		    
-			if($art_id!='0'){
-				$query="SELECT name FROM `".IMAGES_TBL."`
+        static function show_good_preview($art_id, $main_row_id){
+	        global $mysqli;
+		   
+		    // ЗАДАЧА: получить путь к изображению товара (картинки для превью)
+			// в учетом того какая выставленна главной (если выставлена)
+			
+			// сначала обращаемся к таблиые в которой есть информация по назначению изображений для артикула
+	        // если данных не будет получено, тогда обращаемся к основной таблице
+			$query = "SELECT folder, img_name  FROM `".RT_MAIN_ROWS_GALLERY."`
+			                         WHERE parent_id = ".(int)$main_row_id." ORDER BY `sort` ; ";
+			$result = $mysqli->query($query)or die($mysqli->error);
+			if($result->num_rows>0){
+				$row = $result->fetch_assoc();
+				$src = ($row['folder'] == 'img')? '/'.$row['folder'].'/'.$row['img_name']:'/os/data/images/'.$row['folder'].'/'.$row['img_name'];
+			}		
+	        else{
+			    $query="SELECT name FROM `".IMAGES_TBL."`
 							  WHERE art_id = '".$art_id."' AND  size = 'small' ORDER BY id";			  
 				$result = $mysqli->query($query)or die($mysqli->error);
 				if($result->num_rows>0){
 					$row = $result->fetch_assoc();
-					return 'img/'.$row['name'];
+					$src = '/img/'.$row['name'];
 				}
 			}
-			else if($main_row_id!='0'){
-			    $query = "SELECT folder, img_name FROM `".RT_MAIN_ROWS_GALLERY."` WHERE parent_id = ".(int)$main_row_id.";";
-				$result = $mysqli->query($query)or die($mysqli->error);
-				if($result->num_rows>0){
-					$row = $result->fetch_assoc();
-					return ($row['folder'] == 'img')? $row['folder'].'/'.$row['img_name']:'os/data/images/'.$row['folder'].'/'.$row['img_name'];
-				}			
-			}
-			return 'img/no_image.jpg';
+			
+	        
+			return (isset($src))? checkImgExists(APELBURG_HOST.$src): APELBURG_HOST.'/img/no_image.jpg';
 		}
-
 
 		/**
 		 *	сохранение ресорта

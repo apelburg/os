@@ -428,7 +428,7 @@ var rtCalculator = {
 				container.style.position = 'absolute';
 				container.style.border = '#CCC solid 2px';
 				
-				var url = OS_HOST+'?' + addOrReplaceGetOnURL('show_good_preview=1&art_id='+art_id+'&dop_row_id='+rtCalculator.show_good_row_id);
+				var url = OS_HOST+'?' + addOrReplaceGetOnURL('show_good_preview=1&art_id='+art_id+'&main_row_id='+rtCalculator.show_good_row_id);
 				//console.log('show_good_preview_url',url);
 				rtCalculator.send_ajax(url,callback);
 				
@@ -437,7 +437,7 @@ var rtCalculator = {
 					//console.log('show_good_preview_response',response);
 					var img = document.createElement('IMG');
 					img.style.height = '90px';
-					img.src = 'http://www.apelburg.ru/'+response;
+					img.src = response;
 					//img.src = 'http://www.apelburg.ru/img/no_image.jpg';
 					container.appendChild(img);
 				    document.body.appendChild(container);
