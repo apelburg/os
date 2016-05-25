@@ -37,6 +37,17 @@ class rtPositionUniversal extends Position_general_Class
 		}			
 	}
 
+	protected function getFirstPositionImg_AJAX(){
+		$Images = new Images();
+		$html = '<img src="'.$Images->getFirstPositionImg($_POST['art'],$_POST['id']).'">';
+//		$html = $Images->getFirstPositionImg($_POST['art'],$_POST['id']);
+//		echo $html;
+//		exit;
+		$options['width'] = 600;
+		$options['height'] = 290;
+
+		$this->responseClass->addSimpleWindow($html,'Примечания к варианту',$options);
+	}
 	/**
 	 *  for change article
 	 *	shearch article autocomlete
@@ -1153,7 +1164,7 @@ class Images extends rtPositionUniversal
  		// объявляем массив изображений
  		$img = array();
 		if(trim($art_id) > 0){
- 			$query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'small' AND art_id='".$art_id."' ORDER BY id";
+ 			$query = "SELECT * FROM `".IMAGES_TBL."` WHERE `size` = 'small' AND art_id = '".$art_id."' ORDER BY id";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
@@ -1181,6 +1192,7 @@ class Images extends rtPositionUniversal
  	private function find_checked_img(){
  		return true;
  	}
+
  	// определяет по имени файлпа выбран он или нет
  	protected function copare_and_calculate_checked_files($rt_main_row_id, $file_name){
  		if (!isset($this->checked_IMG)) {
@@ -1193,9 +1205,10 @@ class Images extends rtPositionUniversal
 		}
 		return "";
 	}
+
 	// собираем загруженные изображения
-	protected function getCheckedImg($rt_main_row_id){
-		$query = "SELECT * FROM `".RT_MAIN_ROWS_GALLERY."` WHERE parent_id = ".(int)$rt_main_row_id.";";
+	public function getCheckedImg($rt_main_row_id){
+		$query = "SELECT * FROM `".RT_MAIN_ROWS_GALLERY."` WHERE parent_id = ".(int)$rt_main_row_id." ORDER BY `sort` ; ";
 	 	$arr = array();
  		$result = $this->mysqli->query($query) or die($this->mysqli->error);
  				
@@ -1207,6 +1220,48 @@ class Images extends rtPositionUniversal
 		}					
 		return $arr;
 	}
+
+	/**
+	 * возвращает путь к первому изображению из карточки артикула
+	 * @param $art 				- 	название(номер артикула в нашей базе) артикула
+	 * @param $rt_main_row_id	- 	id строки из таблицы os__rt_main_rows
+	 * @return string|путь
+	 */
+	public function getFirstPositionImg($art, $rt_main_row_id){
+		if (!isset($this->checked_IMG)) {
+			$this->checked_IMG = $this->getCheckedImg($rt_main_row_id);
+		}
+		// return '';
+		$b = count($this->checked_IMG)+1;
+		$c = count($this->checked_IMG);
+		// if($art && $art > 0){
+
+
+
+		if(count($this->checked_IMG) > 0){
+			foreach ($this->checked_IMG as $img){
+				if($img['folder'] == 'img'){
+					// папка каталожных изображений
+					return checkImgExists(APELBURG_HOST.'/img/'.$img['img_name']);
+				}else{
+					// папка загруженных юзером изображений
+					return checkImgExists(APELBURG_HOST.'/os/data/images/'.$img['folder'].'/'.$img['img_name']);
+				}
+
+			}
+		}
+
+
+		$small_images = $this->getSmallImagesForArt($art);
+
+		// изображения с сайта
+		foreach ($small_images as $key => $img) {
+			return $this->checkImgExists( APELBURG_HOST.'/img/'.$img);
+		}
+
+		return checkImgExists(APELBURG_HOST.'/img/no_image.jpg');
+	}
+
  	/**
 	 *	возвращает карусель превью изображений для карточки артикула
 	 *  
