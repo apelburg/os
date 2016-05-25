@@ -216,6 +216,48 @@
         }
 
 		/**
+		 * сохраняет комментарии
+		 */
+		protected function save_invoice_comment_AJAX(){
+			# заносим данные в таблицу
+			$userName = $this->getAuthUserName();
+			$query = "INSERT INTO `".INVOICE_COMMENTS."` SET ";
+			$query .= "`invoice_id` =?";
+			$query .= ",`user_id` =?";
+			$query .= ",`user_name` =?";
+			$query .= ", `create_time` = NOW()";
+			$query .= ", `comment_text` =?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('iiss',$_POST['invoice_id'],$this->user_id,$userName,$_POST['comment']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+//			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = array(
+				'comment_id'=>$this->mysqli->insert_id,
+				'user_id'=>$this->user_id,
+				'user_name'=>$userName,
+				'create_time'=>date('d.m.Y H:i',time()),
+
+			);
+
+			# правка в главной таблице счетов
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `comments_num` =?";
+			$query .= " WHERE `id` =?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('ii',$_POST['comments_num'],$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+
+		/**
 		 * save invoice number
 		 *
 		 */
@@ -595,7 +637,12 @@
 		 * получаем комментарии по выбранному счёту
 		 */
 		protected function get_comments_module_AJAX(){
-			$query = "SELECT * FROM `".INVOICE_COMMENTS."` WHERE `invoice_id`=?";
+			$query = "SELECT * ";
+			$query .= ", DATE_FORMAT(`create_time`,'%d.%m.%Y %H:%i')  AS `create_time`";
+
+			$query .= "FROM `".INVOICE_COMMENTS."` WHERE `invoice_id`=?";
+
+
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
@@ -1208,7 +1255,7 @@
 					$data['price_in'] = $this->getPriceIn($positions);
 					$data['price_out'] = $this->getPriceOut($positions);
 					$data['conditions'] = $positions[0]['prepayment'];
-					$this->responseClass->addMessage('Счёт запрошен','successful_message');
+					$this->responseClass->addMessage('Счёт запрошен','successful_message',1);
 					break;
 				// оферта
 				case 'oferta':					
@@ -1244,7 +1291,7 @@
 					$data['price_in'] = $this->getPriceIn($positions);
 					$data['price_out'] = $this->getPriceOut($positions);
 
-					$this->responseClass->addMessage('Номер счёта запрошен', 'successful_message');
+					$this->responseClass->addMessage('Номер счёта запрошен', 'successful_message',1);
 					break;
 				
 				default:

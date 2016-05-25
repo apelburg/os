@@ -5,7 +5,7 @@
 	
 	function standard_response_handler(data){
 		if(data['response']=='show_new_window'){
-			var title = (data['title'] !== undefined)?data['title']:'Отладочное окно';
+			var title = (data['title'] !== undefined)?data['title']:'Название окна';
 			var height = (data['height'] !== undefined)?data['height']:'auto';
 			var width = (data['width'] !== undefined)?data['width']:'auto';
 			var button_name = (data['button_name'] !== undefined)?data['button_name']:'OK';
@@ -14,7 +14,7 @@
 		}
 		
 		if(data['response']=='show_new_window_simple'){
-			var title = (data['title'] !== undefined)?data['title']:'Отладочное окно';
+			var title = (data['title'] !== undefined)?data['title']:'Название окна';
 			var height = (data['height'] !== undefined)?data['height']:'auto';
 			var width = (data['width'] !== undefined)?data['width']:'auto';	
 			show_simple_dialog_window(Base64.decode(data['html']),title,height,width);
@@ -28,6 +28,7 @@
 			if($.isArray(data['function'])){
 			count = data['function'].length;
 			for (var i = count - 1; i >= 0; i--) {
+				console.log(data['function'][i]);
 				window[data['function'][i]['function']](data['function'][i]);
 			};
 			window_preload_del();
@@ -38,7 +39,7 @@
 		}
 
 		if(data['response'] != "OK"){ // вывод при ошибке
-			// console.log(data);
+			console.log(data);
 		}
 		
 		if(data['error']  !== undefined){ // на случай предусмотренной ошибки из PHP
