@@ -1527,7 +1527,7 @@
     };
 
     costsRow.prototype.createSimpleRow = function(data, rData, i, windowObj, data_row, rowspan) {
-      var td_del, tr;
+      var td, td_del, tr;
       tr = $('<tr/>').data(data);
       if (rowspan === 0) {
         tr.addClass('subRow');
@@ -1539,8 +1539,10 @@
         tr.addClass('firstGroupRow');
       }
       if (rowspan >= 1) {
-        tr.append($('<td/>', {
-          'rowspan': rowspan
+        tr.append(td = $('<td/>', {
+          'rowspan': rowspan,
+          'html': this.options.supplier_name,
+          'data-id': this.options.supplier_id
         }));
         tr.append($('<td/>', {
           'html': this.options.number,

@@ -1277,7 +1277,7 @@ class costsRow
     if rowspan > 1
       tr.addClass('firstGroupRow')
     if rowspan >= 1
-      tr.append($('<td/>', {'rowspan': rowspan}))
+      tr.append(td = $('<td/>', {'rowspan': rowspan, 'html': @options.supplier_name, 'data-id': @options.supplier_id}))
       tr.append($('<td/>', {'html': @options.number, 'rowspan': rowspan}))
       tr.append($('<td/>', {'html': @options.date, 'rowspan': rowspan}))
       tr.append($('<td/>', {'html': @options.price, 'rowspan': rowspan}))

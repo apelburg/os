@@ -1214,13 +1214,19 @@
 						// Запрос ТТН
 						case 5:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `number` = '0' ";
+							$query .= " `number` = '0' AND shipment_status <> 1";
 							$w++;
 							break;
 						// Готовые ТТН
 						case 6:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `number` <> '0' ";
+							$query .= " `number` <> '0' AND shipment_status <> 1";
+							$w++;
+							break;
+
+						case 7:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= "  shipment_status = 1";
 							$w++;
 							break;
 						default:
