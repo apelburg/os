@@ -123,7 +123,8 @@
 			$query = "INSERT INTO `".INVOICE_TTN."` SET ";
 			    // $query .= "`id` = '',";
 			    // дата создания заявки
-			    $query .= "`date` = NOW()";
+				$query .= "`date` = NOW()";
+
 			    $query .= ",`position_id` = '".$_POST['positions']."'";
 			    $query .= ",`positions_num` = '".$_POST['position_numbers']."'";
 			    $query .= ",`delivery` = '".$_POST['delivery']."'";
@@ -132,7 +133,7 @@
 
 			$message .= '<br>'.$query;
 			
-
+//			echo $query;
 			// $query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
@@ -140,13 +141,15 @@
 			$insert_id = $this->mysqli->insert_id;				
 			$query = "UPDATE `".INVOICE_ROWS."` SET ";
 			$query .= "`ttn_id` = '".$insert_id ."'";
-			$query .= " WHERE `id` IN (".$_POST['positions'].")";		
-			// $this->responseClass->addSimpleWindow($message.'<br>'.$_POST['positions'],'Создание TTN');		
+
+			$query .= " WHERE `id` IN (".$_POST['positions'].")";
+			// $this->responseClass->addSimpleWindow($message.'<br>'.$_POST['positions'],'Создание TTN');
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
 			// обновляем  данные по заказанному в ттн количеству позиций
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `positions_in_ttn` = '".(int)$_POST['positions_in_ttn'] ."'";
+			$query .= ", `ttn_query` = (ttn_query + 1) ";
 			$query .= " WHERE `id` = '".$_POST['invoise_id']."' ";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
@@ -400,14 +403,14 @@
 							break;
 						// Запрос ТТН
 						case 5:
-							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `ttn_query` >=  0 ";
+//							$query .= ($w>0?' AND ':' WHERE ');
+//							$query .= " `ttn_query` >  0 ";
 							$w++;
 							break;
 						// Готовые ТТН
 						case 6:
-							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `ttn_build` >=  0 ";
+//							$query .= ($w>0?' AND ':' WHERE ');
+//							$query .= " `ttn_build` >  0 ";
 							$w++;
 							break;
 						// Част. отгрузка
@@ -472,7 +475,7 @@
 			$query .= ",`".INVOICE_TBL."`.`positions_num` as invoice_positions_num";
 			$query .= ",`".INVOICE_TTN."`.`number` ";
 			$query .= ", DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y') as ttn_date ";
-			$query .= ",`".INVOICE_TTN."`.`date_return` ";
+			$query .= ", DATE_FORMAT(`".INVOICE_TTN."`.`date_return`,'%d.%m.%Y') as date_return ";
 			$query .= ",`".INVOICE_TTN."`.`return` ";
 			$query .= ",`".INVOICE_TTN."`.`comments` ";
 			$query .= ",`".INVOICE_TTN."`.`delivery` ";
@@ -727,7 +730,7 @@
 			$query .= "`invoice_id` =?";
 			$query .= ",`buch_id` =?";
 			$query .= ",`buch_name` =?";
-			$query .= ", `date` = NOW()";
+			$query .= ", `date` = '000-00-00'";
 			$query .= ", `lasttouch` = NOW()";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
@@ -822,6 +825,9 @@
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
+
+
+
 		}
 		protected function edit_ttn_status_AJAX(){
 			$query = "UPDATE `" . INVOICE_TTN . "` SET ";
@@ -863,12 +869,20 @@
 		protected function save_costs_payment_percent_AJAX(){
 			$query = "UPDATE `" . INVOICE_COSTS_PAY . "` SET ";
 			$query .= " `percent`=?";
-
 			$query .= " WHERE `id`=?";
-
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 
 			$stmt->bind_param('di',$_POST['percent'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			# сохраняем общую сумму выставленных нам поставщиками счётов в строку счёта
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `costs_supplier_bill`=?";
+			$query .= " WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('di',$_POST['costs_supplier_bill'],$_POST['invoice_id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
@@ -1043,21 +1057,41 @@
 			$query .= ", `lasttouch` = NOW()";
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+		}
+
+		protected function save_payment_costs_AJAX(){
+			// сохраняем расходы по счетам поставщиков (оплаченные нами)
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `costs`=?";
+			$query .= " WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error.' / * / '.$query);
+			$stmt->bind_param('si',$_POST['costs'],$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error.' / * / '.$query);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+
+			$query = "UPDATE `" . INVOICE_COSTS . "` SET ";
+			$query .= " `percent`=?";
+			$query .= " WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error.' / * / '.$query);
+			$stmt->bind_param('si',$_POST['percent'],$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error.' / * / '.$query);
+			$result = $stmt->get_result();
+			$stmt->close();
+
 		}
 
 		protected function save_costs_payment_date_AJAX(){
 			$query = "UPDATE `" . INVOICE_COSTS_PAY . "` SET ";
 			$query .= " `date`=?";
-
 			$query .= " WHERE `id`=?";
-
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
 			$date = date("Y-m-d",strtotime($_POST['date']));
-
 			$stmt->bind_param('si',$date,$_POST['id']) or die($this->mysqli->error);
-
-
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
@@ -1086,11 +1120,10 @@
 			$this->responseClass->addMessage('Запись была удалена.','successful_message');
 		}
 		/**
-		 * получаем данные по расходам
+		 * получаем данные для окна расходы
 		 */
 		protected function get_costs_AJAX(){
 			$query = " SELECT `".INVOICE_COSTS."`.*, DATE_FORMAT(`".INVOICE_COSTS."`.`create`,'%d.%m.%Y %H:%i')  AS `create`, DATE_FORMAT(`".INVOICE_COSTS."`.`date`,'%d.%m.%Y')  AS `date`,
-
 				`".INVOICE_COSTS_PAY."`.id AS pay_id,
 				`".INVOICE_COSTS_PAY."`.price AS pay_price,
 				`".INVOICE_COSTS_PAY."`.percent AS pay_percent,
@@ -1098,14 +1131,13 @@
 				`".INVOICE_COSTS_PAY."`.buch_id AS pay_buch_id,
 				`".INVOICE_COSTS_PAY."`.buch_name AS pay_buch_name
   				FROM ".INVOICE_COSTS." ";
-			$query .= "LEFT JOIN 
-			";
-			$query .= " ".INVOICE_COSTS_PAY." ON ".INVOICE_COSTS_PAY.".parent_id = ".INVOICE_COSTS.".id 
-			";
+			$query .= "LEFT JOIN ";
+			$query .= " ".INVOICE_COSTS_PAY." ON ".INVOICE_COSTS_PAY.".parent_id = ".INVOICE_COSTS.".id";
 			$query .= " WHERE ".INVOICE_COSTS.".invoice_id = '".(int)$_POST['id']."'";
 
 			if(isset($_POST['not_deleted_row'])){
-				$query .= " AND `".INVOICE_COSTS."`.`del` = 0";
+				$query .= " AND `".INVOICE_COSTS."`.`del` = 0 ";
+				$query .= " AND `".INVOICE_COSTS_PAY."`.`percent` <> '100.00' ";
 			}
 
 			//			echo $query;
@@ -1122,6 +1154,46 @@
 		}
 
 		/**
+		 * получаем данные для всплывающей подсказки по расходам
+		 */
+		protected function get_costs_qtip_AJAX(){
+			$query = "SELECT `".INVOICE_COSTS."`.*
+			 ,`".INVOICE_COSTS."`.`price` as price1
+			 
+			 , (`".INVOICE_COSTS."`.`price` - (SELECT SUM(`".INVOICE_COSTS_PAY."`.`price`) FROM `".INVOICE_COSTS_PAY."` WHERE `parent_id` = `".INVOICE_COSTS."`.`id`)) as price
+			 
+			 
+			  
+			 FROM ".INVOICE_COSTS." ";
+
+			$query .= " WHERE ".INVOICE_COSTS.".`invoice_id` =? ";
+
+			$query .= " AND `".INVOICE_COSTS."`.`del` = 0 ";
+			$query .= " AND `".INVOICE_COSTS."`.`percent` <> 100 ";
+
+
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error.' *** '.$query);
+
+			$stmt->bind_param('i', $_POST['id']) or die($this->mysqli->error.' *** '.$query);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+
+
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = $data;
+		}
+
+		/**
 		 * get ttn rows
 		 *
 		 * @param $id_s
@@ -1131,7 +1203,7 @@
 			if(count($id_s) == 0){
 				return;
 			}
-			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`, DATE_FORMAT(`".INVOICE_TTN."`.`date_return`,'%d.%m.%Y') as date_return ,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$w = 1;
 
 			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
@@ -1142,13 +1214,13 @@
 						// Запрос ТТН
 						case 5:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `number` = '' ";
+							$query .= " `number` = '0' ";
 							$w++;
 							break;
 						// Готовые ТТН
 						case 6:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `number` <> '' ";
+							$query .= " `number` <> '0' ";
 							$w++;
 							break;
 						default:
@@ -1157,6 +1229,9 @@
 				}
 
 			}
+
+
+//			echo $query;
 
 
 

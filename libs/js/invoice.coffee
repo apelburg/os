@@ -609,7 +609,7 @@ class costsRowObj
     invoice_id: 0
     invoice_number: ''
     number: ''
-    date: getDateNow()
+    date: '00.00.0000'
     price: 0
     percent: 0
     create: getDateNow()
@@ -744,10 +744,10 @@ class costsRow
               _this.percentSpan.html(round_money(per))
             focus: ()->
               if(Number($(this).val()) == 0)
-# если 0.00 подменяем на пусто
+                # если 0.00 подм  еняем на пусто
                 $(this).val('')
               else
-# выделение
+                # выделение
                 focusedElement = $(this)
                 setTimeout(()->
                   focusedElement.select()
@@ -779,11 +779,11 @@ class costsRow
               price: _this.options.pay_price,
               percent: per
             }, ()->
-              console.log _this.options.pay_price
+              thisTd = input.parent()
               # убираем класс-селектор редактирования
-              input.parent().removeClass('tdInputHere')
+              thisTd.removeClass('tdInputHere')
               # подмена input на контент
-              input.replaceWith(_this.options.pay_price)
+              thisTd.html(_this.options.pay_price)
               # обновляем значение % в строке таблицы расходов
               _this.percentSpan.html(per)
               _this.options.pay_percent = per
@@ -813,13 +813,31 @@ class costsRow
                 percent += Number eachTr.data().pay_percent
                 eachTr = eachTr.next()
 
-              # правим информацию в шапке окна
-              windowObj.calculateCosts()
+              
+              
               # сохраняем собщий процент оплаты по счёту
               if percent != Number(eachTrFirst.data().percent)
                 console.log " != не равно !!!!"
-                new sendAjax "save_costs_row", {id: _this.options.id, percent: percent}, ()->
-# сохраняем данные
+                # правим информацию в шапке окна
+                data_row.costs = 0
+  
+                thisTr = thisTd.parent()
+                thisTr.data(_this.options)
+                thisTr.parent().find('tr').each(()->
+                  da = $(this).data()
+                  if Number(da.del) == 0
+                    data_row.costs += Number(da.pay_price)
+                )
+                data_row.costs = round_money(data_row.costs)
+                windowObj.updateHead(data_row)
+
+                new sendAjax "save_payment_costs", {invoice_id:data_row.id,costs:data_row.costs,id: _this.options.id, percent: percent}, ()->
+                  $('#js-main-invoice-table').invoice('reflesh', data_row)
+
+                
+                  console.log " != не равно !!!!"
+                  # сохраняем данные
+
                   data = eachTrFirst.data()
                   data.percent = percent
                   eachTr = eachTrFirst.next()
@@ -830,7 +848,7 @@ class costsRow
                     eachTrFirst.find('.percent_payment_inf').removeClass('warning')
 
                   while eachTr.hasClass('subRow')
-# сохраняем данные
+                    # сохраняем данные
                     data = eachTr.data()
                     data.percent = percent
                     eachTr.data(data)
@@ -1162,19 +1180,36 @@ class costsRow
               else
                 _this.options.price = round_money($(this).val())
 
+
+
+              data_row.costs_supplier_bill = 0
+              thisTd = input.parent()
+              thisTr = thisTd.parent()
+              thisTr.data(_this.options)
+              thisTr.parent().find('tr.singleRow,tr.firstGroupRow').each(()->
+                da = $(this).data()
+                if Number(da.del) == 0
+                  data_row.costs_supplier_bill += Number(da.price)
+              )
+
               per = round_money(Number(_this.options.pay_price) * 100 / Number(_this.options.price))
               # проверка на деление на ноль ( чтобы не выводилось NaN )
               per = round_money(0) if Number(_this.options.pay_price) == 0
               # проверка на деление на ноль ( чтобы не выводилось NaN )
               per = round_money(0) if Number(_this.options.price) == 0
 
+
               # запрос на сохранение данных
               new sendAjax('save_costs_row', {id: _this.options.id, price: _this.options.price}, ()->
                 input.parent().removeClass('tdInputHere')
                 input.replaceWith(_this.options.price)
+
               )
-              new sendAjax('save_costs_payment_percent', {id: _this.options.pay_id, percent: per}, ()->
+              new sendAjax('save_costs_payment_percent', {id: _this.options.pay_id, percent: per,invoice_id:data_row.id,costs_supplier_bill:data_row.costs_supplier_bill}, ()->
                 _this.percentSpan.html(per)
+                windowObj.updateHead(data_row)
+                data_row.costs_supplier_bill = round_money(data_row.costs_supplier_bill)
+                $('#js-main-invoice-table').invoice('reflesh', data_row)
               )
             )
       }))
@@ -1817,20 +1852,20 @@ class costsWindow
       ###
       # создание контейнера
       ###
-      main_div = $('<div/>')
+      @main_div = $('<div/>')
       ###
       # добавление шапки окна
       ###
-      main_div.prepend(@createHead(data_row, responseData))
+      @main_div.prepend(@head = @createHead(data_row))
       ###
       # добавляем таблицу
       ###
-      main_div.append(@bodyRows = @createTable(responseData, 0, data_row))
+      @main_div.append(@bodyRows = @createTable(responseData, 0, data_row))
       ###
       # создание окна
       ###
       @myObj = new modalWindow({
-        html: main_div,
+        html: @main_div,
         maxHeight: '100%',
         maxWidth: '90%',
         title: 'Расходы по счёту',
@@ -1844,6 +1879,9 @@ class costsWindow
       @$el = @myObj.options.html[0]
       $(@$el).parent().css('padding', '0')
 
+  updateHead:(data_row)->
+    @head = @createHead(data_row)
+    @main_div.find('#head_info').replaceWith(@head)
 
 # подсчет расходов и правка в DOM
   calculateCosts: ()->
@@ -1876,7 +1914,7 @@ class costsWindow
         @head.profit_f.parent().removeClass('warning')
         @head.r_percent.parent().parent().parent().removeClass('warning')
 
-# пересчёт и сохранение расходов
+  # пересчёт и сохранение расходов
   calculateCostsSave: ()->
     self = @
     new sendAjax('save_costs_from_invoice', {id: @options.id, costs: @options.costs}, ()->
@@ -2006,7 +2044,7 @@ class costsWindow
           )
     )
 # шапка таблицы
-  createHead: (data_row, responseData)->
+  createHead: (data_row)->
     _this = @
     # общий контейнер
     head_info = $('<div>', {id: 'head_info'});
@@ -2097,11 +2135,13 @@ class costsWindow
     tr.append($('<td/>', {'class': 'wating-and-facting-left'}).append(div1).append(div2))
     # прибыль
     # ожидаемая
+
+    pp = round_money(Number(data_row.price_out) - Number(data_row.costs_supplier_bill))
     div1 = $('<div/>')
-    .append(@head.profit = $('<span/>', {'html': round_money(Number(data_row.price_out) - Number(data_row.price_in))}))
+    .append(@head.profit = $('<span/>', {'html': pp}))
     .append('р')
     # фактическая
-    fact = round_money(Number(data_row.price_out) - Number(data_row.costs))
+    fact = round_money(Number(data_row.price_out_payment) - Number(data_row.costs))
     div2 = $('<div/>')
     .append(@head.profit_f = $('<span/>', {'html': fact}))
     .append('р')
@@ -2112,7 +2152,7 @@ class costsWindow
     # калькулятор / % оплаты
     div1 = $('<div/>')
     .append($('<div/>', {'class': 'invoice-row--icons-calculator'}))
-    .append($('<div/>').append(@head.r_percent = $('<span/>', {'html': round_money((@options.price_out_payment - Number(@options.costs)) / @options.price_out * 100)})).append('%'))
+    .append($('<div/>').append(@head.r_percent = $('<span/>', {'html': round_money((@options.price_out_payment - Number(@options.costs)) / @options.price_out_payment * 100)})).append('%'))
     @head.r_percent.html('0.00') if @options.price_out == 0
 
     tr.append(td = $('<td/>', {
@@ -4290,40 +4330,54 @@ class invoiceTtn
       else
         check = ''
 
+      #checkbox
+      div22 = $('<div/>')
+
+
       divw = $('<div/>', {
+        'html':div22
         'class': 'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd' + check,
-# 'html':ttn.id,
+        # 'html':ttn.id,
         'data-id': ttn.id
         click: ()->
           if _this.options.access != 2
             $(this).prev().click()
             return false
-          console.log
 
-          # echo_message_js(ttn.id+' + '+$(this).attr('data-id'))
           if Number(ttn.return) == 0
-# вставляем подтверждение
+            # вставляем подтверждение
             t = $(this)
-            # new modalConfirm({html:'Это действие изменит в системе дату получения подписанных документов<br>Продолжить?'},()->
-            ttn.return = ++ttn.return & 1
+            ttn.return = 1
+            ttn.date_return = getDateNow();
             t.addClass('checked')
-            # сохраняем значение флага
-            # echo_message_js(row.ttn[i].id)
-            new sendAjax 'ttn_was_returned', {id: row.ttn[i].id, val: ttn.return}
-            # echo_message_js('Да, я уверен.'+row.ttn[i].id)
-            # )
-            console.log
           else
-# ограничение на снятие
-# if _this.options.access != 1
-# echo_message_js('Отметку омеет право снять только администратор')
-# return false
-            ttn.return = ++ttn.return & 1
+            ttn.return = 0
+            ttn.date_return = getDateNow();
             $(this).removeClass('checked')
-            new sendAjax 'ttn_was_returned', {id: row.ttn[i].id, val: ttn.return}
+
+          new sendAjax 'ttn_was_returned', {id: row.ttn[i].id, val: ttn.return}
+        on:
+          mouseenter: ()->
+            t = $(this)
+            #            div2.css('backgroundColor':'red')
+
+            $(this).css('backgroundColor': '#f1f1f1', 'cursor': 'posinter')
+            if !div22.hasClass('notify')
+              div22.addClass('notify')
+              setTimeout(()->
+                if div22.hasClass('notify') && Number(ttn.return) > 0
+                  div22.notify(notifyContent = $('<div/>', {
+                    'css': {'textAlign': 'left'},
+                    'html': 'дата возврата:<br>' + ttn.date_return
+                  }), {position: "right", className: 'invoice_12px', autoHide: false})
+              , 1000)
+          mouseleave: ()->
+            $(this).find('div.notifyjs-wrapper').remove()
+            $(this).attr('style', '').width(_this.defttn[2])
+            div22.removeClass('notify')
       }).width(_this.defttn[2])
 
-      console.log Number(ttn.shipment_status), Number(ttn.number)
+
       if Number(ttn.shipment_status) == 1 && Number(ttn.number) > 0
         divw.addClass('redTD')
       tr.append(divw).data(ttn)
@@ -4885,7 +4939,7 @@ class invoiceRow
 
     tr.append(td)
 
-    # выручка, платежи
+    # приходы по счёту
     div1 = $('<div/>', {
       'class': 'invoice-row--price-profit',
       'html': round_money @options.price_out
@@ -5033,7 +5087,7 @@ class invoiceRow
     # расходы по счёту
     div31 = $('<div/>', {
       'class': 'invoice-row--price-start',
-      'html': _this.options.price_in
+      'html': _this.options.costs_supplier_bill
     })
     div3 = $('<div/>', {
       'class': 'invoice-row--price-our-pyment',
@@ -5058,7 +5112,7 @@ class invoiceRow
 #              echo_message_js _this.options.id
               if div3.hasClass('notify')
 
-                new sendAjax('get_costs', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
+                new sendAjax('get_costs_qtip', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
                   div3.notify(notifyContent = $('<div/>', {'html': 'нет платежей'}), {
                     position: "right",
                     className: 'invoice_12px',
@@ -5100,13 +5154,16 @@ class invoiceRow
     td.addClass('checked') if Number @options.flag_ice > 0
     tr.append(td)
     # прибыль
-    pr = round_money(((@options.price_out - Number(@options.costs)) / @options.price_out * 100).toString())
-    if Number(@options.price_out) == 0
+
+    pr = round_money(((Number(@options.price_out_payment) - Number(@options.costs)) / Number(@options.price_out_payment) * 100).toString())
+
+    console.log ">>> - >>>",Number(@options.price_out_payment),@options.costs,pr,@options.id
+    if Number(@options.price_out_payment) == 0
       pr = '0.00'
     td = $('<td/>')
     .append($('<div/>', {
       'class': 'invoice-row--price-our-profit',
-      'html': round_money(@options.price_out - Number(@options.costs))
+      'html': round_money(Number(@options.price_out_payment) - Number(@options.costs))
     }))
     .append($('<div/>', {
       'class': 'invoice-row--price-our-profit-percent',
