@@ -8,10 +8,11 @@
  * @version 	22.04.2016 12:03:08
  */
 	class Invoice  extends aplStdAJAXMethod
-	{	
-		protected $user_access = 0; 	// user right (int)
-		protected $user_id = 0;			// user id with base
-		public $user = array(); 		// authorised user info
+	{
+		public 		$tabName = 'Счета';		// имя вкладки
+		protected 	$user_access = 0; 		// user right (int)
+		protected 	$user_id = 0;			// user id with base
+		public 		$user = array(); 		// authorised user info
 		
 		function __construct()
 		{	
@@ -21,7 +22,8 @@
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
 			// geting rights
 			$this->user_access = $this->get_user_access_Database_Int($this->user_id);
-			
+
+			$this->getInvoiceName();
 			// calls ajax methods from POST
 			if(isset($_POST['AJAX'])){
 				$this->_AJAX_($_POST['AJAX']);
@@ -31,6 +33,12 @@
 			## the data GET --- on debag time !!!
 			if(isset($_GET['AJAX'])){
 				$this->_AJAX_($_GET['AJAX']);		
+			}
+		}
+
+		private function getInvoiceName(){
+			if ($this->user_access == 7){
+				$this->tabName = 'Склад';
 			}
 		}
 
@@ -123,7 +131,7 @@
 			$query = "INSERT INTO `".INVOICE_TTN."` SET ";
 			    // $query .= "`id` = '',";
 			    // дата создания заявки
-				$query .= "`date` = NOW()";
+				$query .= "`date` = '".date('Y-m-d',strtotime($_POST['date']))."'";
 
 			    $query .= ",`position_id` = '".$_POST['positions']."'";
 			    $query .= ",`positions_num` = '".$_POST['position_numbers']."'";
@@ -157,7 +165,7 @@
 			// сборка возвращаемого объекта для апдейта строки
 			$data = array(
 				'id' => $insert_id,
-				'date'=>date("d.m.Y"),
+				'date'=>$_POST['date'],
 				'position_id' => $_POST['positions'],
 			    'positions_num' => $_POST['position_numbers'],
 			    'delivery' => $_POST['delivery'],
@@ -495,7 +503,12 @@
 				$query .= ($w>0?' AND ':' WHERE ');
 				$query .= " `manager_id` = '".$this->user_id."' ";
 				$w++;
+
 			}
+
+			$query .= ($w>0?' AND ':' WHERE ');
+			$query .= " `".INVOICE_TTN."`.`number` <> '0' ";
+			$w++;
 //			echo $query;
 
 
@@ -730,10 +743,11 @@
 			$query .= "`invoice_id` =?";
 			$query .= ",`buch_id` =?";
 			$query .= ",`buch_name` =?";
-			$query .= ", `date` = '000-00-00'";
 			$query .= ", `lasttouch` = NOW()";
 
+
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
 
 			$stmt->bind_param('iis',$_POST['id'],$this->user_id,$userName) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
@@ -750,7 +764,10 @@
 				'buch_id'=>$this->user_id,
 				'buch_name'=>$userName,
 				'create'=>date('d.m.Y H:i',time()),
+				'date'=>'00.00.0000',
+				'pay_date'=>'00.00.0000',
 				'del'=>0,
+				'price'=>'0.00',
 				'edit'=>1,
 				'pay_id'=>$insert_costs__pay_id
 			);
@@ -796,7 +813,7 @@
 			$query .= ",`buch_id` =?";
 			$query .= ",`buch_name` =?";
 			$query .= ", `lasttouch` = NOW()";
-			$query .= ", `date` = NOW()";
+			$query .= ", `date` = '0000-00-00'";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 
@@ -1083,15 +1100,20 @@
 			$result = $stmt->get_result();
 			$stmt->close();
 
+			$this->save_costs_payment_date($_POST['pay_id'],$_POST['pay_date']);
+
 		}
 
 		protected function save_costs_payment_date_AJAX(){
+			$this->save_costs_payment_date($_POST['id'],$_POST['date']);
+		}
+		protected function save_costs_payment_date($id,$date){
 			$query = "UPDATE `" . INVOICE_COSTS_PAY . "` SET ";
 			$query .= " `date`=?";
 			$query .= " WHERE `id`=?";
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$date = date("Y-m-d",strtotime($_POST['date']));
-			$stmt->bind_param('si',$date,$_POST['id']) or die($this->mysqli->error);
+			$date = date("Y-m-d",strtotime($date));
+			$stmt->bind_param('si',$date,$id) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();

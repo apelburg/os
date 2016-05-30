@@ -15,6 +15,7 @@
 
 	$(document).ready(function(){
 		<?php
+
 			if($Invoice->user['access'] == 7){
 				?>$('#js-main-invoice-table').sklad()<?php
 			}else{
@@ -25,7 +26,11 @@
 
 </script>
 <?php
-	include_once __DIR__."../../clients/client_list/default_menu.tpl";
+	if (isset($_GET['client_id'])){
+		include_once __DIR__."../../clients/client_list/default_menu.tpl";
+	}else{
+		include_once __DIR__."../../invoice/default_menu.tpl";
+	}
 
 ?>
 

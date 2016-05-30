@@ -829,7 +829,6 @@
             }));
             $(this).addClass('tdInputHere');
             input.datetimepicker({
-              minDate: new Date(),
               timepicker: false,
               dayOfWeekStart: 1,
               onSelectDate: function(ct, $i) {
@@ -876,7 +875,8 @@
                 if (Number($(this).val()) === 0) {
                   per = round_money(0);
                 }
-                console.log(per);
+                _this.options.pay_date = getDateNow();
+                td1.html(_this.options.pay_date).addClass('redTD');
                 return _this.percentSpan.html(round_money(per));
               },
               focus: function() {
@@ -950,8 +950,11 @@
                   });
                   data_row.costs = round_money(data_row.costs);
                   windowObj.updateHead(data_row);
+                  _this.options.pay_date = getDateNow();
                   return new sendAjax("save_payment_costs", {
                     invoice_id: data_row.id,
+                    pay_date: _this.options.pay_date,
+                    pay_id: _this.options.pay_id,
                     costs: data_row.costs,
                     id: _this.options.id,
                     percent: percent
@@ -959,6 +962,11 @@
                     var results;
                     $('#js-main-invoice-table').invoice('reflesh', data_row);
                     console.log(" != не равно !!!!");
+                    td1.html(_this.options.pay_date).stop().animate({
+                      backgroundColor: "transparent"
+                    }, 200, null, function() {
+                      return $(this).removeClass('redTD').attr('style', '');
+                    });
                     data = eachTrFirst.data();
                     data.percent = percent;
                     eachTr = eachTrFirst.next();
@@ -1214,7 +1222,7 @@
     };
 
     costsRow.prototype.createEditingObj = function(data, rData, i, windowObj, data_row, rowspan) {
-      var _this, delTd, td, td2, tr;
+      var _this, delTd, editClass, td, td2, tr;
       _this = this;
       tr = $('<tr/>', {
         'id': 'c_' + data.id
@@ -1231,14 +1239,19 @@
       if (rowspan >= 1) {
         tr.append(td = $('<td/>', {
           'rowspan': rowspan,
+          'class': 'mayBeEdit',
           'html': this.options.supplier_name,
           'data-id': this.options.supplier_id
         }));
         this.supplierSearch(td);
+        editClass = '';
+        if (rowspan === 1) {
+          editClass = 'mayBeEdit';
+        }
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'html': this.options.number,
-          'class': 'mayBeEdit',
+          'class': editClass,
           click: function() {
             var input;
             if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
@@ -1268,7 +1281,7 @@
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'html': this.options.date,
-          'class': 'date mayBeEdit',
+          'class': 'date ' + editClass,
           click: function() {
             var input;
             if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
@@ -1281,7 +1294,6 @@
               }));
               $(this).addClass('tdInputHere');
               input.datetimepicker({
-                minDate: new Date(),
                 timepicker: false,
                 dayOfWeekStart: 1,
                 onSelectDate: function(ct, $i) {
@@ -1312,7 +1324,7 @@
         tr.append(td2 = $('<td/>', {
           'rowspan': rowspan,
           'html': this.options.price,
-          'class': 'mayBeEdit',
+          'class': editClass,
           click: function() {
             var input;
             if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
@@ -1973,11 +1985,17 @@
         'html': data_row.percent_payment
       })).append('%');
       div2 = $('<div/>').append(this.head.conditions = $('<span/>', {
-        'html': data_row.conditions
-      })).append('%');
+        'html': data_row.conditions + '% - ' + (100 - Number(data_row.conditions)) + '%'
+      }));
       tr.append($('<td/>', {
         'class': 'wating-and-facting-right'
       }).append(div1).append(div2));
+      if (Number(data_row.percent_payment) !== 100) {
+        div1.addClass('warning');
+      }
+      if (Number(data_row.conditions) > Number(data_row.percent_payment)) {
+        div2.addClass('warning');
+      }
       div1 = $('<div/>').append($('<span/>', {
         'html': 'приходы:',
         'class': 'span-greyText'
@@ -1989,7 +2007,7 @@
       tr.append($('<td/>', {
         'class': 'wating-and-facting-left'
       }).append(div1).append(div2));
-      div1 = $('<div/>').append(this.head.r_percent = $('<span/>', {
+      div1 = $('<div/>').append(this.head.r_percent1 = $('<span/>', {
         'html': data_row.price_out_payment
       })).append('р');
       div2 = $('<div/>').append(this.head.costs = $('<span/>', {
@@ -2026,7 +2044,7 @@
         r_percent = '0.00';
       }
       console.log(Number(data_row.price_out_payment), Number(data_row.costs), r_percent);
-      console.log("# калькулятор / % оплаты:  price_out_payment = %d, costs = %d, r_percent = %d", Number(data_row.price_out_payment), Number(data_row.costs), r_percent);
+      console.log("# калькулятор / % оплаты:  price_out_payment = %d, costs = %d, r_percent = %s", Number(data_row.price_out_payment), Number(data_row.costs), r_percent);
       div1 = $('<div/>').append($('<div/>', {
         'class': 'invoice-row--icons-calculator'
       })).append($('<div/>').append(this.head.r_percent = $('<span/>', {
@@ -2072,10 +2090,9 @@
         'id': data_row.id
       }, function(response) {
         var len;
-        console.info(response.data);
         len = responseData.length;
+        console.log(response.data, new costsRowObj(response.data));
         responseData[len] = new costsRowObj(response.data);
-        console.info(responseData[len]);
         return $(_this.$el).find('#js--payment-window--body_info-table').append(new costsRow(responseData, len, _this.access, _this, data_row));
       });
     };
@@ -2443,6 +2460,7 @@
       _this = this;
       tr = $('<tr/>').data(data).append($('<td/>', {
         'html': this.options.number,
+        'class': 'mayBeEdit',
         click: function() {
           var input;
           if ($(this).find('input').length === 0) {
@@ -2471,9 +2489,14 @@
       })).append($('<td/>', {
         'html': this.options.date,
         'class': 'date',
+        'class': 'mayBeEdit',
         click: function() {
           var input;
           if ($(this).find('input').length === 0) {
+            if (_this.options.number === '0' || _this.options.number === '') {
+              echo_message_js('Сначала заполните № платёжки');
+              return false;
+            }
             $(this).html(input = $('<input/>', {
               'type': 'text',
               'val': $(this).html(),
@@ -2513,9 +2536,14 @@
       }));
       tr.append($('<td/>', {
         'html': this.options.price,
+        'class': 'mayBeEdit',
         click: function() {
           var input;
           if ($(this).find('input').length === 0) {
+            if (_this.options.number === '0' || _this.options.number === '') {
+              echo_message_js('Сначала заполните № платёжки');
+              return false;
+            }
             $(this).html(input = $('<input/>', {
               'type': 'text',
               'val': $(this).html(),
@@ -2947,9 +2975,15 @@
         'html': 'условия:',
         'class': 'span-greyText'
       })).append(this.head.conditions = $('<span/>', {
-        'html': data_row.conditions
-      })).append('%');
+        'html': data_row.conditions + '% - ' + (100 - Number(data_row.conditions)) + '%'
+      }));
       tr.append($('<td/>').append(div1).append(div2));
+      if (Number(data_row.conditions) > Number(data_row.percent_payment)) {
+        div2.addClass('warning');
+      }
+      if (Number(data_row.percent_payment) < 100) {
+        div1.addClass('warning');
+      }
       table.append(tr);
 
       /*
@@ -3279,7 +3313,7 @@
       tr.append(date_shipment_td = $('<td/>', {
         'html': oldTtn.date_shipment
       }));
-      if (this.access === 1) {
+      if (this.access === 1 || this.access === 5) {
         tr.addClass('editDate');
         tr.click(function() {
           var content, date_shipment, wDate;
@@ -3383,8 +3417,8 @@
     };
 
     ttnWindow.prototype.createHeadAdmin = function(ttn) {
-      var _this, head_info, input, input_date, span_invoice, table, td, tr;
-      _this = this;
+      var head_info, input, input_date, self, span_invoice, table, td, tr;
+      self = this;
 
       /*
        * контейнер шапки окна ТТН
@@ -3413,7 +3447,7 @@
         'class': 'ttn_requisits',
         click: function() {
           return new sendAjax('show_requesit', {
-            'id': _this.options.client_requisit_id
+            'id': self.options.client_requisit_id
           }, function(response) {
             return new modalWindow({
               html: new requesitContent(response.data),
@@ -3439,10 +3473,10 @@
       td = $('<td/>', {
         'colspan': '2'
       });
-      if (Number(_this.defaults.number) === 0) {
+      if (Number(self.defaults.number) === 0) {
         input = $('<input/>', {
-          'val': _this.defaults.number,
-          'data-val': _this.defaults.number,
+          'val': self.defaults.number,
+          'data-val': self.defaults.number,
           'class': 'ttn_number_input',
           focus: function() {
             if (Number($(this).val()) === 0) {
@@ -3456,18 +3490,18 @@
           },
           keyup: function() {
             if (Number($(this).val()) > 0 || ($(this).val() !== '0' && $(this).val() !== '')) {
-              $(_this.myObj.buttonDiv).find('#create_ttn_button').removeClass('no');
+              $(self.myObj.buttonDiv).find('#create_ttn_button').removeClass('no');
             } else {
-              $(_this.myObj.buttonDiv).find('#create_ttn_button').addClass('no');
+              $(self.myObj.buttonDiv).find('#create_ttn_button').addClass('no');
             }
-            return _this.editSaveObj('number', $(this).val(), _this.defaults.number);
+            return self.editSaveObj('number', $(this).val(), self.defaults.number);
           }
         });
         input_date = $('<input/>', {
-          'val': _this.defaults.date,
+          'val': self.defaults.date,
           'class': '',
           blur: function() {
-            return _this.editSaveObj('date', $(this).val(), _this.defaults.date);
+            return self.editSaveObj('date', $(this).val(), self.defaults.date);
           }
         }).datetimepicker({
           minDate: new Date(),
@@ -3497,37 +3531,38 @@
     };
 
     ttnWindow.prototype.spanDate = function(val) {
-      var _this;
+      var self;
       if (val == null) {
         val = getDateNow();
       }
-      _this = this;
+      self = this;
       return $('<span/>', {
         'class': 'dateInput',
         'html': val,
         click: function() {
           var input;
           val = $(this).html();
-          input = _this.inputDate(val);
+          input = self.inputDate(val);
           $(this).replaceWith(input);
+          self.newTtnDate = val;
           return setTimeout(input.focus(), 500);
         }
       });
     };
 
     ttnWindow.prototype.spanInput = function(val) {
-      var _this;
+      var self;
       if (val == null) {
         val = "&nbsp;";
       }
-      _this = this;
+      self = this;
       return $('<span/>', {
         'class': 'spanInput',
         'html': val,
         click: function() {
           var input;
           val = $(this).html();
-          input = _this.inputSpan(val);
+          input = self.inputSpan(val);
           $(this).replaceWith(input);
           return setTimeout(input.focus(), 500);
         }
@@ -3535,28 +3570,28 @@
     };
 
     ttnWindow.prototype.inputSpan = function(val) {
-      var _this;
-      _this = this;
+      var self;
+      self = this;
       return $('<input/>', {
         val: val,
         blur: function() {
           val = $(this).val();
-          return $(this).replaceWith(_this.spanInput(val));
+          return $(this).replaceWith(self.spanInput(val));
         }
       });
     };
 
     ttnWindow.prototype.inputDate = function(val) {
-      var _this;
-      _this = this;
+      var self;
+      self = this;
       return $('<input/>', {
         val: val,
         blur: function() {
           val = $(this).val();
-          return $(this).replaceWith(_this.spanDate(val));
+          self.newTtnDate = val;
+          return $(this).replaceWith(self.spanDate(val));
         }
       }).datetimepicker({
-        minDate: new Date(),
         timepicker: false,
         dayOfWeekStart: 1,
         onSelectDate: function(ct, $i) {
@@ -4003,9 +4038,9 @@
     };
 
     ttnWindow.prototype.queryNewTtn = function(obj, data_row, _this) {
-      var content, date_shipment, delivery, options, position_numbers, self, wDate;
+      var content, date_formate, date_shipment, delivery, options, position_numbers, self, ship_date, wDate;
       self = this;
-      console.log(obj);
+      console.log(this.newTtnDate);
       options = [];
       position_numbers = [];
       $(this.$el).find('table td input').each(function(index, el) {
@@ -4028,6 +4063,16 @@
         echo_message_js('Выберите способ доставки выбранных позиций.', 'error_message');
         return false;
       }
+      ship_date = self.newTtnDate;
+      date_formate = function(myDate) {
+        var newDate;
+        myDate = myDate.split(".");
+        newDate = myDate[1] + "/" + myDate[0] + "/" + myDate[2];
+        return new Date(newDate).getTime();
+      };
+      if (date_formate(self.newTtnDate) < date_formate(getDateNow())) {
+        ship_date = getDateNow();
+      }
       content = $('<div/>').append($('<div/>', {
         'html': 'Укажите приблизительную дату отгрузки/доставки'
       })).append($('<div/>', {
@@ -4036,7 +4081,7 @@
           'margin': '10px 0 0 0'
         }
       }).append(date_shipment = $('<input/>', {
-        'val': getDateNow(),
+        'val': ship_date,
         'css': {
           'padding': '5px'
         }
@@ -4078,6 +4123,7 @@
                 positions: options.join(','),
                 position_numbers: position_numbers.join(','),
                 date_shipment: date_shipment.val(),
+                date: self.newTtnDate,
                 delivery: delivery.join('')
               }, function(response) {
                 self.destroy();
@@ -5068,7 +5114,7 @@
           console.log(row.positions_num, row.positions_in_ttn);
           if (Number(row.positions_num) !== Number(row.positions_in_ttn) && Number(row.positions_in_ttn) > 0) {
             td.append($('<div/>', {
-              'html': 'Заропсить',
+              'html': 'Запросить',
               'class': 'js-query-ttn-div mayBeEdit',
               click: function() {
                 var t;
@@ -5232,6 +5278,9 @@
         'class': 'invoice-row--price-payment',
         'html': round_money(this.options.price_out_payment)
       });
+      if (Number(this.options.price_out) !== Number(this.options.price_out_payment)) {
+        div2.addClass('redText');
+      }
       td = $('<td/>', {
         'data-id': this.options.id,
         click: function(e) {
@@ -5260,7 +5309,7 @@
                   }, function(response) {
                     var dopText, i, j, len1, notifyContent, ptr, ref, row, tbl;
                     div2.notify(notifyContent = $('<div/>', {
-                      'html': 'нет платежей'
+                      'html': 'нет оплаты'
                     }), {
                       position: "right",
                       className: 'invoice_12px',
@@ -5317,6 +5366,20 @@
                         dopText.append($('<div/>', {
                           'style': 'text-align:left;',
                           'html': 'график оплаты: ' + round_money(_this.options.conditions) + '-' + round_money(100 - Number(_this.options.conditions)) + '%'
+                        }));
+                        notifyContent.append(dopText);
+                      }
+                      if (Number(_this.options.price_out) !== Number(_this.options.price_out_payment)) {
+                        dopText = $('<div/>', {
+                          'class': 'invoice-row--price-payment-dopText'
+                        });
+                        dopText.append($('<div/>', {
+                          'style': 'text-align:left;color:red;',
+                          'html': 'Внимание!'
+                        }));
+                        dopText.append($('<div/>', {
+                          'style': 'text-align:left;',
+                          'html': 'Сумма по счёту не соответствует сумме оплаты'
                         }));
                         return notifyContent.append(dopText);
                       }
@@ -5430,9 +5493,9 @@
                     'id': _this.options.id,
                     'not_deleted_row': 1
                   }, function(response) {
-                    var i, j, len1, notifyContent, ptr, ref, row, tbl;
+                    var dopText, i, j, len1, notifyContent, ptr, ref, row, tbl;
                     div3.notify(notifyContent = $('<div/>', {
-                      'html': 'нет платежей'
+                      'html': 'нет оплаты'
                     }), {
                       position: "right",
                       className: 'invoice_12px',
@@ -5461,7 +5524,21 @@
                           'html': round_money(response.data[i].price)
                         }));
                       }
-                      return notifyContent.html(tbl);
+                      notifyContent.html(tbl);
+                    }
+                    if (Number(_this.options.costs) !== Number(_this.options.costs_supplier_bill)) {
+                      dopText = $('<div/>', {
+                        'class': 'invoice-row--price-payment-dopText'
+                      });
+                      dopText.append($('<div/>', {
+                        'style': 'text-align:left;color:red;',
+                        'html': 'Внимание!'
+                      }));
+                      dopText.append($('<div/>', {
+                        'style': 'text-align:left;',
+                        'html': 'Сумма по счёту не соответствует сумме оплаты'
+                      }));
+                      return notifyContent.append(dopText);
                     }
                   });
                 }
@@ -5477,6 +5554,9 @@
       }).css('cursor', 'pointer');
       td.append(div31);
       td.append(div3);
+      if (Number(this.options.costs) !== Number(this.options.costs_supplier_bill)) {
+        div3.addClass('redText');
+      }
       tr.append(td);
       td = $('<td/>', {
         'class': 'invoice-row--ice mayBeEdit',
@@ -5944,7 +6024,7 @@
           'class': 'row'
         }).data(ttn);
         if (ttn.number <= 0) {
-          number = 'запрос33';
+          number = 'запрос';
         } else {
           number = ttn.number;
         }

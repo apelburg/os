@@ -195,6 +195,12 @@
 	width: 50px;
 	padding-right: 15px;
 }
+.invoice-row--price-payment.redText,
+.invoice-row--price-our-pyment.redText,
+.redText{
+	color: #FFA28D;
+	text-decoration: underline;
+}
 #ttn--already-was-created--old-ttn-tbl{
 	border-collapse: collapse;
 }
@@ -217,7 +223,6 @@
 	 background-size: 35px;
 	 background-repeat: no-repeat;
 	font-size: 12px;
-	color: #aaa;
  }
 #ttn--already-was-created--old-ttn-tbl tr.editDate:hover td{
 	cursor: pointer;
@@ -768,12 +773,20 @@ div#js-alert_union{
 	border: 1px solid #ccc;
 }
 
+
+#js--payment-window--body_info-table tr td{
+	background-color: #f1f2f2;
+}
+#js--payment-window--body_info-table tr td.mayBeEdit{
+	background-color: #fff;
+}
+
 #js--payment-window--body_info-table tr td:nth-of-type(3){
 	text-align: right;
 }
 #js--payment-window--body_info-table tr td:nth-last-of-type(2),
 #js--payment-window--body_info-table tr td:nth-last-of-type(3){
-	border-right: 1px solid #fff;
+	/*border-right: 1px solid #fff;*/
 }
 #js--payment-window--body_info-table tr td:nth-last-of-type(2){
 	padding: 0;
@@ -817,6 +830,7 @@ div#js-alert_union{
     text-align: left;
     font-size: 12px;
     color: #959595;
+	padding-left: 5px;
 }
 #js--payment-window--body_info-table tr.deleted td{
 	background-color: rgb(255, 240, 240);
@@ -874,7 +888,8 @@ div#js-alert_union{
 }
 #js-main-invoice-table tr td.invoice-row--checkboxtd.red1c,
 #js-main-invoice-table tr td.redTD,
-#js-main-invoice-table tr td .redTD{
+#js-main-invoice-table tr td .redTD,
+#js--payment-window--body_info-table tr td.redTD{
 	background-color: rgba(255,195,181,1);
 }
 
@@ -1176,4 +1191,7 @@ body #context-menu ul li{
 	font-weight: normal;
 	color: #ECEDEE;
 	text-shadow: none;
+}
+table td.noActive{
+	background-color: #f1f2f2;
 }
