@@ -39,7 +39,7 @@
 		}
 
 		if(data['response'] != "OK"){ // вывод при ошибке
-			console.log(data);
+			// console.log(data);
 		}
 		
 		if(data['error']  !== undefined){ // на случай предусмотренной ошибки из PHP

@@ -877,6 +877,10 @@ div#js-alert_union{
 #js-main-invoice-table tr td .redTD{
 	background-color: rgba(255,195,181,1);
 }
+
+#js-main-invoice-table tr td .redTD.invoice-row--ttn--vt.invoice-row--checkboxtd.checked{
+	background-color: #fff;
+}
 #js--payment-window--body_info-table tr td.mayBeEdit:hover,
 #js-main-invoice-table tr td.mayBeEdit:hover,
 #js-main-invoice-table tr td.tdLink:hover{
