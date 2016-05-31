@@ -47,18 +47,29 @@
 		 */
 		protected function confirm_create_ttn_AJAX(){
 			$this->db();
+
+
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
 			$query .= "`number` = '".(int)$_POST['number'] ."'";
 			if(isset($_POST['date'])){
 				$query .= ",`date` =  '".date("Y-m-d",strtotime($_POST['date']))."' ";
 			}
-
 			$query .= ",`buch_id` = '".$this->user_id."'";
 			$query .= ",`buch_name` = '".$this->getAuthUserName()."'";
-			  	
-			$query .= " WHERE `id` = '".$_POST['id']."'";		
-			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
+			$query .= " WHERE `id` = '".$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+
+			# добавляем созданную ттн к количеству созданных
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `ttn_build` = (ttn_build + 1)";
+			$query .= " WHERE `id` =?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
 
 		/**
@@ -67,7 +78,6 @@
 		protected function shearch_invoice_autocomlete_AJAX(){
 
 			$query="SELECT * FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?";
-//			$query="SELECT * FROM `".CLIENTS_TBL."`  WHERE `company` LIKE ?";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$search = '%'.$_POST['search'].'%';
@@ -411,14 +421,14 @@
 							break;
 						// Запрос ТТН
 						case 5:
-//							$query .= ($w>0?' AND ':' WHERE ');
-//							$query .= " `ttn_query` >  0 ";
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `ttn_query` >  0 ";
 							$w++;
 							break;
 						// Готовые ТТН
 						case 6:
-//							$query .= ($w>0?' AND ':' WHERE ');
-//							$query .= " `ttn_build` >  0 ";
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `ttn_build` >  0 ";
 							$w++;
 							break;
 						// Част. отгрузка
@@ -594,55 +604,49 @@
 		 * проверка глобального статуса заказа
 		 */
 		protected function check_chipment_global_status_AJAX(){
-			$id = (int)$_POST['invoice_id'];
 			$positions_num = (int)$_POST['positions_num'];
-			$positions_in_ttn = (int)$_POST['positions_in_ttn'];
+//			$positions_in_ttn = (int)$_POST['positions_in_ttn'];
 
+			$data['status'] = 'не отгружен'; 		// статус по умолчанию
+			$shipment_ttn_num = 0; 					// количество отгруженных ттн
+			$ttn_num = 0; 							// общее количество ттн
+//			$count_positions_in_ttn = 0; 			// количество раскиданных по ттн позиций
+			$count_positions_in_ttn_shipment = 0; 	// количество отгруженных позиций
 
-			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id`=?";
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('i',$id) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
+			# получаем список ttn
+			$ttn_arr = $this->get_ttn_row($_POST['invoice_id']);
+			# перебор ттн
+			foreach ($ttn_arr as $val){
+				$count = count(explode(',',$val['positions_num']));
+//				$count_positions_in_ttn += $count;
+				$ttn_num++;
 
-			$ttn_arr = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$ttn_arr[] = $row;
+				if ($val['shipment_status']>0){
+					$data['status'] = 'частично отгружен';
+					$shipment_ttn_num++;
+					# подсчитываем количество отгруженных позиций
+					$count_positions_in_ttn_shipment += $count;
 				}
 			}
 
-			$data['status'] = 'не отгружен';
-			$shipment_ttn = 0;
-			$ttn_num = 0;
-
-				foreach ($ttn_arr as $val){
-					if ($val['shipment_status']>0){
-						$data['status'] = 'частично отгружен';
-						$shipment_ttn++;
-					}
-					$ttn_num++;
-				}
-			if($positions_num==$positions_in_ttn && $shipment_ttn == $ttn_num){
+			// если количество позиций в отгруженных ттн соответствует общему количеству позиций в счёте
+			// меняем статус на отгружен
+			if($positions_num == $count_positions_in_ttn_shipment){
 				$data['status'] = 'отгружен';
 			}
+
 
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `status`=?";
 			$query .= " WHERE `id` =?";
-
 			$status = $data['status'];
 
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('si',$status, $id) or die($this->mysqli->error);
+			$stmt->bind_param('si',$status, $_POST['invoice_id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
-
-
 
 			$this->responseClass->response['data'] = $data;
 
@@ -680,14 +684,26 @@
 		 *
 		 */
 		protected function get_ttn_AJAX(){
+
+			$data = $this->get_invoice_rows($_POST['id']);
+
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = $data; 
+
+		}
+
+		/**
+		 * запрос позиций по id счёта
+		 * @param $id
+		 * @return mixed
+		 */
+		private function get_invoice_rows($id){
 			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id`=?";
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->bind_param('i',$id) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
-
 
 			$data = array();
 			if($result->num_rows > 0){
@@ -695,9 +711,28 @@
 					$data[] = $row;
 				}
 			}
-			// возвращаем полученные данные
-			$this->responseClass->response['data'] = $data; 
-			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+			return $data;
+		}
+		/**
+		 * запрос ttn по id счёта
+		 * @param $id
+		 * @return mixed
+		 */
+		private function get_ttn_row($id){
+			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$id) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			return $data;
 		}
 
 		/**
@@ -872,14 +907,24 @@
 			$query = "UPDATE `" . INVOICE_ROWS . "` SET ";
 			$query .= " `not_shipped`=?";
 			$query .= " WHERE `id`=?";
-
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
 			$stmt->bind_param('ii',$_POST['not_shipped'],$_POST['id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
+
+
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `positions_num` = (positions_num - 1) ";
+			$query .= " WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
+
+
 		/**
 		 *	save percent in costs
 		 */
@@ -1222,10 +1267,57 @@
 		 */
 		private function get_ttn_rows($id_s,$curSearch = array('invoice_num'=>'','id'=>0)){
 			// if(count)
+			$additional_conditions = '';
 			if(count($id_s) == 0){
 				return;
 			}
-			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`, DATE_FORMAT(`".INVOICE_TTN."`.`date_return`,'%d.%m.%Y') as date_return ,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
+				// если мы не используем поиск
+				// правила выборки счетов по вкладкам
+				if (isset($_GET['section'])){
+					switch ((int)$_GET['section']){
+						// Запрос ТТН
+						case 5:
+
+							break;
+						// Готовые ТТН
+						case 6:
+//
+							$additional_conditions = "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 'greyTtnRow' 
+										   ELSE 'blackTtnRow'
+								   END as ttn_bgcolor_class, ";
+
+							$additional_conditions .= "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 1 
+										   ELSE 0
+								   END as ttn_lok, ";
+							break;
+							// отгруженные ттн
+						case 7:
+							$additional_conditions = "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 'greyTtnRow' 
+										   ELSE 'blackTtnRow'
+								   END as ttn_bgcolor_class, ";
+
+							$additional_conditions .= "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 0 
+										   ELSE 1
+								   END as ttn_lok, ";
+
+							break;
+						default:
+							break;
+					}
+				}
+
+			}
+
+			$query = "SELECT $additional_conditions `".INVOICE_TTN."`.*,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`, DATE_FORMAT(`".INVOICE_TTN."`.`date_return`,'%d.%m.%Y') as date_return ,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$w = 1;
 
 			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
@@ -1241,14 +1333,14 @@
 							break;
 						// Готовые ТТН
 						case 6:
-							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `number` <> '0' AND shipment_status <> 1";
+//							$query .= ($w>0?' AND ':' WHERE ');
+//							$query .= " `number` <> '0' AND shipment_status <> 1";
 							$w++;
 							break;
 
 						case 7:
-							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= "  shipment_status = 1";
+//							$query .= ($w>0?' AND ':' WHERE ');
+//							$query .= "  shipment_status = 1";
 							$w++;
 							break;
 						default:
@@ -1257,15 +1349,7 @@
 				}
 
 			}
-
-
 //			echo $query;
-
-
-
-
-
-
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$data = array();
 			if($result->num_rows > 0){
@@ -1273,7 +1357,6 @@
 					$this->data[$this->depending['id'][$row['invoice_id']]]['ttn'][] = $row;
 				}
 			}
-
 
 			// если мы не используем поиск
 			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){

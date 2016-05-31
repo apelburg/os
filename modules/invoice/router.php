@@ -3,7 +3,7 @@
     // ** БЕЗОПАСНОСТЬ **
 	// проверяем выдан ли доступ на вход на эту страницу
 	// если нет $ACCESS['suppliers']['access'] или она равна FALSE прерываем работу скирпта 
-	if(!@$ACCESS['client_folder']['section']['rt_position']['access']) exit($ACCESS_NOTICE);
+	if(!@$ACCESS[$_GET['page']]['access']) exit($ACCESS_NOTICE);
 	// ** БЕЗОПАСНОСТЬ **
 
 	$quick_button = '<div class="quick_button_div"  id="quick_button_div" style="background:none"></div>';

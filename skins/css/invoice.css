@@ -182,11 +182,13 @@
 #js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row{
 	cursor: pointer;
 }
-#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(1),
-#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(2),
+
 #js-main-invoice-table tbody tr td.js-query-ttn:hover{
-	background-color: #f1f1f1;
+	/*background-color: #f1f1f1;*/
 }
+
+
+
 
 #js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div{
 
@@ -353,8 +355,12 @@
 #js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(8),
 #js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(9),
 #js-main-invoice-table.sklad tbody tr.firstRow td:nth-of-type(10),
-#js-main-invoice-table.sklad tbody tr.subRow td{
+#js-main-invoice-table.sklad tbody tr.subRow td,
+#js-main-invoice-table tbody tr td:nth-of-type(14){
 	padding: 5px;
+}
+#js-main-invoice-table tbody tr td:nth-of-type(14){
+	font-size: 14px;
 }
 
 #js-main-invoice-table tr td div.defttn2{
@@ -378,6 +384,35 @@
 #js-main-invoice-table tbody tr td .js-query-ttn-div:hover{
 	text-decoration: none;
 	background-color: #f1f1f1;
+}
+
+/*строки ттн*/
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(2),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row:hover .cell:nth-of-type(1){
+	background-color: #f1f1f1;
+}
+/* неотгруженные */
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.blackTtnRow,
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.blackTtnRow .cell:nth-of-type(2),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.blackTtnRow .cell:nth-of-type(1),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.blackTtnRow .cell:nth-of-type(3){
+	background-color: #3a3a3a;
+}
+
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.blackTtnRow:hover .cell:nth-of-type(2),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.blackTtnRow:hover .cell:nth-of-type(1){
+	background-color: #393939;
+}
+/* отгруженные */
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow,
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow .cell:nth-of-type(2),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow .cell:nth-of-type(1){
+	background-color: #f1f1f1;
+}
+
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow:hover .cell:nth-of-type(2),
+#js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow:hover .cell:nth-of-type(1){
+	background-color: #f2f2f2;
 }
 
 /*
@@ -444,6 +479,13 @@ body .js-alert_union_buttons table td button.left{
 /*
 окно ТТН
  */
+.invoice-row--price-profit,
+.invoice-row--order-number,
+.invoice-row--price-start,
+.invoice-row--price-our-profit{
+	font-size: 14px;
+}
+
 #js-invoice--window--ttn-table{
 	border-collapse: collapse;
 }
@@ -451,6 +493,14 @@ body .js-alert_union_buttons table td button.left{
 #js-invoice--window--ttn-table tr td{
 	border: 1px solid #CAC7C7;
 	padding: 5px;
+}
+#js-invoice--window--ttn-table.adminStyle tr td{
+	opacity: 0.7;
+	background: rgb(226, 226, 226);
+}
+#js-invoice--window--ttn-table.adminStyle tr.buh_style td{
+	opacity: 1;
+	background: #fff;
 }
 #js-invoice--window--ttn-table tr th{
 	text-align: left;
@@ -611,8 +661,8 @@ div#js-alert_union{
 	padding-bottom: 15px;
 }
 .ttn_created td{
-	background-color: #c6e1aa;
-	color: #9eb488;
+
+	color: #B3AFAF;
 }
 .not_shipped td{
 	background-color: #f2f2f2;

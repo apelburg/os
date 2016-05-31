@@ -794,7 +794,7 @@
     }
 
     costsRow.prototype.init = function(data, rData, i, windowObj, data_row, rowspan) {
-      if (Number(this.options.del) === 0 && (Number(this.access) === 1 || Number(this.access) === 2)) {
+      if (Number(this.options.del) === 0 && (Number(this.access) === 1 || Number(this.access) === 2 || Number(this.access) === 5)) {
         console.log("редактируется", rowspan);
         return this.createEditingObj(data, rData, i, windowObj, data_row, rowspan);
       } else {
@@ -812,13 +812,20 @@
     };
 
     costsRow.prototype.createEditingObjPayments = function(data, rData, i, windowObj, data_row, rowspan, tr) {
-      var _this, button2, td1, td2, td3;
+      var _this, button2, cl, td1, td2, td3;
       _this = this;
+      cl = 'mayBeEdit';
+      if (_this.access === 5) {
+        cl = '';
+      }
       tr.append(td1 = $('<td/>', {
         'html': this.options.pay_date,
-        'class': 'date mayBeEdit',
+        'class': 'date ' + cl,
         click: function() {
           var input;
+          if (_this.access === 5) {
+            return false;
+          }
           if ($(this).find('input').length === 0) {
             $(this).html(input = $('<input/>', {
               'type': 'text',
@@ -856,11 +863,18 @@
           }
         }
       }));
+      cl = 'mayBeEdit';
+      if (_this.access === 5) {
+        cl = '';
+      }
       tr.append(td2 = $('<td/>', {
         'html': this.options.pay_price,
-        'class': 'mayBeEdit',
+        'class': cl,
         click: function() {
           var input;
+          if (_this.access === 5) {
+            return false;
+          }
           if ($(this).find('input').length === 0) {
             $(this).html(input = $('<input/>', {
               'type': 'text',
@@ -1060,15 +1074,17 @@
           }
         });
       }
-      td1.menuRightClick({
-        'buttons': button2
-      });
-      td2.menuRightClick({
-        'buttons': button2
-      });
-      return td3.menuRightClick({
-        'buttons': button2
-      });
+      if (this.access !== 5) {
+        td1.menuRightClick({
+          'buttons': button2
+        });
+        td2.menuRightClick({
+          'buttons': button2
+        });
+        return td3.menuRightClick({
+          'buttons': button2
+        });
+      }
     };
 
     costsRow.prototype.supplierSearch = function(td) {
@@ -1245,7 +1261,7 @@
         }));
         this.supplierSearch(td);
         editClass = '';
-        if (rowspan === 1) {
+        if (rowspan === 1 && this.access !== 5) {
           editClass = 'mayBeEdit';
         }
         tr.append($('<td/>', {
@@ -1254,6 +1270,9 @@
           'class': editClass,
           click: function() {
             var input;
+            if (_this.access === 5) {
+              return false;
+            }
             if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
               $(this).html(input = $('<input/>', {
                 'type': 'text',
@@ -1278,49 +1297,63 @@
             }
           }
         }));
-        tr.append($('<td/>', {
-          'rowspan': rowspan,
-          'html': this.options.date,
-          'class': 'date ' + editClass,
-          click: function() {
-            var input;
-            if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
-              $(this).html(input = $('<input/>', {
-                'type': 'text',
-                'val': $(this).html(),
-                change: function() {
-                  return _this.options.date = $(this).val();
-                }
-              }));
-              $(this).addClass('tdInputHere');
-              input.datetimepicker({
-                timepicker: false,
-                dayOfWeekStart: 1,
-                onSelectDate: function(ct, $i) {
-                  return $i.blur();
-                },
-                onGenerate: function(ct) {
-                  $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
-                  return $(this).find('.xdsoft_date');
-                },
-                closeOnDateSelect: true,
-                format: 'd.m.Y'
-              });
-              return input.focus().blur(function() {
-                var t;
-                t = $(this);
-                _this.options.date = $(this).val();
-                return new sendAjax('save_costs_row', {
-                  id: _this.options.id,
-                  date: _this.options.date
-                }, function() {
-                  t.parent().removeClass('tdInputHere');
-                  return t.replaceWith(_this.options.date);
+        if (rowspan === 1) {
+          editClass = 'mayBeEdit';
+        }
+        if (this.access === 5) {
+          tr.append($('<td/>', {
+            'rowspan': rowspan,
+            'html': this.options.date,
+            'class': 'date '
+          }));
+        } else {
+          tr.append($('<td/>', {
+            'rowspan': rowspan,
+            'html': this.options.date,
+            'class': 'date ' + editClass,
+            click: function() {
+              var input;
+              if (this.access === 5) {
+                return false;
+              }
+              if ($(this).find('input').length === 0 && Number($(this).attr('rowspan')) === 1) {
+                $(this).html(input = $('<input/>', {
+                  'type': 'text',
+                  'val': $(this).html(),
+                  change: function() {
+                    return _this.options.date = $(this).val();
+                  }
+                }));
+                $(this).addClass('tdInputHere');
+                input.datetimepicker({
+                  timepicker: false,
+                  dayOfWeekStart: 1,
+                  onSelectDate: function(ct, $i) {
+                    return $i.blur();
+                  },
+                  onGenerate: function(ct) {
+                    $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+                    return $(this).find('.xdsoft_date');
+                  },
+                  closeOnDateSelect: true,
+                  format: 'd.m.Y'
                 });
-              });
+                return input.focus().blur(function() {
+                  var t;
+                  t = $(this);
+                  _this.options.date = $(this).val();
+                  return new sendAjax('save_costs_row', {
+                    id: _this.options.id,
+                    date: _this.options.date
+                  }, function() {
+                    t.parent().removeClass('tdInputHere');
+                    return t.replaceWith(_this.options.date);
+                  });
+                });
+              }
             }
-          }
-        }));
+          }));
+        }
         tr.append(td2 = $('<td/>', {
           'rowspan': rowspan,
           'html': this.options.price,
@@ -1415,6 +1448,9 @@
           'class': 'ice',
           click: function() {
             var flag_ice, tbl;
+            if (this.access === 5) {
+              return false;
+            }
             if ($(this).hasClass('checked')) {
               _this.options.flag_ice = 0;
               $(this).removeClass('checked');
@@ -2051,8 +2087,10 @@
         'html': r_percent
       })).append('%'));
       tr.append(td = $('<td/>', {
-        'class': 'bold mayBeEdit our_p',
-        click: function() {
+        'class': 'bold our_p'
+      }).append(div1));
+      if (this.access === 1 || this.access === 2) {
+        td.addClass('mayBeEdit').click(function() {
           if ($(this).hasClass('checked')) {
             _this.options.flag_calc = 0;
             $(this).removeClass('checked');
@@ -2066,8 +2104,8 @@
           }, function() {
             return $('#js-main-invoice-table').invoice('reflesh', _this.options);
           });
-        }
-      }).append(div1));
+        });
+      }
       if (Number(_this.options.flag_calc > 0)) {
         td.addClass('checked');
       }
@@ -3204,12 +3242,24 @@
         /*
          * добавляем таблицу
          */
-        main_div.append(this.contentTbl = this.createTable(responseData, ttn));
+        main_div.append(this.contentTbl = this.createTable(responseData, ttn, data_row));
 
         /*
          * добавление шапки окна
          */
         main_div.prepend(this.createHead(ttn));
+
+        /*
+         * вычисляем title окна
+         */
+        this.title = 'УПД';
+        if (ttn !== void 0 && ttn.number !== void 0 && (Number(ttn.number) > 0 || ttn.number !== '0')) {
+          this.title += ' № ' + ttn.number;
+        } else if (ttn !== void 0 && this.access === 5) {
+          this.title += ' запрошен';
+        } else {
+          this.title = 'Запрос ' + this.title;
+        }
 
         /*
          * выбор способа доставки
@@ -3219,7 +3269,7 @@
         }
 
         /*
-         * ранее созданные ттн
+         * ранее созданные упд
          */
         main_div.append(this.alreadyWasСreated());
 
@@ -3231,7 +3281,7 @@
           width: '1000px',
           maxHeight: '100%',
           height: $(window).height() - 60,
-          title: 'Запрос ТТН',
+          title: this.title,
           buttons: this.getButtons(obj, data_row, ttn)
         }, {
           closeOnEscape: true
@@ -3416,120 +3466,6 @@
       return car_div.append(div_car_body);
     };
 
-    ttnWindow.prototype.createHeadAdmin = function(ttn) {
-      var head_info, input, input_date, self, span_invoice, table, td, tr;
-      self = this;
-
-      /*
-       * контейнер шапки окна ТТН
-       */
-      head_info = $('<div>', {
-        id: 'ttn_head_info'
-      });
-
-      /*
-       * сборка таблицы с общей информации по ТТН
-       */
-      table = $('<table>', {
-        id: 'ttn_head_info-table'
-      });
-
-      /*
-       * строка с информацией по клиенту
-       */
-      tr = $('<tr/>');
-      tr.append($('<td/>', {
-        'html': this.options.client_name,
-        'class': 'ttn_client_name'
-      }));
-      tr.append($('<td/>', {
-        'html': this.options.client_requisit_name,
-        'class': 'ttn_requisits',
-        click: function() {
-          return new sendAjax('show_requesit', {
-            'id': self.options.client_requisit_id
-          }, function(response) {
-            return new modalWindow({
-              html: new requesitContent(response.data),
-              maxHeight: '100%',
-              width: '650px',
-              title: 'Реквизиты'
-            }, {
-              closeOnEscape: true,
-              single: false
-            });
-          });
-        }
-      }));
-      table.append(tr);
-
-      /*
-       * если номер к данной ТТН не назначен - выводим строку
-       * с формой назначения номера ТТН и даты от которой эта ТТН выставлена
-       */
-      span_invoice = $('<span/>', {
-        'html': "№ ТТН " + this.options.invoice_num + " от " + this.options.invoice_create_date
-      });
-      td = $('<td/>', {
-        'colspan': '2'
-      });
-      if (Number(self.defaults.number) === 0) {
-        input = $('<input/>', {
-          'val': self.defaults.number,
-          'data-val': self.defaults.number,
-          'class': 'ttn_number_input',
-          focus: function() {
-            if (Number($(this).val()) === 0) {
-              $(this).val('');
-            }
-          },
-          blur: function() {
-            if (Number($(this).val()) === 0) {
-              $(this).val($(this).attr('data-val'));
-            }
-          },
-          keyup: function() {
-            if (Number($(this).val()) > 0 || ($(this).val() !== '0' && $(this).val() !== '')) {
-              $(self.myObj.buttonDiv).find('#create_ttn_button').removeClass('no');
-            } else {
-              $(self.myObj.buttonDiv).find('#create_ttn_button').addClass('no');
-            }
-            return self.editSaveObj('number', $(this).val(), self.defaults.number);
-          }
-        });
-        input_date = $('<input/>', {
-          'val': self.defaults.date,
-          'class': '',
-          blur: function() {
-            return self.editSaveObj('date', $(this).val(), self.defaults.date);
-          }
-        }).datetimepicker({
-          minDate: new Date(),
-          timepicker: false,
-          dayOfWeekStart: 1,
-          onSelectDate: function(ct, $i) {
-            return $i.blur();
-          },
-          onGenerate: function(ct) {
-            $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
-            return $(this).find('.xdsoft_date');
-          },
-          closeOnDateSelect: true,
-          format: 'd.m.Y'
-        });
-        td.append('№ ТТН ').append($('<span/>').append(input));
-        td.append($('<span/>').append(input_date));
-      }
-      td.append(span_invoice);
-      tr = $('<tr/>').append(td);
-      table.append(tr);
-
-      /*
-       * добавляем всё в контейнер и возвращаем
-       */
-      return head_info.append(table);
-    };
-
     ttnWindow.prototype.spanDate = function(val) {
       var self;
       if (val == null) {
@@ -3606,21 +3542,137 @@
       });
     };
 
+    ttnWindow.prototype.createHeadAdmin = function(ttn) {
+      var head_info, input, input_date, self, span_invoice, table, td, tr;
+      self = this;
+
+      /*
+       * контейнер шапки окна ТТН
+       */
+      head_info = $('<div>', {
+        id: 'ttn_head_info'
+      });
+
+      /*
+       * сборка таблицы с общей информации по ТТН
+       */
+      table = $('<table>', {
+        id: 'ttn_head_info-table'
+      });
+
+      /*
+       * строка с информацией по клиенту
+       */
+      tr = $('<tr/>');
+      tr.append($('<td/>', {
+        'html': this.options.client_name,
+        'class': 'ttn_client_name'
+      }));
+      tr.append($('<td/>', {
+        'html': this.options.client_requisit_name,
+        'class': 'ttn_requisits',
+        click: function() {
+          return new sendAjax('show_requesit', {
+            'id': self.options.client_requisit_id
+          }, function(response) {
+            return new modalWindow({
+              html: new requesitContent(response.data),
+              maxHeight: '100%',
+              width: '650px',
+              title: 'Реквизиты'
+            }, {
+              closeOnEscape: true,
+              single: false
+            });
+          });
+        }
+      }));
+      table.append(tr);
+
+      /*
+       * если номер к данной ТТН не назначен - выводим строку
+       * с формой назначения номера ТТН и даты от которой эта ТТН выставлена
+       */
+      span_invoice = $('<span/>', {
+        'html': "№ счёта " + this.options.invoice_num + " от " + this.options.invoice_create_date
+      });
+      td = $('<td/>', {
+        'colspan': '2'
+      });
+      if (Number(self.defaults.number) === 0) {
+        input = $('<input/>', {
+          'val': self.defaults.number,
+          'data-val': self.defaults.number,
+          'class': 'ttn_number_input',
+          focus: function() {
+            if (Number($(this).val()) === 0) {
+              $(this).val('');
+            }
+          },
+          blur: function() {
+            if (Number($(this).val()) === 0) {
+              $(this).val($(this).attr('data-val'));
+            }
+          },
+          keyup: function() {
+            if (Number($(this).val()) > 0 || ($(this).val() !== '0' && $(this).val() !== '')) {
+              $(self.myObj.buttonDiv).find('#create_ttn_button').removeClass('no');
+            } else {
+              $(self.myObj.buttonDiv).find('#create_ttn_button').addClass('no');
+            }
+            return self.editSaveObj('number', $(this).val(), self.defaults.number);
+          }
+        });
+        input_date = $('<input/>', {
+          'val': self.defaults.date,
+          'class': '',
+          blur: function() {
+            return self.editSaveObj('date', $(this).val(), self.defaults.date);
+          }
+        }).datetimepicker({
+          minDate: new Date(),
+          timepicker: false,
+          dayOfWeekStart: 1,
+          onSelectDate: function(ct, $i) {
+            return $i.blur();
+          },
+          onGenerate: function(ct) {
+            $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+            return $(this).find('.xdsoft_date');
+          },
+          closeOnDateSelect: true,
+          format: 'd.m.Y'
+        });
+        td.append('№ ТТН ').append($('<span/>').append(input));
+        td.append($('<span/>').append(input_date));
+      }
+      td.append($('<span/>', {
+        'html': "№ УПД " + ttn.number + " от "
+      }).append(ttn.date)).append(span_invoice);
+      tr = $('<tr/>').append(td);
+      table.append(tr);
+
+      /*
+       * добавляем всё в контейнер и возвращаем
+       */
+      return head_info.append(table);
+    };
+
     ttnWindow.prototype.createHeadManager = function(ttn) {
       var self, span_invoice, span_ttn, table, tr;
       self = this;
       if (ttn === void 0) {
         span_ttn = $('<span/>', {
-          'html': "№ ТТН " + this.defaults.number + " от "
+          'html': "№ УПД " + this.defaults.number + " от "
         }).append(this.spanDate());
       } else {
         console.warn(ttn);
         span_ttn = $('<span/>', {
-          'html': "№ ТТН " + this.defaults.number + " от "
+          'html': "№ УПД " + ttn.number + " от "
         }).append(ttn.date);
       }
       span_invoice = $('<span/>', {
-        'html': "№ Счёта " + this.options.invoice_num + " от " + this.options.invoice_create_date
+        'html': "№ счёта " + this.options.invoice_num + " от " + this.options.invoice_create_date
       });
       table = $('<table>', {
         id: 'ttn_head_info-table'
@@ -3711,8 +3763,47 @@
       return td;
     };
 
+    ttnWindow.prototype.tblAdminRow = function(position, ttn) {
+      var arr, che, j, len1, n, pr_out, self, td, tr;
+      self = this;
+      tr = $('<tr/>').data(position).attr('data-id', position.id);
+      tr.append(td = $('<td/>'));
+      if (this.access !== 7) {
+        if (Number(self.defaults.id) === Number(position.ttn_id)) {
+          tr.addClass('buh_style');
+        } else {
+
+        }
+      } else {
+        arr = self.defaults.positions_num.split(',');
+        che = false;
+        for (j = 0, len1 = arr.length; j < len1; j++) {
+          n = arr[j];
+          if (Number(n) === position.num) {
+            che = true;
+          }
+        }
+        if (che) {
+          tr.addClass('checked buh_style thisTtn');
+        }
+      }
+      td = $('<td/>').append(position.num);
+      tr.append(td);
+      td = $('<td/>').append(position.name);
+      tr.append(td);
+      td = $('<td/>').append(position.quantity);
+      tr.append(td);
+      pr_out = calc_price_with_discount(position.price, position.discount);
+      td = $('<td/>').append(round_money(pr_out) + ' р.');
+      tr.append(td);
+      this.main_price += pr_out * position.quantity;
+      this.nds += Number(round_money(pr_out * position.quantity / 118 * 18));
+      td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.');
+      return tr.append(td);
+    };
+
     ttnWindow.prototype.tblManRow = function(position, ttn) {
-      var button2, pr_out, self, td, td_name, tr;
+      var pr_out, self, td, td_name, tr;
       self = this;
       tr = $('<tr/>').data(position).attr('data-id', position.id);
       if (Number(position.not_shipped) > 0) {
@@ -3722,46 +3813,10 @@
       }
       console.info(ttn);
       tr.append(td = this.getFirstTdCheck(position, ttn));
-      button2 = [];
-      button2.push({
-        'name': 'нужна отгрузка',
-        'class': '',
-        click: function(e) {
-          var not_shipped;
-          not_shipped = 0;
-          return new sendAjax('not_shipped_edit', {
-            id: position.id,
-            not_shipped: not_shipped
-          }, function() {
-            position.not_shipped = not_shipped;
-            return tr.replaceWith(self.tblManRow(position, ttn));
-          });
-        }
-      });
-      button2.push({
-        'name': 'отгрузка не требуется',
-        'class': '',
-        click: function(e) {
-          var not_shipped;
-          echo_message_js("test");
-          console.log(tr);
-          not_shipped = 1;
-          return new sendAjax('not_shipped_edit', {
-            id: position.id,
-            not_shipped: not_shipped
-          }, function() {
-            position.not_shipped = not_shipped;
-            return tr.replaceWith(self.tblManRow(position, ttn));
-          });
-        }
-      });
       tr.append($('<td/>', {
         'html': position.num
       }));
       tr.append(td_name = $('<td/>').append(position.name));
-      td_name.menuRightClick({
-        'buttons': button2
-      });
       tr.append($('<td/>').append(position.quantity));
       pr_out = calc_price_with_discount(position.price, position.discount);
       tr.append($('<td/>').append(round_money(pr_out) + ' р.'));
@@ -3777,7 +3832,8 @@
       var _this, i, j, len1, main_checkbox, position, table, td, td_main_check, tr;
       _this = this;
       table = $('<table/>', {
-        'id': 'js-invoice--window--ttn-table'
+        'id': 'js-invoice--window--ttn-table',
+        'class': 'managerStyle'
       });
       table.append(tr = $('<tr/>'));
       main_checkbox = $('<input/>', {
@@ -3861,36 +3917,15 @@
       return table.append(tr);
     };
 
-    ttnWindow.prototype.createTableAdmin = function(responseData) {
-      var _this, arr, che, i, j, len1, len2, m, main_checkbox, main_price, n, nds, position, pr_out, table, td, tr;
+    ttnWindow.prototype.createTableAdmin = function(responseData, ttn) {
+      var _this, i, j, len1, position, table, td, tr;
       _this = this;
       table = $('<table/>', {
-        'id': 'js-invoice--window--ttn-table'
+        'id': 'js-invoice--window--ttn-table',
+        'class': 'adminStyle'
       });
       table.append(tr = $('<tr/>'));
-      main_checkbox = $('<input/>', {
-        'type': 'checkbox',
-        change: function(event) {
-          var input, td;
-          input = $(this);
-          td = $(this).parent();
-          return _this.clickMainCheckbox(table, td, input);
-        }
-      });
-      td = $('<th/>', {
-        click: function() {
-          var input;
-          input = $(this).find('input');
-          td = $(this);
-          return _this.clickMainCheckbox(table, td, input);
-        }
-      });
-      if (this.access !== 1 && this.access !== 2 && this.access !== 7) {
-        td.append(main_checkbox);
-      } else {
-        td.width('20px');
-      }
-      tr.append(td);
+      tr.append($('<th/>').width('20px'));
       td = $('<th/>', {
         'text': '№'
       });
@@ -3911,55 +3946,13 @@
         'html': 'Общая<br>стоимость'
       });
       tr.append(td);
-      main_price = 0;
-      nds = 0;
-      i = 1;
-      for (j = 0, len1 = responseData.length; j < len1; j++) {
-        position = responseData[j];
-        tr = $('<tr/>').data(position).attr('data-id', position.id);
-        if (this.access !== 7) {
-          if (Number(_this.defaults.id) === Number(position.ttn_id)) {
-            td = $('<td/>').addClass('checked buh_style');
-          } else {
-            td = $('<td/>');
-            if (Number(position.ttn_id) > 0) {
-              tr.addClass('ttn_created');
-            }
-          }
-        } else {
-          arr = _this.defaults.positions_num.split(',');
-          che = false;
-          for (m = 0, len2 = arr.length; m < len2; m++) {
-            n = arr[m];
-            console.log(i, n);
-            if (Number(n) === i) {
-              che = true;
-            }
-          }
-          td = $('<td/>');
-          if (che) {
-            td.addClass('checked buh_style');
-          }
-          if (Number(position.ttn_id) > 0) {
-            tr.addClass('ttn_created');
-          }
-        }
-        tr.append(td);
-        td = $('<td/>').append(i);
-        tr.append(td);
-        td = $('<td/>').append(position.name);
-        tr.append(td);
-        td = $('<td/>').append(position.quantity);
-        tr.append(td);
-        pr_out = calc_price_with_discount(position.price, position.discount);
-        td = $('<td/>').append(round_money(pr_out) + ' р.');
-        tr.append(td);
-        main_price += pr_out * position.quantity;
-        nds += Number(round_money(pr_out * position.quantity / 118 * 18));
-        td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.');
-        tr.append(td);
-        i++;
-        table.append(tr);
+      this.main_price = 0;
+      this.nds = 0;
+      this.posNum = 1;
+      for (i = j = 0, len1 = responseData.length; j < len1; i = ++j) {
+        position = responseData[i];
+        responseData[i].num = this.posNum++;
+        table.append(this.tblAdminRow(responseData[i], ttn));
       }
       table.append(tr = $('<tr/>'));
       td = $('<th/>');
@@ -3970,7 +3963,7 @@
       });
       tr.append(td);
       td = $('<th/>', {
-        'html': round_money(main_price) + ' р.'
+        'html': round_money(this.main_price) + ' р.'
       });
       tr.append(td);
       table.append(tr);
@@ -3983,26 +3976,26 @@
       });
       tr.append(td);
       td = $('<th/>', {
-        'html': round_money(nds) + ' р.'
+        'html': round_money(this.nds) + ' р.'
       });
       tr.append(td);
       table.append(tr);
       return table;
     };
 
-    ttnWindow.prototype.createTable = function(responseData, ttn) {
+    ttnWindow.prototype.createTable = function(responseData, ttn, data_row) {
       if (ttn !== void 0) {
-        return this.createTableAdmin(responseData);
+        return this.createTableAdmin(responseData, ttn);
       }
       switch (this.access) {
         case 1:
-          return this.createTableAdmin(responseData);
+          return this.createTableAdmin(responseData, ttn);
         case 7:
-          return this.createTableAdmin(responseData);
+          return this.createTableAdmin(responseData, ttn);
         case 2:
-          return this.createTableAdmin(responseData);
+          return this.createTableAdmin(responseData, ttn);
         default:
-          return this.createTableManager(responseData, ttn);
+          return this.createTableManager(responseData, ttn, data_row);
       }
     };
 
@@ -4170,6 +4163,7 @@
           }
         }
         $('#js-main-invoice-table').invoice('reflesh', data_row.id);
+        this.saveObj.invoice_id = data_row.id;
         return new sendAjax('confirm_create_ttn', this.saveObj, function() {
           return _this.destroy();
         });
@@ -4963,6 +4957,10 @@
           'id': ttn.id,
           'class': 'row'
         }).data(ttn);
+        console.log(ttn.ttn_lok);
+        if (ttn.ttn_bgcolor_class !== void 0) {
+          tr.addClass(ttn.ttn_bgcolor_class);
+        }
         if (ttn.number <= 0) {
           number = 'запрос';
         } else {
@@ -4974,6 +4972,9 @@
           click: function() {
             var t;
             t = $(this);
+            if (Number(ttn.ttn_lok) === 0) {
+              return false;
+            }
             return new sendAjax('get_ttn', {
               'id': row.id
             }, function(response) {
@@ -4992,6 +4993,9 @@
           click: function() {
             var t;
             t = $(this);
+            if (Number(ttn.ttn_lok) === 1) {
+              return false;
+            }
             return new sendAjax('get_ttn', {
               'id': row.id
             }, function(response) {
@@ -5017,7 +5021,7 @@
               $(this).prev().click();
               return false;
             }
-            if (Number(ttn["return"]) === 0) {
+            if (Number(ttn["return"]) === 1) {
               t = $(this);
               ttn["return"] = 1;
               ttn.date_return = getDateNow();
@@ -5037,7 +5041,6 @@
               var t;
               t = $(this);
               $(this).css({
-                'backgroundColor': '#f1f1f1',
                 'cursor': 'posinter'
               });
               if (!div22.hasClass('notify')) {
@@ -5112,13 +5115,17 @@
         if (_this.options.access === 5) {
           console.log(row);
           console.log(row.positions_num, row.positions_in_ttn);
-          if (Number(row.positions_num) !== Number(row.positions_in_ttn) && Number(row.positions_in_ttn) > 0) {
+          if (Number(row.positions_num) > Number(row.positions_in_ttn) && Number(row.positions_in_ttn) > 0) {
             td.append($('<div/>', {
               'html': 'Запросить',
               'class': 'js-query-ttn-div mayBeEdit',
               click: function() {
                 var t;
                 t = $(this);
+                if (Number(row.invoice_num) === 0 && row.invoice_create_date === '00.00.0000') {
+                  echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+                  return false;
+                }
                 return new sendAjax('get_ttn', {
                   'id': row.id
                 }, function(response) {
@@ -5128,7 +5135,7 @@
                 });
               }
             }));
-          } else if (Number(row.positions_num) !== Number(row.positions_in_ttn)) {
+          } else if (Number(row.positions_num) > Number(row.positions_in_ttn)) {
             console.log(654);
             td = $('<td/>', {
               'colspan': '3',
@@ -5137,6 +5144,10 @@
               click: function(e) {
                 var t;
                 t = $(this);
+                if (Number(row.invoice_num) === 0 && row.invoice_create_date === '00.00.0000') {
+                  echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+                  return false;
+                }
                 return new sendAjax('get_ttn', {
                   'id': row.id
                 }, function(response) {
@@ -5201,7 +5212,7 @@
     }
 
     invoiceRow.prototype.init = function(ttn) {
-      var _this, commentDiv, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
+      var _this, commentDiv, d, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
       _this = this;
       tr = $('<tr/>', {
         id: 'tt_' + this.options.id
@@ -5224,13 +5235,19 @@
             return new invoiceWindow(t, _this.options, response.data, _this.access);
           });
         }
-      }).append($('<div/>', {
-        'class': 'invoice-row--number',
-        'html': '<span>' + this.options.invoice_num + '</span>  ' + this.options.invoice_create_date
+      }).append(d = $('<div/>', {
+        'class': 'invoice-row--number'
       })).append($('<div/>', {
         'class': 'invoice-row--type',
         'html': doc_type
       }));
+      d.append($('<span/>', {
+        'html': this.options.invoice_num,
+        'css': {
+          'paddingRight': '10px',
+          'fontSize': '14px'
+        }
+      })).append(this.options.invoice_create_date);
       tr.append(td);
       td = $('<td/>', {
         'class': 'invoice-row--checkboxtd'
@@ -5240,6 +5257,10 @@
       td.click(function() {
         var t;
         if (_this.access === 2) {
+          if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
+            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            return false;
+          }
           if ($(this).hasClass('checked')) {
             _this.options.flag_1c = 0;
             $('#js-main-invoice-table').invoice('reflesh', _this.options);
@@ -5257,11 +5278,11 @@
               $('#js-main-invoice-table').invoice('reflesh', _this.options);
             }
           }
+          new sendAjax('edit_flag_1c', {
+            id: _this.options.id,
+            val: _this.options.flag_1c
+          });
         }
-        new sendAjax('edit_flag_1c', {
-          id: _this.options.id,
-          val: _this.options.flag_1c
-        });
       });
       if (Number(this.options.flag_1c > 0)) {
         td.addClass('checked');
@@ -5285,6 +5306,10 @@
         'data-id': this.options.id,
         click: function(e) {
           var t;
+          if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
+            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            return false;
+          }
           t = $(this);
           return new sendAjax('get_payment', {
             'id': _this.options.id
@@ -5414,6 +5439,10 @@
       }));
       td.click(function() {
         var t;
+        if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
+          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+          return false;
+        }
         if ($(this).hasClass('checked')) {
           if (Number(_this.access) !== 1) {
             console.log(_this.access);
@@ -5471,6 +5500,10 @@
       td = $('<td/>', {
         'class': 'mayBeEdit',
         click: function(e) {
+          if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
+            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            return false;
+          }
           return new sendAjax('get_costs', {
             'id': _this.options.id
           }, function(response) {
@@ -5561,6 +5594,10 @@
       td = $('<td/>', {
         'class': 'invoice-row--ice mayBeEdit',
         click: function(e) {
+          if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
+            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            return false;
+          }
           return new sendAjax('get_costs', {
             'id': _this.options.id
           }, function(response) {
@@ -5587,6 +5624,10 @@
       td = $('<td/>', {
         'class': 'invoice-row--icons-calculator mayBeEdit',
         click: function(e) {
+          if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
+            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            return false;
+          }
           return new sendAjax('get_costs', {
             'id': _this.options.id
           }, function(response) {

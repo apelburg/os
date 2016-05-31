@@ -41,6 +41,7 @@
     $ACCESS_SHABLON[1] = array(
 		'admin'=> array('access'=> true),
 		'agreement'=> array('access'=> true),
+		'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
 		'option'=> array('access'=> true),
@@ -193,7 +194,8 @@
 
 		'default'=> array('access'=> true),
 		'agreement'=> array('access'=> true),
-                'invoice'=> array('access'=> true),
+		'invoice'=> array('access'=> true),
+		'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
 		'suppliers'=> array(
 			'access'=> true,
@@ -267,24 +269,9 @@
 							));
 	// СКЛАД
 	$ACCESS_SHABLON[7] = array(
-						'cabinet'=> array(
-										'access'=> true,
-										'section'=> array( 
-											'orders'=> array(
-												'access'=>true,
-												'subsection'=>array(  // 2
-													'stock_all' => array('access'=>true),
-													'stock_waits_products' => array('access' => true),
-													'stock_goods_in_stock' => array('access' => true),
-													'stock_sended_on_outsource' => array('access' => true),
-													'stock_checked_and_packed' => array('access' => true),
-													'stock_goods_shipped_for_client' => array('access' => true),
-													
-													)
-												)
-											), 
-											
-										));	
+		'default'=> array('access'=> true),
+		'sklad'=> array('access'=> true),
+	);
 	// СНАБЖЕНИЕ
 	$ACCESS_SHABLON[8] = array(
 						'default'=>array('access'=>true),
