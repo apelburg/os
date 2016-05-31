@@ -40,7 +40,9 @@
 	if(!isset($ACCESS)) exit('доступ отсутсвует');
 
 	//if(!($user_status == 1 || (isset($_SESSION['access']['come_back_in_own_profile']) && mysql_result(select_manager_data($_SESSION['access']['come_back_in_own_profile']),0,'access') == 1))) exit;
-
+	
+    // ОГРАНИЧЕНИЯ В ДОСТУПЕ
+    if($user_status == 91) exit('доступ отсутсвует');
 	
 	ob_start();	
 	//print_r($_SESSION);
