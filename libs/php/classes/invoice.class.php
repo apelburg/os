@@ -446,12 +446,17 @@
 						// Закрытые
 						case 9:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `shipped_date` > (NOW() - interval 10 day) AND `flag_calc` > 0  AND `status` = 'отгружен'";
+							$query .= " `closed` > 0";
 							$w++;
 							break;
 						// все остальные
 						default:
 							break;
+					}
+					if($_GET['section'] != 9){
+						$query .= ($w>0?' AND ':' WHERE ');
+						$query .= " `closed` = '0'";
+						$w++;
 					}
 				}
 
@@ -598,6 +603,83 @@
 				}
 			}
 			return $this->data;
+		}
+
+		/**
+		 * тригер отправки сводки по почте в бухгалтерию
+		 * по новым запросам счетов и УПД
+		 * @param $mysqli
+		 */
+		static public function triger_buch_message_CRON($mysqli){
+			# 1
+			# проверка неотработанных счетов
+			# при наличии строк счетов - сборка строк в одно сообщение
+
+			# 2
+			# проверка неотработанных УДП
+			# при наличии строк УДП - сборка строк в одно сообщение
+
+			# 3
+			# отправка собранного сообщени
+
+			# необходимо написть метод отправляющий текст по массиву id вида
+			# array(42, 33)
+			# где 42 и 33 - id юзеров - адресатов
+			# по id должны отправляться сообщения, с приоритетом на ящик с доменом apelburg.ru
+			# при его отсутствии напрямую на gmail
+			$html = '';
+			$subject = '';
+			$this->sendMessage( array(42),'invoice@apelburg.ru', $subject, $html);
+		}
+
+		/**
+		 * метод отправки сообщений по массиву id пользователей
+		 * @param $to
+		 * @param $from
+		 * @param $subject
+		 * @param $message
+		 */
+		public function sendMessage($to,$from,$subject,$message ){
+
+		}
+
+
+		/**
+		 * тригер для крон
+		 * переводит все проверенные и отгруженные заказы старше 10 дней в статус закрыто
+		 * @param $mysqli
+		 */
+		static public function triger_check_and_closed_invoice_CRON($mysqli){
+
+			# выбираем все счета, которые пора переводить в закрытые
+			$query = "SELECT * FROM `".INVOICE_TBL."` ";
+
+			# если статус счёта отгружен был выставлен более 10 дней назад
+			$query .= " WHERE `shipped_date` > (NOW() - interval 10 day)";
+			# если был зажат калькулятор
+			$query .= " AND `flag_calc` > '0' ";
+			# если заказ отгружен
+			$query .= " AND `status` = 'отгружен' ";
+			# если заказ ещё не закрыт
+			$query .= " AND `closed` = '0' ";
+
+
+			$result = $mysqli->query($query) or die($mysqli->error);
+			$rows = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$rows[]  = $row['id'];
+				}
+			}
+
+			# если найдены такие счета
+			if (count($rows) > 0){
+				# переводим найденныйе счета в статус закрытые
+				$query = "UPDATE `".INVOICE_TBL."` SET ";
+				$query .= " `closed` = (closed + 1)";
+				$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
+				$result = $mysqli->query($query) or die($mysqli->error);
+			}
 		}
 
 		/**
