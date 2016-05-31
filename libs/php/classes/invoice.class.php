@@ -313,7 +313,7 @@
 		protected function save_shipped_status_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `status`=?";
-			$query .= ", `shipped_date`=NOW()";
+
 			$query .= " WHERE `id`=?";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
@@ -629,15 +629,18 @@
 				}
 			}
 
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `status`=?";
 			// если количество позиций в отгруженных ттн соответствует общему количеству позиций в счёте
 			// меняем статус на отгружен
 			if($positions_num == $count_positions_in_ttn_shipment){
 				$data['status'] = 'отгружен';
+				$query .= ", `shipped_date`=NOW()";
 			}
 
 
-			$query = "UPDATE `".INVOICE_TBL."` SET ";
-			$query .= " `status`=?";
+
+
 			$query .= " WHERE `id` =?";
 			$status = $data['status'];
 

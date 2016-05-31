@@ -6947,7 +6947,7 @@
 		protected function error_message($message,$subject = 'Error message' ,$from_email = 'os@apelburg.ru'){
 			include_once './libs/php/classes/mail_class.php';
 			$mailClass = new Mail();
-			$mailClass->send('kapitonoval2012@gmail.com',$from_email,$subject,$message);	
+			$mailClass->send('kapitonoval2012@gmail.com', $from_email, $subject, $message);
 		}
 
 		// // отправка jgjdtotybq
