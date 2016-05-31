@@ -629,7 +629,7 @@
 			# при его отсутствии напрямую на gmail
 			$html = '';
 			$subject = '';
-			$this->sendMessage( array(42),'invoice@apelburg.ru', $subject, $html);
+			self::sendMessage( array(42),'invoice@apelburg.ru', $subject, $html);
 		}
 
 		/**
@@ -639,7 +639,7 @@
 		 * @param $subject
 		 * @param $message
 		 */
-		public function sendMessage($to,$from,$subject,$message ){
+		static function sendMessage($to,$from,$subject,$message ){
 
 		}
 
