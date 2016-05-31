@@ -3,7 +3,7 @@
                     <li <?php 
                     if(!isset($_GET['section']) || isset($_GET['section']) && ($_GET['section'] == 'requests' || $_GET['section'] =='rt_position')){echo 'class="selected"';} 
                     ?>>
-                        <a href="<?php echo HOST; ?>/?page=cabinet&section=requests&subsection=query_worcked_men<?php
+                        <a href="<?php echo HOST; ?>/?page=cabinet&section=requests&subsection=query_worcked_men<?phpd hf,jnt
                             if(isset($_GET['client_id'])){
                                 echo '&client_id='.$_GET['client_id'];
                             }
@@ -39,6 +39,17 @@
                     ?>>
                         <a href="<?php  echo HOST; ?>/?page=client_folder&section=agreements&doc_type=oferta&client_id=<?php  echo $_GET['client_id']; ?>" style="color:#FFFFFF;">
                             <div class="border">Оферты</div>
+                        </a>
+                    </li>
+                    <li <?php 
+                    if((isset($_GET['section']) && $_GET['section'] == 'page') || $_GET['page'] =='invoice'){echo 'class="selected"';}
+                    ?>>
+                        <a href="<?php echo HOST; ?>/?page=invoice&section=1<?php
+                            if(isset($_GET['client_id'])){
+                                echo '&client_id='.$_GET['client_id'];
+                            }
+                         ?>">
+                            <div class="border">Счета</div>
                         </a>
                     </li>
                 </ul>

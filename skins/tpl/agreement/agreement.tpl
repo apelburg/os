@@ -38,7 +38,7 @@
                        }
             
                     }
-                    echo '<button type="button" onclick="location=\'?page=invoice&client_id='.$client_id.'\';">Счета</button>';
+                    echo '<button type="button" onclick="location=\'?page=invoice&client_id='.$client_id.'&section=1\';">Счета</button>';
                 ?>
 
                 <!--'.$_GET['query_num'].'=10001&client_id='.$client_id.'-->

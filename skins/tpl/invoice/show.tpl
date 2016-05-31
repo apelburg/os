@@ -1,6 +1,7 @@
 <!-- <?php echo __FILE__; ?> -- START-->
 	<script src="<?php  echo HOST; ?>/libs/js/invoice.js" rel="stylesheet" type="application/javascript"></script>
 <link href="skins/css/invoice.css" rel="stylesheet" type="text/css">
+<link href="skins/css/comments.css" rel="stylesheet" type="text/css">
 <link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>
@@ -14,6 +15,7 @@
 
 	$(document).ready(function(){
 		<?php
+
 			if($Invoice->user['access'] == 7){
 				?>$('#js-main-invoice-table').sklad()<?php
 			}else{
@@ -23,15 +25,14 @@
 	});
 
 </script>
-<div class="cabinet_top_menu first_line">
-    <ul class="central_menu" style="padding-left: 19px;">
-        <li class="selected">
-            <a href="#">
-                <div class="border">Счета</div>
-            </a>
-        </li>    
-    </ul>
-</div>
+<?php
+	if (isset($_GET['client_id'])){
+		include_once __DIR__."../../clients/client_list/default_menu.tpl";
+	}else{
+		include_once __DIR__."../../invoice/default_menu.tpl";
+	}
+
+?>
 
 <div id="js-menu-invoice" class="cabinet_top_menu" style="background-color:#92b73e">
     <ul class="central_menu" style="padding-left: 19px;padding-right: 19px;">

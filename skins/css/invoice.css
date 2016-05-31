@@ -187,12 +187,19 @@
 #js-main-invoice-table tbody tr td.js-query-ttn:hover{
 	background-color: #f1f1f1;
 }
+
 #js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div{
 
 }
 #js-main-invoice-table tbody tr td.js-query-ttn .ttn-td-div div span:nth-of-type(1){
 	width: 50px;
 	padding-right: 15px;
+}
+.invoice-row--price-payment.redText,
+.invoice-row--price-our-pyment.redText,
+.redText{
+	color: #FFA28D;
+	text-decoration: underline;
 }
 #ttn--already-was-created--old-ttn-tbl{
 	border-collapse: collapse;
@@ -216,7 +223,6 @@
 	 background-size: 35px;
 	 background-repeat: no-repeat;
 	font-size: 12px;
-	color: #aaa;
  }
 #ttn--already-was-created--old-ttn-tbl tr.editDate:hover td{
 	cursor: pointer;
@@ -274,6 +280,11 @@
 	background-image:url(../images/img_design/icon_invoce_calc.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
+}
+#js-main-invoice-table tbody tr td.invoice-row--icons-calculator:hover,
+#js-main-invoice-table tbody tr td.invoice-row--ice:hover{
+	background-color: #f1f1f1;
+	cursor: pointer;
 }
 #js-main-invoice-table tbody tr td.invoice-row--icons-calculator.checked{
 	background-image:url(../images/img_design/icon_invoce_calc_green.png);
@@ -352,20 +363,33 @@
 #js-main-invoice-table  tr td div.defttn3{
 	background-position: 50%;
 }
-#js-main-invoice-table tbody tr td.js-query-ttn{
+#js-main-invoice-table tbody tr td.js-query-ttn,
+#js-main-invoice-table tbody tr td .js-query-ttn-div{
 	cursor: pointer;
 	text-align: center;
 	text-decoration: underline;
 	color: #D4D4D4;
 }
-#js-main-invoice-table tbody tr td.js-query-ttn:hover{
+#js-main-invoice-table tbody tr td:nth-of-type(11) div.js-query-ttn-div{
+	text-align: center;
+	padding: 10px 0;
+}
+#js-main-invoice-table tbody tr td.js-query-ttn:hover,
+#js-main-invoice-table tbody tr td .js-query-ttn-div:hover{
 	text-decoration: none;
+	background-color: #f1f1f1;
 }
 
 /*
 Кнопки всплывалок
  */
-
+body .js-alert_union_buttons .button_yes_or_close.lightGreen.no,
+body .js-alert_union_buttons .button_yes_or_no.lightGreen.no,
+body .js-alert_union_buttons .button_yes_or_close.lightGreen,
+body .js-alert_union_buttons .button_yes_or_no.lightGreen{
+	background: rgba(146, 183, 62, 0.25);
+	color:#999999;
+}
 .js-alert_union_buttons button{
 	border-radius: 9px;
 	height: 36px;
@@ -373,15 +397,20 @@
 	background: #92B73E;
 	color: #fff;
 }
+body .js-alert_union_buttons .button_yes_or_no.lightGreen.showed{
+	background: #92B73E;
+	color:#fff;
+}
 body .js-alert_union_buttons .button_yes_or_no,
 body .js-alert_union_buttons .button_yes_or_close{
 	padding: 3px 45px;
 }
 body .js-alert_union_buttons .button_yes_or_no.no,
 body .js-alert_union_buttons .button_yes_or_close.no{
-	background:#fff; 
+	background:#fff;
 	color: #999999;
 }
+
 body .js-alert_union_buttons .save,
 body .js-alert_union_buttons .button_yes_or_close{
 	float: right;
@@ -525,45 +554,45 @@ body .js-alert_union_buttons table td button.left{
 div#js-alert_union{
 	/*font-size: 12px;*/
 }
-#js-alert_union .ttn_car_div-head{
+ .ttn_car_div-head{
 	font-size: 12px;
 	font-weight: bold;
 }
-#js-alert_union .ttn_car_div-body ul{
+ .ttn_car_div-body ul{
 	padding:10px 0 0 0; 
 	margin: 0;
 }
-#js-alert_union .ttn_car_div-body li{
+ .ttn_car_div-body li{
 	display: inline-block;
 }
-#js-alert_union .ttn_car_div-body li.checked .ttn-our_delivery,
-#js-alert_union .ttn_car_div-body li.checked .ttn-no_delivery{
+ .ttn_car_div-body li.checked .ttn-our_delivery,
+ .ttn_car_div-body li.checked .ttn-no_delivery{
 	background-color: #c6e1aa;
 	border: 1px solid #92b73e;
 }
 #ttn_car_div{
     padding-top: 15px;
 }
-#js-alert_union .ttn_car_div-body li.checked .ttn-delivery-text{
+ .ttn_car_div-body li.checked .ttn-delivery-text{
 	color: #5a5c61;
 }
-#js-alert_union .ttn_car_div-body li .ttn-our_delivery{
+ .ttn_car_div-body li .ttn-our_delivery{
 	background-image:url(../images/img_design/our_delivery.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
 }
-#js-alert_union .ttn_car_div-body li .ttn-no_delivery{
+ .ttn_car_div-body li .ttn-no_delivery{
 	background-image:url(../images/img_design/no_delivery.png);
 	background-repeat: no-repeat;
 	background-position: 50%;
 }
-#js-alert_union .ttn_car_div-body li .ttn-our_delivery,
-#js-alert_union .ttn_car_div-body li .ttn-no_delivery{
+ .ttn_car_div-body li .ttn-our_delivery,
+ .ttn_car_div-body li .ttn-no_delivery{
 	width: 106px;
 	height: 43px;
 	border:1px solid #cccccc;
 }
-#js-alert_union .ttn_car_div-body li .ttn-delivery-text{
+ .ttn_car_div-body li .ttn-delivery-text{
 	font-size: 10px;
 	color:#ccc;
 	text-align: center;
@@ -744,12 +773,20 @@ div#js-alert_union{
 	border: 1px solid #ccc;
 }
 
+
+#js--payment-window--body_info-table tr td{
+	background-color: #f1f2f2;
+}
+#js--payment-window--body_info-table tr td.mayBeEdit{
+	background-color: #fff;
+}
+
 #js--payment-window--body_info-table tr td:nth-of-type(3){
 	text-align: right;
 }
 #js--payment-window--body_info-table tr td:nth-last-of-type(2),
 #js--payment-window--body_info-table tr td:nth-last-of-type(3){
-	border-right: 1px solid #fff;
+	/*border-right: 1px solid #fff;*/
 }
 #js--payment-window--body_info-table tr td:nth-last-of-type(2){
 	padding: 0;
@@ -793,6 +830,7 @@ div#js-alert_union{
     text-align: left;
     font-size: 12px;
     color: #959595;
+	padding-left: 5px;
 }
 #js--payment-window--body_info-table tr.deleted td{
 	background-color: rgb(255, 240, 240);
@@ -842,7 +880,25 @@ div#js-alert_union{
 	margin: 0;
 	cursor:pointer;
 }
-#js--payment-window--body_info-table tr td.mayBeEdit:hover{
+#js-main-invoice-table tr td.tdLink{
+	text-decoration: underline;
+}
+#js-main-invoice-table tr td div.invoice-row--number{
+	/*color: #000;*/
+}
+#js-main-invoice-table tr td.invoice-row--checkboxtd.red1c,
+#js-main-invoice-table tr td.redTD,
+#js-main-invoice-table tr td .redTD,
+#js--payment-window--body_info-table tr td.redTD{
+	background-color: rgba(255,195,181,1);
+}
+
+#js-main-invoice-table tr td .redTD.invoice-row--ttn--vt.invoice-row--checkboxtd.checked{
+	background-color: #fff;
+}
+#js--payment-window--body_info-table tr td.mayBeEdit:hover,
+#js-main-invoice-table tr td.mayBeEdit:hover,
+#js-main-invoice-table tr td.tdLink:hover{
 	background-color: #f1f1f1;
 	cursor: pointer;
 }
@@ -1097,13 +1153,17 @@ body #context-menu ul li{
 	background-color: #f2f2f2;
 }
 .invoice-row--order-number{
-	color:#000;
+	/*color:#000;*/
 	padding-bottom: 5px;
 }
 .invoice-row--client--name{
-	color:#000;
+	/*color:#000;*/
 	text-decoration: underline;
 	padding-bottom: 5px;
+}
+.invoice-row--client--name:hover{
+	background-color: #f1f1f1;
+	cursor: pointer;
 }
 .js-td-hover{
 	background-color: #C1C1C1;
@@ -1131,4 +1191,7 @@ body #context-menu ul li{
 	font-weight: normal;
 	color: #ECEDEE;
 	text-shadow: none;
+}
+table td.noActive{
+	background-color: #f1f2f2;
 }
