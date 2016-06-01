@@ -22,6 +22,21 @@ getDateNow = () ->
   return dd + '.' + mm + '.' + yy
 
 ###
+# возвращяет текущую дату в читабельном формате
+###
+getDateTomorrow = () ->
+  d = new Date();
+  d.setDate(d.getDate() + 1);
+  dd = d.getDate()
+  dd = '0' + dd if dd < 10
+  mm = d.getMonth() + 1
+  mm = '0' + mm if mm < 10
+  yy = d.getFullYear()
+  # yy = d.getFullYear() % 100
+  # yy = '0' + yy if yy < 10
+  return dd + '.' + mm + '.' + yy
+
+###
 # округляет и приводит числа к денежному формату
 # строку преобразует в число
 ###
@@ -1762,17 +1777,19 @@ class costsWindow
 
     if @access == 1 || @access == 2
       td.addClass('mayBeEdit').click(()->
-        if $(this).hasClass('checked')
-          _this.options.flag_calc = 0;
-          $(this).removeClass('checked')
-        else
-          _this.options.flag_calc = 1;
-          $(this).addClass('checked')
-
-        # сохраняем значение флага
-        new sendAjax('edit_flag_calc', {id: _this.options.id, val: _this.options.flag_calc}, ()->
-          $('#js-main-invoice-table').invoice('reflesh', _this.options)
-        )
+        t = $(@)
+        new modalConfirm "Вы уверены",()->
+          if t.hasClass('checked')
+            _this.options.flag_calc = 0;
+            t.removeClass('checked')
+          else
+            _this.options.flag_calc = 1;
+            t.addClass('checked')
+  
+          # сохраняем значение флага
+          new sendAjax('edit_flag_calc', {id: _this.options.id, val: _this.options.flag_calc}, ()->
+            $('#js-main-invoice-table').invoice('reflesh', _this.options)
+          )
       )
 
     td.addClass('checked') if Number _this.options.flag_calc > 0
@@ -4514,7 +4531,7 @@ class invoiceWindow
             click: ()->
               t = $(this)
               if Number(row.invoice_num)==0 && row.invoice_create_date == '00.00.0000'
-                echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+                new warnNotCreateInvoice()
                 return false
               new sendAjax('get_ttn', {'id': row.id}, (response)->
 # создаем экземпляр окна ттн
@@ -4530,7 +4547,7 @@ class invoiceWindow
             click: (e)->
               t = $(this)
               if Number(row.invoice_num)==0 && row.invoice_create_date == '00.00.0000'
-                echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+                new warnNotCreateInvoice()
                 return false
               new sendAjax('get_ttn', {'id': row.id}, (response)->
 # создаем экземпляр окна ттн
@@ -4565,6 +4582,19 @@ class invoiceWindow
         $this.data 'invoice', (data = new invoice(this, option))
       if typeof option == 'string'
         data[option].apply(data, args)) window.jQuery, window
+###
+# метод отправки запроса AJAX
+###
+class warnNotCreateInvoice
+  constructor: (mess = "Внесите дату и номер счёта")->
+#    echo_message_js()
+    return new modalWindow({
+      html: mess,
+      title: 'Внимание'
+    }, {
+      single: false,
+      closeOnEscape: true
+    })
 
 ###
 # прототип html строки таблицы счета
@@ -4632,7 +4662,7 @@ class invoiceRow
     td.click ()->
       if _this.access == 2
         if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
-          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+          new warnNotCreateInvoice()
           return false
           
         if $(this).hasClass('checked')
@@ -4676,7 +4706,7 @@ class invoiceRow
       'data-id': @options.id,
       click: (e)->
         if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
-          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+          new warnNotCreateInvoice()
           return false
         t = $(@)
         new sendAjax('get_payment', {'id': _this.options.id}, (response)->
@@ -4771,7 +4801,7 @@ class invoiceRow
 
     td.click ()->
       if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
-        echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+        new warnNotCreateInvoice()
         return false
       if $(this).hasClass('checked')
         if(Number(_this.access) != 1)
@@ -4835,7 +4865,7 @@ class invoiceRow
       'class': 'mayBeEdit',
       click: (e)->
         if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
-          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+          new warnNotCreateInvoice()
           return false
         new sendAjax('get_costs', {'id': _this.options.id}, (response)->
           new costsWindow(_this.options, response.data, _this.access)
@@ -4899,7 +4929,7 @@ class invoiceRow
       'class': 'invoice-row--ice mayBeEdit',
       click: (e)->
         if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
-          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+          new warnNotCreateInvoice()
           return false
         new sendAjax('get_costs', {'id': _this.options.id}, (response)->
           new costsWindow(_this.options, response.data, _this.access)
@@ -4932,7 +4962,7 @@ class invoiceRow
       'class': 'invoice-row--icons-calculator mayBeEdit',
       click: (e)->
         if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
-          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта")
+          new warnNotCreateInvoice()
           return false
         new sendAjax('get_costs', {'id': _this.options.id}, (response)->
           new costsWindow(_this.options, response.data, _this.access)
@@ -5056,7 +5086,7 @@ class invoiceRow
     response_def: {}
     constructor: (el, options) ->
       self = @
-      new sendAjax 'get_data_sklad', {}, (response)->
+      new sendAjax 'get_data_sklad', {url:window.location.href}, (response)->
         self.options = $.extend({}, self.defaults, response)
         self.access = response.access
         self.$el = $(el)
@@ -5164,7 +5194,7 @@ class invoiceRow
       for n,i in tabs
         @tabMenu.append(li = $('<li/>', {
           click: (e)->
-# меняем URL
+            # меняем URL
             $.urlVar('section', $(this).data('index'))
             # удаляем выделение со старого выбранного элемента
             _this.tabMenu.find('.selected').removeClass('selected')
@@ -5184,11 +5214,12 @@ class invoiceRow
     updateTable: () ->
       _this = @
       window_preload_add()
-      new sendAjax 'get_data_sklad', {}, (response)->
+      new sendAjax 'get_data_sklad', {url:window.location.href}, (response)->
         _this.options = $.extend({}, _this.defaults, response)
         _this.init()
         window_preload_del()
     greateHead: ()->
+      _this = @
       thead = $('<thead/>');
       tr = $('<tr/>')
       tr.append($('<th/>', {
@@ -5207,10 +5238,64 @@ class invoiceRow
         'rowspan': 2,
         'html': 'отгрузка'
       }))
-      tr.append($('<th/>', {
+      tr.append(thDate = $('<th/>', {
         'rowspan': 2,
-        'html': 'дата'
+        'class':'mayBeClick',
+        'html': 'дата',
       }))
+      button2 = []
+      btn1 = {
+        'name': 'Сегодня',
+        'class': '',
+        click: (e)->
+          # меняем URL
+          today = getDateNow()
+          $.urlVar('date_start', today)
+          $.urlVar('date_end', today)
+          $('#js-main-invoice-table').sklad('updateTable')
+
+      }
+      btn2 = {
+        'name': 'Завтра',
+        'class': '',
+        click: (e)->
+          # меняем URL
+          today = getDateTomorrow()
+          $.urlVar('date_start', today)
+          $.urlVar('date_end', today)
+          $('#js-main-invoice-table').sklad('updateTable')
+      }
+      btn3 = {
+        'name': 'Календарь',
+        'class': 'js--get-calendar-filter',
+        click: (e)->
+          thDate.append(inp = $('<input/>',{'css':{
+            'opacity':0,
+            'float':'left',
+            'width':'0px',
+            'height':'0px',
+            'padding':'0'
+          }}))
+          inp.daterangepicker({
+            timePicker: false,
+            locale: {
+              format: 'MM.DD.YYYY'
+            }
+          },(start, end, label)->
+            $.urlVar('date_start', start.format('DD.MM.YYYY'))
+            $.urlVar('date_end', end.format('DD.MM.YYYY'))
+            $('#js-main-invoice-table').sklad('updateTable')
+            inp.remove()
+          );
+          inp.focus()
+      }
+
+      button2.push(btn1)
+      button2.push(btn2)
+      button2.push(btn3)
+
+      thDate.menuRightClick({'buttons': button2})
+
       tr.append($('<th/>', {
         'colspan': 4,
         'html': 'Товарно-транспортные накладные'
@@ -5504,7 +5589,7 @@ class skladRow
     }))
     tr.append(td)
 
-
+    
     tr.append(self.subRow(rowspan))
     tr.append($('<td/>', {
       'rowspan': rowspan,
@@ -5530,7 +5615,12 @@ class skladRow
 
 
     # дата отгрузки
-    tr.push($('<td/>', {'html': self.options.date_shipment}))
+    console.log self.options.ttn_shipment_date_color, self.options.ttn_id
+    tr.push(td_date = $('<td/>', {'html': self.options.date_shipment}))
+    if self.options.ttn_shipment_date_color != undefined
+      td_date.css({
+        'background':self.options.ttn_shipment_date_color
+      })
     # № ттн
     tr.push($('<td/>', {
       'html': self.options.number,

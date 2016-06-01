@@ -489,8 +489,23 @@
 		 */
 		private function get_data_sklad($curSearch = array('invoice_num'=>'','id'=>0)){
 			$w = 0;
+
+			$additional_conditions = '';
+			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == '') {
+				// если мы не используем поиск
+				// вычисляем дни просрочки
+				$additional_conditions = "CASE ";
+				// если профакали - подсвечиваем красным
+				$additional_conditions .= " WHEN TO_DAYS(NOW()) - TO_DAYS(`".INVOICE_TTN."`.`date_shipment`) > 0 THEN '#FFAA91'";
+				// если сегодня - зелёным
+				$additional_conditions .= " WHEN TO_DAYS(NOW()) - TO_DAYS(`".INVOICE_TTN."`.`date_shipment`) = 0 THEN '#B3D073'";
+				// если завтра - желтым
+				$additional_conditions .= " WHEN TO_DAYS(NOW()) - TO_DAYS(`".INVOICE_TTN."`.`date_shipment`) = -1 THEN '#F3E6AA'";
+				$additional_conditions .= " END as ttn_shipment_date_color, ";
+
+			}
 			//  получаем информацию по строкам
-			$query = "SELECT `".INVOICE_TTN."`.*,`".INVOICE_TBL."`.*,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date";
+			$query = "SELECT $additional_conditions`".INVOICE_TTN."`.*,`".INVOICE_TBL."`.*,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date";
 
 			$query .= ",`".INVOICE_TTN."`.`id` as ttn_id ";
 			$query .= ",`".INVOICE_TTN."`.`position_id`";
@@ -584,10 +599,25 @@
 							break;
 					}
 
+					$query .= ($w>0?' AND ':' WHERE ');
+					$query .= " `".INVOICE_TBL."`.`closed` = '0'";
+					$w++;
+
 				}
 			}
-			$query .= " ORDER BY `".INVOICE_TBL."`.`id` ASC";
+			if (isset($_GET['date_start']) && isset($_GET['date_end'])) {
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `".INVOICE_TTN."`.`date_shipment` >= '".date('Y-m-d', strtotime($_GET['date_start']))."' ";
+				$query .= " AND `".INVOICE_TTN."`.`date_shipment` <= '".date('Y-m-d', strtotime($_GET['date_end']))."' ";
+				$w++;
+			}else if (isset($_GET['date_start'])){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `".INVOICE_TTN."`.`date_shipment` = '".date('Y-m-d', strtotime($_GET['date_start']))."'";
+				$w++;
+			}
 
+			$query .= " ORDER BY `".INVOICE_TTN."`.`date_shipment` ASC";
+			//	echo $query;
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$this->data =$this->depending['id']= array();
 
@@ -605,19 +635,73 @@
 			return $this->data;
 		}
 
+
+		protected function get_manager_name_AJAX(){
+			self::triger_buch_message_CRON($this->mysqli);
+//			$this->responseClass->addSimpleWindow($this->printArr()));
+		}
+
+
 		/**
 		 * тригер отправки сводки по почте в бухгалтерию
 		 * по новым запросам счетов и УПД
 		 * @param $mysqli
 		 */
 		static public function triger_buch_message_CRON($mysqli){
+			$html = '';
 			# 1
 			# проверка неотработанных счетов
 			# при наличии строк счетов - сборка строк в одно сообщение
+			$query = "select * FROM `".INVOICE_TBL."` WHERE `invoice_num` = '0'";
+			$result = $mysqli->query($query) or die($mysqli->error);
+
+
+			$invoice_rows = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$invoice_rows[] = $row;
+				}
+			}
+
+			if (count($invoice_rows) > 0){
+				$html .='<div>В ос есть счета ('.count($invoice_rows).' шт.) ожидающие присвоения им номера<div>';
+
+				foreach ($invoice_rows as $invoice){
+					$html .="<div>счет от менеджера: ".$row['manager_name']."</div>";
+
+				}
+				$html .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=1\">ссылке</a></div>";
+			}
+
+
 
 			# 2
 			# проверка неотработанных УДП
 			# при наличии строк УДП - сборка строк в одно сообщение
+			$query = "select * FROM `".INVOICE_TBL."` " .
+				"
+			  INNER JOIN
+			 `".INVOICE_TTN."` ON `".INVOICE_TTN."`.`invoice_id` = `".INVOICE_TBL."`.`id` WHERE `".INVOICE_TTN."`.`number` = '0'";
+
+
+			$result = $mysqli->query($query) or die($mysqli->error);
+			$ttn = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$ttn[] = $row;
+				}
+			}
+
+			if (count($ttn) > 0){
+				$html .='<div>В ос есть заявки на создание УПД ('.count($ttn).' шт.) <div>';
+				foreach ($ttn as $ttn_row){
+					$html .= "<div>Запрос УПД от менеджера: ".$ttn_row['manager_name']."</div>";
+
+				}
+				$html .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=2\">ссылке</a></div>";
+			}
+
+
 
 			# 3
 			# отправка собранного сообщени
@@ -627,26 +711,47 @@
 			# где 42 и 33 - id юзеров - адресатов
 			# по id должны отправляться сообщения, с приоритетом на ящик с доменом apelburg.ru
 			# при его отсутствии напрямую на gmail
-			$html = '';
-			$subject = '';
-			self::sendMessage( array(42),'invoice@apelburg.ru', $subject, $html);
+			if ($html != ''){
+
+				$subject = 'Сводка из ОС';
+				self::sendMessage( 'alexey@apelburg.ru','invoice@apelburg.ru', $subject, $html);
+			}
+
 		}
 
 		/**
 		 * метод отправки сообщений по массиву id пользователей
+		 *
 		 * @param $to
 		 * @param $from
 		 * @param $subject
 		 * @param $message
+		 * @return string
 		 */
 		static function sendMessage($to,$from,$subject,$message ){
-
+			include_once 'mail_class.php';
+			$mail = new Mail();
+			return $mail->send($to,$from,$subject,$message,TRUE);
 		}
 
+		/**
+		 * тестовый запрос тригера из браузера
+		 * удалить после тестирования
+		 */
+		protected function ppp9898_AJAX(){
+			$this->responseClass->addSimpleWindow(self::triger_check_and_closed_invoice_CRON($this->mysqli));
+		}
 
 		/**
 		 * тригер для крон
 		 * переводит все проверенные и отгруженные заказы старше 10 дней в статус закрыто
+		 *
+		 *
+		 * была написана процедура, но почему-то процедура переполняет стек на сервере
+		 * необходимо копаться в настройках, пока не до этого
+		 *
+		 * $query = "CALL check_and_closed_invoice();";
+		 *
 		 * @param $mysqli
 		 */
 		static public function triger_check_and_closed_invoice_CRON($mysqli){
@@ -655,13 +760,13 @@
 			$query = "SELECT * FROM `".INVOICE_TBL."` ";
 
 			# если статус счёта отгружен был выставлен более 10 дней назад
-			$query .= " WHERE `shipped_date` > (NOW() - interval 10 day)";
+			$query .= " WHERE `shipped_date` < (NOW() - interval 10 day)";
 			# если был зажат калькулятор
-			$query .= " AND `flag_calc` > '0' ";
+			$query .= " AND `flag_calc` > 0 ";
 			# если заказ отгружен
 			$query .= " AND `status` = 'отгружен' ";
 			# если заказ ещё не закрыт
-			$query .= " AND `closed` = '0' ";
+			$query .= " AND `closed` = 0 ";
 
 
 			$result = $mysqli->query($query) or die($mysqli->error);
@@ -671,6 +776,7 @@
 					$rows[]  = $row['id'];
 				}
 			}
+			$mess= $query;
 
 			# если найдены такие счета
 			if (count($rows) > 0){
@@ -680,6 +786,7 @@
 				$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
 				$result = $mysqli->query($query) or die($mysqli->error);
 			}
+			return $mess;
 		}
 
 		/**
@@ -687,7 +794,7 @@
 		 */
 		protected function check_chipment_global_status_AJAX(){
 			$positions_num = (int)$_POST['positions_num'];
-//			$positions_in_ttn = (int)$_POST['positions_in_ttn'];
+			// $positions_in_ttn = (int)$_POST['positions_in_ttn'];
 
 			$data['status'] = 'не отгружен'; 		// статус по умолчанию
 			$shipment_ttn_num = 0; 					// количество отгруженных ттн

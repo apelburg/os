@@ -14,12 +14,33 @@
  */
 
 (function() {
-  var calc_price_with_discount, commentsRow, commentsWindow, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, invoiceRow, invoiceWindow, modalConfirm, modalWindow, paymentObj, paymentRow, paymentRowObj, paymentWindow, requesitContent, round_money, sendAjax, skladRow, ttnObj, ttnWindow,
+  var calc_price_with_discount, commentsRow, commentsWindow, costsRow, costsRowObj, costsWindow, cyrill_to_latin, getDateNow, getDateTomorrow, invoiceRow, invoiceWindow, modalConfirm, modalWindow, paymentObj, paymentRow, paymentRowObj, paymentWindow, requesitContent, round_money, sendAjax, skladRow, ttnObj, ttnWindow, warnNotCreateInvoice,
     slice = [].slice;
 
   getDateNow = function() {
     var d, dd, mm, yy;
     d = new Date();
+    dd = d.getDate();
+    if (dd < 10) {
+      dd = '0' + dd;
+    }
+    mm = d.getMonth() + 1;
+    if (mm < 10) {
+      mm = '0' + mm;
+    }
+    yy = d.getFullYear();
+    return dd + '.' + mm + '.' + yy;
+  };
+
+
+  /*
+   * возвращяет текущую дату в читабельном формате
+   */
+
+  getDateTomorrow = function() {
+    var d, dd, mm, yy;
+    d = new Date();
+    d.setDate(d.getDate() + 1);
     dd = d.getDate();
     if (dd < 10) {
       dd = '0' + dd;
@@ -2091,18 +2112,22 @@
       }).append(div1));
       if (this.access === 1 || this.access === 2) {
         td.addClass('mayBeEdit').click(function() {
-          if ($(this).hasClass('checked')) {
-            _this.options.flag_calc = 0;
-            $(this).removeClass('checked');
-          } else {
-            _this.options.flag_calc = 1;
-            $(this).addClass('checked');
-          }
-          return new sendAjax('edit_flag_calc', {
-            id: _this.options.id,
-            val: _this.options.flag_calc
-          }, function() {
-            return $('#js-main-invoice-table').invoice('reflesh', _this.options);
+          var t;
+          t = $(this);
+          return new modalConfirm("Вы уверены", function() {
+            if (t.hasClass('checked')) {
+              _this.options.flag_calc = 0;
+              t.removeClass('checked');
+            } else {
+              _this.options.flag_calc = 1;
+              t.addClass('checked');
+            }
+            return new sendAjax('edit_flag_calc', {
+              id: _this.options.id,
+              val: _this.options.flag_calc
+            }, function() {
+              return $('#js-main-invoice-table').invoice('reflesh', _this.options);
+            });
           });
         });
       }
@@ -5123,7 +5148,7 @@
                 var t;
                 t = $(this);
                 if (Number(row.invoice_num) === 0 && row.invoice_create_date === '00.00.0000') {
-                  echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+                  new warnNotCreateInvoice();
                   return false;
                 }
                 return new sendAjax('get_ttn', {
@@ -5145,7 +5170,7 @@
                 var t;
                 t = $(this);
                 if (Number(row.invoice_num) === 0 && row.invoice_create_date === '00.00.0000') {
-                  echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+                  new warnNotCreateInvoice();
                   return false;
                 }
                 return new sendAjax('get_ttn', {
@@ -5192,6 +5217,29 @@
       }
     });
   })(window.jQuery, window);
+
+
+  /*
+   * метод отправки запроса AJAX
+   */
+
+  warnNotCreateInvoice = (function() {
+    function warnNotCreateInvoice(mess) {
+      if (mess == null) {
+        mess = "Внесите дату и номер счёта";
+      }
+      return new modalWindow({
+        html: mess,
+        title: 'Внимание'
+      }, {
+        single: false,
+        closeOnEscape: true
+      });
+    }
+
+    return warnNotCreateInvoice;
+
+  })();
 
 
   /*
@@ -5258,7 +5306,7 @@
         var t;
         if (_this.access === 2) {
           if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
-            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            new warnNotCreateInvoice();
             return false;
           }
           if ($(this).hasClass('checked')) {
@@ -5307,7 +5355,7 @@
         click: function(e) {
           var t;
           if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
-            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            new warnNotCreateInvoice();
             return false;
           }
           t = $(this);
@@ -5440,7 +5488,7 @@
       td.click(function() {
         var t;
         if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
-          echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+          new warnNotCreateInvoice();
           return false;
         }
         if ($(this).hasClass('checked')) {
@@ -5501,7 +5549,7 @@
         'class': 'mayBeEdit',
         click: function(e) {
           if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
-            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            new warnNotCreateInvoice();
             return false;
           }
           return new sendAjax('get_costs', {
@@ -5595,7 +5643,7 @@
         'class': 'invoice-row--ice mayBeEdit',
         click: function(e) {
           if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
-            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            new warnNotCreateInvoice();
             return false;
           }
           return new sendAjax('get_costs', {
@@ -5625,7 +5673,7 @@
         'class': 'invoice-row--icons-calculator mayBeEdit',
         click: function(e) {
           if (Number(_this.options.invoice_num) === 0 && _this.options.invoice_create_date === '00.00.0000') {
-            echo_message_js("Для дальнейшей работы необходимо внести дату и номер счёта");
+            new warnNotCreateInvoice();
             return false;
           }
           return new sendAjax('get_costs', {
@@ -5774,7 +5822,9 @@
       function sklad(el, options) {
         var self;
         self = this;
-        new sendAjax('get_data_sklad', {}, function(response) {
+        new sendAjax('get_data_sklad', {
+          url: window.location.href
+        }, function(response) {
           self.options = $.extend({}, self.defaults, response);
           self.access = response.access;
           self.$el = $(el);
@@ -5916,7 +5966,9 @@
         var _this;
         _this = this;
         window_preload_add();
-        return new sendAjax('get_data_sklad', {}, function(response) {
+        return new sendAjax('get_data_sklad', {
+          url: window.location.href
+        }, function(response) {
           _this.options = $.extend({}, _this.defaults, response);
           _this.init();
           return window_preload_del();
@@ -5924,7 +5976,8 @@
       };
 
       sklad.prototype.greateHead = function() {
-        var thead, tr;
+        var _this, btn1, btn2, btn3, button2, thDate, thead, tr;
+        _this = this;
         thead = $('<thead/>');
         tr = $('<tr/>');
         tr.append($('<th/>', {
@@ -5943,10 +5996,68 @@
           'rowspan': 2,
           'html': 'отгрузка'
         }));
-        tr.append($('<th/>', {
+        tr.append(thDate = $('<th/>', {
           'rowspan': 2,
+          'class': 'mayBeClick',
           'html': 'дата'
         }));
+        button2 = [];
+        btn1 = {
+          'name': 'Сегодня',
+          'class': '',
+          click: function(e) {
+            var today;
+            today = getDateNow();
+            $.urlVar('date_start', today);
+            $.urlVar('date_end', today);
+            return $('#js-main-invoice-table').sklad('updateTable');
+          }
+        };
+        btn2 = {
+          'name': 'Завтра',
+          'class': '',
+          click: function(e) {
+            var today;
+            today = getDateTomorrow();
+            $.urlVar('date_start', today);
+            $.urlVar('date_end', today);
+            return $('#js-main-invoice-table').sklad('updateTable');
+          }
+        };
+        btn3 = {
+          'name': 'Календарь',
+          'class': 'js--get-calendar-filter',
+          click: function(e) {
+            var inp;
+            thDate.append(inp = $('<input/>', {
+              'css': {
+                'opacity': 0,
+                'float': 'left',
+                'width': '0px',
+                'height': '0px',
+                'padding': '0'
+              }
+            }));
+            inp.daterangepicker({
+              timePicker: false,
+              locale: {
+                format: 'MM.DD.YYYY'
+              }
+            }, function(start, end, label) {
+              $.urlVar('date_start', start.format('DD.MM.YYYY'));
+              $.urlVar('date_end', end.format('DD.MM.YYYY'));
+              $('#js-main-invoice-table').sklad('updateTable');
+              return inp.remove();
+            });
+            return inp.focus();
+          }
+        };
+        button2.push(btn1);
+        button2.push(btn2);
+        button2.push(btn3);
+        thDate.menuRightClick({
+          'buttons': button2
+        });
         tr.append($('<th/>', {
           'colspan': 4,
           'html': 'Товарно-транспортные накладные'
@@ -6266,7 +6377,7 @@
     };
 
     skladRow.prototype.subRow = function(rowspan) {
-      var btn1, btn2, button2, delivery_td, self, status_shipment, status_str, tr, when_ho;
+      var btn1, btn2, button2, delivery_td, self, status_shipment, status_str, td_date, tr, when_ho;
       self = this;
       tr = [];
       tr.push(delivery_td = $('<td/>'));
@@ -6275,9 +6386,15 @@
       } else {
         delivery_td.html('Доставка');
       }
-      tr.push($('<td/>', {
+      console.log(self.options.ttn_shipment_date_color, self.options.ttn_id);
+      tr.push(td_date = $('<td/>', {
         'html': self.options.date_shipment
       }));
+      if (self.options.ttn_shipment_date_color !== void 0) {
+        td_date.css({
+          'background': self.options.ttn_shipment_date_color
+        });
+      }
       tr.push($('<td/>', {
         'html': self.options.number,
         'class': 'mayBeClick',

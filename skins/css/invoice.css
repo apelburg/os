@@ -407,7 +407,7 @@
 #js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow,
 #js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow .cell:nth-of-type(2),
 #js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow .cell:nth-of-type(1){
-	color: #f1f1f1;
+	color: #CACACA;
 }
 
 #js-main-invoice-table tbody tr td.js-query-ttn-rows .table .row.greyTtnRow:hover .cell:nth-of-type(2),
@@ -1058,6 +1058,7 @@ body #context-menu ul li{
 	color: #000;
 	background: none;
 	cursor: pointer;
+	padding: 10px 15px;
 }
 #context-menu ul li:hover{
 	background-color: #f1f1f1;
@@ -1202,6 +1203,8 @@ body #context-menu ul li{
 .mayBeClick:hover{
 	background-color: #f2f2f2;
 }
+
+
 .invoice-row--order-number{
 	/*color:#000;*/
 	padding-bottom: 5px;
@@ -1244,4 +1247,10 @@ body #context-menu ul li{
 }
 table td.noActive{
 	background-color: #f1f2f2;
+}
+#context-menu ul li.js--get-calendar-filter{
+	background-image: url("../images/img_design/icon_calendar.png");
+	background-position: calc(100% - 9px);
+	background-repeat: no-repeat;
+	padding-right: 30px;
 }
