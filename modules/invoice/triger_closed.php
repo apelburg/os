@@ -10,12 +10,15 @@
 	define("INVOICE_COSTS_PAY",'os__invoice_costs_payment');// оплаты поставщикам
 	define("INVOICE_COMMENTS","os__invoice_comments"); //
 
+	define("MANAGERS_TBL","os__manager_list"); // таблица менеджеров
+
 	include_once "/var/www/admin/data/www/apelburg.ru/libs/php/classes/aplStdClass.php";
 	include_once "/var/www/admin/data/www/apelburg.ru/os/libs/php/classes/invoice.class.php";
 
 	# тригер для крон
 
-	Invoice::triger_check_and_closed_invoice_CRON($mysqli);
+	$InvoiceNotify = new InvoiceNotify();
+	$InvoiceNotify->check_and_closed_invoice_CRON();
 ?>
 	
 

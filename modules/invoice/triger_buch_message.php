@@ -8,13 +8,14 @@
 	define("INVOICE_PP",'os__invoice_PP'); // строки приходов по счетам
 	define("INVOICE_COSTS",'os__invoice_costs');// счета от поставщиков
 	define("INVOICE_COSTS_PAY",'os__invoice_costs_payment');// оплаты поставщикам
-	define("INVOICE_COMMENTS","os__invoice_comments"); //
+	define("MANAGERS_TBL","os__manager_list"); // таблица менеджеров
 
 	include_once "/var/www/admin/data/www/apelburg.ru/libs/php/classes/aplStdClass.php";
 	include_once "/var/www/admin/data/www/apelburg.ru/os/libs/php/classes/invoice.class.php";
 
 	# тригер для крон
-	Invoice::triger_buch_message_CRON($mysqli);
+	$InvoiceNotify = new InvoiceNotify();
+	$InvoiceNotify->triger_buch_message_CRON();
 ?>
 	
 

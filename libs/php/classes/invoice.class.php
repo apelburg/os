@@ -1,4 +1,250 @@
 <?php
+/**
+ * Class InvoiceNotify
+ * класс оповещений
+ */
+class InvoiceNotify extends aplStdAJAXMethod
+{
+	public $from_email = 'invoice@apelburg.ru';
+	function __construct()
+	{
+		$this->db();
+	}
+
+
+
+	/**
+	 * тригер отправки сводки по почте в бухгалтерию
+	 * по новым запросам счетов и УПД
+	 * @param $mysqli
+	 */
+	public function triger_buch_message_CRON(){
+		$message = '';
+		# 1
+		# проверка неотработанных счетов
+		# при наличии строк счетов - сборка строк в одно сообщение
+		$query = "select * FROM `".INVOICE_TBL."` WHERE `invoice_num` = '0'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+		$invoice_rows = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$invoice_rows[] = $row;
+			}
+		}
+
+		if (count($invoice_rows) > 0){
+			$message .='<div>В ос есть счета ('.count($invoice_rows).' шт.) ожидающие присвоения им номера<div>';
+
+			foreach ($invoice_rows as $invoice){
+				$html .="<div>счет от менеджера: ".$row['manager_name']."</div>";
+
+			}
+			$message .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=1\">ссылке</a></div>";
+		}
+
+
+
+		# 2
+		# проверка неотработанных УДП
+		# при наличии строк УДП - сборка строк в одно сообщение
+		$query = "select * FROM `".INVOICE_TBL."` INNER JOIN `".INVOICE_TTN."` ON `".INVOICE_TTN."`.`invoice_id` = `".INVOICE_TBL."`.`id` WHERE `".INVOICE_TTN."`.`number` = '0'";
+
+
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		$ttn = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$ttn[] = $row;
+			}
+		}
+
+		if (count($ttn) > 0){
+			$message .='<div>В ос есть заявки на создание УПД ('.count($ttn).' шт.) <div>';
+			foreach ($ttn as $ttn_row){
+				$message .= "<div>Запрос УПД от менеджера: ".$ttn_row['manager_name']."</div>";
+
+			}
+			$message .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=2\">ссылке</a></div>";
+		}
+
+
+
+
+
+
+		# 3
+		# отправка собранного сообщени
+
+		# необходимо написть метод отправляющий текст по массиву id вида
+		# array(42, 33)
+		# где 42 и 33 - id юзеров - адресатов
+		# по id должны отправляться сообщения, с приоритетом на ящик с доменом apelburg.ru
+		# при его отсутствии напрямую на gmail
+		if ($html != ''){
+
+			$subject = 'Сводка из ОС';
+			$userName = '';
+			$href = '';
+			# подгружаем шаблон
+			ob_start();
+			include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			// include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			$html = ob_get_contents();
+			ob_get_clean();
+			$this->sendMessageToId([39],'',$subject,$html);
+
+			return $html;
+		}
+
+	}
+
+	/**
+	 * возвращает email id юзера
+	 * @param $id
+	 * @param $mysqli
+	 * @return array
+	 */
+	public function getUsersEmail($id){
+		$query = "SELECT * FROM `".MANAGERS_TBL."`";
+
+		if (is_array($id)){
+			$query .= " WHERE `id` IN ('".implode("','",$id)."')";
+		}else{
+			$query .= " WHERE `id` = '$id'";
+		}
+
+
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		$emails = array();
+		if($result->num_rows > 0){
+			while($manager = $result->fetch_assoc()){
+				#проверяем email
+				if(filter_var($manager['email'], FILTER_VALIDATE_EMAIL)){
+					$emails[] = $manager['email'];
+				}else if(filter_var($manager['email_2'], FILTER_VALIDATE_EMAIL)){
+					$emails[] = $manager['email_2'];
+				}
+			}
+		}
+
+		return $emails;
+	}
+
+	/**
+	 * метод отправки сообщений по id пользователей
+	 *
+	 * @param $to
+	 * @param $from
+	 * @param $subject
+	 * @param $message
+	 * @return string
+	 */
+	private function sendMessage($to,$from,$subject,$message ){
+		if ($from == ''){
+			$from = $this->from_email;
+		}
+		include_once 'mail_class.php';
+//		$mail = new Mail();
+
+		if (is_array($to)){
+			foreach ($to as $email){
+
+				return mail($email,
+					$subject,
+					$message,
+					"From: $from\r\n"
+					."Content-type: text/html; charset=utf-8\r\n"
+					."X-Mailer: PHP mail script"
+				);
+//				$mail->send($email,$from,$subject,$message,TRUE);
+			}
+
+		}else{
+			return mail($to,
+				$subject,
+				$message,
+				"From: $from\r\n"
+				."Content-type: text/html; charset=utf-8\r\n"
+				."X-Mailer: PHP mail script"
+			);
+//			return $mail->send($to,$from,$subject,$message,TRUE);
+		}
+
+	}
+
+	public function sendMessageToId($id,$from,$subject,$message ){
+		$this->sendMessage($this->getUsersEmail($id),$from,$subject,$message );
+	}
+	/**
+	 * тригер для крон
+	 * переводит все проверенные и отгруженные заказы старше 10 дней в статус закрыто
+	 *
+	 *
+	 * была написана процедура, но почему-то процедура переполняет стек на сервере
+	 * необходимо копаться в настройках, пока не до этого
+	 *
+	 * $query = "CALL check_and_closed_invoice();";
+	 *
+	 * @param $mysqli
+	 */
+	public function check_and_closed_invoice_CRON(){
+
+		# выбираем все счета, которые пора переводить в закрытые
+		$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."` ";
+
+		# если статус счёта отгружен был выставлен более 10 дней назад
+		$query .= " WHERE `shipped_date` < (NOW() - interval 10 day)";
+		# если был зажат калькулятор
+		$query .= " AND `flag_calc` > 0 ";
+		# если заказ отгружен
+		$query .= " AND `status` = 'отгружен' ";
+		# если заказ ещё не закрыт
+		$query .= " AND `closed` = 0 ";
+
+		$html = "";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		$rows = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$rows[]  = $row['id'];
+
+				# сообщение менеджеру
+
+				$subject = 'Cчёт № '.$row['invoice_num'].' был переведён во вкладку "закрытые"';
+				$userName = $row['manager_name'];
+				$message = 'Клиент '.$row['client_name'].'<br>';
+				$message .= 'Cчёт № '.$row['invoice_num'].' от '.$row["invoice_create_date"].' был переведён во вкладку "закрытые';
+				$href = 'http://www.apelburg.ru/os/?page=invoice&section=9&client_id='.$row['client_id'];
+				# подгружаем шаблон
+				ob_start();
+				include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				// include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+				ob_get_clean();
+				$this->sendMessageToId($row['manager_id'],'',$subject,$html);
+			}
+		}
+		$mess = $html.$this->printArr();
+
+		# если найдены такие счета
+		if (count($rows) > 0){
+			# переводим найденныйе счета в статус закрытые
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `closed` = (closed + 1)";
+			$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+		return $mess;
+	}
+
+
+
+}
+
+
 
 /**
  * Class Invoice
@@ -14,16 +260,20 @@
 		protected 	$user_id = 0;			// user id with base
 		public 		$user = array(); 		// authorised user info
 		
-		function __construct()
+		public function __construct()
 		{	
 			// connectin to database
 			$this->db();
 
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
-			// geting rights
-			$this->user_access = $this->get_user_access_Database_Int($this->user_id);
 
-			$this->getInvoiceName();
+			// geting rights
+			if ($this->user_id > 0){
+				$this->user_access = $this->get_user_access_Database_Int($this->user_id);
+			}
+
+
+
 			// calls ajax methods from POST
 			if(isset($_POST['AJAX'])){
 				$this->_AJAX_($_POST['AJAX']);
@@ -36,11 +286,7 @@
 			}
 		}
 
-		private function getInvoiceName(){
-			if ($this->user_access == 7){
-				$this->tabName = 'Склад';
-			}
-		}
+
 
 		/**
 		 * buch the confirmation create ttn
@@ -70,6 +316,45 @@
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
+
+
+			# сообщение менеджеру edit_ttn_status
+			# сообщение на почтуconfirm_create_ttn
+			$Invoice = new InvoiceNotify();
+			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') была создана УПД №'.$_POST['number'];
+			$userName = $_POST['manager_name'];
+			$message= 'Для клиента '.$_POST['client_name'].' заведён новый счет';
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=6&client_id='.$_POST['client_id'];
+			# подгружаем шаблон
+			ob_start();
+				// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+			ob_get_clean();
+			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
+		}
+
+		/**
+		 * оповещаем менеджера обизменениях в приходах по счёту
+		 */
+		protected function payment_window_is_editable_AJAX(){
+			$Invoice = new InvoiceNotify();
+			$subject = 'Внесены изменения в приходы по счёту № '.$_POST['invoice_num'].' ('.$_POST['client_name'].')';
+			
+			$userName = $_POST['manager_name'];
+			$message= 'Клиент '.$_POST['client_name'].'<br>';
+			$message .= 'в приходы по счёту № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') были внесены изменения<br>';
+			$message .= 'Сумма счета: '.$_POST['price_out'].'р.<br>';
+			$message .= 'Cумма оплаты на данный момент составляет: '.$_POST['price_out_payment'].' р.<br>';
+			$message .= 'что составляет '.$_POST['percent_payment'].'% от суммы счёта';
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
+			# подгружаем шаблон
+			ob_start();
+			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			$html = ob_get_contents();
+			ob_get_clean();
+			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
 		}
 
 		/**
@@ -279,7 +564,7 @@
 		}
 
 		/**
-		 * save invoice number
+		 * счёт создан
 		 *
 		 */
 		protected function confirm_create_bill_AJAX(){
@@ -298,12 +583,63 @@
 
 
 
+
+
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			if ($i>1){
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+				# сообщение на почтуconfirm_create_ttn
+				$Invoice = new InvoiceNotify();
+				$subject = 'Для клиента '.$_POST['client_name'].' был заведён счёт';
+				$userName = $_POST['manager_name'];
+				$message= 'Для клиента '.$_POST['client_name'].' заведён новый счет';
+				$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
+				# подгружаем шаблон
+				ob_start();
+				// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+				ob_get_clean();
+				$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
+
 			}else{
 				$this->responseClass->addMessage('Вы не указали данные для сохранения');
 			}
+		}
+		protected function test_message_template_AJAX(){
+			$Invoice = new InvoiceNotify();
+
+
+
+
+			# подгружаем шаблон
+			ob_start();
+
+			$subject = '';
+			$userName = $this->getAuthUserName();
+			$message= 'Привет мир';
+			$href = '#';
+
+			$subject = '';
+			$userName = 'Лапочка тест';
+			$message= 'Привет мир';
+			$href = '#';
+			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+
+			$subject = '';
+			$userName = 'Лапочка тест';
+			$message= 'Привет мир';
+			$href = '#';
+			$html = ob_get_contents();
+			ob_get_clean();
+
+			$options['width'] = '100%';
+			$options['height'] = 500;
+			$this->responseClass->addSimpleWindow($html,'',$options);
+
+			$Invoice->sendMessageToId([42],'','Для клиента Имя клиента был заведён счёт',$html);
 		}
 
 		/**
@@ -598,7 +934,6 @@
 						default:
 							break;
 					}
-
 					$query .= ($w>0?' AND ':' WHERE ');
 					$query .= " `".INVOICE_TBL."`.`closed` = '0'";
 					$w++;
@@ -636,163 +971,25 @@
 		}
 
 
-		protected function get_manager_name_AJAX(){
-			self::triger_buch_message_CRON($this->mysqli);
-//			$this->responseClass->addSimpleWindow($this->printArr()));
-		}
-
-
-		/**
-		 * тригер отправки сводки по почте в бухгалтерию
-		 * по новым запросам счетов и УПД
-		 * @param $mysqli
-		 */
-		static public function triger_buch_message_CRON($mysqli){
-			$html = '';
-			# 1
-			# проверка неотработанных счетов
-			# при наличии строк счетов - сборка строк в одно сообщение
-			$query = "select * FROM `".INVOICE_TBL."` WHERE `invoice_num` = '0'";
-			$result = $mysqli->query($query) or die($mysqli->error);
-
-
-			$invoice_rows = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$invoice_rows[] = $row;
-				}
-			}
-
-			if (count($invoice_rows) > 0){
-				$html .='<div>В ос есть счета ('.count($invoice_rows).' шт.) ожидающие присвоения им номера<div>';
-
-				foreach ($invoice_rows as $invoice){
-					$html .="<div>счет от менеджера: ".$row['manager_name']."</div>";
-
-				}
-				$html .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=1\">ссылке</a></div>";
-			}
-
-
-
-			# 2
-			# проверка неотработанных УДП
-			# при наличии строк УДП - сборка строк в одно сообщение
-			$query = "select * FROM `".INVOICE_TBL."` " .
-				"
-			  INNER JOIN
-			 `".INVOICE_TTN."` ON `".INVOICE_TTN."`.`invoice_id` = `".INVOICE_TBL."`.`id` WHERE `".INVOICE_TTN."`.`number` = '0'";
-
-
-			$result = $mysqli->query($query) or die($mysqli->error);
-			$ttn = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$ttn[] = $row;
-				}
-			}
-
-			if (count($ttn) > 0){
-				$html .='<div>В ос есть заявки на создание УПД ('.count($ttn).' шт.) <div>';
-				foreach ($ttn as $ttn_row){
-					$html .= "<div>Запрос УПД от менеджера: ".$ttn_row['manager_name']."</div>";
-
-				}
-				$html .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=2\">ссылке</a></div>";
-			}
-
-
-
-			# 3
-			# отправка собранного сообщени
-
-			# необходимо написть метод отправляющий текст по массиву id вида
-			# array(42, 33)
-			# где 42 и 33 - id юзеров - адресатов
-			# по id должны отправляться сообщения, с приоритетом на ящик с доменом apelburg.ru
-			# при его отсутствии напрямую на gmail
-			if ($html != ''){
-
-				$subject = 'Сводка из ОС';
-				self::sendMessage( 'alexey@apelburg.ru','invoice@apelburg.ru', $subject, $html);
-			}
-
-		}
-
-		/**
-		 * метод отправки сообщений по массиву id пользователей
-		 *
-		 * @param $to
-		 * @param $from
-		 * @param $subject
-		 * @param $message
-		 * @return string
-		 */
-		static function sendMessage($to,$from,$subject,$message ){
-			include_once 'mail_class.php';
-			$mail = new Mail();
-			return $mail->send($to,$from,$subject,$message,TRUE);
-		}
 
 		/**
 		 * тестовый запрос тригера из браузера
 		 * удалить после тестирования
 		 */
 		protected function ppp9898_AJAX(){
-			$this->responseClass->addSimpleWindow(self::triger_check_and_closed_invoice_CRON($this->mysqli));
+			$this->responseClass->addSimpleWindow('test');
+			//$this->responseClass->addSimpleWindow($this->triger_check_and_closed_invoice_CRON());
 		}
-
-		/**
-		 * тригер для крон
-		 * переводит все проверенные и отгруженные заказы старше 10 дней в статус закрыто
-		 *
-		 *
-		 * была написана процедура, но почему-то процедура переполняет стек на сервере
-		 * необходимо копаться в настройках, пока не до этого
-		 *
-		 * $query = "CALL check_and_closed_invoice();";
-		 *
-		 * @param $mysqli
-		 */
-		static public function triger_check_and_closed_invoice_CRON($mysqli){
-
-			# выбираем все счета, которые пора переводить в закрытые
-			$query = "SELECT * FROM `".INVOICE_TBL."` ";
-
-			# если статус счёта отгружен был выставлен более 10 дней назад
-			$query .= " WHERE `shipped_date` < (NOW() - interval 10 day)";
-			# если был зажат калькулятор
-			$query .= " AND `flag_calc` > 0 ";
-			# если заказ отгружен
-			$query .= " AND `status` = 'отгружен' ";
-			# если заказ ещё не закрыт
-			$query .= " AND `closed` = 0 ";
+		protected function get_manager_name_AJAX(){
+			$Notify = new InvoiceNotify();
 
 
-			$result = $mysqli->query($query) or die($mysqli->error);
-			$rows = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$rows[]  = $row['id'];
-				}
-			}
-			$mess= $query;
-
-			# если найдены такие счета
-			if (count($rows) > 0){
-				# переводим найденныйе счета в статус закрытые
-				$query = "UPDATE `".INVOICE_TBL."` SET ";
-				$query .= " `closed` = (closed + 1)";
-				$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
-				$result = $mysqli->query($query) or die($mysqli->error);
-			}
-			return $mess;
+			 $this->responseClass->addSimpleWindow($Notify->check_and_closed_invoice_CRON());
 		}
-
 		/**
 		 * проверка глобального статуса заказа
 		 */
-		protected function check_chipment_global_status_AJAX(){
+		protected function check_shipment_global_status_AJAX(){
 			$positions_num = (int)$_POST['positions_num'];
 			// $positions_in_ttn = (int)$_POST['positions_in_ttn'];
 
@@ -1091,6 +1288,25 @@
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
+
+
+
+
+
+			# сообщение менеджеру edit_ttn_status
+			# сообщение на почтуconfirm_create_ttn
+			$Invoice = new InvoiceNotify();
+			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') был изменён статус отгрузки по УПД №'.$_POST['number'];
+			$userName = $_POST['manager_name'];
+			$message = 'по УПД №'.$_POST['number'].' был изменён статус отгрузки на '.(($_POST['shipment_status']>0)?'отгружен':'не отгружен');
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=7&client_id='.$_POST['client_id'];
+			# подгружаем шаблон
+			ob_start();
+			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			$html = ob_get_contents();
+			ob_get_clean();
+			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
 		}
 		/**
 		 * редактирование информации по отгрузке для отдельных артикулов
@@ -2107,5 +2323,8 @@
 			}
 			return $int;
 		}
-	}
+}
+
+
+
 ?>

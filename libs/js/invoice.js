@@ -2539,6 +2539,7 @@
               var t;
               t = $(this);
               _this.options.number = $(this).val();
+              paymentWindowObj.flag_edit++;
               return new sendAjax('save_payment_row', {
                 id: _this.options.id,
                 number: _this.options.number
@@ -2586,6 +2587,7 @@
               var t;
               t = $(this);
               _this.options.date = $(this).val();
+              paymentWindowObj.flag_edit++;
               return new sendAjax('save_payment_row', {
                 id: _this.options.id,
                 date: _this.options.date
@@ -2641,6 +2643,7 @@
                 _this.options.price = round_money($(this).val());
               }
               per = round_money(Number(_this.options.price) * 100 / Number(data_row.price_out));
+              paymentWindowObj.flag_edit++;
               return new sendAjax('save_payment_row', {
                 id: _this.options.id,
                 price: _this.options.price,
@@ -2711,6 +2714,7 @@
         var row, td;
         td = $(this);
         row = td.parent();
+        paymentWindowObj.flag_edit++;
         return new sendAjax('save_payment_row', {
           id: _this.options.id,
           del: 1
@@ -2804,6 +2808,7 @@
       this.access = access;
       console.log(access);
       this.options = data_row;
+      this.flag_edit = 0;
       this.init(data_row, responseData);
     }
 
@@ -2840,6 +2845,9 @@
         }, {
           closeOnEscape: true,
           close: function(event, ui) {
+            if (_this.flag_edit > 0) {
+              new sendAjax('payment_window_is_editable', data_row);
+            }
             return $('#quick_button_div .button').eq(0).removeClass('checked');
           }
         });
@@ -4189,6 +4197,10 @@
         }
         $('#js-main-invoice-table').invoice('reflesh', data_row.id);
         this.saveObj.invoice_id = data_row.id;
+        this.saveObj.manager_name = data_row.manager_name;
+        this.saveObj.manager_id = data_row.manager_id;
+        this.saveObj.client_name = data_row.client_name;
+        this.saveObj.invoice_num = data_row.invoice_num;
         return new sendAjax('confirm_create_ttn', this.saveObj, function() {
           return _this.destroy();
         });
@@ -4639,6 +4651,10 @@
         $('#js-main-invoice-table').invoice('reflesh', data_row);
         this.saveObj['doc_type'] = data_row.doc_type;
         this.saveObj['doc_id'] = data_row.doc_id;
+        this.saveObj['manager_id'] = data_row.manager_id;
+        this.saveObj['manager_name'] = data_row.manager_name;
+        this.saveObj['client_name'] = data_row.client_name;
+        this.saveObj['client_id'] = data_row.client_id;
         return new sendAjax('confirm_create_bill', this.saveObj, function() {
           return _this.destroy();
         });
@@ -5878,7 +5894,7 @@
             shipment_status += Number(rData.shipment_status);
             rowspan++;
           }
-          return new sendAjax('check_chipment_global_status', {
+          return new sendAjax('check_shipment_global_status', {
             invoice_id: dataFirstRow.id,
             positions_num: Number(dataFirstRow.invoice_positions_num),
             positions_in_ttn: Number(dataFirstRow.positions_in_ttn)
@@ -5976,7 +5992,7 @@
       };
 
       sklad.prototype.greateHead = function() {
-        var _this, btn1, btn2, btn3, button2, thDate, thead, tr;
+        var _this, btn1, btn2, btn3, btn4, button2, thDate, thead, tr;
         _this = this;
         thead = $('<thead/>');
         tr = $('<tr/>');
@@ -6052,6 +6068,18 @@
             return inp.focus();
           }
         };
+        btn4 = {
+          'name': 'Сбросить',
+          'class': '',
+          click: function(e) {
+            var today;
+            today = getDateNow();
+            $.delUrlVal('date_start');
+            $.delUrlVal('date_end');
+            return $('#js-main-invoice-table').sklad('updateTable');
+          }
+        };
+        button2.push(btn4);
         button2.push(btn1);
         button2.push(btn2);
         button2.push(btn3);
@@ -6432,8 +6460,15 @@
         click: function(e) {
           self.options.shipment_status = 1;
           status_shipment.html($(this).html());
+          console.log(rowspan, self.options);
           return new sendAjax('edit_ttn_status', {
             'id': self.options.ttn_id,
+            'invoice_num': self.options.invoice_num,
+            'manager_name': self.options.manager_name,
+            'manager_id': self.options.manager_id,
+            'client_name': self.options.client_name,
+            'client_id': self.options.client_id,
+            'number': self.options.number,
             shipment_status: self.options.shipment_status
           }, function(response) {
             when_ho.html(response.data.when_ho);
@@ -6446,6 +6481,7 @@
         'name': 'Не отгружено',
         'class': '',
         click: function(e) {
+          console.log(rowspan, self.options);
           return new modalConfirm({
             html: 'Уверены, что неотгружено?<br>продолжить?'
           }, function() {
@@ -6453,6 +6489,12 @@
             status_shipment.html($(this).html());
             return new sendAjax('edit_ttn_status', {
               'id': self.options.ttn_id,
+              'invoice_num': self.options.invoice_num,
+              'manager_name': self.options.manager_name,
+              'client_name': self.options.client_name,
+              'manager_id': self.options.manager_id,
+              'client_id': self.options.client_id,
+              'number': self.options.number,
               shipment_status: self.options.shipment_status
             }, function(response) {
               when_ho.html(response.data.when_ho);

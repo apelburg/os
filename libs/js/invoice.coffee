@@ -813,7 +813,7 @@ class costsRow
                 data_row.costs = round_money(data_row.costs)
                 windowObj.updateHead(data_row)
                 _this.options.pay_date = getDateNow();
-                
+
                 new sendAjax "save_payment_costs", {
                   invoice_id:data_row.id,
                   pay_date:_this.options.pay_date,
@@ -2146,6 +2146,7 @@ class paymentRow
           input.css('textAlign', $(this).css('textAlign')).focus().blur(()->
             t = $(this)
             _this.options.number = $(this).val()
+            paymentWindowObj.flag_edit++
             new sendAjax 'save_payment_row', {id: _this.options.id, number: _this.options.number}, ()->
               t.parent().removeClass('tdInputHere')
               t.replaceWith(_this.options.number)
@@ -2186,6 +2187,7 @@ class paymentRow
           input.focus().blur(()->
             t = $(this)
             _this.options.date = $(this).val()
+            paymentWindowObj.flag_edit++
             new sendAjax 'save_payment_row', {id: _this.options.id, date: _this.options.date}, ()->
               t.parent().removeClass('tdInputHere')
               t.replaceWith(_this.options.date)
@@ -2231,6 +2233,8 @@ class paymentRow
               _this.options.price = round_money($(this).val())
 
             per = round_money(Number(_this.options.price) * 100 / Number(data_row.price_out))
+            paymentWindowObj.flag_edit++
+
             new sendAjax 'save_payment_row', {id: _this.options.id, price: _this.options.price, percent: per}, ()->
               input.parent().removeClass('tdInputHere')
               input.replaceWith(_this.options.price)
@@ -2289,6 +2293,7 @@ class paymentRow
     tdObj.addClass('ppDel').click((e)->
       td = $(this)
       row = td.parent()
+      paymentWindowObj.flag_edit++
       new sendAjax 'save_payment_row', {id: _this.options.id, del: 1}, ()->
         rData[i].del = 1
 
@@ -2367,6 +2372,8 @@ class paymentWindow
     # сохраняем информацию по строке
     console.log access
     @options = data_row
+    # флаг редк
+    @flag_edit = 0;
     # сборка окна счёта
     @init(data_row, responseData)
 
@@ -2388,6 +2395,7 @@ class paymentWindow
       # добавляем таблицу
       ###
       main_div.append(@bodyRows = @createTable(responseData, 0, data_row))
+
       ###
       # создание окна
       ###
@@ -2400,6 +2408,8 @@ class paymentWindow
       }, {
         closeOnEscape: true,
         close: (event, ui) ->
+          if _this.flag_edit > 0
+            new sendAjax('payment_window_is_editable',data_row)
           $('#quick_button_div .button').eq(0).removeClass('checked')
       })
       @$el = @myObj.options.html[0]
@@ -3658,6 +3668,11 @@ class ttnWindow
       $('#js-main-invoice-table').invoice('reflesh', data_row.id)
       # отправляем запрос
       @saveObj.invoice_id = data_row.id
+      @saveObj.manager_name = data_row.manager_name
+      @saveObj.manager_id = data_row.manager_id
+      @saveObj.client_name = data_row.client_name
+      @saveObj.invoice_num = data_row.invoice_num
+
       new sendAjax 'confirm_create_ttn', @saveObj, ()->
         _this.destroy()
     else
@@ -4098,6 +4113,12 @@ class invoiceWindow
       # отправляем запрос
       @saveObj['doc_type'] = data_row.doc_type
       @saveObj['doc_id'] = data_row.doc_id
+      @saveObj['manager_id'] = data_row.manager_id
+      @saveObj['manager_name'] = data_row.manager_name
+      @saveObj['client_name'] = data_row.client_name
+      @saveObj['client_id'] = data_row.client_id
+
+
       new sendAjax 'confirm_create_bill', @saveObj, ()->
         _this.destroy()
 
@@ -5144,7 +5165,7 @@ class invoiceRow
           rowspan++
 
 
-        new sendAjax('check_chipment_global_status', {
+        new sendAjax('check_shipment_global_status', {
           invoice_id: dataFirstRow.id,
           positions_num: Number(dataFirstRow.invoice_positions_num),
           positions_in_ttn: Number(dataFirstRow.positions_in_ttn)
@@ -5289,7 +5310,17 @@ class invoiceRow
           );
           inp.focus()
       }
-
+      btn4 = {
+      'name': 'Сбросить',
+      'class': '',
+      click: (e)->
+        # меняем URL
+        today = getDateNow()
+        $.delUrlVal('date_start')
+        $.delUrlVal('date_end')
+        $('#js-main-invoice-table').sklad('updateTable')
+      }
+      button2.push(btn4)
       button2.push(btn1)
       button2.push(btn2)
       button2.push(btn3)
@@ -5659,9 +5690,15 @@ class skladRow
       click: (e)->
         self.options.shipment_status = 1
         status_shipment.html($(this).html())
-
+        console.log rowspan,self.options
         new sendAjax('edit_ttn_status', {
           'id': self.options.ttn_id,
+          'invoice_num':self.options.invoice_num,
+          'manager_name':self.options.manager_name,
+          'manager_id':self.options.manager_id,
+          'client_name':self.options.client_name,
+          'client_id':self.options.client_id,
+          'number':self.options.number,
           shipment_status: self.options.shipment_status
         }, (response)->
           when_ho.html(response.data.when_ho)
@@ -5673,11 +5710,18 @@ class skladRow
       'name': 'Не отгружено',
       'class': '',
       click: (e)->
+        console.log rowspan,self.options
         new modalConfirm({html: 'Уверены, что неотгружено?<br>продолжить?'}, ()->
           self.options.shipment_status = 0
           status_shipment.html($(this).html())
           new sendAjax('edit_ttn_status', {
             'id': self.options.ttn_id,
+            'invoice_num':self.options.invoice_num,
+            'manager_name':self.options.manager_name,
+            'client_name':self.options.client_name,
+            'manager_id':self.options.manager_id,
+            'client_id':self.options.client_id,
+            'number':self.options.number,
             shipment_status: self.options.shipment_status
           }, (response)->
             when_ho.html(response.data.when_ho)
