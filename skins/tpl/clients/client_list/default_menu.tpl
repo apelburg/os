@@ -3,7 +3,7 @@
                     <li <?php 
                     if(!isset($_GET['section']) || isset($_GET['section']) && ($_GET['section'] == 'requests' || $_GET['section'] =='rt_position')){echo 'class="selected"';} 
                     ?>>
-                        <a href="<?php echo HOST; ?>/?page=cabinet&section=requests&subsection=query_worcked_men<?phpd hf,jnt
+                        <a href="<?php echo HOST; ?>/?page=cabinet&section=requests&subsection=query_worcked_men<?php
                             if(isset($_GET['client_id'])){
                                 echo '&client_id='.$_GET['client_id'];
                             }
