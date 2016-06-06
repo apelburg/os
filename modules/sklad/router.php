@@ -30,7 +30,7 @@
 	}
 
 	// шаблон поиска
-	include'./skins/tpl/invoice/show.tpl';
+	include'./skins/tpl/sklad/show.tpl';
 	
 
 	

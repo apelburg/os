@@ -56,9 +56,6 @@
             menu.append(li = $('<li/>', {
               'class': this.options.buttons[i]["class"],
               'html': this.options.buttons[i].name,
-              'css': {
-                'padding': '10px 15px'
-              },
               click: self.options.buttons[i].click
             }));
           }
@@ -93,3 +90,5 @@
   })(window.jQuery, window);
 
 }).call(this);
+
+//# sourceMappingURL=menuClick.js.map

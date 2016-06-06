@@ -87,9 +87,6 @@
 	   include_once 'modules/planner/router.php';
 	   break;
 
-	   case 'invoice':
-	   include_once 'modules/invoice/router.php';
-	   break;
 
 		case 'sklad':
 			include_once 'modules/sklad/router.php';

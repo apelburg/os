@@ -1,4 +1,250 @@
 <?php
+/**
+ * Class InvoiceNotify
+ * класс оповещений
+ */
+class InvoiceNotify extends aplStdAJAXMethod
+{
+	public $from_email = 'invoice@apelburg.ru';
+	function __construct()
+	{
+		$this->db();
+	}
+
+
+
+	/**
+	 * тригер отправки сводки по почте в бухгалтерию
+	 * по новым запросам счетов и УПД
+	 * @param $mysqli
+	 */
+	public function triger_buch_message_CRON(){
+		$message = '';
+		# 1
+		# проверка неотработанных счетов
+		# при наличии строк счетов - сборка строк в одно сообщение
+		$query = "select * FROM `".INVOICE_TBL."` WHERE `invoice_num` = '0'";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+		$invoice_rows = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$invoice_rows[] = $row;
+			}
+		}
+
+		if (count($invoice_rows) > 0){
+			$message .='<div>В ос есть счета ('.count($invoice_rows).' шт.) ожидающие присвоения им номера<div>';
+
+			foreach ($invoice_rows as $invoice){
+				$html .="<div>счет от менеджера: ".$row['manager_name']."</div>";
+
+			}
+			$message .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=1\">ссылке</a></div>";
+		}
+
+
+
+		# 2
+		# проверка неотработанных УДП
+		# при наличии строк УДП - сборка строк в одно сообщение
+		$query = "select * FROM `".INVOICE_TBL."` INNER JOIN `".INVOICE_TTN."` ON `".INVOICE_TTN."`.`invoice_id` = `".INVOICE_TBL."`.`id` WHERE `".INVOICE_TTN."`.`number` = '0'";
+
+
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		$ttn = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$ttn[] = $row;
+			}
+		}
+
+		if (count($ttn) > 0){
+			$message .='<div>В ос есть заявки на создание УПД ('.count($ttn).' шт.) <div>';
+			foreach ($ttn as $ttn_row){
+				$message .= "<div>Запрос УПД от менеджера: ".$ttn_row['manager_name']."</div>";
+
+			}
+			$message .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=2\">ссылке</a></div>";
+		}
+
+
+
+
+
+
+		# 3
+		# отправка собранного сообщени
+
+		# необходимо написть метод отправляющий текст по массиву id вида
+		# array(42, 33)
+		# где 42 и 33 - id юзеров - адресатов
+		# по id должны отправляться сообщения, с приоритетом на ящик с доменом apelburg.ru
+		# при его отсутствии напрямую на gmail
+		if ($html != ''){
+
+			$subject = 'Сводка из ОС';
+			$userName = '';
+			$href = '';
+			# подгружаем шаблон
+			ob_start();
+			include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			// include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			$html = ob_get_contents();
+			ob_get_clean();
+			$this->sendMessageToId([39],'',$subject,$html);
+
+			return $html;
+		}
+
+	}
+
+	/**
+	 * возвращает email id юзера
+	 * @param $id
+	 * @param $mysqli
+	 * @return array
+	 */
+	public function getUsersEmail($id){
+		$query = "SELECT * FROM `".MANAGERS_TBL."`";
+
+		if (is_array($id)){
+			$query .= " WHERE `id` IN ('".implode("','",$id)."')";
+		}else{
+			$query .= " WHERE `id` = '$id'";
+		}
+
+
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		$emails = array();
+		if($result->num_rows > 0){
+			while($manager = $result->fetch_assoc()){
+				#проверяем email
+				if(filter_var($manager['email'], FILTER_VALIDATE_EMAIL)){
+					$emails[] = $manager['email'];
+				}else if(filter_var($manager['email_2'], FILTER_VALIDATE_EMAIL)){
+					$emails[] = $manager['email_2'];
+				}
+			}
+		}
+
+		return $emails;
+	}
+
+	/**
+	 * метод отправки сообщений по id пользователей
+	 *
+	 * @param $to
+	 * @param $from
+	 * @param $subject
+	 * @param $message
+	 * @return string
+	 */
+	private function sendMessage($to,$from,$subject,$message ){
+		if ($from == ''){
+			$from = $this->from_email;
+		}
+		include_once 'mail_class.php';
+//		$mail = new Mail();
+
+		if (is_array($to)){
+			foreach ($to as $email){
+
+				return mail($email,
+					$subject,
+					$message,
+					"From: $from\r\n"
+					."Content-type: text/html; charset=utf-8\r\n"
+					."X-Mailer: PHP mail script"
+				);
+//				$mail->send($email,$from,$subject,$message,TRUE);
+			}
+
+		}else{
+			return mail($to,
+				$subject,
+				$message,
+				"From: $from\r\n"
+				."Content-type: text/html; charset=utf-8\r\n"
+				."X-Mailer: PHP mail script"
+			);
+//			return $mail->send($to,$from,$subject,$message,TRUE);
+		}
+
+	}
+
+	public function sendMessageToId($id,$from,$subject,$message ){
+		$this->sendMessage($this->getUsersEmail($id),$from,$subject,$message );
+	}
+	/**
+	 * тригер для крон
+	 * переводит все проверенные и отгруженные заказы старше 10 дней в статус закрыто
+	 *
+	 *
+	 * была написана процедура, но почему-то процедура переполняет стек на сервере
+	 * необходимо копаться в настройках, пока не до этого
+	 *
+	 * $query = "CALL check_and_closed_invoice();";
+	 *
+	 * @param $mysqli
+	 */
+	public function check_and_closed_invoice_CRON(){
+
+		# выбираем все счета, которые пора переводить в закрытые
+		$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."` ";
+
+		# если статус счёта отгружен был выставлен более 10 дней назад
+		$query .= " WHERE `shipped_date` < (NOW() - interval 10 day)";
+		# если был зажат калькулятор
+		$query .= " AND `flag_calc` > 0 ";
+		# если заказ отгружен
+		$query .= " AND `status` = 'отгружен' ";
+		# если заказ ещё не закрыт
+		$query .= " AND `closed` = 0 ";
+
+		$html = "";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		$rows = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$rows[]  = $row['id'];
+
+				# сообщение менеджеру
+
+				$subject = 'Cчёт № '.$row['invoice_num'].' был переведён во вкладку "закрытые"';
+				$userName = $row['manager_name'];
+				$message = 'Клиент '.$row['client_name'].'<br>';
+				$message .= 'Cчёт № '.$row['invoice_num'].' от '.$row["invoice_create_date"].' был переведён во вкладку "закрытые';
+				$href = 'http://www.apelburg.ru/os/?page=invoice&section=9&client_id='.$row['client_id'];
+				# подгружаем шаблон
+				ob_start();
+				include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				// include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+				ob_get_clean();
+				$this->sendMessageToId($row['manager_id'],'',$subject,$html);
+			}
+		}
+		$mess = $html.$this->printArr();
+
+		# если найдены такие счета
+		if (count($rows) > 0){
+			# переводим найденныйе счета в статус закрытые
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `closed` = (closed + 1)";
+			$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		}
+		return $mess;
+	}
+
+
+
+}
+
+
 
 /**
  * Class Invoice
@@ -14,16 +260,20 @@
 		protected 	$user_id = 0;			// user id with base
 		public 		$user = array(); 		// authorised user info
 		
-		function __construct()
+		public function __construct()
 		{	
 			// connectin to database
 			$this->db();
 
 			$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
-			// geting rights
-			$this->user_access = $this->get_user_access_Database_Int($this->user_id);
 
-			$this->getInvoiceName();
+			// geting rights
+			if ($this->user_id > 0){
+				$this->user_access = $this->get_user_access_Database_Int($this->user_id);
+			}
+
+
+
 			// calls ajax methods from POST
 			if(isset($_POST['AJAX'])){
 				$this->_AJAX_($_POST['AJAX']);
@@ -36,29 +286,75 @@
 			}
 		}
 
-		private function getInvoiceName(){
-			if ($this->user_access == 7){
-				$this->tabName = 'Склад';
-			}
-		}
+
 
 		/**
 		 * buch the confirmation create ttn
 		 */
 		protected function confirm_create_ttn_AJAX(){
 			$this->db();
+
+
 			$query = "UPDATE `".INVOICE_TTN."` SET ";
 			$query .= "`number` = '".(int)$_POST['number'] ."'";
 			if(isset($_POST['date'])){
 				$query .= ",`date` =  '".date("Y-m-d",strtotime($_POST['date']))."' ";
 			}
-
 			$query .= ",`buch_id` = '".$this->user_id."'";
 			$query .= ",`buch_name` = '".$this->getAuthUserName()."'";
-			  	
-			$query .= " WHERE `id` = '".$_POST['id']."'";		
-			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
+			$query .= " WHERE `id` = '".$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+
+			# добавляем созданную ттн к количеству созданных
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `ttn_build` = (ttn_build + 1)";
+			$query .= " WHERE `id` =?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+			# сообщение менеджеру edit_ttn_status
+			# сообщение на почтуconfirm_create_ttn
+			$Invoice = new InvoiceNotify();
+			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') была создана УПД №'.$_POST['number'];
+			$userName = $_POST['manager_name'];
+			$message= 'Для клиента '.$_POST['client_name'].' заведён новый счет';
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=6&client_id='.$_POST['client_id'];
+			# подгружаем шаблон
+			ob_start();
+				// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+			ob_get_clean();
+			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
+		}
+
+		/**
+		 * оповещаем менеджера обизменениях в приходах по счёту
+		 */
+		protected function payment_window_is_editable_AJAX(){
+			$Invoice = new InvoiceNotify();
+			$subject = 'Внесены изменения в приходы по счёту № '.$_POST['invoice_num'].' ('.$_POST['client_name'].')';
+			
+			$userName = $_POST['manager_name'];
+			$message= 'Клиент '.$_POST['client_name'].'<br>';
+			$message .= 'в приходы по счёту № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') были внесены изменения<br>';
+			$message .= 'Сумма счета: '.$_POST['price_out'].'р.<br>';
+			$message .= 'Cумма оплаты на данный момент составляет: '.$_POST['price_out_payment'].' р.<br>';
+			$message .= 'что составляет '.$_POST['percent_payment'].'% от суммы счёта';
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
+			# подгружаем шаблон
+			ob_start();
+			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			$html = ob_get_contents();
+			ob_get_clean();
+			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
 		}
 
 		/**
@@ -67,7 +363,6 @@
 		protected function shearch_invoice_autocomlete_AJAX(){
 
 			$query="SELECT * FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?";
-//			$query="SELECT * FROM `".CLIENTS_TBL."`  WHERE `company` LIKE ?";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$search = '%'.$_POST['search'].'%';
@@ -269,7 +564,7 @@
 		}
 
 		/**
-		 * save invoice number
+		 * счёт создан
 		 *
 		 */
 		protected function confirm_create_bill_AJAX(){
@@ -288,12 +583,63 @@
 
 
 
+
+
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			if ($i>1){
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+				# сообщение на почтуconfirm_create_ttn
+				$Invoice = new InvoiceNotify();
+				$subject = 'Для клиента '.$_POST['client_name'].' был заведён счёт';
+				$userName = $_POST['manager_name'];
+				$message= 'Для клиента '.$_POST['client_name'].' заведён новый счет';
+				$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
+				# подгружаем шаблон
+				ob_start();
+				// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+				ob_get_clean();
+				$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
+
 			}else{
 				$this->responseClass->addMessage('Вы не указали данные для сохранения');
 			}
+		}
+		protected function test_message_template_AJAX(){
+			$Invoice = new InvoiceNotify();
+
+
+
+
+			# подгружаем шаблон
+			ob_start();
+
+			$subject = '';
+			$userName = $this->getAuthUserName();
+			$message= 'Привет мир';
+			$href = '#';
+
+			$subject = '';
+			$userName = 'Лапочка тест';
+			$message= 'Привет мир';
+			$href = '#';
+			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+
+			$subject = '';
+			$userName = 'Лапочка тест';
+			$message= 'Привет мир';
+			$href = '#';
+			$html = ob_get_contents();
+			ob_get_clean();
+
+			$options['width'] = '100%';
+			$options['height'] = 500;
+			$this->responseClass->addSimpleWindow($html,'',$options);
+
+			$Invoice->sendMessageToId([42],'','Для клиента Имя клиента был заведён счёт',$html);
 		}
 
 		/**
@@ -303,7 +649,7 @@
 		protected function save_shipped_status_AJAX(){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `status`=?";
-			$query .= ", `shipped_date`=NOW()";
+
 			$query .= " WHERE `id`=?";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
@@ -411,14 +757,14 @@
 							break;
 						// Запрос ТТН
 						case 5:
-//							$query .= ($w>0?' AND ':' WHERE ');
-//							$query .= " `ttn_query` >  0 ";
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `ttn_query` >  0 ";
 							$w++;
 							break;
 						// Готовые ТТН
 						case 6:
-//							$query .= ($w>0?' AND ':' WHERE ');
-//							$query .= " `ttn_build` >  0 ";
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `ttn_build` >  0 ";
 							$w++;
 							break;
 						// Част. отгрузка
@@ -436,12 +782,17 @@
 						// Закрытые
 						case 9:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `shipped_date` > (NOW() - interval 10 day) AND `flag_calc` > 0  AND `status` = 'отгружен'";
+							$query .= " `closed` > 0";
 							$w++;
 							break;
 						// все остальные
 						default:
 							break;
+					}
+					if($_GET['section'] != 9){
+						$query .= ($w>0?' AND ':' WHERE ');
+						$query .= " `closed` = '0'";
+						$w++;
 					}
 				}
 
@@ -474,8 +825,23 @@
 		 */
 		private function get_data_sklad($curSearch = array('invoice_num'=>'','id'=>0)){
 			$w = 0;
+
+			$additional_conditions = '';
+			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == '') {
+				// если мы не используем поиск
+				// вычисляем дни просрочки
+				$additional_conditions = "CASE ";
+				// если профакали - подсвечиваем красным
+				$additional_conditions .= " WHEN TO_DAYS(NOW()) - TO_DAYS(`".INVOICE_TTN."`.`date_shipment`) > 0 THEN '#FFAA91'";
+				// если сегодня - зелёным
+				$additional_conditions .= " WHEN TO_DAYS(NOW()) - TO_DAYS(`".INVOICE_TTN."`.`date_shipment`) = 0 THEN '#B3D073'";
+				// если завтра - желтым
+				$additional_conditions .= " WHEN TO_DAYS(NOW()) - TO_DAYS(`".INVOICE_TTN."`.`date_shipment`) = -1 THEN '#F3E6AA'";
+				$additional_conditions .= " END as ttn_shipment_date_color, ";
+
+			}
 			//  получаем информацию по строкам
-			$query = "SELECT `".INVOICE_TTN."`.*,`".INVOICE_TBL."`.*,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date";
+			$query = "SELECT $additional_conditions`".INVOICE_TTN."`.*,`".INVOICE_TBL."`.*,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date";
 
 			$query .= ",`".INVOICE_TTN."`.`id` as ttn_id ";
 			$query .= ",`".INVOICE_TTN."`.`position_id`";
@@ -568,11 +934,25 @@
 						default:
 							break;
 					}
+					$query .= ($w>0?' AND ':' WHERE ');
+					$query .= " `".INVOICE_TBL."`.`closed` = '0'";
+					$w++;
 
 				}
 			}
-			$query .= " ORDER BY `".INVOICE_TBL."`.`id` ASC";
+			if (isset($_GET['date_start']) && isset($_GET['date_end'])) {
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `".INVOICE_TTN."`.`date_shipment` >= '".date('Y-m-d', strtotime($_GET['date_start']))."' ";
+				$query .= " AND `".INVOICE_TTN."`.`date_shipment` <= '".date('Y-m-d', strtotime($_GET['date_end']))."' ";
+				$w++;
+			}else if (isset($_GET['date_start'])){
+				$query .= ($w>0?' AND ':' WHERE ');
+				$query .= " `".INVOICE_TTN."`.`date_shipment` = '".date('Y-m-d', strtotime($_GET['date_start']))."'";
+				$w++;
+			}
 
+			$query .= " ORDER BY `".INVOICE_TTN."`.`date_shipment` ASC";
+			//	echo $query;
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$this->data =$this->depending['id']= array();
 
@@ -590,59 +970,72 @@
 			return $this->data;
 		}
 
+
+
+		/**
+		 * тестовый запрос тригера из браузера
+		 * удалить после тестирования
+		 */
+		protected function ppp9898_AJAX(){
+			$this->responseClass->addSimpleWindow('test');
+			//$this->responseClass->addSimpleWindow($this->triger_check_and_closed_invoice_CRON());
+		}
+		protected function get_manager_name_AJAX(){
+			$Notify = new InvoiceNotify();
+
+
+			 $this->responseClass->addSimpleWindow($Notify->check_and_closed_invoice_CRON());
+		}
 		/**
 		 * проверка глобального статуса заказа
 		 */
-		protected function check_chipment_global_status_AJAX(){
-			$id = (int)$_POST['invoice_id'];
+		protected function check_shipment_global_status_AJAX(){
 			$positions_num = (int)$_POST['positions_num'];
-			$positions_in_ttn = (int)$_POST['positions_in_ttn'];
+			// $positions_in_ttn = (int)$_POST['positions_in_ttn'];
 
+			$data['status'] = 'не отгружен'; 		// статус по умолчанию
+			$shipment_ttn_num = 0; 					// количество отгруженных ттн
+			$ttn_num = 0; 							// общее количество ттн
+//			$count_positions_in_ttn = 0; 			// количество раскиданных по ттн позиций
+			$count_positions_in_ttn_shipment = 0; 	// количество отгруженных позиций
 
-			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id`=?";
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('i',$id) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
+			# получаем список ttn
+			$ttn_arr = $this->get_ttn_row($_POST['invoice_id']);
+			# перебор ттн
+			foreach ($ttn_arr as $val){
+				$count = count(explode(',',$val['positions_num']));
+//				$count_positions_in_ttn += $count;
+				$ttn_num++;
 
-			$ttn_arr = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$ttn_arr[] = $row;
+				if ($val['shipment_status']>0){
+					$data['status'] = 'частично отгружен';
+					$shipment_ttn_num++;
+					# подсчитываем количество отгруженных позиций
+					$count_positions_in_ttn_shipment += $count;
 				}
-			}
-
-			$data['status'] = 'не отгружен';
-			$shipment_ttn = 0;
-			$ttn_num = 0;
-
-				foreach ($ttn_arr as $val){
-					if ($val['shipment_status']>0){
-						$data['status'] = 'частично отгружен';
-						$shipment_ttn++;
-					}
-					$ttn_num++;
-				}
-			if($positions_num==$positions_in_ttn && $shipment_ttn == $ttn_num){
-				$data['status'] = 'отгружен';
 			}
 
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `status`=?";
-			$query .= " WHERE `id` =?";
+			// если количество позиций в отгруженных ттн соответствует общему количеству позиций в счёте
+			// меняем статус на отгружен
+			if($positions_num == $count_positions_in_ttn_shipment){
+				$data['status'] = 'отгружен';
+				$query .= ", `shipped_date`=NOW()";
+			}
 
+
+
+
+			$query .= " WHERE `id` =?";
 			$status = $data['status'];
 
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('si',$status, $id) or die($this->mysqli->error);
+			$stmt->bind_param('si',$status, $_POST['invoice_id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
-
-
 
 			$this->responseClass->response['data'] = $data;
 
@@ -680,14 +1073,26 @@
 		 *
 		 */
 		protected function get_ttn_AJAX(){
+
+			$data = $this->get_invoice_rows($_POST['id']);
+
+			// возвращаем полученные данные
+			$this->responseClass->response['data'] = $data; 
+
+		}
+
+		/**
+		 * запрос позиций по id счёта
+		 * @param $id
+		 * @return mixed
+		 */
+		private function get_invoice_rows($id){
 			$query = "SELECT * FROM `".INVOICE_ROWS."` WHERE `invoice_id`=?";
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->bind_param('i',$id) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
-
 
 			$data = array();
 			if($result->num_rows > 0){
@@ -695,9 +1100,28 @@
 					$data[] = $row;
 				}
 			}
-			// возвращаем полученные данные
-			$this->responseClass->response['data'] = $data; 
-			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+			return $data;
+		}
+		/**
+		 * запрос ttn по id счёта
+		 * @param $id
+		 * @return mixed
+		 */
+		private function get_ttn_row($id){
+			$query = "SELECT * FROM `".INVOICE_TTN."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$id) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+			return $data;
 		}
 
 		/**
@@ -864,6 +1288,25 @@
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
+
+
+
+
+
+			# сообщение менеджеру edit_ttn_status
+			# сообщение на почтуconfirm_create_ttn
+			$Invoice = new InvoiceNotify();
+			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') был изменён статус отгрузки по УПД №'.$_POST['number'];
+			$userName = $_POST['manager_name'];
+			$message = 'по УПД №'.$_POST['number'].' был изменён статус отгрузки на '.(($_POST['shipment_status']>0)?'отгружен':'не отгружен');
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=7&client_id='.$_POST['client_id'];
+			# подгружаем шаблон
+			ob_start();
+			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+			$html = ob_get_contents();
+			ob_get_clean();
+			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
 		}
 		/**
 		 * редактирование информации по отгрузке для отдельных артикулов
@@ -872,14 +1315,24 @@
 			$query = "UPDATE `" . INVOICE_ROWS . "` SET ";
 			$query .= " `not_shipped`=?";
 			$query .= " WHERE `id`=?";
-
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
 			$stmt->bind_param('ii',$_POST['not_shipped'],$_POST['id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
+
+
+			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
+			$query .= " `positions_num` = (positions_num - 1) ";
+			$query .= " WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
+
+
 		/**
 		 *	save percent in costs
 		 */
@@ -1222,10 +1675,57 @@
 		 */
 		private function get_ttn_rows($id_s,$curSearch = array('invoice_num'=>'','id'=>0)){
 			// if(count)
+			$additional_conditions = '';
 			if(count($id_s) == 0){
 				return;
 			}
-			$query = "SELECT *,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`, DATE_FORMAT(`".INVOICE_TTN."`.`date_return`,'%d.%m.%Y') as date_return ,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
+			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
+				// если мы не используем поиск
+				// правила выборки счетов по вкладкам
+				if (isset($_GET['section'])){
+					switch ((int)$_GET['section']){
+						// Запрос ТТН
+						case 5:
+
+							break;
+						// Готовые ТТН
+						case 6:
+//
+							$additional_conditions = "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 'greyTtnRow' 
+										   ELSE 'blackTtnRow'
+								   END as ttn_bgcolor_class, ";
+
+							$additional_conditions .= "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 1 
+										   ELSE 0
+								   END as ttn_lok, ";
+							break;
+							// отгруженные ттн
+						case 7:
+							$additional_conditions = "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 'greyTtnRow' 
+										   ELSE 'blackTtnRow'
+								   END as ttn_bgcolor_class, ";
+
+							$additional_conditions .= "CASE 
+										WHEN `".INVOICE_TTN."`.shipment_status = 1 
+										   THEN 0 
+										   ELSE 1
+								   END as ttn_lok, ";
+
+							break;
+						default:
+							break;
+					}
+				}
+
+			}
+
+			$query = "SELECT $additional_conditions `".INVOICE_TTN."`.*,DATE_FORMAT(`".INVOICE_TTN."`.`date`,'%d.%m.%Y')  AS `date`, DATE_FORMAT(`".INVOICE_TTN."`.`date_return`,'%d.%m.%Y') as date_return ,DATE_FORMAT(`date_shipment`,'%d.%m.%Y ')  AS `date_shipment` FROM `".INVOICE_TTN."` WHERE `invoice_id` IN ('".implode("','",$id_s)."')";
 			$w = 1;
 
 			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
@@ -1241,14 +1741,14 @@
 							break;
 						// Готовые ТТН
 						case 6:
-							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `number` <> '0' AND shipment_status <> 1";
+//							$query .= ($w>0?' AND ':' WHERE ');
+//							$query .= " `number` <> '0' AND shipment_status <> 1";
 							$w++;
 							break;
 
 						case 7:
-							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= "  shipment_status = 1";
+//							$query .= ($w>0?' AND ':' WHERE ');
+//							$query .= "  shipment_status = 1";
 							$w++;
 							break;
 						default:
@@ -1257,15 +1757,7 @@
 				}
 
 			}
-
-
 //			echo $query;
-
-
-
-
-
-
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);				
 			$data = array();
 			if($result->num_rows > 0){
@@ -1273,7 +1765,6 @@
 					$this->data[$this->depending['id'][$row['invoice_id']]]['ttn'][] = $row;
 				}
 			}
-
 
 			// если мы не используем поиск
 			if((int)$curSearch['id'] == 0 && $curSearch['invoice_num'] == ''){
@@ -1832,5 +2323,8 @@
 			}
 			return $int;
 		}
-	}
+}
+
+
+
 ?>

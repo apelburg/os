@@ -22,6 +22,21 @@ getDateNow = () ->
   return dd + '.' + mm + '.' + yy
 
 ###
+# возвращяет текущую дату в читабельном формате
+###
+getDateTomorrow = () ->
+  d = new Date();
+  d.setDate(d.getDate() + 1);
+  dd = d.getDate()
+  dd = '0' + dd if dd < 10
+  mm = d.getMonth() + 1
+  mm = '0' + mm if mm < 10
+  yy = d.getFullYear()
+  # yy = d.getFullYear() % 100
+  # yy = '0' + yy if yy < 10
+  return dd + '.' + mm + '.' + yy
+
+###
 # округляет и приводит числа к денежному формату
 # строку преобразует в число
 ###
@@ -623,7 +638,7 @@ class costsRow
   init: (data, rData, i, windowObj, data_row, rowspan)->
 #    if Number(@options.del) == 0 and Number(@options.edit) > 0 and (Number(@access) == 1 or Number(@access) == 2)
 # (data.number == "" || Number(data.price) == 0) - проверка на заполненность номера платежки и суммы, если заполнено - выводим нередактируемую версию
-    if Number(@options.del) == 0 and ( Number(@access) == 1 or Number(@access) == 2 )
+    if Number(@options.del) == 0 and ( Number(@access) == 1 or Number(@access) == 2 or Number(@access) == 5 )
       console.log "редактируется", rowspan
       return @createEditingObj(data, rData, i, windowObj, data_row, rowspan)
     else
@@ -631,18 +646,24 @@ class costsRow
       return @createSimpleRow(data, rData, i, windowObj, data_row, rowspan)
 
 
-# подсчёт 1го процента от общей стоимости
+  # подсчёт 1го процента от общей стоимости
   calculateHeader: (rData, i, access = 0, windowObj, data_row)->
     onePercent = Number(data_row.price_out) / 100
 
-# ячейки оплаты
+  # ячейки оплаты
   createEditingObjPayments: (data, rData, i, windowObj, data_row, rowspan, tr)->
     _this = @
     # дата оплаты
+    cl = 'mayBeEdit'
+    if _this.access == 5
+      cl = ''
     tr.append(td1 = $('<td/>', {
       'html': @options.pay_date
-      'class': 'date mayBeEdit',
+      'class': 'date '+cl,
       click: ()->
+        # ограничения для менеджера
+        if _this.access == 5
+          return false
         if($(this).find('input').length == 0)
           $(this).html(input = $('<input/>', {
             'type': 'text'
@@ -674,10 +695,16 @@ class costsRow
           )
     }))
     # сумма оплаты
+    cl = 'mayBeEdit'
+    if _this.access == 5
+      cl = ''
     tr.append(td2 = $('<td/>', {
       'html': @options.pay_price,
-      'class': 'mayBeEdit',
+      'class': cl,
       click: ()->
+        # ограничения для менеджера
+        if _this.access == 5
+          return false
         if($(this).find('input').length == 0)
           $(this).html(input = $('<input/>', {
             'type': 'text',
@@ -786,7 +813,7 @@ class costsRow
                 data_row.costs = round_money(data_row.costs)
                 windowObj.updateHead(data_row)
                 _this.options.pay_date = getDateNow();
-                
+
                 new sendAjax "save_payment_costs", {
                   invoice_id:data_row.id,
                   pay_date:_this.options.pay_date,
@@ -885,9 +912,11 @@ class costsRow
       })
 
     # добавляем на ячейки оплаты меню
-    td1.menuRightClick({'buttons': button2})
-    td2.menuRightClick({'buttons': button2})
-    td3.menuRightClick({'buttons': button2})
+    # ограничения для менеджера
+    if @access != 5
+      td1.menuRightClick({'buttons': button2})
+      td2.menuRightClick({'buttons': button2})
+      td3.menuRightClick({'buttons': button2})
 # добавляем обработчик для на элементы поиска по счетам
   supplierSearch: (td)->
     _this = @
@@ -1027,7 +1056,7 @@ class costsRow
     )
 
 
-# строка с возможностью редактирования
+  # строка с возможностью редактирования
   createEditingObj: (data, rData, i, windowObj, data_row, rowspan)->
     _this = @
     tr = $('<tr/>', {'id': 'c_' + data.id}).data(data)
@@ -1045,7 +1074,7 @@ class costsRow
       @supplierSearch(td)
 
       editClass = ''
-      if rowspan == 1
+      if rowspan == 1 && @access != 5
         editClass = 'mayBeEdit'
       # номер счёта
       tr.append($('<td/>', {
@@ -1053,6 +1082,8 @@ class costsRow
         'html': @options.number,
         'class': editClass,
         click: ()->
+          if _this.access == 5
+            return false
           if($(this).find('input').length == 0 && Number($(this).attr('rowspan')) == 1)
             $(this).html(input = $('<input/>', {
               'type': 'text',
@@ -1069,43 +1100,57 @@ class costsRow
                 t.replaceWith(_this.options.number)
             )
       }))
-      # дата счёта
-      tr.append($('<td/>', {
-        'rowspan': rowspan,
-        'html': @options.date,
-        'class': 'date '+editClass,
-        click: ()->
-          if($(this).find('input').length == 0 && Number($(this).attr('rowspan')) == 1)
-            $(this).html(input = $('<input/>', {
-              'type': 'text',
-              'val': $(this).html(),
-              change: ()->
+
+
+      if rowspan == 1
+        editClass = 'mayBeEdit'
+      if @access == 5
+        # дата счёта
+        tr.append($('<td/>', {
+            'rowspan': rowspan,
+            'html': @options.date,
+            'class': 'date '
+        }))
+      else
+        # дата счёта
+        tr.append($('<td/>', {
+          'rowspan': rowspan,
+          'html': @options.date,
+          'class': 'date '+editClass,
+          click: ()->
+            if @access == 5
+              return false
+            if($(this).find('input').length == 0 && Number($(this).attr('rowspan')) == 1)
+              $(this).html(input = $('<input/>', {
+                'type': 'text',
+                'val': $(this).html(),
+                change: ()->
+                  _this.options.date = $(this).val()
+              }))
+              $(this).addClass('tdInputHere')
+              input.datetimepicker({
+
+                timepicker: false,
+                dayOfWeekStart: 1,
+                onSelectDate: (ct, $i)->
+                  $i.blur();
+
+                onGenerate: (ct)->
+                  $(this).find('.xdsoft_date.xdsoft_weekend')
+                  .addClass('xdsoft_disabled');
+                  $(this).find('.xdsoft_date');
+
+                closeOnDateSelect: true,
+                format: 'd.m.Y'
+              });
+              input.focus().blur(()->
+                t = $(this)
                 _this.options.date = $(this).val()
-            }))
-            $(this).addClass('tdInputHere')
-            input.datetimepicker({
-
-              timepicker: false,
-              dayOfWeekStart: 1,
-              onSelectDate: (ct, $i)->
-                $i.blur();
-
-              onGenerate: (ct)->
-                $(this).find('.xdsoft_date.xdsoft_weekend')
-                .addClass('xdsoft_disabled');
-                $(this).find('.xdsoft_date');
-
-              closeOnDateSelect: true,
-              format: 'd.m.Y'
-            });
-            input.focus().blur(()->
-              t = $(this)
-              _this.options.date = $(this).val()
-              new sendAjax 'save_costs_row', {id: _this.options.id, date: _this.options.date}, ()->
-                t.parent().removeClass('tdInputHere')
-                t.replaceWith(_this.options.date)
-            )
-      }))
+                new sendAjax 'save_costs_row', {id: _this.options.id, date: _this.options.date}, ()->
+                  t.parent().removeClass('tdInputHere')
+                  t.replaceWith(_this.options.date)
+              )
+        }))
       # сумма счёта (денежный формат)
       tr.append(td2 = $('<td/>', {
         'rowspan': rowspan,
@@ -1190,12 +1235,16 @@ class costsRow
 
 
     if rowspan >= 1
-# глаз
+      # глаз
       td = $('<td/>', {
         'rowspan': rowspan,
         'class': 'ice',
 
         click: ()->
+          # ограничения для менеджера
+          if @access == 5
+            return false
+
           if $(this).hasClass('checked')
             _this.options.flag_ice = 0;
             $(this).removeClass('checked')
@@ -1723,21 +1772,25 @@ class costsWindow
 
 
     tr.append(td = $('<td/>', {
-      'class': 'bold mayBeEdit our_p',
-      click: ()->
-        if $(this).hasClass('checked')
-          _this.options.flag_calc = 0;
-          $(this).removeClass('checked')
-        else
-          _this.options.flag_calc = 1;
-          $(this).addClass('checked')
-
-        # сохраняем значение флага
-        new sendAjax('edit_flag_calc', {id: _this.options.id, val: _this.options.flag_calc}, ()->
-          $('#js-main-invoice-table').invoice('reflesh', _this.options)
-        )
-
+      'class': 'bold our_p'
     }).append(div1))
+
+    if @access == 1 || @access == 2
+      td.addClass('mayBeEdit').click(()->
+        t = $(@)
+        new modalConfirm "Вы уверены",()->
+          if t.hasClass('checked')
+            _this.options.flag_calc = 0;
+            t.removeClass('checked')
+          else
+            _this.options.flag_calc = 1;
+            t.addClass('checked')
+  
+          # сохраняем значение флага
+          new sendAjax('edit_flag_calc', {id: _this.options.id, val: _this.options.flag_calc}, ()->
+            $('#js-main-invoice-table').invoice('reflesh', _this.options)
+          )
+      )
 
     td.addClass('checked') if Number _this.options.flag_calc > 0
 
@@ -2093,6 +2146,7 @@ class paymentRow
           input.css('textAlign', $(this).css('textAlign')).focus().blur(()->
             t = $(this)
             _this.options.number = $(this).val()
+            paymentWindowObj.flag_edit++
             new sendAjax 'save_payment_row', {id: _this.options.id, number: _this.options.number}, ()->
               t.parent().removeClass('tdInputHere')
               t.replaceWith(_this.options.number)
@@ -2133,6 +2187,7 @@ class paymentRow
           input.focus().blur(()->
             t = $(this)
             _this.options.date = $(this).val()
+            paymentWindowObj.flag_edit++
             new sendAjax 'save_payment_row', {id: _this.options.id, date: _this.options.date}, ()->
               t.parent().removeClass('tdInputHere')
               t.replaceWith(_this.options.date)
@@ -2178,6 +2233,8 @@ class paymentRow
               _this.options.price = round_money($(this).val())
 
             per = round_money(Number(_this.options.price) * 100 / Number(data_row.price_out))
+            paymentWindowObj.flag_edit++
+
             new sendAjax 'save_payment_row', {id: _this.options.id, price: _this.options.price, percent: per}, ()->
               input.parent().removeClass('tdInputHere')
               input.replaceWith(_this.options.price)
@@ -2236,6 +2293,7 @@ class paymentRow
     tdObj.addClass('ppDel').click((e)->
       td = $(this)
       row = td.parent()
+      paymentWindowObj.flag_edit++
       new sendAjax 'save_payment_row', {id: _this.options.id, del: 1}, ()->
         rData[i].del = 1
 
@@ -2314,6 +2372,8 @@ class paymentWindow
     # сохраняем информацию по строке
     console.log access
     @options = data_row
+    # флаг редк
+    @flag_edit = 0;
     # сборка окна счёта
     @init(data_row, responseData)
 
@@ -2335,6 +2395,7 @@ class paymentWindow
       # добавляем таблицу
       ###
       main_div.append(@bodyRows = @createTable(responseData, 0, data_row))
+
       ###
       # создание окна
       ###
@@ -2347,6 +2408,8 @@ class paymentWindow
       }, {
         closeOnEscape: true,
         close: (event, ui) ->
+          if _this.flag_edit > 0
+            new sendAjax('payment_window_is_editable',data_row)
           $('#quick_button_div .button').eq(0).removeClass('checked')
       })
       @$el = @myObj.options.html[0]
@@ -2715,22 +2778,35 @@ class ttnWindow
       ###
       # добавляем таблицу
       ###
-      main_div.append(@contentTbl = @createTable(responseData, ttn))
+      main_div.append(@contentTbl = @createTable(responseData, ttn,data_row))
       ###
       # добавление шапки окна
       ###
       main_div.prepend(@createHead(ttn))
+
+      ###
+      # вычисляем title окна
+      ###
+      @title = 'УПД'
+      if ttn != undefined && ttn.number != undefined && (Number(ttn.number) > 0 || ttn.number!= '0')
+        @title += ' № '+ttn.number
+      else if ttn != undefined && @access == 5
+        @title += ' запрошен'
+      else
+        @title = 'Запрос '+@title
+
       ###
       # выбор способа доставки
       ###
       # только для менеджеров и при условии что, есть что выбирать
-
       if @access == 5 && @checkNumber > 0 && ttn == undefined
         main_div.append(@createDeliveryChoose())
+
       ###
-      # ранее созданные ттн
+      # ранее созданные упд
       ###
       main_div.append(@alreadyWasСreated())
+
       ###
       # создание окна
       ###
@@ -2739,7 +2815,7 @@ class ttnWindow
         width: '1000px',
         maxHeight: '100%',
         height:($(window).height() - 60),
-        title: 'Запрос ТТН',
+        title: @title,
         buttons: @getButtons(obj, data_row, ttn)
       }, {
         closeOnEscape: true
@@ -2897,108 +2973,6 @@ class ttnWindow
     car_div.append(div_car_body)
 
 
-# сборка шапки АДМИН - БУХ
-  createHeadAdmin: (ttn)->
-    self = @
-    ###
-    # контейнер шапки окна ТТН
-    ###
-    head_info = $('<div>', {id: 'ttn_head_info'});
-    ###
-    # сборка таблицы с общей информации по ТТН
-    ###
-    table = $('<table>', {id: 'ttn_head_info-table'});
-
-    ###
-    # строка с информацией по клиенту
-    ###
-    tr = $('<tr/>')
-    tr.append($('<td/>', {'html': @options.client_name, 'class': 'ttn_client_name'}))
-    tr.append($('<td/>', {
-      'html': @options.client_requisit_name,
-      'class': 'ttn_requisits',
-      click: ()->
-        new sendAjax('show_requesit', {
-          'id': self.options.client_requisit_id
-        }, (response)->
-          new modalWindow({
-            html: new requesitContent(response.data),
-            maxHeight: '100%',
-            width: '650px',
-            title: 'Реквизиты',
-          }, {
-            closeOnEscape: true,
-            single: false
-          })
-        )
-    }))
-    table.append(tr)
-
-    ###
-    # если номер к данной ТТН не назначен - выводим строку
-    # с формой назначения номера ТТН и даты от которой эта ТТН выставлена
-    ###
-
-    # span_ttn_number = $('<span/>')
-
-    span_invoice = $('<span/>', {'html': "№ ТТН " + @options.invoice_num + " от " + @options.invoice_create_date})
-    td = $('<td/>', {'colspan': '2'})
-
-    if Number(self.defaults.number) == 0
-      input = $('<input/>', {
-        'val': self.defaults.number,
-        'data-val': self.defaults.number,
-        'class': 'ttn_number_input',
-        focus: ()->
-          $(this).val('') if Number($(this).val()) == 0
-          return
-        blur: ()->
-          $(this).val($(this).attr('data-val')) if Number($(this).val()) == 0
-          return
-        keyup: ()->
-          if Number($(this).val()) >0 || ($(this).val()!='0' && $(this).val()!='' )
-            $(self.myObj.buttonDiv).find('#create_ttn_button').removeClass('no')
-          else
-            $(self.myObj.buttonDiv).find('#create_ttn_button').addClass('no')
-
-          self.editSaveObj('number', $(this).val(), self.defaults.number)
-      })
-
-      input_date = $('<input/>', {
-        'val': self.defaults.date,
-        'class': '',
-        blur: ()->
-          self.editSaveObj('date', $(this).val(), self.defaults.date)
-
-      }).datetimepicker({
-        minDate: new Date(),
-        timepicker: false,
-        dayOfWeekStart: 1,
-        onSelectDate: (ct, $i)->
-          $i.blur();
-
-        onGenerate: (ct)->
-          $(this).find('.xdsoft_date.xdsoft_weekend')
-          .addClass('xdsoft_disabled');
-          $(this).find('.xdsoft_date');
-
-        closeOnDateSelect: true,
-        format: 'd.m.Y'
-      });
-
-      # номер ттн
-      td.append('№ ТТН ').append($('<span/>').append(input))
-      # дата ттн
-      td.append($('<span/>').append(input_date))
-
-    # счёт
-    td.append(span_invoice)
-    tr = $('<tr/>').append(td)
-    table.append(tr)
-    ###
-    # добавляем всё в контейнер и возвращаем
-    ###
-    head_info.append(table)
 
   spanDate: (val = getDateNow())->
     self = @
@@ -3055,17 +3029,121 @@ class ttnWindow
       closeOnDateSelect: true,
       format: 'd.m.Y'
     });
-# сборка шапки МЕНЕДЖЕР и остальные
+  # сборка шапки АДМИН - БУХ
+  createHeadAdmin: (ttn)->
+    self = @
+    ###
+    # контейнер шапки окна ТТН
+    ###
+    head_info = $('<div>', {id: 'ttn_head_info'});
+    ###
+    # сборка таблицы с общей информации по ТТН
+    ###
+    table = $('<table>', {id: 'ttn_head_info-table'});
+
+
+    ###
+    # строка с информацией по клиенту
+    ###
+    tr = $('<tr/>')
+    tr.append($('<td/>', {'html': @options.client_name, 'class': 'ttn_client_name'}))
+    tr.append($('<td/>', {
+      'html': @options.client_requisit_name,
+      'class': 'ttn_requisits',
+      click: ()->
+        new sendAjax('show_requesit', {
+          'id': self.options.client_requisit_id
+        }, (response)->
+          new modalWindow({
+            html: new requesitContent(response.data),
+            maxHeight: '100%',
+            width: '650px',
+            title: 'Реквизиты',
+          }, {
+            closeOnEscape: true,
+            single: false
+          })
+        )
+    }))
+    table.append(tr)
+
+    ###
+    # если номер к данной ТТН не назначен - выводим строку
+    # с формой назначения номера ТТН и даты от которой эта ТТН выставлена
+    ###
+
+    # span_ttn_number = $('<span/>')
+
+    span_invoice = $('<span/>', {'html': "№ счёта " + @options.invoice_num + " от " + @options.invoice_create_date})
+    td = $('<td/>', {'colspan': '2'})
+
+    if Number(self.defaults.number) == 0
+      input = $('<input/>', {
+        'val': self.defaults.number,
+        'data-val': self.defaults.number,
+        'class': 'ttn_number_input',
+        focus: ()->
+          $(this).val('') if Number($(this).val()) == 0
+          return
+        blur: ()->
+          $(this).val($(this).attr('data-val')) if Number($(this).val()) == 0
+          return
+        keyup: ()->
+          if Number($(this).val()) >0 || ($(this).val()!='0' && $(this).val()!='' )
+            $(self.myObj.buttonDiv).find('#create_ttn_button').removeClass('no')
+          else
+            $(self.myObj.buttonDiv).find('#create_ttn_button').addClass('no')
+
+          self.editSaveObj('number', $(this).val(), self.defaults.number)
+      })
+
+      input_date = $('<input/>', {
+        'val': self.defaults.date,
+        'class': '',
+        blur: ()->
+          self.editSaveObj('date', $(this).val(), self.defaults.date)
+
+      }).datetimepicker({
+        minDate: new Date(),
+        timepicker: false,
+        dayOfWeekStart: 1,
+        onSelectDate: (ct, $i)->
+          $i.blur();
+
+        onGenerate: (ct)->
+          $(this).find('.xdsoft_date.xdsoft_weekend')
+          .addClass('xdsoft_disabled');
+          $(this).find('.xdsoft_date');
+
+        closeOnDateSelect: true,
+        format: 'd.m.Y'
+      });
+
+      # номер ттн
+      td.append('№ ТТН ').append($('<span/>').append(input))
+      # дата ттн
+      td.append($('<span/>').append(input_date))
+
+    # счёт
+    td.append($('<span/>', {'html': "№ УПД " + ttn.number + " от "}).append(ttn.date)).append(span_invoice)
+    tr = $('<tr/>').append(td)
+    table.append(tr)
+    ###
+    # добавляем всё в контейнер и возвращаем
+    ###
+    head_info.append(table)
+
+  # сборка шапки МЕНЕДЖЕР и остальные
   createHeadManager: (ttn)->
     self = @
     # ttn number & date
     if ttn == undefined
-      span_ttn = $('<span/>', {'html': "№ ТТН " + @defaults.number + " от "}).append(@spanDate())
+      span_ttn = $('<span/>', {'html': "№ УПД " + @defaults.number + " от "}).append(@spanDate())
     else
       console.warn ttn
-      span_ttn = $('<span/>', {'html': "№ ТТН " + @defaults.number + " от "}).append(ttn.date)
+      span_ttn = $('<span/>', {'html': "№ УПД " + ttn.number + " от "}).append(ttn.date)
     # invoice number & date
-    span_invoice = $('<span/>', {'html': "№ Счёта " + @options.invoice_num + " от " + @options.invoice_create_date})
+    span_invoice = $('<span/>', {'html': "№ счёта " + @options.invoice_num + " от " + @options.invoice_create_date})
 
     table = $('<table>', {id: 'ttn_head_info-table'})
 
@@ -3093,7 +3171,11 @@ class ttnWindow
     # если есть что выбирать
     #    if @checkNumber > 0
     table.append(tr = $('<tr/>'))
-    tr.append($('<td/>', {'colspan': '2'}).append(span_ttn).append(span_invoice))
+    tr.append($('<td/>', {'colspan': '2'})
+    # добавляем информацию по УДП
+    .append(span_ttn)
+    # добавляем информацию по счёту
+    .append(span_invoice))
 
 
     # create and return conteiner
@@ -3148,11 +3230,61 @@ class ttnWindow
     else
       td = $('<td/>')
     return td
+  tblAdminRow:(position, ttn )->
+    self = @
+    tr = $('<tr/>').data(position).attr('data-id', position.id)
+    tr.append(td = $('<td/>'))
+    if @access != 7
+      if Number(self.defaults.id) == Number position.ttn_id
+        tr.addClass('buh_style')
+
+      else
+
+#        if Number(position.ttn_id) > 0
+#          tr.addClass('ttn_created')
+    else
+      arr = self.defaults.positions_num.split(',')
+      che = false
+
+      for n in arr
+
+        if Number(n) == position.num
+          che = true
+
+      if che
+        tr.addClass('checked buh_style thisTtn')
+#      if Number(position.ttn_id) > 0
+#        tr.addClass('ttn_created')
+
+
+
+
+    # Number
+    td = $('<td/>').append(position.num)
+    tr.append(td)
+    # Name
+    td = $('<td/>').append(position.name)
+    
+
+    tr.append(td)
+    # Quantity
+    td = $('<td/>').append(position.quantity)
+    tr.append(td)
+    # Price for one
+    pr_out = calc_price_with_discount(position.price, position.discount)
+    td = $('<td/>').append(round_money(pr_out) + ' р.')
+    tr.append(td)
+    # Price for all
+    @main_price += pr_out * position.quantity
+    @nds += Number(round_money(pr_out * position.quantity / 118 * 18))
+    td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.')
+    tr.append(td)
+
 
   tblManRow: (position, ttn)->
     self = @
-    # создание объекта строки
     tr = $('<tr/>').data(position).attr('data-id', position.id)
+
     # подкрашиваем строки для которых уже созданы ттн
     if Number(position.not_shipped) > 0
       tr.addClass('not_shipped')
@@ -3161,40 +3293,11 @@ class ttnWindow
     console.info ttn
     tr.append(td = @getFirstTdCheck(position, ttn))
 
-
-    # перечисляем пункты меню на правый клик
-    button2 = []
-    button2.push({
-      'name': 'нужна отгрузка',
-      'class': '',
-      click: (e)->
-        not_shipped = 0
-        new sendAjax('not_shipped_edit', {id: position.id, not_shipped: not_shipped}, ()->
-          position.not_shipped = not_shipped
-          tr.replaceWith(self.tblManRow(position, ttn))
-        )
-    })
-
-    button2.push({
-      'name': 'отгрузка не требуется',
-      'class': '',
-      click: (e)->
-        echo_message_js "test"
-        console.log tr
-        not_shipped = 1
-        new sendAjax('not_shipped_edit', {id: position.id, not_shipped: not_shipped}, ()->
-          position.not_shipped = not_shipped
-          tr.replaceWith(self.tblManRow(position, ttn))
-        )
-    })
-
-
     # Number
     tr.append($('<td/>', {'html': position.num}))
     # Name
     tr.append(td_name = $('<td/>').append(position.name))
-    # подключение меню на правый клик
-    td_name.menuRightClick({'buttons': button2})
+
     # Quantity
     tr.append($('<td/>').append(position.quantity))
     # Price for one
@@ -3210,10 +3313,10 @@ class ttnWindow
 
     tr.append($('<td/>').append(round_money(pr_out * position.quantity) + ' р.'))
 
-# сборка таблицы менеджер и осталные
+  # сборка таблицы при клике на кнопку Запросить
   createTableManager: (responseData, ttn)->
     _this = @
-    table = $('<table/>', {'id': 'js-invoice--window--ttn-table'})
+    table = $('<table/>', {'id': 'js-invoice--window--ttn-table','class':'managerStyle'})
     # шапка таблицы
     table.append(tr = $('<tr/>'))
 
@@ -3234,7 +3337,6 @@ class ttnWindow
         # клик по главному чекбоксу
         _this.clickMainCheckbox(table, td, input)
     })
-
 
     tr.append(td_main_check)
 
@@ -3307,36 +3409,14 @@ class ttnWindow
     tr.append(td)
     table.append(tr)
 # сборка таблицы Админ + бух
-  createTableAdmin: (responseData)->
+  createTableAdmin: (responseData,ttn)->
 # console.log 654
     _this = @
-    table = $('<table/>', {'id': 'js-invoice--window--ttn-table'})
+    table = $('<table/>', {'id': 'js-invoice--window--ttn-table','class':'adminStyle'})
     # шапка таблицы
     table.append(tr = $('<tr/>'))
-    # чекбоксы
-    main_checkbox = $('<input/>', {
-      'type': 'checkbox',
-      change: (event)->
-        input = $(this)
-        td = $(this).parent()
-        # клик по главному чекбоксу
-        _this.clickMainCheckbox(table, td, input)
-    })
 
-    td = $('<th/>', {
-      click: ()->
-        input = $(this).find('input')
-        td = $(this)
-        # клик по главному чекбоксу
-        _this.clickMainCheckbox(table, td, input)
-    })
-
-    if@access != 1 && @access != 2 && @access != 7
-      td.append(main_checkbox)
-    else
-      td.width('20px')
-
-    tr.append(td)
+    tr.append($('<th/>').width('20px'))
 
     # Number
     td = $('<th/>', {'text': '№'})
@@ -3355,60 +3435,18 @@ class ttnWindow
     tr.append(td)
 
     # тогововая цена
-    main_price = 0
+    @main_price = 0
     # НДС
-    nds = 0
+    @nds = 0
     # порядковый номер строки товра/услуги
-    i = 1
+    @posNum = 1
     # перебираем позиции
-    for position in responseData
-      tr = $('<tr/>').data(position).attr('data-id', position.id)
-      # чекбоксы
-      # if @defaults.buch_id != undefined && @defaults.buch_id == null
-      if @access != 7
-        if Number(_this.defaults.id) == Number position.ttn_id
-          td = $('<td/>').addClass('checked buh_style')
-        else
-          td = $('<td/>')
-          if Number(position.ttn_id) > 0
-            tr.addClass('ttn_created')
-      else
-        arr = _this.defaults.positions_num.split(',')
-        che = false
-
-        for n in arr
-          console.log i, n
-          if Number(n) == i
-            che = true
-        td = $('<td/>')
-        if che
-          td.addClass('checked buh_style')
-        if Number(position.ttn_id) > 0
-          tr.addClass('ttn_created')
-
-      tr.append(td)
+    for position,i in responseData
+      responseData[i].num = @posNum++
+      # добавляем строку для каждой позиции
+      table.append(@tblAdminRow(responseData[i], ttn))
 
 
-      # Number
-      td = $('<td/>').append(i)
-      tr.append(td)
-      # Name
-      td = $('<td/>').append(position.name)
-      tr.append(td)
-      # Quantity
-      td = $('<td/>').append(position.quantity)
-      tr.append(td)
-      # Price for one
-      pr_out = calc_price_with_discount(position.price, position.discount)
-      td = $('<td/>').append(round_money(pr_out) + ' р.')
-      tr.append(td)
-      # Price for all
-      main_price += pr_out * position.quantity
-      nds += Number(round_money(pr_out * position.quantity / 118 * 18))
-      td = $('<td/>').append(round_money(pr_out * position.quantity) + ' р.')
-      tr.append(td)
-      i++
-      table.append(tr)
     # ИТОГО
     table.append(tr = $('<tr/>'))
     td = $('<th/>')
@@ -3420,7 +3458,7 @@ class ttnWindow
     })
     tr.append(td)
     # Price for all
-    td = $('<th/>', {'html': round_money(main_price) + ' р.'})
+    td = $('<th/>', {'html': round_money(@main_price) + ' р.'})
     tr.append(td)
     table.append(tr)
     # в том числе НДС
@@ -3434,7 +3472,7 @@ class ttnWindow
     })
     tr.append(td)
     # Price НДС
-    td = $('<th/>', {'html': round_money(nds) + ' р.'})
+    td = $('<th/>', {'html': round_money(@nds) + ' р.'})
     tr.append(td)
     table.append(tr)
     table
@@ -3442,17 +3480,17 @@ class ttnWindow
 
 
 # проверка прав и сборка таблицы
-  createTable: (responseData, ttn)->
+  createTable: (responseData, ttn, data_row)->
     if ttn != undefined
-      return @createTableAdmin(responseData)
+      return @createTableAdmin(responseData, ttn)
     # проверка уровня доступа и вызов соответствующей шапки
     # console.log @access
     switch @access
-      when 1 then @createTableAdmin(responseData)
-      when 7 then @createTableAdmin(responseData)
-      when 2 then @createTableAdmin(responseData)
+      when 1 then @createTableAdmin(responseData, ttn)
+      when 7 then @createTableAdmin(responseData, ttn)
+      when 2 then @createTableAdmin(responseData, ttn)
       else
-        @createTableManager(responseData, ttn)
+        @createTableManager(responseData, ttn, data_row)
 
 # клик по главному чекбоксу
   clickMainCheckbox: (table, td, input)->
@@ -3518,7 +3556,7 @@ class ttnWindow
 
 
     # если дата в ттн ранее сегодняшней, то по умолчанию приблизительную дату отгрузки устанавливаем сегодняшнюю дату
-    ship_date = self.newTtnDate
+    self.newTtnDate = getDateNow()
 
     # переводит стандартную дату вида 25.05.2016 в timestamp
     date_formate = (myDate)->
@@ -3538,11 +3576,12 @@ class ttnWindow
         'margin': '10px 0 0 0'
       }
     }).append(date_shipment = $('<input/>', {
-      'val': ship_date,
+      'val': self.newTtnDate,
       'css': {
         'padding': '5px'
       }
     })))
+
     date_shipment.datetimepicker({
       minDate: new Date(),
       timepicker: false,
@@ -3629,6 +3668,13 @@ class ttnWindow
       # обновляем DOM
       $('#js-main-invoice-table').invoice('reflesh', data_row.id)
       # отправляем запрос
+      @saveObj.invoice_id = data_row.id
+      @saveObj.manager_name = data_row.manager_name
+      @saveObj.manager_id = data_row.manager_id
+      @saveObj.client_name = data_row.client_name
+      @saveObj.client_id = data_row.client_id
+      @saveObj.invoice_num = data_row.invoice_num
+
       new sendAjax 'confirm_create_ttn', @saveObj, ()->
         _this.destroy()
     else
@@ -4069,6 +4115,12 @@ class invoiceWindow
       # отправляем запрос
       @saveObj['doc_type'] = data_row.doc_type
       @saveObj['doc_id'] = data_row.doc_id
+      @saveObj['manager_id'] = data_row.manager_id
+      @saveObj['manager_name'] = data_row.manager_name
+      @saveObj['client_name'] = data_row.client_name
+      @saveObj['client_id'] = data_row.client_id
+
+
       new sendAjax 'confirm_create_bill', @saveObj, ()->
         _this.destroy()
 
@@ -4361,6 +4413,9 @@ class invoiceWindow
         'id': ttn.id,
         'class': 'row'
       }).data(ttn)
+      console.log ttn.ttn_lok
+      if ttn.ttn_bgcolor_class != undefined
+        tr.addClass(ttn.ttn_bgcolor_class)
       # определяем номер
       if ttn.number <= 0
         number = 'запрос'
@@ -4372,6 +4427,8 @@ class invoiceWindow
         'html': number,
         click: ()->
           t = $(this)
+          if Number(ttn.ttn_lok) == 0
+            return false
           # окно Запрос ТТН
           new sendAjax('get_ttn', {'id': row.id}, (response)->
 # создаем экземпляр окна ттн
@@ -4386,6 +4443,8 @@ class invoiceWindow
         click: ()->
 # окно Запрос ТТН
           t = $(this)
+          if Number(ttn.ttn_lok) == 1
+            return false
           new sendAjax('get_ttn', {'id': row.id}, (response)->
 # создаем экземпляр окна ттн
             new ttnWindow(t, row, response.data, _this.options.access, ttn) if response.data != undefined
@@ -4411,7 +4470,7 @@ class invoiceWindow
             $(this).prev().click()
             return false
 
-          if Number(ttn.return) == 0
+          if Number(ttn.return) == 1
             # вставляем подтверждение
             t = $(this)
             ttn.return = 1
@@ -4428,7 +4487,7 @@ class invoiceWindow
             t = $(this)
             #            div2.css('backgroundColor':'red')
 
-            $(this).css('backgroundColor': '#f1f1f1', 'cursor': 'posinter')
+            $(this).css( 'cursor': 'posinter')
             if !div22.hasClass('notify')
               div22.addClass('notify')
               setTimeout(()->
@@ -4488,18 +4547,21 @@ class invoiceWindow
       if _this.options.access == 5
         console.log row
         console.log row.positions_num, row.positions_in_ttn
-        if Number(row.positions_num) != Number(row.positions_in_ttn) && Number(row.positions_in_ttn) > 0
+        if Number(row.positions_num) > Number(row.positions_in_ttn) && Number(row.positions_in_ttn) > 0
           td.append($('<div/>', {
             'html': 'Запросить',
             'class': 'js-query-ttn-div mayBeEdit',
             click: ()->
               t = $(this)
+              if Number(row.invoice_num)==0 && row.invoice_create_date == '00.00.0000'
+                new warnNotCreateInvoice()
+                return false
               new sendAjax('get_ttn', {'id': row.id}, (response)->
 # создаем экземпляр окна ттн
                 new ttnWindow(t, row, response.data, _this.options.access) if response.data != undefined
               )
           }))
-        else if Number(row.positions_num) != Number(row.positions_in_ttn)
+        else if Number(row.positions_num) > Number(row.positions_in_ttn)
           console.log 654
           td = $('<td/>', {
             'colspan': '3',
@@ -4507,6 +4569,9 @@ class invoiceWindow
             'html': 'Запросить',
             click: (e)->
               t = $(this)
+              if Number(row.invoice_num)==0 && row.invoice_create_date == '00.00.0000'
+                new warnNotCreateInvoice()
+                return false
               new sendAjax('get_ttn', {'id': row.id}, (response)->
 # создаем экземпляр окна ттн
                 new ttnWindow(t, row, response.data, _this.options.access) if response.data != undefined
@@ -4540,6 +4605,19 @@ class invoiceWindow
         $this.data 'invoice', (data = new invoice(this, option))
       if typeof option == 'string'
         data[option].apply(data, args)) window.jQuery, window
+###
+# метод отправки запроса AJAX
+###
+class warnNotCreateInvoice
+  constructor: (mess = "Внесите дату и номер счёта")->
+#    echo_message_js()
+    return new modalWindow({
+      html: mess,
+      title: 'Внимание'
+    }, {
+      single: false,
+      closeOnEscape: true
+    })
 
 ###
 # прототип html строки таблицы счета
@@ -4572,21 +4650,28 @@ class invoiceRow
     td = $('<td/>', {
       'class': 'invoice-row--fist-td',
       click: ()->
+
         t = $(@)
         new sendAjax('get_ttn', {'id': _this.options.id}, (response)->
-# создаем экземпляр окна ттн
+          # создаем экземпляр окна ттн
           new invoiceWindow(t, _this.options, response.data, _this.access)
         )
     })
-    .append($('<div/>', {
+    .append(d = $('<div/>', {
       'class': 'invoice-row--number',
-      'html': '<span>' + @options.invoice_num + '</span>  ' + @options.invoice_create_date
-
     }))
     .append($('<div/>', {
       'class': 'invoice-row--type',
       'html': doc_type
     }))
+
+    d.append($('<span/>',{
+      'html':@options.invoice_num,
+      'css':{
+        'paddingRight':'10px',
+        'fontSize':'14px'
+      }
+    })).append(@options.invoice_create_date)
 
     tr.append(td)
 
@@ -4599,6 +4684,10 @@ class invoiceRow
 
     td.click ()->
       if _this.access == 2
+        if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
+          new warnNotCreateInvoice()
+          return false
+          
         if $(this).hasClass('checked')
           _this.options.flag_1c = 0;
           $('#js-main-invoice-table').invoice('reflesh', _this.options)
@@ -4614,9 +4703,9 @@ class invoiceRow
             _this.options.flag_1c = 1;
             $('#js-main-invoice-table').invoice('reflesh', _this.options)
 
-      # сохраняем значение флага
-      new sendAjax 'edit_flag_1c', {id: _this.options.id, val: _this.options.flag_1c}
-      return
+        # сохраняем значение флага
+        new sendAjax 'edit_flag_1c', {id: _this.options.id, val: _this.options.flag_1c}
+        return
 
     td.addClass('checked') if Number @options.flag_1c > 0
     td.addClass('red1c') if(Number(@options.flag_1c) == 0 && (Number(@options.invoice_num) > 0 and @options.invoice_create_date != '00.00.0000'  ))
@@ -4639,6 +4728,9 @@ class invoiceRow
     td = $('<td/>', {
       'data-id': @options.id,
       click: (e)->
+        if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
+          new warnNotCreateInvoice()
+          return false
         t = $(@)
         new sendAjax('get_payment', {'id': _this.options.id}, (response)->
 # создаем экземпляр окна ттн
@@ -4731,6 +4823,9 @@ class invoiceRow
     }))
 
     td.click ()->
+      if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
+        new warnNotCreateInvoice()
+        return false
       if $(this).hasClass('checked')
         if(Number(_this.access) != 1)
           console.log _this.access
@@ -4792,6 +4887,9 @@ class invoiceRow
     td = $('<td/>', {
       'class': 'mayBeEdit',
       click: (e)->
+        if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
+          new warnNotCreateInvoice()
+          return false
         new sendAjax('get_costs', {'id': _this.options.id}, (response)->
           new costsWindow(_this.options, response.data, _this.access)
         )
@@ -4853,6 +4951,9 @@ class invoiceRow
     td = $('<td/>', {
       'class': 'invoice-row--ice mayBeEdit',
       click: (e)->
+        if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
+          new warnNotCreateInvoice()
+          return false
         new sendAjax('get_costs', {'id': _this.options.id}, (response)->
           new costsWindow(_this.options, response.data, _this.access)
         )
@@ -4883,6 +4984,9 @@ class invoiceRow
     td = $('<td/>', {
       'class': 'invoice-row--icons-calculator mayBeEdit',
       click: (e)->
+        if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
+          new warnNotCreateInvoice()
+          return false
         new sendAjax('get_costs', {'id': _this.options.id}, (response)->
           new costsWindow(_this.options, response.data, _this.access)
         )
@@ -4892,8 +4996,6 @@ class invoiceRow
     td.addClass('checked') if Number @options.flag_calc > 0
     tr.append(td)
     # ттн
-
-
     tr.append(ttn)
 
     # спф дата
@@ -5007,7 +5109,7 @@ class invoiceRow
     response_def: {}
     constructor: (el, options) ->
       self = @
-      new sendAjax 'get_data_sklad', {}, (response)->
+      new sendAjax 'get_data_sklad', {url:window.location.href}, (response)->
         self.options = $.extend({}, self.defaults, response)
         self.access = response.access
         self.$el = $(el)
@@ -5065,7 +5167,7 @@ class invoiceRow
           rowspan++
 
 
-        new sendAjax('check_chipment_global_status', {
+        new sendAjax('check_shipment_global_status', {
           invoice_id: dataFirstRow.id,
           positions_num: Number(dataFirstRow.invoice_positions_num),
           positions_in_ttn: Number(dataFirstRow.positions_in_ttn)
@@ -5115,7 +5217,7 @@ class invoiceRow
       for n,i in tabs
         @tabMenu.append(li = $('<li/>', {
           click: (e)->
-# меняем URL
+            # меняем URL
             $.urlVar('section', $(this).data('index'))
             # удаляем выделение со старого выбранного элемента
             _this.tabMenu.find('.selected').removeClass('selected')
@@ -5135,11 +5237,12 @@ class invoiceRow
     updateTable: () ->
       _this = @
       window_preload_add()
-      new sendAjax 'get_data_sklad', {}, (response)->
+      new sendAjax 'get_data_sklad', {url:window.location.href}, (response)->
         _this.options = $.extend({}, _this.defaults, response)
         _this.init()
         window_preload_del()
     greateHead: ()->
+      _this = @
       thead = $('<thead/>');
       tr = $('<tr/>')
       tr.append($('<th/>', {
@@ -5158,10 +5261,74 @@ class invoiceRow
         'rowspan': 2,
         'html': 'отгрузка'
       }))
-      tr.append($('<th/>', {
+      tr.append(thDate = $('<th/>', {
         'rowspan': 2,
-        'html': 'дата'
+        'class':'mayBeClick',
+        'html': 'дата',
       }))
+      button2 = []
+      btn1 = {
+        'name': 'Сегодня',
+        'class': '',
+        click: (e)->
+          # меняем URL
+          today = getDateNow()
+          $.urlVar('date_start', today)
+          $.urlVar('date_end', today)
+          $('#js-main-invoice-table').sklad('updateTable')
+
+      }
+      btn2 = {
+        'name': 'Завтра',
+        'class': '',
+        click: (e)->
+          # меняем URL
+          today = getDateTomorrow()
+          $.urlVar('date_start', today)
+          $.urlVar('date_end', today)
+          $('#js-main-invoice-table').sklad('updateTable')
+      }
+      btn3 = {
+        'name': 'Календарь',
+        'class': 'js--get-calendar-filter',
+        click: (e)->
+          thDate.append(inp = $('<input/>',{'css':{
+            'opacity':0,
+            'float':'left',
+            'width':'0px',
+            'height':'0px',
+            'padding':'0'
+          }}))
+          inp.daterangepicker({
+            timePicker: false,
+            locale: {
+              format: 'MM.DD.YYYY'
+            }
+          },(start, end, label)->
+            $.urlVar('date_start', start.format('DD.MM.YYYY'))
+            $.urlVar('date_end', end.format('DD.MM.YYYY'))
+            $('#js-main-invoice-table').sklad('updateTable')
+            inp.remove()
+          );
+          inp.focus()
+      }
+      btn4 = {
+      'name': 'Сбросить',
+      'class': '',
+      click: (e)->
+        # меняем URL
+        today = getDateNow()
+        $.delUrlVal('date_start')
+        $.delUrlVal('date_end')
+        $('#js-main-invoice-table').sklad('updateTable')
+      }
+      button2.push(btn4)
+      button2.push(btn1)
+      button2.push(btn2)
+      button2.push(btn3)
+
+      thDate.menuRightClick({'buttons': button2})
+
       tr.append($('<th/>', {
         'colspan': 4,
         'html': 'Товарно-транспортные накладные'
@@ -5455,7 +5622,7 @@ class skladRow
     }))
     tr.append(td)
 
-
+    
     tr.append(self.subRow(rowspan))
     tr.append($('<td/>', {
       'rowspan': rowspan,
@@ -5481,7 +5648,12 @@ class skladRow
 
 
     # дата отгрузки
-    tr.push($('<td/>', {'html': self.options.date_shipment}))
+    console.log self.options.ttn_shipment_date_color, self.options.ttn_id
+    tr.push(td_date = $('<td/>', {'html': self.options.date_shipment}))
+    if self.options.ttn_shipment_date_color != undefined
+      td_date.css({
+        'background':self.options.ttn_shipment_date_color
+      })
     # № ттн
     tr.push($('<td/>', {
       'html': self.options.number,
@@ -5520,9 +5692,15 @@ class skladRow
       click: (e)->
         self.options.shipment_status = 1
         status_shipment.html($(this).html())
-
+        console.log rowspan,self.options
         new sendAjax('edit_ttn_status', {
           'id': self.options.ttn_id,
+          'invoice_num':self.options.invoice_num,
+          'manager_name':self.options.manager_name,
+          'manager_id':self.options.manager_id,
+          'client_name':self.options.client_name,
+          'client_id':self.options.client_id,
+          'number':self.options.number,
           shipment_status: self.options.shipment_status
         }, (response)->
           when_ho.html(response.data.when_ho)
@@ -5534,11 +5712,18 @@ class skladRow
       'name': 'Не отгружено',
       'class': '',
       click: (e)->
+        console.log rowspan,self.options
         new modalConfirm({html: 'Уверены, что неотгружено?<br>продолжить?'}, ()->
           self.options.shipment_status = 0
           status_shipment.html($(this).html())
           new sendAjax('edit_ttn_status', {
             'id': self.options.ttn_id,
+            'invoice_num':self.options.invoice_num,
+            'manager_name':self.options.manager_name,
+            'client_name':self.options.client_name,
+            'manager_id':self.options.manager_id,
+            'client_id':self.options.client_id,
+            'number':self.options.number,
             shipment_status: self.options.shipment_status
           }, (response)->
             when_ho.html(response.data.when_ho)

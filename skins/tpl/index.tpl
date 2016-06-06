@@ -57,8 +57,11 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                         }
                     ?>
 
-                    <?php if(@$ACCESS['invoice']['access'] && $_SESSION['access']['access'] == 1){ ?>
-                    <a href="?page=invoice&section=1" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
+                    <?php if(@$ACCESS['invoice']['access']){ ?>
+                        <a href="?page=invoice&section=1" class="<?php if($page=='invoice')echo'selected'; ?>">Счета</a>
+                    <?php } ?>
+                    <?php if(@$ACCESS['sklad']['access']){ ?>
+                        <a href="?page=sklad&section=0" class="<?php if($page=='sklad')echo'selected'; ?>">Склад</a>
                     <?php } ?>
                     <?php if(@$ACCESS['clients']['access']){ ?>
                         <a href="?page=clients&section=clients_list" class="<?php if($page=='clients')echo'selected'; ?>">Клиенты</a>
@@ -74,7 +77,7 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                     <?php if(@$ACCESS['admin']['access']){ ?>
                         <a href="?page=admin" class="<?php if($page=='admin')echo'selected'; ?>">Админка</a>
                     <?php } ?>
-                    <!--<a href="?page=_test_rt" class="<?php if($page=='empty4')echo'selected'; ?>">test_rt</a>-->
+
                 </div>
             </td>
             <td style="width:auto;">&nbsp;
