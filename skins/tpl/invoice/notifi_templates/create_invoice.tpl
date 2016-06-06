@@ -82,18 +82,7 @@
                 <?php
                     if(isset($href) && $href != '' && $href!='#'){
                         ?><div id="button_div" style="padding: 45px 0 25px 0;"><a style="font-family: Arial;
-                            font-weight: normal;
-                            font-size: 16px;
-                            color: #ffffff;
-                            text-decoration: none;
-                            white-space: nowrap;
-                            border-radius: 3px;
-                            display: inline-block;
-                            text-align: center;
-                            margin-top: 0px;
-                            margin-right: 0px;
-                            margin-bottom: 0px;
-                            margin-left: 0px;
+                            font-weight: normal;font-size: 16px;color: #ffffff;text-decoration: none;white-space: nowrap;border-radius: 3px;display: inline-block;text-align: center;margin-top: 0px;margin-left: 0px;
                             padding-top: 11px;
                             padding-right: 14px;
                             padding-bottom: 9px;
@@ -110,11 +99,11 @@
             <div id="footer" style="background: url('http://www.apelburg.ru/os/skins/images/img_design/mess_tpl/mess_tpl_line_bg.png') repeat;
             background-size: 2pt 2pt;
             background-repeat: repeat-x;
-            background-position: 0 70%;margin-top: 25px;
+            background-position: 0 31%;margin-top: 25px;
             padding: 10px 0 0 0;
             text-align: center;">
-                <span style="background: #fff;
-            padding: 0 10px;"><b style="font-size: 14px;">Санкт-Петербургб ул. Чугунная, 14</b> </span>
+                <span><b style="font-size: 14px;background: #fff;
+            padding: 0 10px;">Санкт-Петербургб ул. Чугунная, 14</b> </span>
             </div>
         </div>
         <div id="subfooter" style="color: grey;

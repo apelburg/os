@@ -3556,7 +3556,7 @@ class ttnWindow
 
 
     # если дата в ттн ранее сегодняшней, то по умолчанию приблизительную дату отгрузки устанавливаем сегодняшнюю дату
-    ship_date = self.newTtnDate
+    self.newTtnDate = getDateNow()
 
     # переводит стандартную дату вида 25.05.2016 в timestamp
     date_formate = (myDate)->
@@ -3576,11 +3576,12 @@ class ttnWindow
         'margin': '10px 0 0 0'
       }
     }).append(date_shipment = $('<input/>', {
-      'val': ship_date,
+      'val': self.newTtnDate,
       'css': {
         'padding': '5px'
       }
     })))
+
     date_shipment.datetimepicker({
       minDate: new Date(),
       timepicker: false,
@@ -3671,6 +3672,7 @@ class ttnWindow
       @saveObj.manager_name = data_row.manager_name
       @saveObj.manager_id = data_row.manager_id
       @saveObj.client_name = data_row.client_name
+      @saveObj.client_id = data_row.client_id
       @saveObj.invoice_num = data_row.invoice_num
 
       new sendAjax 'confirm_create_ttn', @saveObj, ()->

@@ -4089,7 +4089,7 @@
         echo_message_js('Выберите способ доставки выбранных позиций.', 'error_message');
         return false;
       }
-      ship_date = self.newTtnDate;
+      self.newTtnDate = getDateNow();
       date_formate = function(myDate) {
         var newDate;
         myDate = myDate.split(".");
@@ -4107,7 +4107,7 @@
           'margin': '10px 0 0 0'
         }
       }).append(date_shipment = $('<input/>', {
-        'val': ship_date,
+        'val': self.newTtnDate,
         'css': {
           'padding': '5px'
         }
@@ -4200,6 +4200,7 @@
         this.saveObj.manager_name = data_row.manager_name;
         this.saveObj.manager_id = data_row.manager_id;
         this.saveObj.client_name = data_row.client_name;
+        this.saveObj.client_id = data_row.client_id;
         this.saveObj.invoice_num = data_row.invoice_num;
         return new sendAjax('confirm_create_ttn', this.saveObj, function() {
           return _this.destroy();
