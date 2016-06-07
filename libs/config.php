@@ -55,7 +55,11 @@
 	define("INVOICE_PP",'os__invoice_PP'); // строки приходов по счетам
 	define("INVOICE_COSTS",'os__invoice_costs');// счета от поставщиков
 	define("INVOICE_COSTS_PAY",'os__invoice_costs_payment');// оплаты поставщикам
-	define("INVOICE_COMMENTS","os__invoice_comments"); //
+	define("INVOICE_COMMENTS","os__invoice_comments"); // таблица комментариев по счетам
+
+	define("ACCOUNTING_PENSION","os__accounting_pension"); // таблица пенсии
+	define("ACCOUNTING_ZP_KON","os__accounting_kon"); // таблица расчета ЗП менам по рекламщикам
+	define("ACCOUNTING_ZP_REK","os__accounting_rek"); // таблица расчета ЗП менам по рекламщикам
 
 	define("SUPPLIERS_TBL","os__supplier_list"); // таблица поставщиков
 	define("SUPPLIERS_ACTIVITIES_TBL","os__suppliers_activities"); // таблица видов деятельности поставщиков	

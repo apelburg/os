@@ -669,18 +669,18 @@ div#js-alert_union{
 	color: #000;
 }
 .ui-dialog .ui-dialog-buttonpane {
-    text-align: left;
-    border-width: 1px 0 0 0;
-    background-image: none;
-    /* margin-top: .5em; */
-    /* padding: .3em 1em .5em .4em; */
-    padding: .3em 1em .5em 1.5em;
+	text-align: left;
+	border-width: 1px 0 0 0;
+	background-image: none;
+	/* margin-top: .5em; */
+	/* padding: .3em 1em .5em .4em; */
+	padding: .3em 1em .5em 1.5em;
 }
 .js-alert_union_buttons {
-    border: none;
-    padding: 3px 0 0 0;
-    border: 0;
-    margin: 0;
+	border: none;
+	padding: 3px 0 0 0;
+	border: 0;
+	margin: 0;
 }
 
 

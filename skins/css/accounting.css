@@ -1,0 +1,169 @@
+html{
+    background-color: #f1f1f1;
+}
+.main_container{
+    background-color: #fff;
+}
+ul.central_menu li span {
+    font-size: 12px;
+    color: #fff;
+    padding: 3px 10px 3px 10px;
+    float: left;
+    text-decoration: none;
+    margin: 0;
+    cursor: pointer;
+}
+#js-pension-tbl{
+    width: 100%;
+    border-collapse:collapse;
+}
+#js-pension-tbl tr td,
+#js-pension-tbl tr th{
+    padding: 5px 14px;
+    height: 34px;
+    border: 1px solid #ccc;
+    font-weight: normal;
+    text-align: right;
+}
+
+#js-pension-tbl tr.head th{
+    padding: 5px 14px;
+    color: #888888;
+    font-size: 12px;
+    height: auto;
+    text-align: right;
+
+}
+#js-pension-tbl tr td{
+    text-align: right;
+    padding: 5px 12px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+    background-color: #fff;
+}
+#js-pension-tbl tr td.tdInputHere{
+    padding: 0;
+}
+
+#js-pension-tbl tr td input{
+    border: 0px;
+    height: calc(100% + 2px);
+    width: calc(100% - 24px);
+    padding: 3px 12px 5px 12px;
+    margin-left: -1px;
+    margin-top: -1px;
+    background-color: #EBEBEB;
+}
+
+#js-pension-tbl tr td.tdInputHere input{
+    border: 1px solid #acc494;
+    outline: none;
+}
+tr td.mayBeEdit:hover{
+    cursor: pointer;
+    background-color: #f1f1f1;
+}
+#js-main-accounting-div{
+    background: #f1f1f1;
+}
+#js-pension-tbl tr td.mayBeEdit:hover{
+    background-color: #fafafa;
+}
+#js-pension-tbl tr td.date,
+#js-pension-tbl tr td.date input {
+    background-image: url("../images/img_design/icon_calendar.png");
+    background-position: calc(100% - 9px);
+    background-repeat: no-repeat;
+    padding-right: 30px;
+}
+#js-pension-tbl tr td.date input{
+    width: calc(100% - 12px);
+    padding: 3px 30px 5px 12px;
+}
+
+.delete_row{
+    width: 44px;
+    background-image: url("../images/img_design/tc_del_service_all.png");
+    background-repeat: no-repeat;
+    background-position: 50%;
+    opacity: 0.3;
+    padding: 0;
+    height: 44px;
+    cursor: pointer;
+}
+
+/*
+Кнопки всплывалок
+ */
+body .js-alert_union_buttons .button_yes_or_close.lightGreen.no,
+body .js-alert_union_buttons .button_yes_or_no.lightGreen.no,
+body .js-alert_union_buttons .button_yes_or_close.lightGreen,
+body .js-alert_union_buttons .button_yes_or_no.lightGreen{
+    background: rgba(146, 183, 62, 0.25);
+    color:#999999;
+}
+.js-alert_union_buttons button{
+    border-radius: 9px;
+    height: 36px;
+    border:1px solid #999999;
+    background: #92B73E;
+    color: #fff;
+}
+body .js-alert_union_buttons .button_yes_or_no.lightGreen.showed{
+    background: #92B73E;
+    color:#fff;
+}
+body .js-alert_union_buttons .button_yes_or_no,
+body .js-alert_union_buttons .button_yes_or_close{
+    padding: 3px 45px;
+}
+body .js-alert_union_buttons .button_yes_or_no.no,
+body .js-alert_union_buttons .button_yes_or_close.no{
+    background:#fff;
+    color: #999999;
+}
+
+body .js-alert_union_buttons .save,
+body .js-alert_union_buttons .button_yes_or_close{
+    float: right;
+}
+body .js-alert_union_buttons table td button.right{
+    float: right;
+}
+body .js-alert_union_buttons table td button.left{
+    float: left;
+}
+
+#js-SC_buttons table,
+.js-alert_union_buttons table{
+    width: 100%;
+}
+#js-SC_buttons table td:nth-of-type(1),
+.js-alert_union_buttons table td:nth-of-type(1){
+    text-align: left;
+}
+#js-SC_buttons table td:nth-of-type(2){
+    text-align: center;
+}
+#js-SC_buttons table td:nth-of-type(3),
+.js-alert_union_buttons table td:nth-of-type(2){
+    text-align: right;
+}
+.js-alert_union_buttons table td{
+    min-width: 55px;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: left;
+    border-width: 1px 0 0 0;
+    background-image: none;
+    /* margin-top: .5em; */
+    /* padding: .3em 1em .5em .4em; */
+    padding: .3em 1em .5em 1.5em;
+}
+.js-alert_union_buttons {
+    border: none;
+    padding: 3px 0 0 0;
+    border: 0;
+    margin: 0;
+}

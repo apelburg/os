@@ -1,0 +1,24 @@
+<!-- <?php echo __FILE__; ?> -- START-->
+	<script src="<?php  echo HOST; ?>/libs/js/accounting.js" rel="stylesheet" type="application/javascript"></script>
+<link href="skins/css/accounting.css" rel="stylesheet" type="text/css">
+<link href="skins/css/comments.css" rel="stylesheet" type="text/css">
+<link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/menuClick.js"></script>
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/ZeroClipboard.js"></script>
+<div id="invoice-button-top"></div>
+<script language="JavaScript">
+	/**
+	 * Запуск модуля Учёт
+	 */
+	$(document).ready(function(){
+		$('#js-accounting').accountingOptions()
+	});
+
+</script>
+<div id="js-accounting">
+	<div id="js-main-accounting-div">
+	</div>
+</div>
+<!-- <?php echo __FILE__; ?> -- END

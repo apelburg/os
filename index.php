@@ -94,6 +94,10 @@
 			include_once 'modules/invoice/router.php';
 			break;
 
+		case 'accounting':
+			include_once 'modules/accounting/router.php';
+			break;
+
 		case 'sklad':
 			include_once 'modules/sklad/router.php';
 			break;
