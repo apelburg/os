@@ -33,8 +33,6 @@
 	include_once ROOT.'/libs/php/classes/rt_KpGallery.class.php';
 	new rtKpGallery;
 
-	
-
     // ** БЕЗОПАСНОСТЬ **
 	// если нет массива $ACCESS (права доступа) прерываем работу скирпта 
 	if(!isset($ACCESS)) exit('доступ отсутсвует');
@@ -44,49 +42,50 @@
 	ob_start();	
 	//print_r($_SESSION);
     switch($page){
-	
-	  
-	   
-	   	case 'cabinet':
-	   include_once 'modules/cabinet/router.php';
-	   break;
+		case 'cabinet':
+			include_once 'modules/cabinet/router.php';
+			break;
 
-	   case 'clients':
-	   include_once 'modules/clients/router.php';
-	   break;
-	   
-	   case 'suppliers':
-	   include_once 'modules/suppliers/router.php';
-	   break;
-	   
-	   case 'samples':
-	   include_once 'modules/samples/router.php';
-	   break;
-	   
-	   case '_test_rt':
-	   include_once 'modules/_test_rt/router.php';
-	   break;
-	   
-	   case 'client_folder':
-	   include_once 'modules/client_folder/router.php';
-	   break;
+		case 'clients':
+			include_once 'modules/clients/router.php';
+			break;
 
-	   case 'option':
-	   include_once 'modules/option/router.php';
-	   break;
-	   
-	   case 'admin':
-	   include_once 'modules/admin/router.php';
-	   break;
-	   
-	   case 'agreement':
-	   include_once 'modules/agreement/router.php';
-	   break;
-	   
-	   case 'planner':
-	   include_once 'modules/planner/router.php';
-	   break;
+		case 'suppliers':
+			include_once 'modules/suppliers/router.php';
+			break;
 
+		case 'samples':
+			include_once 'modules/samples/router.php';
+			break;
+
+		case '_test_rt':
+			include_once 'modules/_test_rt/router.php';
+			break;
+
+		case 'client_folder':
+			include_once 'modules/client_folder/router.php';
+			break;
+
+		case 'option':
+			include_once 'modules/option/router.php';
+			break;
+
+		case 'admin':
+			include_once 'modules/admin/router.php';
+			break;
+	   
+	   	case 'agreement':
+	   		include_once 'modules/agreement/router.php';
+	   		break;
+	   
+		case 'planner':
+		   include_once 'modules/planner/router.php';
+		   break;
+
+
+		case 'invoice':
+			include_once 'modules/invoice/router.php';
+			break;
 
 		case 'accounting':
 			include_once 'modules/accounting/router.php';
@@ -96,9 +95,9 @@
 			include_once 'modules/sklad/router.php';
 			break;
 	 
-	   default: 
-	   include_once 'modules/default/router.php';
-	   break;
+	   	default:
+			include_once 'modules/default/router.php';
+			break;
 	
 	}
 	$content = ob_get_contents();
