@@ -1,9 +1,16 @@
+/*
+    общие
+*/
+
 html{
     background-color: #f1f1f1;
 }
 .main_container{
     background-color: #fff;
 }
+/*
+    меню
+*/
 ul.central_menu li span {
     font-size: 12px;
     color: #fff;
@@ -13,12 +20,15 @@ ul.central_menu li span {
     margin: 0;
     cursor: pointer;
 }
-#js-pension-tbl{
+/*
+    таблицы настроек
+*/
+#js-options-tbl{
     width: 100%;
     border-collapse:collapse;
 }
-#js-pension-tbl tr td,
-#js-pension-tbl tr th{
+#js-options-tbl tr td,
+#js-options-tbl tr th{
     padding: 5px 14px;
     height: 34px;
     border: 1px solid #ccc;
@@ -26,7 +36,7 @@ ul.central_menu li span {
     text-align: right;
 }
 
-#js-pension-tbl tr.head th{
+#js-options-tbl tr.head th{
     padding: 5px 14px;
     color: #888888;
     font-size: 12px;
@@ -34,18 +44,27 @@ ul.central_menu li span {
     text-align: right;
 
 }
-#js-pension-tbl tr td{
+#js-options-tbl tr td{
     text-align: right;
     padding: 5px 12px;
     border: 1px solid #ccc;
     font-size: 13px;
     background-color: #fff;
+    color: #A5A5A5;
 }
-#js-pension-tbl tr td.tdInputHere{
+#js-options-tbl tr td.tdInputHere{
     padding: 0;
 }
-
-#js-pension-tbl tr td input{
+#js-options-tbl tr td:nth-of-type(1),
+#js-options-tbl tr th:nth-of-type(1){
+    padding: 0;
+    width: 10px;
+}
+#js-options-tbl tr td:nth-of-type(2),
+#js-options-tbl tr th:nth-of-type(2){
+    width: 25px;
+}
+#js-options-tbl tr td input{
     border: 0px;
     height: calc(100% + 2px);
     width: calc(100% - 24px);
@@ -55,7 +74,7 @@ ul.central_menu li span {
     background-color: #EBEBEB;
 }
 
-#js-pension-tbl tr td.tdInputHere input{
+#js-options-tbl tr td.tdInputHere input{
     border: 1px solid #acc494;
     outline: none;
 }
@@ -66,31 +85,65 @@ tr td.mayBeEdit:hover{
 #js-main-accounting-div{
     background: #f1f1f1;
 }
-#js-pension-tbl tr td.mayBeEdit:hover{
+#js-options-tbl tr td.mayBeEdit:hover{
     background-color: #fafafa;
 }
-#js-pension-tbl tr td.date,
-#js-pension-tbl tr td.date input {
+#js-options-tbl tr td.date,
+#js-options-tbl tr td.date input {
     background-image: url("../images/img_design/icon_calendar.png");
     background-position: calc(100% - 9px);
     background-repeat: no-repeat;
     padding-right: 30px;
 }
-#js-pension-tbl tr td.date input{
+#js-options-tbl tr td.date input{
     width: calc(100% - 12px);
     padding: 3px 30px 5px 12px;
 }
 
-.delete_row{
+#js-options-tbl tr td.delete_row{
     width: 44px;
-    background-image: url("../images/img_design/tc_del_service_all.png");
+    background-image: url("../images/img_design/tc_del_service_all2.png");
     background-repeat: no-repeat;
     background-position: 50%;
-    opacity: 0.3;
+    opacity: 1;
     padding: 0;
     height: 44px;
+    background-color: #fafafa;
     cursor: pointer;
 }
+#js-options-tbl tr.checked td{
+    color: #000;
+}
+#js-options-tbl tr.checked td:nth-of-type(2){
+    background-image: url(../images/img_design/galka_pensions.png);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    padding: 0;
+    background-color: #c4e2a4;
+    cursor: pointer;
+}
+/*
+    таблица настроек рекламщики и конечники
+*/
+#js-options-tbl tr td.zp_men_rek,
+#js-options-tbl tr td.zp_men_kon{
+
+}
+
+
+#js-options-tbl.zp_men_rek tr td:nth-of-type(1),
+#js-options-tbl.zp_men_kon tr td:nth-of-type(1),
+#js-options-tbl.zp_men_rek tr th:nth-of-type(1),
+#js-options-tbl.zp_men_kon tr th:nth-of-type(1){
+    padding: 4px 12px;
+}
+
+#js-options-tbl.zp_men_rek tr td.tdInputHere:nth-of-type(1),
+#js-options-tbl.zp_men_kon tr td.tdInputHere:nth-of-type(1){
+    padding: 0;
+}
+
+
 
 /*
 Кнопки всплывалок

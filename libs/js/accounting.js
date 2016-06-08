@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, createPensionTbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow,
+  var calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, managersOptions, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -372,7 +372,7 @@
 
 
   /*
-   * прототип данных для строки таблицы пенсий
+   * прототип объекта данных строки таблицы пенсий
    */
 
   pensionTrObj = (function() {
@@ -416,7 +416,7 @@
 
 
   /*
-   * таблица пенсии
+   * прототип редактируемой ячейки в таблице
    */
 
   tdEditRow = (function() {
@@ -434,9 +434,8 @@
         'html': val,
         'class': 'mayBeEdit',
         click: function() {
-          var input, w;
+          var input;
           if ($(this).find('input').length === 0) {
-            w = $(this).parent().width($(this).parent().width());
             $(this).html(input = $('<input/>', {
               'type': 'text',
               'val': $(this).html(),
@@ -523,7 +522,7 @@
     function createPensionTbl(data) {
       var i, j, len1, n, tbl, tblCase;
       tbl = $('<table/>', {
-        id: 'js-pension-tbl'
+        id: 'js-options-tbl'
       });
       tbl.append(this.penciaTrHead());
       for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
@@ -546,6 +545,7 @@
       tr.append($('<td/>'));
       for (num = j = 9; j >= 1; num = --j) {
         tr.append($('<td/>', {
+          "class": 'mayBeEdit',
           click: function() {
             var t;
             t = $(this);
@@ -571,7 +571,7 @@
       tr.append($('<th/>', {
         html: 'Исп'
       }));
-      px = 80;
+      px = 86;
       tr.append($('<th/>', {
         html: 'действует с:',
         css: {
@@ -615,10 +615,7 @@
         }
       }));
       tr.append($('<th/>', {
-        html: '15 - 99',
-        css: {
-          'width': px
-        }
+        html: '15 - 99'
       }));
       tr.append($('<th/>'));
       return tr;
@@ -629,9 +626,32 @@
       tr = $('<tr/>', {
         "class": 'body'
       });
+      if (Number(data.checked) > 0) {
+        tr.addClass('checked');
+      }
       tr.data(data);
       tr.append($('<td/>'));
-      tr.append($('<td/>'));
+      tr.append($('<td/>', {
+        click: function() {
+          var curData, prevCheckData;
+          prevCheckData = [];
+          prevCheckData.id = 0;
+          tr.parent().find('tr.checked').each(function() {
+            var prevCheckTr;
+            prevCheckTr = $(this);
+            prevCheckData = prevCheckTr.data();
+            prevCheckData.checked = 0;
+            return prevCheckTr.data(prevCheckData).removeClass('checked');
+          });
+          curData = tr.data();
+          curData.checked = 1;
+          tr.data(curData).addClass('checked');
+          return new sendAjax('check_other_pension_row', {
+            prev_id: prevCheckData.id,
+            new_id: curData.id
+          });
+        }
+      }));
       tr.append(new tdEditRow(data.date, 'date', 'date', this.saveFunc));
       tr.append(new tdEditRow(data.n_0_2, 'n_0_2', 'money', this.saveFunc));
       tr.append(new tdEditRow(data.n_2_3, 'n_2_3', 'money', this.saveFunc));
@@ -643,6 +663,10 @@
       tr.append($('<td/>', {
         "class": "delete_row",
         click: function() {
+          if (Number(tr.data().checked) > 0) {
+            echo_message_js("Нельзя удалить выбранную строку.", 'error_message');
+            return false;
+          }
           return new modalConfirm({
             html: 'Вы уверены, что хотите удалить данную строку?'
           }, function() {
@@ -666,6 +690,431 @@
     };
 
     return createPensionTbl;
+
+  })();
+
+
+  /*
+   * прототип объекта данных строки таблицы мен рекламщики
+   */
+
+  zpMenRekTrObj = (function() {
+    zpMenRekTrObj.prototype.defaults = {
+      id: 0,
+      date: '00.00.0000',
+      profit_start: '0.00',
+      profit_end: '0.00',
+      salary: '0.00',
+      premium: '0.00',
+      "return": '0.00'
+    };
+
+    zpMenRekTrObj.prototype.enterObj = {};
+
+    zpMenRekTrObj.prototype.options = {};
+
+    function zpMenRekTrObj(data) {
+      var el, key;
+      if (data == null) {
+        data = {};
+      }
+      this.options = {};
+      if (data.edit === void 0) {
+        data.edit = 1;
+      }
+      for (key in data) {
+        el = data[key];
+        if (el !== null) {
+          this.options[key] = el;
+        }
+      }
+      return $.extend({}, this.defaults, this.options);
+    }
+
+    return zpMenRekTrObj;
+
+  })();
+
+
+  /*
+   * таблица зарплат мен рекламщики
+   */
+
+  createZpMenRekTbl = (function() {
+    createZpMenRekTbl.prototype.width = 900;
+
+    function createZpMenRekTbl(data) {
+      var i, j, len1, n, tbl, tblCase;
+      tbl = $('<table/>', {
+        id: 'js-options-tbl',
+        'class': 'zp_men_rek'
+      });
+      tbl.append(this.trHead());
+      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+        n = data[i];
+        tbl.append(this.trSimple(new zpMenRekTrObj(data[i])));
+      }
+      tbl.append(this.trFooter());
+      tblCase = $('<div/>').css({
+        'width': this.width
+      });
+      return tblCase.append(tbl);
+    }
+
+    createZpMenRekTbl.prototype.trFooter = function() {
+      var j, num, self, tr;
+      self = this;
+      tr = $('<tr/>', {
+        "class": 'footer'
+      });
+      for (num = j = 5; j >= 1; num = --j) {
+        tr.append($('<td/>', {
+          "class": 'mayBeEdit',
+          click: function() {
+            var t;
+            t = $(this);
+            new sendAjax('create_men_zp_rec_row', {}, function(response) {
+              var obj;
+              obj = self.trSimple(new zpMenRekTrObj(response.data));
+              tr.before(obj);
+              return obj.find('td').eq(t.index()).click();
+            });
+          }
+        }));
+      }
+      tr.append($('<td/>'));
+      return tr;
+    };
+
+    createZpMenRekTbl.prototype.trHead = function() {
+      var px, tr;
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      px = 250;
+      tr.append($('<th/>', {
+        html: 'прибыль от',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'прибыль до',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'премия(%)',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'оборот',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'премия(%)'
+      }));
+      tr.append($('<th/>'));
+      return tr;
+    };
+
+    createZpMenRekTbl.prototype.trSimple = function(data) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'body'
+      });
+      if (Number(data.checked) > 0) {
+        tr.addClass('checked');
+      }
+      tr.data(data);
+      tr.append(new tdEditRow(data.profit_start, 'profit_start', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.profit_end, 'profit_end', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.salary, 'salary', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.premium, 'premium', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data["return"], 'return', 'money', this.saveFunc));
+      tr.append($('<td/>', {
+        "class": "delete_row",
+        click: function() {
+          if (Number(tr.data().checked) > 0) {
+            echo_message_js("Нельзя удалить выбранную строку.", 'error_message');
+            return false;
+          }
+          return new modalConfirm({
+            html: 'Вы уверены, что хотите удалить данную строку?'
+          }, function() {
+            return new sendAjax('delete_zp_men_rek_row', {
+              id: data.id
+            }, function() {
+              return tr.remove();
+            });
+          });
+        }
+      }));
+      return tr;
+    };
+
+    createZpMenRekTbl.prototype.saveFunc = function(key, allData) {
+      return new sendAjax('saveRecData', {
+        id: allData.id,
+        key: key,
+        val: allData[key]
+      }, function() {});
+    };
+
+    return createZpMenRekTbl;
+
+  })();
+
+
+  /*
+   * таблица зарплат мен конечники
+   */
+
+  createZpMenKonTbl = (function() {
+    createZpMenKonTbl.prototype.width = 900;
+
+    function createZpMenKonTbl(data) {
+      var i, j, len1, n, tbl, tblCase;
+      tbl = $('<table/>', {
+        id: 'js-options-tbl',
+        'class': 'zp_men_kon'
+      });
+      tbl.append(this.trHead());
+      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+        n = data[i];
+        tbl.append(this.trSimple(new zpMenRekTrObj(data[i])));
+      }
+      tbl.append(this.trFooter());
+      tblCase = $('<div/>').css({
+        'width': this.width
+      });
+      return tblCase.append(tbl);
+    }
+
+    createZpMenKonTbl.prototype.trFooter = function() {
+      var j, num, self, tr;
+      self = this;
+      tr = $('<tr/>', {
+        "class": 'footer'
+      });
+      for (num = j = 3; j >= 1; num = --j) {
+        tr.append($('<td/>', {
+          "class": 'mayBeEdit',
+          click: function() {
+            var t;
+            t = $(this);
+            new sendAjax('create_men_zp_kon_row', {}, function(response) {
+              var obj;
+              obj = self.trSimple(new zpMenRekTrObj(response.data));
+              tr.before(obj);
+              return obj.find('td').eq(t.index()).click();
+            });
+          }
+        }));
+      }
+      tr.append($('<td/>'));
+      return tr;
+    };
+
+    createZpMenKonTbl.prototype.trHead = function() {
+      var px, tr;
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      px = 200;
+      tr.append($('<th/>', {
+        html: 'прибыль от',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'прибыль до',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'премия(%)',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>'));
+      return tr;
+    };
+
+    createZpMenKonTbl.prototype.trSimple = function(data) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'body'
+      });
+      if (Number(data.checked) > 0) {
+        tr.addClass('checked');
+      }
+      tr.data(data);
+      tr.append(new tdEditRow(data.profit_start, 'profit_start', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.profit_end, 'profit_end', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.salary, 'salary', 'money', this.saveFunc));
+      tr.append($('<td/>', {
+        "class": "delete_row",
+        click: function() {
+          if (Number(tr.data().checked) > 0) {
+            echo_message_js("Нельзя удалить выбранную строку.", 'error_message');
+            return false;
+          }
+          return new modalConfirm({
+            html: 'Вы уверены, что хотите удалить данную строку?'
+          }, function() {
+            return new sendAjax('delete_zp_men_kon_row', {
+              id: data.id
+            }, function() {
+              return tr.remove();
+            });
+          });
+        }
+      }));
+      return tr;
+    };
+
+    createZpMenKonTbl.prototype.saveFunc = function(key, allData) {
+      return new sendAjax('saveKonData', {
+        id: allData.id,
+        key: key,
+        val: allData[key]
+      }, function() {});
+    };
+
+    return createZpMenKonTbl;
+
+  })();
+
+
+  /*
+   * таблица зарплат мен конечники
+   */
+
+  managersOptions = (function() {
+    managersOptions.prototype.width = 900;
+
+    function managersOptions(data) {
+      var i, j, len1, n, tbl, tblCase;
+      tbl = $('<table/>', {
+        id: 'js-options-tbl',
+        'class': 'zp_men_kon'
+      });
+      tbl.append(this.trHead());
+      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+        n = data[i];
+        tbl.append(this.trSimple(new zpMenRekTrObj(data[i])));
+      }
+      tbl.append(this.trFooter());
+      tblCase = $('<div/>').css({
+        'width': this.width
+      });
+      return tblCase.append(tbl);
+    }
+
+    managersOptions.prototype.trFooter = function() {
+      var j, num, self, tr;
+      self = this;
+      tr = $('<tr/>', {
+        "class": 'footer'
+      });
+      for (num = j = 3; j >= 1; num = --j) {
+        tr.append($('<td/>', {
+          "class": 'mayBeEdit',
+          click: function() {
+            var t;
+            t = $(this);
+            new sendAjax('create_men_zp_kon_row', {}, function(response) {
+              var obj;
+              obj = self.trSimple(new zpMenRekTrObj(response.data));
+              tr.before(obj);
+              return obj.find('td').eq(t.index()).click();
+            });
+          }
+        }));
+      }
+      tr.append($('<td/>'));
+      return tr;
+    };
+
+    managersOptions.prototype.trHead = function() {
+      var px, tr;
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      px = 200;
+      tr.append($('<th/>', {
+        html: 'прибыль от',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'прибыль до',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>', {
+        html: 'премия(%)',
+        css: {
+          'width': px
+        }
+      }));
+      tr.append($('<th/>'));
+      return tr;
+    };
+
+    managersOptions.prototype.trSimple = function(data) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'body'
+      });
+      if (Number(data.checked) > 0) {
+        tr.addClass('checked');
+      }
+      tr.data(data);
+      tr.append(new tdEditRow(data.profit_start, 'profit_start', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.profit_end, 'profit_end', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.salary, 'salary', 'money', this.saveFunc));
+      tr.append($('<td/>', {
+        "class": "delete_row",
+        click: function() {
+          if (Number(tr.data().checked) > 0) {
+            echo_message_js("Нельзя удалить выбранную строку.", 'error_message');
+            return false;
+          }
+          return new modalConfirm({
+            html: 'Вы уверены, что хотите удалить данную строку?'
+          }, function() {
+            return new sendAjax('delete_zp_men_kon_row', {
+              id: data.id
+            }, function() {
+              return tr.remove();
+            });
+          });
+        }
+      }));
+      return tr;
+    };
+
+    managersOptions.prototype.saveFunc = function(key, allData) {
+      return new sendAjax('saveKonData', {
+        id: allData.id,
+        key: key,
+        val: allData[key]
+      }, function() {});
+    };
+
+    return managersOptions;
 
   })();
 
@@ -699,16 +1148,22 @@
             name_en: 'konechniki',
             name: 'Конечники',
             click: function() {
-              this.body.html(self.konechniki());
-              return console.log(this.name);
+              return new sendAjax('get_zp_kon_data', {
+                options: 'all_data'
+              }, function(response) {
+                return self.body.html(new createZpMenKonTbl(response.data));
+              });
             }
           }, {
             index: 1,
             name_en: 'reklamshchiki',
             name: 'Рекламщики',
             click: function() {
-              self.reklamshchiki();
-              return console.log(this.name);
+              return new sendAjax('get_zp_rek_data', {
+                options: 'all_data'
+              }, function(response) {
+                return self.body.html(new createZpMenRekTbl(response.data));
+              });
             }
           }, {
             index: 2,
@@ -721,6 +1176,17 @@
                 return self.body.html(new createPensionTbl(response.data));
               });
             }
+          }, {
+            index: 2,
+            name_en: 'managers',
+            name: 'Менеджеры',
+            click: function() {
+              return new sendAjax('get_managers_data', {
+                options: 'all_data'
+              }, function(response) {
+                return self.body.html(new managersOptions(response.data));
+              });
+            }
           }
         ];
 
@@ -730,6 +1196,10 @@
         this.addMenu();
         this.body = $(el).find('#js-main-accounting-div');
       }
+
+      accountingOptions.prototype.click = function() {
+        return this.mainTabHtml.click();
+      };
 
       accountingOptions.prototype.konechniki = function() {
         new sendAjax('get_zp_kon_data', {
@@ -767,7 +1237,7 @@
         results = [];
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           n = ref[i];
-          results.push(ul.append(new mainMenuTab(n, section, ul, 'section', function() {
+          results.push(ul.append(this.mainTabHtml = new mainMenuTab(n, section, ul, 'section', function() {
             return self.addMenu2();
           })));
         }
@@ -775,7 +1245,7 @@
       };
 
       accountingOptions.prototype.addMenu2 = function() {
-        var i, j, len1, n, ref, results, subsection, ul;
+        var i, j, len1, n, num, ref, subsection, tab, tab1, ul;
         if (this.$el.find('#js-accounting-menu').length > 0) {
           ul = this.$el.find('#js-accounting-menu ul');
           ul.html('');
@@ -794,13 +1264,18 @@
           }));
         }
         subsection = Number($.urlVar('subsection'));
+        num = 0;
         ref = this.tabs2level;
-        results = [];
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           n = ref[i];
-          results.push(ul.append(new mainMenuTab(n, subsection, ul, 'subsection')));
+          tab = new mainMenuTab(n, subsection, ul, 'subsection');
+          ul.append(tab);
+          if (num === 0) {
+            tab1 = tab;
+            num++;
+          }
         }
-        return results;
+        return tab1.click();
       };
 
       return accountingOptions;

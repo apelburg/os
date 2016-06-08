@@ -38,192 +38,129 @@
 			}
 		}
 
-
-
-
-
-
-
-
-
-		/**
-		 * главный запрос данных
-		 */
-		protected function get_data_AJAX(){
-			$response = array(
-				'access' => $this->user_access,
-				'tabs' => $this->get_tabs(),
-				'data' => $this->get_data()
-				);
-			$this->responseClass->response['data'] = $response;
-		}
+	
 
 		/**
 		 * получаем данные из таблицы пенсиий
 		 */
 		protected function get_pension_tbl_data_AJAX(){
-			$query = "SELECT *,  DATE_FORMAT(`".ACCOUNTING_PENSION."`.`date`,'%d.%m.%Y') as date FROM `".ACCOUNTING_PENSION."`";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			$rows = array();
-			if($result->num_rows > 0) {
-				while ($row = $result->fetch_assoc()) {
-					$rows[] = $row;
-				}
-			}
-			$this->responseClass->response['data'] = $rows;
+			$this->responseClass->response['data'] = $this->get_all_tbl(ACCOUNTING_PENSION);
 		}
 
 		/**
 		 * получаем данные из таблицы расчёта зп менам по конечникам
 		 */
 		protected function get_zp_kon_data_AJAX(){
-			$query = "SELECT * FROM `".ACCOUNTING_ZP_KON."`";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			$rows = array();
-			if($result->num_rows > 0) {
-				while ($row = $result->fetch_assoc()) {
-					$rows[] = $row;
-				}
-			}
-			$this->responseClass->response['data'] = $rows;
-		}
-
-		protected function delete_pension_row_AJAX(){
-			$query = "DELETE FROM `".ACCOUNTING_PENSION."` WHERE `id`=?";
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
-			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
-		}
-
-		/**
-		 * сохранение данных из таблицы пенсий
-		 */
-		protected function savePensionData_AJAX(){
-			switch ($_POST['key']){
-				case 'date':
-					$type = 's';
-					break;
-				default:
-					$type = 'd';
-					break;
-			}
-
-			$query = "UPDATE `".ACCOUNTING_PENSION."` SET ";
-			$query .= " `".addslashes($_POST['key'])."`=?";
-			$type .= 'i';
-			$query .= " WHERE `id` =?";
-
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param($type,$_POST['val'], $_POST['id']) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
-		}
-
-		/**
-		 * создание строки в таблице пенсий
-		 */
-		protected function create_pension_row_AJAX(){
-			$query = "INSERT INTO `".ACCOUNTING_PENSION."` SET ";
-			$query .= "`date` = '00.00.0000'";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-
-
-			$this->responseClass->response['data'] = array('id'=>$this->mysqli->insert_id);
+			$this->responseClass->response['data'] = $this->get_all_tbl(ACCOUNTING_ZP_KON, array(), array('name'=>'profit_start','type'=>"ASC"));
 		}
 
 		/**
 		 * получаем данные из таблицы расчёта зп менам по рекламщикам
 		 */
 		protected function get_zp_rek_data_AJAX(){
-			$query = "SELECT * FROM `".ACCOUNTING_ZP_REK."`";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			$rows = array();
-			if($result->num_rows > 0) {
-				while ($row = $result->fetch_assoc()) {
-					$rows[] = $row;
-				}
-			}
-			$this->responseClass->addMessage('зп для менов рекл','system_message',array('time'=>100));
+			$this->responseClass->response['data'] = $this->get_all_tbl(ACCOUNTING_ZP_REK, array(), array('name'=>'profit_start','type'=>"ASC"));
+		}
 
-			$this->responseClass->addMessage($this->printArr($rows),'system_message',array('time'=>7000));
+		/**
+		 * удаленгие строки из таблицы пенсий
+		 */
+		protected function delete_pension_row_AJAX(){
+			$this->delete_row_from_table(ACCOUNTING_PENSION,$_POST['id']);
+		}
+		/**
+		 * удаление строки из таблицы рекламщкики
+		 */
+		protected function delete_zp_men_rek_row_AJAX(){
+			$this->delete_row_from_table(ACCOUNTING_ZP_REK,$_POST['id']);
+		}
+		/**
+		 * удаление строки из таблицы конечники
+		 */
+		protected function delete_zp_men_kon_row_AJAX(){
+			$this->delete_row_from_table(ACCOUNTING_ZP_KON,$_POST['id']);
+		}
 
-			$this->responseClass->response['data'] = $rows;
+		/**
+		 * выбор активной строки для рассчёта пенсий в таблице пенсий
+		 */
+		protected function check_other_pension_row_AJAX(){
+			// выбираем новую строку
+			$this->update_one_val_in_one_row(ACCOUNTING_PENSION,$_POST['new_id'],'checked','1');
+			// снимаем выбор со старой строки
+			$this->update_one_val_in_one_row(ACCOUNTING_PENSION,$_POST['prev_id'],'checked','0');
+		}
+
+		/**
+		 * сохранение данных из таблицы пенсий
+		 */
+		protected function savePensionData_AJAX(){
+			$this->update_one_val_in_one_row(ACCOUNTING_PENSION,$_POST['id'],$_POST['key'],$_POST['val']);
+		}
+
+		/**
+		 * сохранение данных из таблицы рекламщики
+		 */
+		protected function saveRecData_AJAX(){
+			$this->update_one_val_in_one_row(ACCOUNTING_ZP_REK,$_POST['id'],$_POST['key'],$_POST['val']);
+		}
+		/**
+		 * сохранение данных из таблицы конечники
+		 */
+		protected function saveKonData_AJAX(){
+			$this->update_one_val_in_one_row(ACCOUNTING_ZP_KON,$_POST['id'],$_POST['key'],$_POST['val']);
+		}
+
+		/**
+		 * создание строки в таблице пенсий
+		 */
+		protected function create_pension_row_AJAX(){
+			$this->insert_empty_row(ACCOUNTING_PENSION,array('date'=>'00.00.0000'));
+		}
+		/**
+		 * создание строки в таблице рекламщики
+		 */
+		protected function create_men_zp_rec_row_AJAX(){
+			$this->insert_empty_row(ACCOUNTING_ZP_REK,array('date'=>'00.00.0000'));
+		}
+
+		/**
+		 * создание строки в таблице конечники
+		 */
+		protected function create_men_zp_kon_row_AJAX(){
+			$this->insert_empty_row(ACCOUNTING_ZP_KON,array('date'=>'00.00.0000'));
 		}
 
 
 		/**
-		 * данные по настройкам
+		 * удаляет строку из таблицы
+		 * @param table $
+		 * @param $id
 		 */
-		protected function get_options_AJAX(){
-			$response = array(
-				'access' => $this->user_access,
-				'data' => $this->get_data()
-			);
-			echo json_encode($response);
-			exit;
+		private function delete_row_from_table($table,$id){
+			$query = "DELETE FROM `".$table."` WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+			$stmt->bind_param('i',$id) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
 		}
 
 		/**
-		 * получаем верхнее меню
+		 * возвращает массив данных по всей таблице
+		 * @param $table
+		 * @return array
 		 */
-		private function get_tabs(){
+		private function get_all_tbl($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
+			$query = "SELECT *,DATE_FORMAT(`".$table."`.`date`,'%d.%m.%Y') as date FROM `".$table."`";
 
-			$tabs[] = array(
-				'index'=> 0,
-				'name'=>'Расчёт',
-				'class'=>'calculation'
-			);
-			if($this->user_access != 5){
-				$tabs[] = array(
-					'index'=> 1,
-					'name'=>'Настройки',
-					'class'=>'options'
-				);
+			$w = 0;
+			foreach ($where as $key => $ask){
+				$query .= ",`$key`=>'$ask'";
+				$w++;
 			}
-			return $tabs;
-		}
-
-
-		/**
-		 * get data rows
-		 *
-		 */
-		private function get_data(){
-			# выбираем все счета, которые пора переводить в закрытые
-			$query = "SELECT *";
-
-			$query .= " ,MONTH(invoice_create_date) as month ";
-			$query .= " ,YEAR (invoice_create_date) as year ";
-			$query .= " ,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date_formate";
-			$query .= " FROM `".INVOICE_TBL."` ";
-
-			# если заказ ещё не закрыт
-//			$query .= " WHERE `closed` = 1 ";
-			$query .= " WHERE id > 0 ";
-
-			# выборка по месяцу
-			if(!isset($_GET['month'])){
-				$query .= " AND MONTH(invoice_create_date) = '5' ";
-			}else{
-				$query .= " AND MONTH(invoice_create_date) = '".(int)$_GET['month']."' ";
-			}
-
-			# выборка по менеджеру
-			if(isset($_GET['manager_id'])){
-				$query .= " AND `manager_id` = '".(int)$_GET['manager_id']."' ";
-			}elseif ($this->user_access == 5){
-				$query .= " AND `manager_id` = '".$this->user_access."' ";
-			}
-
-			# выборка по менеджеру
-			if(isset($_GET['year'])){
-				$query .= " AND YEAR (invoice_create_date) = '".(int)$_GET['year']."' ";
-			}else{
-				$query .= " AND YEAR (invoice_create_date) = '".date('Y')."' ";
+			if ($sort['name'] != ''){
+				$query .= " ORDER BY `".$table."`.`".$sort['name']."` ".$sort['type'];
 			}
 
 
@@ -235,8 +172,55 @@
 				}
 			}
 			return $rows;
+
 		}
 
+		/**
+		 * обновление одного значения в одной таблице
+		 * @param $table
+		 * @param $id
+		 * @param $key
+		 * @param $val
+		 */
+		private function update_one_val_in_one_row($table,$id,$key,$val){
+			switch ($key){
+				case 'date':
+					$type = 's';
+					break;
+				default:
+					$type = 'd';
+					break;
+			}
+
+			$query = "UPDATE `".$table."` SET ";
+			$query .= " `".addslashes($key)."`=?";
+			$type .= 'i';
+			$query .= " WHERE `id` =?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param($type,$val, $id) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+		}
+
+
+		/**
+		 * создание пустой строки в базе
+		 * @param $table
+		 * @param array $data
+		 */
+		private function insert_empty_row($table,$data = array()){
+			$query = "INSERT INTO `".$table."` SET ";
+			$i = 0;
+			foreach ($data as $key => $val){
+				$query .= ($i>0)?',':'';
+				$query .= "`$key` = '$val'";
+				$i++;
+			}
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$this->responseClass->response['data'] = array('id'=>$this->mysqli->insert_id);
+		}
 
 		/**
 		 * get user access

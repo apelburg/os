@@ -14,6 +14,7 @@
 	 */
 	$(document).ready(function(){
 		$('#js-accounting').accountingOptions()
+		$('#js-accounting').accountingOptions('click')
 	});
 
 </script>
