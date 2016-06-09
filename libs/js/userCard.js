@@ -378,8 +378,24 @@
   (function($, window) {
     var userOptions;
     userOptions = (function() {
+      userOptions.prototype.defaults = {
+        date: '00.00.0000'
+      };
+
       function userOptions(el, options) {
         this.$el = $(el);
+        this.elID = this.$el.attr('id');
+        options = jQuery.parseJSON(this.$el.find('#edit_new_os_dop_param_json').html());
+        if (options === null) {
+          $(el).html($('<span/>', {
+            css: {
+              'color': 'rgb(255, 130, 130);'
+            },
+            html: 'блок редактирования доп. инфо учёта не доступен в режиме создания пользователей'
+          }));
+          return;
+        }
+        this.options = $.extend({}, this.defaults, options);
 
         /*
          * добавление полей
@@ -388,64 +404,138 @@
       }
 
       userOptions.prototype.init = function() {
-        console.log(this.$el);
-        this.$el.append(this.general_tbl());
-        this.$el.append(this.salary_tbl());
-        return this.$el.append(this.compensation_tbl());
+        var tbl;
+        $('#' + this.elID).append(tbl = $('<table/>', {
+          'id': 'userOptionsModule'
+        }));
+        tbl.append(this.general_tbl());
+        tbl.append(this.salary_tbl());
+        return tbl.append(this.compensation_tbl());
+      };
+
+      userOptions.prototype.create_compensation_row = function(data) {
+        var tr;
+        tr = $('<tr/>');
+        tr.append($('<td/>', {
+          html: data.name
+        }));
+        tr.append($('<td/>', {
+          html: data.val
+        }));
+        tr.append($('<td/>', {
+          "class": 'delete_td',
+          'html': 'x'
+        }));
+        return tr;
       };
 
       userOptions.prototype.compensation_tbl = function() {
-        var inp, tbl, tr;
-        tbl = $('<table/>');
-        tbl.append(tr = $('<tr/>'));
+        var data, i, j, len1, rowData, tbl, tr;
+        tbl = [];
+        tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
-          html: 'Выплаты на карту'
+          html: 'Ежемесячные компенсации '
         }));
-        tr.append($('<td/>').append(inp = $('<input/>', {
-          val: round_money(0)
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        data = [
+          {
+            id: 0,
+            name: 'Телефон',
+            val: 850.00
+          }, {
+            id: 1,
+            name: 'Прожёр',
+            val: 600.00
+          }, {
+            id: 2,
+            name: 'Проезд',
+            val: 575.50
+          }
+        ];
+        for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+          rowData = data[i];
+          tbl.push(this.create_compensation_row(rowData));
+        }
+        tbl.push(tr = $('<tr/>'));
+        tr.append($('<td/>').append(this.add_compensation_btn = $('<button/>', {
+          'html': "Добавить"
         })));
-        tbl.append(tr = $('<tr/>'));
-        tr.append($('<td/>', {
-          html: 'Менеджер'
-        }));
-        tr.append($('<td/>').append(inp = $('<input/>', {
-          val: round_money(0)
-        })));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        this.add_compensation_btn.click(function() {
+          return $(this);
+        });
         return tbl;
       };
 
       userOptions.prototype.salary_tbl = function() {
         var inp, tbl, tr;
-        tbl = $('<table/>');
-        tbl.append(tr = $('<tr/>'));
+        tbl = [];
+        tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
           html: 'Выплаты на карту'
         }));
-        tr.append($('<td/>').append(inp = $('<input/>', {
-          val: round_money(0)
-        })));
-        tbl.append(tr = $('<tr/>'));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
-          html: 'Менеджер'
+          html: 'Аванс'
         }));
         tr.append($('<td/>').append(inp = $('<input/>', {
           val: round_money(0)
         })));
+        tr.append($('<td/>'));
+        tbl.push(tr = $('<tr/>'));
+        tr.append($('<td/>', {
+          html: 'ЗП'
+        }));
+        tr.append($('<td/>').append(inp = $('<input/>', {
+          val: round_money(0),
+          click: function() {
+            return echo_message_js('test');
+          }
+        })));
+        tr.append($('<td/>'));
         return tbl;
       };
 
       userOptions.prototype.general_tbl = function() {
-        var sel, tbl, tr;
-        tbl = $('<table/>');
-        tbl.append(tr = $('<tr/>'));
-        tr.append($('<td/>', {
-          html: 'Карточка МЕНа'
-        })).append($('<td/>'));
-        tbl.append(tr = $('<tr/>'));
+        var inp, sel, tbl, tr;
+        tbl = [];
+        tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
           html: 'Общие данные'
         }));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        tbl.push(tr = $('<tr/>'));
+        tr.append($('<td/>', {
+          html: 'Дата приёма на работу'
+        }));
+        tr.append($('<td/>').append(inp = $('<input/>', {
+          type: 'text'
+        })));
+        inp.datetimepicker({
+          timepicker: false,
+          dayOfWeekStart: 1,
+          onSelectDate: function(ct, $i) {
+            return $i.blur();
+          },
+          onGenerate: function(ct) {
+            $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+            return $(this).find('.xdsoft_date');
+          },
+          closeOnDateSelect: true,
+          format: 'd.m.Y'
+        });
+        tr.append($('<td/>'));
+        tbl.push(tr = $('<tr/>'));
+        tr.append($('<td/>', {
+          html: 'Статус'
+        }));
         tr.append($('<td/>').append(sel = $('<select/>')));
+        tr.append($('<td/>'));
         sel.append($('<option/>', {
           'value': '1',
           'html': 'Работает'
@@ -454,7 +544,8 @@
           'value': '0',
           'html': 'Уволен'
         }));
-        tbl.append(tr = $('<tr/>'));
+        tr.append($('<td/>'));
+        tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
           html: 'Менеджер'
         }));
@@ -471,6 +562,7 @@
           'value': '3',
           'html': 'бюджетник (исп/ср)'
         }));
+        tr.append($('<td/>'));
         return tbl;
       };
 

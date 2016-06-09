@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, managersOptions, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow, zpMenRekTrObj,
+  var calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -996,130 +996,6 @@
 
 
   /*
-   * таблица зарплат мен конечники
-   */
-
-  managersOptions = (function() {
-    managersOptions.prototype.width = 900;
-
-    function managersOptions(data) {
-      var i, j, len1, n, tbl, tblCase;
-      tbl = $('<table/>', {
-        id: 'js-options-tbl',
-        'class': 'zp_men_kon'
-      });
-      tbl.append(this.trHead());
-      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
-        n = data[i];
-        tbl.append(this.trSimple(new zpMenRekTrObj(data[i])));
-      }
-      tbl.append(this.trFooter());
-      tblCase = $('<div/>').css({
-        'width': this.width
-      });
-      return tblCase.append(tbl);
-    }
-
-    managersOptions.prototype.trFooter = function() {
-      var j, num, self, tr;
-      self = this;
-      tr = $('<tr/>', {
-        "class": 'footer'
-      });
-      for (num = j = 3; j >= 1; num = --j) {
-        tr.append($('<td/>', {
-          "class": 'mayBeEdit',
-          click: function() {
-            var t;
-            t = $(this);
-            new sendAjax('create_men_zp_kon_row', {}, function(response) {
-              var obj;
-              obj = self.trSimple(new zpMenRekTrObj(response.data));
-              tr.before(obj);
-              return obj.find('td').eq(t.index()).click();
-            });
-          }
-        }));
-      }
-      tr.append($('<td/>'));
-      return tr;
-    };
-
-    managersOptions.prototype.trHead = function() {
-      var px, tr;
-      tr = $('<tr/>', {
-        "class": 'head'
-      });
-      px = 200;
-      tr.append($('<th/>', {
-        html: 'прибыль от',
-        css: {
-          'width': px
-        }
-      }));
-      tr.append($('<th/>', {
-        html: 'прибыль до',
-        css: {
-          'width': px
-        }
-      }));
-      tr.append($('<th/>', {
-        html: 'премия(%)',
-        css: {
-          'width': px
-        }
-      }));
-      tr.append($('<th/>'));
-      return tr;
-    };
-
-    managersOptions.prototype.trSimple = function(data) {
-      var tr;
-      tr = $('<tr/>', {
-        "class": 'body'
-      });
-      if (Number(data.checked) > 0) {
-        tr.addClass('checked');
-      }
-      tr.data(data);
-      tr.append(new tdEditRow(data.profit_start, 'profit_start', 'money', this.saveFunc));
-      tr.append(new tdEditRow(data.profit_end, 'profit_end', 'money', this.saveFunc));
-      tr.append(new tdEditRow(data.salary, 'salary', 'money', this.saveFunc));
-      tr.append($('<td/>', {
-        "class": "delete_row",
-        click: function() {
-          if (Number(tr.data().checked) > 0) {
-            echo_message_js("Нельзя удалить выбранную строку.", 'error_message');
-            return false;
-          }
-          return new modalConfirm({
-            html: 'Вы уверены, что хотите удалить данную строку?'
-          }, function() {
-            return new sendAjax('delete_zp_men_kon_row', {
-              id: data.id
-            }, function() {
-              return tr.remove();
-            });
-          });
-        }
-      }));
-      return tr;
-    };
-
-    managersOptions.prototype.saveFunc = function(key, allData) {
-      return new sendAjax('saveKonData', {
-        id: allData.id,
-        key: key,
-        val: allData[key]
-      }, function() {});
-    };
-
-    return managersOptions;
-
-  })();
-
-
-  /*
    * Модуль учёт -> настройки
    */
 
@@ -1174,17 +1050,6 @@
                 options: 'all_data'
               }, function(response) {
                 return self.body.html(new createPensionTbl(response.data));
-              });
-            }
-          }, {
-            index: 2,
-            name_en: 'managers',
-            name: 'Менеджеры',
-            click: function() {
-              return new sendAjax('get_managers_data', {
-                options: 'all_data'
-              }, function(response) {
-                return self.body.html(new managersOptions(response.data));
               });
             }
           }
