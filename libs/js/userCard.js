@@ -405,6 +405,12 @@
 
       userOptions.prototype.init = function() {
         var tbl;
+        $('#' + this.elID).append($('<div/>', {
+          'html': 'В разработке',
+          css: {
+            color: 'red'
+          }
+        }));
         $('#' + this.elID).append(tbl = $('<table/>', {
           'id': 'userOptionsModule'
         }));
