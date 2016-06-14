@@ -1085,12 +1085,10 @@
         self = this;
         if (this.$el.find('#js-general-accounting-menu').length > 0) {
           ul = this.$el.find('#js-general-accounting-menu ul');
-          ul.html('');
         } else {
           ul = $('<ul/>', {
             'class': 'central_menu'
           });
-          ul.html('');
           this.$el.prepend($('<div/>', {
             'id': 'js-general-accounting-menu',
             'class': 'cabinet_top_menu first_line',
@@ -1195,7 +1193,6 @@
         /*
          * добавляем подменю
          */
-        this.addMenu2();
         this.body = $(el).find('#js-main-accounting-div');
         this.body.html('').append($('<div/>', {
           html: '654654'
@@ -1203,7 +1200,8 @@
       }
 
       accountingCalculation.prototype.addMenu = function() {
-        var i, j, len1, n, ref, results, section, ul;
+        var i, j, len1, n, ref, results, section, self, ul;
+        self = this;
         if (this.$el.find('#js-general-accounting-menu').length > 0) {
           ul = this.$el.find('#js-general-accounting-menu ul');
         } else {
@@ -1221,33 +1219,50 @@
         results = [];
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           n = ref[i];
-          results.push(ul.append(new mainMenuTab(n, section, ul, 'section')));
+          results.push(ul.append(this.mainTabHtml = new mainMenuTab(n, section, ul, 'section', function() {
+            return self.addMenu2();
+          })));
         }
         return results;
       };
 
       accountingCalculation.prototype.addMenu2 = function() {
-        var i, j, len1, n, ref, results, subsection, ul;
+        var self, subsection, ul;
+        self = this;
         if (this.$el.find('#js-accounting-menu').length > 0) {
           ul = this.$el.find('#js-accounting-menu ul');
+          ul.html('').css({
+            'float': 'left'
+          });
         } else {
           ul = $('<ul/>', {
             'class': 'central_menu'
+          }).css({
+            'float': 'left'
           });
-          this.$el.prepend($('<div/>', {
+          this.$el.append($('<div/>', {
             'id': 'js-accounting-menu',
             'class': 'cabinet_top_menu first_line',
             html: ul
           }));
         }
         subsection = Number($.urlVar('subsection'));
-        ref = this.tabs2level;
-        results = [];
-        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
-          n = ref[i];
-          results.push(ul.append(new mainMenuTab(n, subsection, ul, 'subsection', function() {})));
-        }
-        return results;
+        new sendAjax('get_managers_tabs', {}, function(response) {
+          var i, j, len1, n, ref, results;
+          console.log(response);
+          ref = response.data;
+          results = [];
+          for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+            n = ref[i];
+            results.push(ul.append(new mainMenuTab(n, subsection, ul, 'manager_id', function() {
+              return self.constructMainContent();
+            })));
+          }
+          return results;
+        });
+        return {
+          constructMainContent: function() {}
+        };
       };
 
       return accountingCalculation;

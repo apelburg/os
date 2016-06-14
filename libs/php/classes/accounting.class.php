@@ -8,7 +8,7 @@
  */
 	class Accounting  extends aplStdAJAXMethod
 	{
-		protected 	$user_access = 0; 		// user right (int)
+		public 	$user_access = 0; 		// user right (int)
 		protected 	$user_id = 0;			// user id with base
 		public 		$user = array(); 		// authorised user info
 		
@@ -37,6 +37,34 @@
 				$this->_AJAX_($_GET['AJAX']);		
 			}
 		}
+		/**
+		 * блок Учёт
+		 */
+		protected function get_managers_tabs_AJAX(){
+			$query = "SELECT id AS `index` ,last_name ";
+			$query .= ", CONCAT(last_name,
+            ' ',
+            CASE
+                WHEN name IS NULL THEN ''
+                ELSE CONCAT(SUBSTRING(name, 1, 1), '.')
+            END) AS 'name'";
+			$query .= " FROM `".MANAGERS_TBL."` WHERE status = '1' AND access = 5";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$managers = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$managers[] = $row;
+				}
+			}
+
+
+//			$this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($managers));
+			$this->responseClass->response['data'] = $managers;
+		}
+
+		/**
+		 * блок Настройки
+		 */
 
 
 		/**

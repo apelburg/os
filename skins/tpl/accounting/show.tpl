@@ -13,8 +13,18 @@
 	 * Запуск модуля Учёт
 	 */
 	$(document).ready(function(){
-		$('#js-accounting').accountingOptions()
-		$('#js-accounting').accountingOptions('click')
+		$('#js-accounting').accountingCalculation();
+		<?php
+
+			if($Accounting->user_access == 1 || $Accounting->user_access == 2){
+				echo "$('#js-accounting').accountingOptions();";
+			}
+		?>
+
+
+
+
+		$('#js-general-accounting-menu ul li').eq(0).click()
 	});
 
 </script>
