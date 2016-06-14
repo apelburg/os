@@ -572,10 +572,10 @@
           val: round_money(this.options.avans),
           focus: function() {
             var t;
+            t = $(this);
             if (Number($(this).val()) === 0) {
               return $(this).val('');
             } else {
-              t = $(this);
               return setTimeout(function() {
                 return t.select();
               }, 50);
@@ -590,6 +590,8 @@
                 url: 'http://' + window.location.hostname + '/os/?page=user_api'
               });
               return $(this).val(self.options.avans);
+            } else {
+              return $(this).val(self.options.avans);
             }
           }
         })));
@@ -602,10 +604,10 @@
           val: round_money(this.options.salary),
           focus: function() {
             var t;
+            t = $(this);
             if (Number($(this).val()) === 0) {
               return $(this).val('');
             } else {
-              t = $(this);
               return setTimeout(function() {
                 return t.select();
               }, 50);
@@ -614,11 +616,13 @@
           blur: function() {
             if (Number($(this).val()) !== Number(self.options.avans)) {
               self.options.avans = round_money($(this).val());
-              new sendAjax('save_salary', {
+              $(this).val(self.options.avans);
+              return new sendAjax('save_salary', {
                 id: self.options.id,
                 val: self.options.avans,
                 url: 'http://' + window.location.hostname + '/os/?page=user_api'
               });
+            } else {
               return $(this).val(self.options.avans);
             }
           }
