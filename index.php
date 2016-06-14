@@ -94,6 +94,9 @@
 		case 'sklad':
 			include_once 'modules/sklad/router.php';
 			break;
+		case 'user_api':
+			include_once 'modules/user_api/router.php';
+			break;
 	 
 	   	default:
 			include_once 'modules/default/router.php';

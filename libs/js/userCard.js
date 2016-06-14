@@ -383,6 +383,7 @@
       };
 
       function userOptions(el, options) {
+        var self;
         this.$el = $(el);
         this.elID = this.$el.attr('id');
         options = jQuery.parseJSON(this.$el.find('#edit_new_os_dop_param_json').html());
@@ -394,23 +395,30 @@
             html: 'блок редактирования доп. инфо учёта не доступен в режиме создания пользователей'
           }));
           return;
+        } else {
+          $(el).html($('<div/>', {
+            id: 'preloader_block'
+          }));
         }
         this.options = $.extend({}, this.defaults, options);
+        console.log(this.options);
 
         /*
          * добавление полей
          */
-        this.init();
+        self = this;
+        new sendAjax('get_compensations_row', {
+          user_id: self.options.id,
+          url: 'http://' + window.location.hostname + '/os/?page=user_api'
+        }, function(response) {
+          self.compensation = response.data;
+          return self.init();
+        });
       }
 
       userOptions.prototype.init = function() {
         var tbl;
-        $('#' + this.elID).append($('<div/>', {
-          'html': 'В разработке',
-          css: {
-            color: 'red'
-          }
-        }));
+        $('#' + this.elID).html('');
         $('#' + this.elID).append(tbl = $('<table/>', {
           'id': 'userOptionsModule'
         }));
@@ -421,7 +429,7 @@
 
       userOptions.prototype.create_compensation_row = function(data) {
         var tr;
-        tr = $('<tr/>');
+        tr = $('<tr/>').data(data);
         tr.append($('<td/>', {
           html: data.name
         }));
@@ -430,13 +438,22 @@
         }));
         tr.append($('<td/>', {
           "class": 'delete_td',
-          'html': 'x'
+          'html': 'x',
+          click: function() {
+            return new sendAjax('delete_compensation_row', {
+              id: data.id,
+              url: 'http://' + window.location.hostname + '/os/?page=user_api'
+            }, function() {
+              return tr.remove();
+            });
+          }
         }));
         return tr;
       };
 
       userOptions.prototype.compensation_tbl = function() {
-        var data, i, j, len1, rowData, tbl, tr;
+        var data, i, j, len1, ref, rowData, self, tbl, tr;
+        self = this;
         tbl = [];
         tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
@@ -459,24 +476,87 @@
             val: 575.50
           }
         ];
-        for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
-          rowData = data[i];
+        console.log(this.compensation);
+        ref = this.compensation;
+        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+          rowData = ref[i];
           tbl.push(this.create_compensation_row(rowData));
         }
         tbl.push(tr = $('<tr/>'));
-        tr.append($('<td/>').append(this.add_compensation_btn = $('<button/>', {
-          'html': "Добавить"
+        tr.append($('<td/>').append($('<button/>', {
+          'html': "Добавить",
+          click: function() {
+            var html, win_inp_name, win_inp_val;
+            html = $('<div/>', {
+              id: 'user_window_compensations_form'
+            });
+            html.append($('<div/>').append(win_inp_name = $('<input/>', {
+              placeholder: 'название'
+            })));
+            html.append($('<div/>').append(win_inp_val = $('<input/>', {
+              placeholder: 'стоимость',
+              val: round_money(0),
+              focus: function() {
+                var t;
+                if (Number($(this).val()) === 0) {
+                  return $(this).val('');
+                } else {
+                  t = $(this);
+                  return setTimeout(function() {
+                    return t.select();
+                  }, 50);
+                }
+              },
+              blur: function() {
+                return $(this).val(round_money(Number($(this).val())));
+              }
+            })));
+            return self.win_window = new modalWindow({
+              html: html,
+              maxHeight: '100%',
+              maxWidth: '90%',
+              title: 'Завести строку компенсации',
+              buttons: [
+                {
+                  text: 'Закрыть',
+                  "class": 'button_yes_or_no no',
+                  click: function() {
+                    console.log(self.win_window.winDiv[0]);
+                    return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
+                  }
+                }, {
+                  text: 'Создать',
+                  "class": 'button_yes_or_no',
+                  click: function() {
+                    return new sendAjax('create_compensation_row', {
+                      user_id: self.options.id,
+                      name: win_inp_name.val(),
+                      val: win_inp_val.val(),
+                      url: 'http://' + window.location.hostname + '/os/?page=user_api'
+                    }, function(response) {
+                      tr.before(self.create_compensation_row(response.data));
+                      return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
+                    });
+                  }
+                }
+              ]
+            }, {
+              closeOnEscape: true,
+              single: true,
+              close: function(event, ui) {
+                return $('#quick_button_div .button').eq(1).removeClass('checked');
+              }
+            });
+          }
         })));
         tr.append($('<td/>'));
         tr.append($('<td/>'));
-        this.add_compensation_btn.click(function() {
-          return $(this);
-        });
         return tbl;
       };
 
       userOptions.prototype.salary_tbl = function() {
-        var inp, tbl, tr;
+        var inp, self, tbl, tr;
+        self = this;
         tbl = [];
         tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
@@ -489,17 +569,58 @@
           html: 'Аванс'
         }));
         tr.append($('<td/>').append(inp = $('<input/>', {
-          val: round_money(0)
+          val: round_money(this.options.avans),
+          focus: function() {
+            var t;
+            if (Number($(this).val()) === 0) {
+              return $(this).val('');
+            } else {
+              t = $(this);
+              return setTimeout(function() {
+                return t.select();
+              }, 50);
+            }
+          },
+          blur: function() {
+            if (Number($(this).val()) !== Number(self.options.avans)) {
+              self.options.avans = round_money($(this).val());
+              new sendAjax('save_avans', {
+                id: self.options.id,
+                val: self.options.avans,
+                url: 'http://' + window.location.hostname + '/os/?page=user_api'
+              });
+              return $(this).val(self.options.avans);
+            }
+          }
         })));
         tr.append($('<td/>'));
         tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
           html: 'ЗП'
         }));
-        tr.append($('<td/>').append(inp = $('<input/>', {
-          val: round_money(0),
-          click: function() {
-            return echo_message_js('test');
+        tr.append($('<td/>').append($('<input/>', {
+          val: round_money(this.options.salary),
+          focus: function() {
+            var t;
+            if (Number($(this).val()) === 0) {
+              return $(this).val('');
+            } else {
+              t = $(this);
+              return setTimeout(function() {
+                return t.select();
+              }, 50);
+            }
+          },
+          blur: function() {
+            if (Number($(this).val()) !== Number(self.options.avans)) {
+              self.options.avans = round_money($(this).val());
+              new sendAjax('save_salary', {
+                id: self.options.id,
+                val: self.options.avans,
+                url: 'http://' + window.location.hostname + '/os/?page=user_api'
+              });
+              return $(this).val(self.options.avans);
+            }
           }
         })));
         tr.append($('<td/>'));
@@ -507,7 +628,8 @@
       };
 
       userOptions.prototype.general_tbl = function() {
-        var inp, sel, tbl, tr;
+        var inp, opt, sel, self, tbl, tr;
+        self = this;
         tbl = [];
         tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
@@ -520,7 +642,15 @@
           html: 'Дата приёма на работу'
         }));
         tr.append($('<td/>').append(inp = $('<input/>', {
-          type: 'text'
+          type: 'text',
+          val: this.options.date_start_wock,
+          blur: function() {
+            return new sendAjax('save_date_work_start', {
+              id: self.options.id,
+              date: $(this).val(),
+              url: 'http://' + window.location.hostname + '/os/?page=user_api'
+            });
+          }
         })));
         inp.datetimepicker({
           timepicker: false,
@@ -541,33 +671,62 @@
           html: 'Статус'
         }));
         tr.append($('<td/>').append(sel = $('<select/>')));
+        sel.change(function() {
+          return new sendAjax('save_status', {
+            id: self.options.id,
+            val: $(this).val(),
+            url: 'http://' + window.location.hostname + '/os/?page=user_api'
+          });
+        });
         tr.append($('<td/>'));
-        sel.append($('<option/>', {
+        sel.append(opt = $('<option/>', {
           'value': '1',
           'html': 'Работает'
         }));
-        sel.append($('<option/>', {
+        if (Number(this.options.status) === 1) {
+          opt.attr('selected', 'true');
+        }
+        sel.append(opt = $('<option/>', {
           'value': '0',
           'html': 'Уволен'
         }));
+        if (Number(this.options.status) === 0) {
+          opt.attr('selected', 'true');
+        }
         tr.append($('<td/>'));
         tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>', {
           html: 'Менеджер'
         }));
         tr.append($('<td/>').append(sel = $('<select/>')));
-        sel.append($('<option/>', {
+        sel.change(function() {
+          return new sendAjax('save_manager_type', {
+            id: self.options.id,
+            val: $(this).val(),
+            url: 'http://' + window.location.hostname + '/os/?page=user_api'
+          });
+        });
+        sel.append(opt = $('<option/>', {
           'value': '1',
           'html': 'Рекламных агенств'
         }));
-        sel.append($('<option/>', {
+        if (Number(this.options.manager) === 1) {
+          opt.attr('selected', 'true');
+        }
+        sel.append(opt = $('<option/>', {
           'value': '2',
           'html': 'конечных клиентов'
         }));
-        sel.append($('<option/>', {
+        if (Number(this.options.manager) === 2) {
+          opt.attr('selected', 'true');
+        }
+        sel.append(opt = $('<option/>', {
           'value': '3',
           'html': 'бюджетник (исп/ср)'
         }));
+        if (Number(this.options.manager) === 3) {
+          opt.attr('selected', 'true');
+        }
         tr.append($('<td/>'));
         return tbl;
       };

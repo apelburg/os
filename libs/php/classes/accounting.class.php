@@ -38,7 +38,6 @@
 			}
 		}
 
-	
 
 		/**
 		 * получаем данные из таблицы пенсиий
@@ -156,7 +155,8 @@
 
 			$w = 0;
 			foreach ($where as $key => $ask){
-				$query .= ",`$key`=>'$ask'";
+				$query .= ($w==0)?' WHERE ':' AND ';
+				$query .= ",`$key`='$ask'";
 				$w++;
 			}
 			if ($sort['name'] != ''){

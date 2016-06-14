@@ -67,6 +67,7 @@
 	define("SUPPLIERS_RATINGS_TBL","os__suppliers_rating"); // таблица контактных лиц поставщиков	
 	define("RELATE_SUPPLIERS_ACTIVITIES_TBL","os__supplier_activity_relation"); // таблица соотношения клиентов и видов деятельности
 	define("MANAGERS_TBL","os__manager_list"); // таблица менеджеров
+	define("COMPENSATION_TBL","os__manager_compensation"); // таблица компенсаций для работников компаниии
 	define("MANAGERS_DOP_INFO_TBL","os__manager_dop_info"); // таблица менеджеров c дополнительной информацией
 	define("PERSONAL_MANAGERS_GROUPS_TBL","os__personal_managers_groups"); // группы для страницы на сайте - "персональный менеджер"
 	

@@ -45,6 +45,8 @@
 		'planner'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
 		'accounting'=> array('access'=> true),
+
+		'user_api'=> array('access'=> true),
 		'option'=> array('access'=> true),
 		'clients'=> array(
 			'access'=> true,
