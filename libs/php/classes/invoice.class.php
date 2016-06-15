@@ -234,6 +234,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			# переводим найденныйе счета в статус закрытые
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `closed` = (closed + 1)";
+			$query .= " `closed_date` = NOW()";
 			$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}

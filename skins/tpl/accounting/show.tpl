@@ -22,9 +22,17 @@
 		?>
 
 
+		section = $.urlVar('section');
+		if(section == undefined){
+			$('#js-general-accounting-menu ul li').eq(0).click();
+		}else{
+			$('#js-general-accounting-menu ul li').each(function(){
+				if(Number(section) == $(this).data().index){
+					$(this).click()
+				}
+			})
+		}
 
-
-		$('#js-general-accounting-menu ul li').eq(0).click()
 	});
 
 </script>

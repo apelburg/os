@@ -37,8 +37,13 @@
 				$this->_AJAX_($_GET['AJAX']);		
 			}
 		}
+		/////////////////////////
+		//	Учёт
+		/////////////////////////
+
+
 		/**
-		 * блок Учёт
+		 * меню со списком менеджеров
 		 */
 		protected function get_managers_tabs_AJAX(){
 			$query = "SELECT id AS `index` ,last_name ";
@@ -49,6 +54,12 @@
                 ELSE CONCAT(SUBSTRING(name, 1, 1), '.')
             END) AS 'name'";
 			$query .= " FROM `".MANAGERS_TBL."` WHERE status = '1' AND access = 5";
+
+			if($this->user_access == 5){
+				$query .= " AND id = '$this->user_id'";
+			}
+
+
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$managers = array();
 			if($result->num_rows > 0){
@@ -58,13 +69,35 @@
 			}
 
 
-//			$this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($managers));
 			$this->responseClass->response['data'] = $managers;
 		}
 
-		/**
-		 * блок Настройки
-		 */
+		protected function get_data_bill_closed_AJAX(){
+			$query = "SELECT * FROM `".INVOICE_TBL."`";
+
+			$query .= " WHERE `manager_id`=?";
+
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_GET['manager_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$data = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data[] = $row;
+				}
+			}
+
+
+			$this->responseClass->response['data'] = $data;
+		}
+
+		/////////////////////////
+		//	Настройки
+		/////////////////////////
 
 
 		/**
@@ -121,7 +154,7 @@
 		 * сохранение данных из таблицы пенсий
 		 */
 		protected function savePensionData_AJAX(){
-			$this->update_one_val_in_one_row(ACCOUNTING_PENSION,$_POST['id'],$_POST['key'],$_POST['val']);
+			$this->update_one_val_in_one_row(ACCOUNTING_PENSION,$_POST['id'],$_POST['key'],date('Y-m-d',strtotime($_POST['val'])));
 		}
 
 		/**

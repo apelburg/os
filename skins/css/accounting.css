@@ -143,7 +143,89 @@ tr td.mayBeEdit:hover{
     padding: 0;
 }
 
+/*
+    меню месяца
+*/
+#js-accounting-month-menu{
+    height: auto;
+    background-color: #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu{
+    background-color: #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu li span{
+    color: #636769;
+}
+#js-accounting-month-menu ul.central_menu li select{
+    margin: auto;
+    margin-top: 3px;
+    background: none;
+    padding: 0 3px 0 15px;
+    color: #fff;
+    border: 1px solid #fff;
+    background: #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu li select option{
+    border:1px solid #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu li select option:hover{
+    background: #c6c8c8;
+    border:1px solid #fff;
+}
+#js-accounting-month-menu.first_line ul.central_menu li.selected{
+    background:none;
+}
+#js-accounting-month-menu ul.central_menu li.selected .border{
+    border: 1px solid #fff;
+    color: #fff;
+}
+/*
+    меню менеджеры
+*/
+#js-accounting-menu-managers{
+    background: #92b73e;
+    height: auto;
+}
+#js-accounting-menu-managers ul.central_menu{
+    background-color: #92b73e;
+}
+#js-accounting-menu-managers ul.central_menu li.selected .border{
+    border: 1px solid #fff;
+    color: #fff;
+}
+/*
+    таблица закрытых счетов
+*/
+#js-bill-tbl{
+    border-collapse: collapse;
+}
+#js-bill-tbl th{
+    padding: 2px 14px;
+    color: #888888;
+    font-size: 12px;
+    height: auto;
+    text-align: right;
 
+    font-weight: normal;
+}
+#js-bill-tbl th:nth-of-type(2),
+#js-bill-tbl th:nth-of-type(3),
+#js-bill-tbl th:nth-of-type(5),
+#js-bill-tbl td:nth-of-type(2),
+#js-bill-tbl td:nth-of-type(3),
+#js-bill-tbl td:nth-of-type(5){
+    border-right: 1px solid #ccc;
+}
+#js-bill-tbl tr.itog td{
+    border-bottom: 1px solid grey;
+}
+
+#js-bill-tbl td{
+    background: #fff;
+    padding: 5px 14px;
+    color: #888888;
+    font-size: 12px;
+}
 
 /*
 Кнопки всплывалок

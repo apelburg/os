@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow, zpMenRekTrObj,
+  var billTrPrototipe, calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -1027,7 +1027,7 @@
               return new sendAjax('get_zp_kon_data', {
                 options: 'all_data'
               }, function(response) {
-                return self.body.html(new createZpMenKonTbl(response.data));
+                return self.constructMainContent(new createZpMenKonTbl(response.data));
               });
             }
           }, {
@@ -1038,7 +1038,7 @@
               return new sendAjax('get_zp_rek_data', {
                 options: 'all_data'
               }, function(response) {
-                return self.body.html(new createZpMenRekTbl(response.data));
+                return self.constructMainContent(new createZpMenRekTbl(response.data));
               });
             }
           }, {
@@ -1049,35 +1049,35 @@
               return new sendAjax('get_pension_tbl_data', {
                 options: 'all_data'
               }, function(response) {
-                return self.body.html(new createPensionTbl(response.data));
+                return self.constructMainContent(new createPensionTbl(response.data));
               });
             }
           }
         ];
+        this.body = $(el).find('#js-main-accounting-div');
+        this.body.html('');
 
         /*
          * добавление меню
          */
         this.addMenu();
-        this.body = $(el).find('#js-main-accounting-div');
       }
+
+      accountingOptions.prototype.constructMainContent = function(content) {
+        var div;
+        echo_message_js("сборка ОПЦИИ", 'error_message', 100);
+        if (this.body.find('#js-accounting-main-content-container').length > 0) {
+          this.$el.find('#js-accounting-main-content-container').remove();
+        }
+        this.body.append(div = $('<div/>', {
+          'id': 'js-accounting-main-content-container',
+          html: ''
+        }));
+        return div.append(content);
+      };
 
       accountingOptions.prototype.click = function() {
         return this.mainTabHtml.click();
-      };
-
-      accountingOptions.prototype.konechniki = function() {
-        new sendAjax('get_zp_kon_data', {
-          options: 'all_data'
-        }, function() {});
-        return this.body.html('@body');
-      };
-
-      accountingOptions.prototype.reklamshchiki = function() {
-        new sendAjax('get_zp_rek_data', {
-          options: 'all_data'
-        }, function() {});
-        return this.body.html('@body');
       };
 
       accountingOptions.prototype.addMenu = function() {
@@ -1101,7 +1101,10 @@
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           n = ref[i];
           results.push(ul.append(this.mainTabHtml = new mainMenuTab(n, section, ul, 'section', function() {
-            return self.addMenu2();
+            self.addMenu2();
+            $.delUrlVal('manager_id');
+            $.delUrlVal('month_number');
+            return $.delUrlVal('year');
           })));
         }
         return results;
@@ -1109,6 +1112,7 @@
 
       accountingOptions.prototype.addMenu2 = function() {
         var i, j, len1, n, num, ref, subsection, tab, tab1, ul;
+        this.body.html('');
         if (this.$el.find('#js-accounting-menu').length > 0) {
           ul = this.$el.find('#js-accounting-menu ul');
           ul.html('');
@@ -1117,7 +1121,7 @@
             'class': 'central_menu'
           });
           ul.html('');
-          this.$el.find('#js-general-accounting-menu').after($('<div/>', {
+          this.body.append($('<div/>', {
             'id': 'js-accounting-menu',
             'class': 'cabinet_top_menu',
             css: {
@@ -1136,6 +1140,15 @@
           if (num === 0) {
             tab1 = tab;
             num++;
+          }
+          if (num === 0 && subsection === void 0) {
+            tab1 = tab;
+            num++;
+          } else if (subsection !== void 0) {
+            console.log(subsection, tab.data().index);
+            if (Number(subsection) === Number(tab.data().index)) {
+              tab1 = tab;
+            }
           }
         }
         return tab1.click();
@@ -1163,6 +1176,112 @@
     });
   })(window.jQuery, window);
 
+
+  /*
+   * таблица закрытых за месяц счетов
+   */
+
+  create_bill_tbl = (function() {
+    create_bill_tbl.prototype.width = 900;
+
+    function create_bill_tbl(data) {
+      var head, tbl, tblCase;
+      if (data == null) {
+        data = {};
+      }
+      tbl = $('<table/>', {
+        id: 'js-bill-tbl',
+        'class': 'bill_table'
+      });
+      tbl.append(head = this.trHead());
+      tbl.append(this.trBody(data));
+      head.after(this.trItogo());
+      tblCase = $('<div/>').css({
+        'width': this.width
+      });
+      return tblCase.append(tbl);
+    }
+
+    create_bill_tbl.prototype.trFooter = function() {
+      return true;
+    };
+
+    create_bill_tbl.prototype.trItogo = function() {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'itog'
+      });
+      tr.append($('<td/>'));
+      tr.append($('<td/>', {
+        html: round_money(56231645)
+      }));
+      tr.append($('<td/>', {
+        html: round_money(65465132)
+      }));
+      tr.append($('<td/>', {
+        html: '45%'
+      }));
+      return tr;
+    };
+
+    create_bill_tbl.prototype.trHead = function() {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      tr.append($('<th/>', {
+        html: '№счёта, дата'
+      }));
+      tr.append($('<th/>', {
+        html: 'выручка'
+      }));
+      tr.append($('<th/>', {
+        html: 'прибыль'
+      }));
+      tr.append($('<th/>', {
+        html: '%'
+      }));
+      return tr;
+    };
+
+    create_bill_tbl.prototype.trBody = function(data) {
+      var arr, i, j, len1, n;
+      arr = [];
+      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+        n = data[i];
+        arr.push(new billTrPrototipe(n));
+      }
+      console.log(arr);
+      return arr;
+    };
+
+    return create_bill_tbl;
+
+  })();
+
+  billTrPrototipe = (function() {
+    function billTrPrototipe(data) {
+      var tr;
+      tr = $('<tr/>').data(data);
+      tr.append($('<td/>', {
+        html: data.invoice_num
+      }));
+      tr.append($('<td/>', {
+        html: Number(data.price_out_payment)
+      }));
+      tr.append($('<td/>', {
+        html: round_money(Number(data.price_out_payment) - Number(data.costs_supplier_bill))
+      }));
+      tr.append($('<td/>', {
+        html: data.percent_payment + '%'
+      }));
+      return tr;
+    }
+
+    return billTrPrototipe;
+
+  })();
+
   (function($, window) {
 
     /*
@@ -1176,7 +1295,7 @@
 
       accountingCalculation.prototype.tabs = [
         {
-          index: 0,
+          index: 1,
           name_en: 'options',
           name: 'Учёт'
         }
@@ -1184,6 +1303,8 @@
 
       function accountingCalculation(el, options) {
         this.$el = $(el);
+        this.body = $(el).find('#js-main-accounting-div');
+        this.body.html('');
 
         /*
          * добавление меню
@@ -1193,10 +1314,6 @@
         /*
          * добавляем подменю
          */
-        this.body = $(el).find('#js-main-accounting-div');
-        this.body.html('').append($('<div/>', {
-          html: '654654'
-        }));
       }
 
       accountingCalculation.prototype.addMenu = function() {
@@ -1220,49 +1337,200 @@
         for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
           n = ref[i];
           results.push(ul.append(this.mainTabHtml = new mainMenuTab(n, section, ul, 'section', function() {
-            return self.addMenu2();
+            self.addMenu2();
+            $.delUrlVal('subsection');
+            return self.addMenu3();
           })));
         }
         return results;
       };
 
       accountingCalculation.prototype.addMenu2 = function() {
-        var self, subsection, ul;
+        var manager_id, num, self, ul;
+        this.body.html('');
         self = this;
-        if (this.$el.find('#js-accounting-menu').length > 0) {
-          ul = this.$el.find('#js-accounting-menu ul');
-          ul.html('').css({
+        if (this.$el.find('#js-accounting-menu-managers').length > 0) {
+          ul = this.$el.find('#js-accounting-menu-managers ul');
+          ul.css({
             'float': 'left'
           });
+          ul.html('');
         } else {
           ul = $('<ul/>', {
             'class': 'central_menu'
           }).css({
             'float': 'left'
           });
-          this.$el.append($('<div/>', {
-            'id': 'js-accounting-menu',
+          this.body.append($('<div/>', {
+            'id': 'js-accounting-menu-managers',
             'class': 'cabinet_top_menu first_line',
             html: ul
           }));
         }
-        subsection = Number($.urlVar('subsection'));
-        new sendAjax('get_managers_tabs', {}, function(response) {
-          var i, j, len1, n, ref, results;
+        manager_id = $.urlVar('manager_id');
+        num = 0;
+        return new sendAjax('get_managers_tabs', {}, function(response) {
+          var i, j, len1, n, ref, tab, tab1;
           console.log(response);
           ref = response.data;
-          results = [];
           for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
             n = ref[i];
-            results.push(ul.append(new mainMenuTab(n, subsection, ul, 'manager_id', function() {
+            tab = new mainMenuTab(n, manager_id, ul, 'manager_id', function() {
               return self.constructMainContent();
-            })));
+            });
+            ul.append(tab);
+            if (num === 0 && manager_id === void 0) {
+              tab1 = tab;
+              num++;
+            } else if (manager_id !== void 0) {
+              if (Number(manager_id) === Number(tab.data().index)) {
+                tab1 = tab;
+              }
+            }
+          }
+          return tab1.click();
+        });
+      };
+
+      accountingCalculation.prototype.addMenu3 = function() {
+        var i, j, len1, month, month_now, month_number, n, num, self, tab, tab1, ul;
+        self = this;
+        if (this.body.find('#js-accounting-month-menu').length > 0) {
+          ul = this.$el.find('#js-accounting-month-menu ul');
+          ul.css({
+            'float': 'left'
+          });
+          ul.html('');
+        } else {
+          ul = $('<ul/>', {
+            'class': 'central_menu'
+          }).css({
+            'float': 'left'
+          });
+          this.body.append($('<div/>', {
+            'id': 'js-accounting-month-menu',
+            'class': 'cabinet_top_menu first_line',
+            html: ul
+          }));
+        }
+        month = [
+          {
+            index: 1,
+            name: 'Январь'
+          }, {
+            index: 2,
+            name: 'Февраль'
+          }, {
+            index: 3,
+            name: 'Март'
+          }, {
+            index: 4,
+            name: 'Апрель'
+          }, {
+            index: 5,
+            name: 'Май'
+          }, {
+            index: 6,
+            name: 'Июнь'
+          }, {
+            index: 7,
+            name: 'Июль'
+          }, {
+            index: 8,
+            name: 'Август'
+          }, {
+            index: 9,
+            name: 'Сентябрь'
+          }, {
+            index: 10,
+            name: 'Октябрь'
+          }, {
+            index: 11,
+            name: 'Ноябрь'
+          }, {
+            index: 12,
+            name: 'Декабрь'
+          }
+        ];
+        this.yearTab();
+        month_now = new Date().getMonth();
+        month_number = $.urlVar('month_number');
+        num = 0;
+        for (i = j = 0, len1 = month.length; j < len1; i = ++j) {
+          n = month[i];
+          tab = new mainMenuTab(n, month_number, ul, 'month_number', function() {
+            return self.constructMainContent();
+          });
+          ul.append(tab);
+          if (month_number === void 0 && month_now === Number(tab.data().index)) {
+            tab1 = tab;
+          } else if (month_number !== void 0) {
+            if (Number(month_number) === Number(tab.data().index)) {
+              tab1 = tab;
+            }
+          }
+          console.log(Number(month), Number(tab.data().index));
+        }
+        tab1.click();
+        return ul.append(this.yearTab());
+      };
+
+      accountingCalculation.prototype.yearTab = function() {
+        var Y, i, j, l, len1, li, num, oldYear, opt, option_obj, select, self, year;
+        self = this;
+        year = new Date().getFullYear();
+        l = year + 3;
+        oldYear = $.urlVar('year');
+        if (oldYear === void 0) {
+          $.urlVar('year', year);
+          oldYear = year;
+        }
+        option_obj = (function() {
+          var j, ref, results;
+          results = [];
+          for (num = j = 2015, ref = l; 2015 <= ref ? j <= ref : j >= ref; num = 2015 <= ref ? ++j : --j) {
+            results.push(num);
           }
           return results;
+        })();
+        console.log(option_obj);
+        li = $('<li/>');
+        li.append(select = $('<select/>', {
+          change: function() {
+            $.urlVar('year', $(this).val());
+            return self.constructMainContent();
+          }
+        }));
+        for (i = j = 0, len1 = option_obj.length; j < len1; i = ++j) {
+          Y = option_obj[i];
+          select.append(opt = $('<option/>', {
+            html: Y,
+            val: Y
+          }));
+          if (Number(Y) === Number(oldYear)) {
+            opt.attr('selected', 'true');
+          }
+        }
+        return li;
+      };
+
+      accountingCalculation.prototype.constructMainContent = function() {
+        var content, div;
+        content = $('<div/>', {
+          id: 'first_tab'
         });
-        return {
-          constructMainContent: function() {}
-        };
+        new sendAjax("get_data_bill_closed", {}, function(response) {
+          return content.append(new create_bill_tbl(response.data));
+        });
+        echo_message_js("сборка УЧЁТ", 'error_message', 100);
+        if (this.body.find('#js-accounting-main-content-container').length > 0) {
+          this.$el.find('#js-accounting-main-content-container').remove();
+        }
+        this.body.append(div = $('<div/>', {
+          'id': 'js-accounting-main-content-container',
+          html: ''
+        }));
+        return div.append(content);
       };
 
       return accountingCalculation;
@@ -1316,7 +1584,7 @@
         'class': 'border',
         'html': tab.name
       }));
-      li.data('index', tab.index);
+      li.data(tab);
       if (tab.index === section) {
         li.addClass('selected');
       }
