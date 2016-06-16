@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var billTrPrototipe, calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, pensionTrObj, round_money, sendAjax, tdEditRow, zpMenRekTrObj,
+  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, pensionTrObj, round_money, row, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -996,7 +996,7 @@
 
 
   /*
-   * Модуль учёт -> настройки
+   * вкладка настройки
    */
 
   (function($, window) {
@@ -1176,13 +1176,392 @@
     });
   })(window.jQuery, window);
 
+  accrualsObj = (function() {
+    function accrualsObj(data) {
+      var defaults, el, key, options;
+      if (data == null) {
+        data = {};
+      }
+      defaults = [
+        {
+          i: 1,
+          id: 0,
+          money: '0.00',
+          flag_r: 0,
+          r: '0.00'
+        }, {
+          i: 2,
+          id: 0,
+          money: '0.00',
+          flag_r: 0,
+          r: '0.00'
+        }, {
+          i: 3,
+          id: 0,
+          money: '0.00',
+          flag_r: 0,
+          r: '0.00'
+        }, {
+          i: 4,
+          id: 0,
+          money: '0.00',
+          flag_r: 1,
+          r: '0.00'
+        }
+      ];
+      options = [];
+      for (key in data) {
+        el = data[key];
+        defaults[key] = el;
+      }
+      return defaults;
+    }
+
+    return accrualsObj;
+
+  })();
+
 
   /*
-   * таблица закрытых за месяц счетов
+   * вкладка учёт -> таблица начислений
+   */
+
+  accruals_tbl = (function() {
+    accruals_tbl.prototype.width = 300;
+
+    accruals_tbl.prototype.paddingBlock = 6;
+
+    accruals_tbl.prototype.accruals_summ = 0;
+
+    function accruals_tbl(data, dopData) {
+      var t, tblCase;
+      if (dopData == null) {
+        dopData = {};
+      }
+      this.pribl = 0;
+      this.dopOptions = dopData;
+      this.tbl = $('<table/>', {
+        id: 'js-accruals-tbl',
+        'class': 'accounting-tbl'
+      });
+      this.tbl.append(this.trHead());
+      this.tbl.append(t = this.trBody(data));
+      tblCase = $('<div/>').css({
+        'float': 'left',
+        'width': this.width,
+        'paddingRight': this.paddingBlock,
+        'paddingBottom': this.paddingBlock
+      });
+      this.calcTbl();
+      return tblCase.append(this.tbl);
+    }
+
+    accruals_tbl.prototype.trHead = function() {
+      var self, tr;
+      self = this;
+      this.recalc_button = $('<button/>', {
+        html: '',
+        click: function() {
+          return self.calcTbl();
+        }
+      });
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      tr.append($('<th/>', {
+        html: 'Начисления'
+      }));
+      tr.append(this.accruals_summ = $('<th/>', {
+        html: round_money(this.pribl)
+      }));
+      tr.append($('<th/>', {
+        html: this.recalc_button
+      }));
+      return tr.append($('<th/>', {
+        html: ''
+      }));
+    };
+
+    accruals_tbl.prototype.trBody = function(data) {
+      var i, j, ref, rows;
+      rows = [];
+      for (i = j = 0, ref = data.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+        rows.push(new row(data[i], this));
+      }
+      return rows;
+    };
+
+    accruals_tbl.prototype.trFooter = function() {
+      return [];
+    };
+
+    accruals_tbl.prototype.calcTbl = function() {
+      var pribl, self;
+      self = this;
+      pribl = 0;
+      this.tbl.find('.body').each(function() {
+        var data;
+        data = $(this).data();
+        if (data.flag_r > 0) {
+          return pribl = Number(data.r) + pribl;
+        } else {
+          return pribl = Number(data.money) + pribl;
+        }
+      });
+      return self.accruals_summ.html(round_money(pribl));
+    };
+
+    return accruals_tbl;
+
+  })();
+
+  row = (function() {
+    function row(n, parentObj) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'body'
+      }).data(n);
+      if (Number(n.i) === 1) {
+        tr.append($('<td/>', {
+          html: 'Оклад'
+        }));
+      }
+      if (Number(n.i) === 2) {
+        tr.append($('<td/>', {
+          html: 'Премия'
+        }));
+      }
+      if (Number(n.i) === 3) {
+        tr.append($('<td/>', {
+          html: 'Пенсия'
+        }));
+      }
+      if (Number(n.i) === 4) {
+        tr.append($('<td/>', {
+          html: 'Бонус'
+        }));
+      }
+      if (Number(n.i) === 4) {
+        tr.append($('<td/>', {
+          html: $('<input/>', {
+            val: round_money(n.money),
+            "class": 'mone',
+            blur: function() {
+              var t;
+              t = $(this);
+              if (Number(n.id) !== 0) {
+                n.flag_r = 0;
+                n.money = Number(t.val());
+                tr.data(n);
+                parentObj.calcTbl();
+                return new sendAjax('save_accruals_val', {
+                  id: n.id,
+                  key: 'bonus',
+                  val: n.money
+                });
+              } else {
+                return new sendAjax('create_new_accruals_calc', {
+                  key: 'bonus',
+                  val: Number(t.val())
+                }, function(response) {
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), this.dopOptions));
+                });
+              }
+            }
+          })
+        }));
+        tr.append($('<td/>'));
+      } else if (Number(n.flag_r) > 0) {
+        tr.append($('<td/>', {
+          html: $('<input/>', {
+            val: round_money(n.r)
+          })
+        }));
+        tr.append($('<td/>', {
+          html: $('<button/>', {
+            html: 'Р',
+            "class": 'hand',
+            click: function() {
+              n.flag_r = 0;
+              return tr.replaceWith(new row(n));
+            }
+          })
+        }));
+      } else {
+        tr.append($('<td/>', {
+          html: round_money(n.money)
+        }));
+        tr.append($('<td/>', {
+          html: $('<button/>', {
+            html: 'А',
+            click: function() {
+              n.flag_r = 1;
+              return tr.replaceWith(new row(n));
+            }
+          })
+        }));
+      }
+      tr.append($('<td/>'));
+      return tr;
+    }
+
+    return row;
+
+  })();
+
+
+  /*
+   * вкладка учёт -> таблица выплат
+   */
+
+  payments_tbl = (function() {
+    payments_tbl.prototype.paddingBlock = 6;
+
+    payments_tbl.prototype.accruals_summ = 0;
+
+    payments_tbl.prototype.width = 300;
+
+    function payments_tbl(data) {
+      var tblCase;
+      if (data == null) {
+        data = {};
+      }
+      this.tbl = $('<table/>', {
+        id: 'js-payments-tbl',
+        'class': 'accounting-tbl'
+      });
+      this.tbl.append(this.trHead());
+      tblCase = $('<div/>').css({
+        'float': 'left',
+        'width': this.width,
+        'paddingRight': this.paddingBlock,
+        'paddingBottom': this.paddingBlock
+      });
+      return tblCase.append(this.tbl);
+    }
+
+    payments_tbl.prototype.trHead = function() {
+      var self, tr;
+      self = this;
+      this.recalc_button = $('<button>', {
+        html: 'в кредит ->',
+        click: function() {
+          return self.calcTbl();
+        }
+      });
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      tr.append($('<th/>', {
+        html: 'Выплаты'
+      }));
+      tr.append(this.accruals_summ = $('<th/>', {
+        html: round_money(21000)
+      }));
+      tr.append($('<th/>', {
+        html: this.recalc_button
+      }));
+      return tr.append($('<th/>', {
+        html: ''
+      }));
+    };
+
+    payments_tbl.prototype.trFooter = function() {
+      return [];
+    };
+
+    payments_tbl.prototype.calcTbl = function() {
+      return [];
+    };
+
+    return payments_tbl;
+
+  })();
+
+
+  /*
+   * вкладка учёт -> таблица кредит
+   */
+
+  credit_tbl = (function() {
+    credit_tbl.prototype.paddingBlock = 6;
+
+    credit_tbl.prototype.accruals_summ = 0;
+
+    credit_tbl.prototype["with"] = 300;
+
+    function credit_tbl(data) {
+      var tblCase;
+      if (data == null) {
+        data = {};
+      }
+      this.tbl = $('<table/>', {
+        id: 'js-credit-tbl',
+        'class': 'accounting-tbl'
+      });
+      this.tbl.append(this.trHead());
+      tblCase = $('<div/>').css({
+        'float': 'left',
+        'paddingRight': this.paddingBlock,
+        'paddingBottom': this.paddingBlock,
+        'width': this["with"]
+      });
+      return tblCase.append(this.tbl);
+    }
+
+    credit_tbl.prototype.trHead = function() {
+      var self, tr;
+      self = this;
+      this.recalc_button = $('<button>', {
+        html: 'Расчёт',
+        click: function() {
+          return self.calcTbl();
+        }
+      });
+      tr = $('<tr/>', {
+        "class": 'head'
+      });
+      tr.append($('<th/>', {
+        html: 'Кредит'
+      }));
+      tr.append(this.accruals_summ = $('<th/>', {
+        html: round_money(3000)
+      }));
+      tr.append($('<th/>', {
+        html: this.recalc_button
+      }));
+      return tr.append($('<th/>', {
+        html: ''
+      }));
+    };
+
+    credit_tbl.prototype.trFooter = function() {
+      return [];
+    };
+
+    credit_tbl.prototype.calcTbl = function() {
+      return [];
+    };
+
+    return credit_tbl;
+
+  })();
+
+
+  /*
+   * вкладка учёт -> таблица закрытых счетов (за указанный месяц и год)
    */
 
   create_bill_tbl = (function() {
-    create_bill_tbl.prototype.width = 900;
+    create_bill_tbl.prototype.width = 405;
+
+    create_bill_tbl.prototype.paddingBlock = 6;
+
+    create_bill_tbl.prototype.itogo = {
+      percent: 0,
+      price_out_payment: 0,
+      profit: 0
+    };
 
     function create_bill_tbl(data) {
       var head, tbl, tblCase;
@@ -1191,15 +1570,18 @@
       }
       tbl = $('<table/>', {
         id: 'js-bill-tbl',
-        'class': 'bill_table'
+        'class': 'bill_tbl'
       });
       tbl.append(head = this.trHead());
       tbl.append(this.trBody(data));
       head.after(this.trItogo());
       tblCase = $('<div/>').css({
-        'width': this.width
+        'width': this.width,
+        'float': 'left',
+        'paddingRight': this.paddingBlock,
+        'paddingBottom': this.paddingBlock
       });
-      return tblCase.append(tbl);
+      return tblCase.append(tbl).data(this.itogo);
     }
 
     create_bill_tbl.prototype.trFooter = function() {
@@ -1213,13 +1595,13 @@
       });
       tr.append($('<td/>'));
       tr.append($('<td/>', {
-        html: round_money(56231645)
+        html: round_money(this.itogo.price_out_payment)
       }));
       tr.append($('<td/>', {
-        html: round_money(65465132)
+        html: round_money(this.itogo.profit)
       }));
       tr.append($('<td/>', {
-        html: '45%'
+        html: round_money(this.itogo.percent) + '%'
       }));
       return tr;
     };
@@ -1245,13 +1627,21 @@
     };
 
     create_bill_tbl.prototype.trBody = function(data) {
-      var arr, i, j, len1, n;
+      var arr, i, j, len1, n, num;
+      this.itogo.percent = 0;
+      this.itogo.profit = 0;
+      this.itogo.price_out_payment = 0;
       arr = [];
+      num = 1;
       for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
         n = data[i];
         arr.push(new billTrPrototipe(n));
+        this.itogo.percent += Number(n.pr);
+        this.itogo.profit += Number(n.profit);
+        this.itogo.price_out_payment += Number(n.price_out_payment);
+        num++;
       }
-      console.log(arr);
+      this.itogo.percent = this.itogo.percent / num;
       return arr;
     };
 
@@ -1259,21 +1649,29 @@
 
   })();
 
+
+  /*
+   * вкладка учёт -> строка таблицы закрытых счетов
+   */
+
   billTrPrototipe = (function() {
     function billTrPrototipe(data) {
       var tr;
       tr = $('<tr/>').data(data);
       tr.append($('<td/>', {
         html: data.invoice_num
+      }).append($('<span/>', {
+        "class": 'row_invoice_date',
+        html: data.closed_date
+      })));
+      tr.append($('<td/>', {
+        html: round_money(data.price_out_payment)
       }));
       tr.append($('<td/>', {
-        html: Number(data.price_out_payment)
+        html: round_money(data.profit)
       }));
       tr.append($('<td/>', {
-        html: round_money(Number(data.price_out_payment) - Number(data.costs_supplier_bill))
-      }));
-      tr.append($('<td/>', {
-        html: data.percent_payment + '%'
+        html: data.pr + '%'
       }));
       return tr;
     }
@@ -1282,11 +1680,12 @@
 
   })();
 
-  (function($, window) {
 
-    /*
-     * Define the plugin class Invoice
-     */
+  /*
+   * вкладка учёт
+   */
+
+  (function($, window) {
     var accountingCalculation;
     accountingCalculation = (function() {
       accountingCalculation.prototype.defaults = {
@@ -1310,10 +1709,6 @@
          * добавление меню
          */
         this.addMenu();
-
-        /*
-         * добавляем подменю
-         */
       }
 
       accountingCalculation.prototype.addMenu = function() {
@@ -1371,7 +1766,6 @@
         num = 0;
         return new sendAjax('get_managers_tabs', {}, function(response) {
           var i, j, len1, n, ref, tab, tab1;
-          console.log(response);
           ref = response.data;
           for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
             n = ref[i];
@@ -1469,7 +1863,6 @@
               tab1 = tab;
             }
           }
-          console.log(Number(month), Number(tab.data().index));
         }
         tab1.click();
         return ul.append(this.yearTab());
@@ -1493,7 +1886,6 @@
           }
           return results;
         })();
-        console.log(option_obj);
         li = $('<li/>');
         li.append(select = $('<select/>', {
           change: function() {
@@ -1515,12 +1907,16 @@
       };
 
       accountingCalculation.prototype.constructMainContent = function() {
-        var content, div;
+        var content, div, self;
+        self = this;
         content = $('<div/>', {
           id: 'first_tab'
         });
-        new sendAjax("get_data_bill_closed", {}, function(response) {
-          return content.append(new create_bill_tbl(response.data));
+        new sendAjax("get_data", {}, function(response) {
+          content.append(self.bill_tbl = new create_bill_tbl(response.data.bill_closed));
+          content.append(new accruals_tbl(new accrualsObj(response.data.accruals), self.bill_tbl.data()));
+          content.append(new payments_tbl(response.data));
+          return content.append(new credit_tbl(response.data));
         });
         echo_message_js("сборка УЧЁТ", 'error_message', 100);
         if (this.body.find('#js-accounting-main-content-container').length > 0) {

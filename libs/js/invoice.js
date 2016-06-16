@@ -5080,17 +5080,14 @@
           },
           on: {
             mouseenter: function() {
-              var t;
-              t = $(this);
               $(this).css({
                 'cursor': 'posinter'
               });
               if (!div22.hasClass('notify')) {
                 div22.addClass('notify');
                 return setTimeout(function() {
-                  var notifyContent;
                   if (div22.hasClass('notify') && Number(ttn["return"]) > 0) {
-                    return div22.notify(notifyContent = $('<div/>', {
+                    return div22.notify($('<div/>', {
                       'css': {
                         'textAlign': 'left'
                       },
