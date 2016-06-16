@@ -696,6 +696,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$w = 0;
 			//  получаем информацию по строкам
 			$query = "SELECT * ";
+			$query .= ", RIGHT(CONCAT('0000000' , (invoice_num)),8) as invoice_num";
 			$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date ";
 			$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`spf_return_date`,'%d.%m.%Y') as spf_return_date ";
 

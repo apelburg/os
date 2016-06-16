@@ -843,7 +843,7 @@ class createZpMenKonTbl
       @addMenu()
 
     constructMainContent:(content)->
-      echo_message_js "сборка ОПЦИИ",'error_message', 100
+#      echo_message_js "сборка ОПЦИИ",'error_message', 100
       if @body.find('#js-accounting-main-content-container').length > 0
         @$el.find('#js-accounting-main-content-container').remove()
       @body.append(div = $('<div/>',{'id':'js-accounting-main-content-container',html:''}))
@@ -998,6 +998,8 @@ class accruals_tbl
       click:()->
         # пересчёт выгруженных данных
         self.calcTbl()
+
+        echo_message_js "отправка запроса на пересчёт всего блока"
     })
 
     tr = $('<tr/>',{class:'head'})
@@ -1479,7 +1481,7 @@ class billTrPrototipe
         content.append( new credit_tbl(response.data) )
 
 
-      echo_message_js "сборка УЧЁТ",'error_message', 100
+#      echo_message_js "сборка УЧЁТ",'error_message', 100
       if @body.find('#js-accounting-main-content-container').length > 0
         @$el.find('#js-accounting-main-content-container').remove()
 

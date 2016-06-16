@@ -1065,7 +1065,6 @@
 
       accountingOptions.prototype.constructMainContent = function(content) {
         var div;
-        echo_message_js("сборка ОПЦИИ", 'error_message', 100);
         if (this.body.find('#js-accounting-main-content-container').length > 0) {
           this.$el.find('#js-accounting-main-content-container').remove();
         }
@@ -1262,7 +1261,8 @@
       this.recalc_button = $('<button/>', {
         html: '',
         click: function() {
-          return self.calcTbl();
+          self.calcTbl();
+          return echo_message_js("отправка запроса на пересчёт всего блока");
         }
       });
       tr = $('<tr/>', {
@@ -1918,7 +1918,6 @@
           content.append(new payments_tbl(response.data));
           return content.append(new credit_tbl(response.data));
         });
-        echo_message_js("сборка УЧЁТ", 'error_message', 100);
         if (this.body.find('#js-accounting-main-content-container').length > 0) {
           this.$el.find('#js-accounting-main-content-container').remove();
         }

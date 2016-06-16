@@ -41,6 +41,12 @@
 		//	Учёт
 		/////////////////////////
 
+		/**
+		 * сохранение бонуса
+		 */
+		protected function save_accruals_val_AJAX(){
+			$this->update_one_val_in_one_row(ACCOUNTING_ACCRUALS,$_POST['id'],$_POST['key'],$_POST['val']);
+		}
 
 		/**
 		 * меню со списком менеджеров
@@ -52,7 +58,7 @@
             CASE
                 WHEN name IS NULL THEN ''
                 ELSE CONCAT(SUBSTRING(name, 1, 1), '.')
-            END) AS 'name'";
+            	END) AS 'name'";
 			$query .= " FROM `".MANAGERS_TBL."` WHERE status = '1' AND access = 5";
 
 			if($this->user_access == 5){
@@ -72,14 +78,82 @@
 			$this->responseClass->response['data'] = $managers;
 		}
 
-		protected function get_data_bill_closed_AJAX(){
-			$query = "SELECT * FROM `".INVOICE_TBL."`";
+		# создание строки расчета
+		protected function create_new_accruals_calc_AJAX(){
+			$query = "INSERT INTO `".ACCOUNTING_ACCRUALS."` SET ";
+			// $query .= "`id` = '',";
+			// дата создания заявки
 
-			$query .= " WHERE `manager_id`=?";
 
+			$query = "INSERT INTO `".ACCOUNTING_ACCRUALS."` SET ";
+
+			$query .= " `".$_POST['key']."`=? ";
+
+			$query .= ", `manager_id`=? ";
+			$query .= ", `year`=? ";
+			$query .= ", `month`=? ";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('i',$_GET['manager_id']) or die($this->mysqli->error);
+			$stmt->bind_param('siii',$_POST['val'],$_GET['manager_id'],$_GET['year'],$_GET['month_number']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$this->responseClass->response['data']['accruals'] = $this->get_data_accruals($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+		}
+
+		/**
+		 * главный запрос данных
+		 */
+		protected function get_data_AJAX(){
+			$this->responseClass->response['data']['access'] = $this->user_access;
+			// запрос строк закрытых за месяц счетов
+			if (!isset($_GET['manager_id']) || !isset($_GET['year'])|| !isset($_GET['month_number'])){
+				return;
+			}
+			$this->responseClass->response['data']['bill_closed'] = $this->get_data_bill_closed($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+			// запрос рассчитанных начислений
+			$this->responseClass->response['data']['accruals'] = $this->get_data_accruals($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+		}
+
+		/**
+		 * запрос расчёта ЗП
+		 *
+		 * @param $manager_id
+		 * @param $year
+		 * @param $month
+		 * @return array
+		 */
+		private function get_data_accruals($manager_id,$year,$month){
+			$query = "SELECT t.id, t.manager_id, tb.i ";
+			$query .= ",
+				CASE tb.i
+					WHEN 1 THEN t.salary
+					WHEN 2 THEN t.premium
+					WHEN 3 THEN t.pension
+					WHEN 4 THEN t.bonus
+				END AS money,
+				CASE tb.i
+					WHEN 1 THEN t.salary_r_fl
+					WHEN 2 THEN t.premium_r_fl
+					WHEN 3 THEN t.pension_r_fl
+				END AS flag_r,
+				CASE tb.i
+					WHEN 1 THEN t.salary_r
+					WHEN 2 THEN t.premium_r
+					WHEN 3 THEN t.pension_r        
+				END AS r
+				FROM
+					`".ACCOUNTING_ACCRUALS."` AS t,
+					(SELECT 1 i UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4) tb";
+				
+			$query .= ' WHERE t.manager_id=?';
+			$query .= ' AND t.year=?';
+			$query .= ' AND t.month=?';
+
+			// echo $query;
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('iss',$manager_id,$year,$month) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
@@ -90,9 +164,42 @@
 					$data[] = $row;
 				}
 			}
+			return $data;
+		}
 
+		/**
+		 * вычисляет строки закрытых за месяц счетов
+		 * @return array
+		 */
+		private function get_data_bill_closed($manager_id,$year,$month){
+			$query = "SELECT *";
+			$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`closed_date`,'%d.%m.%Y') as closed_date ";
+			$query .= ", RIGHT(CONCAT('00000000' , (invoice_num)),6) as invoice_num";
+			$query .= " , (price_out_payment - costs) as profit";
+			$query .= " ,CASE
+                WHEN price_out_payment = 0 THEN '0.00'
+                ELSE ROUND(((price_out_payment - costs) / price_out_payment * 100),2)
+            END AS 'pr'";
+			$query .= " FROM `".INVOICE_TBL."`";
 
-			$this->responseClass->response['data'] = $data;
+			$query .= " WHERE `manager_id`=?";
+			$query .= " AND YEAR(closed_date)=?";
+			$query .= " AND MONTH(closed_date)=?";
+
+//			echo $query;
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('iss',$manager_id,$year,$month) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$data_bill_closed = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$data_bill_closed[] = $row;
+				}
+			}
+			return $data_bill_closed;
 		}
 
 		/////////////////////////
