@@ -452,7 +452,7 @@ class createPensionTbl
       class:'footer'
     })
     tr.append($('<td/>'))
-    for num in [9..1]
+    for num in [10..1]
       tr.append($('<td/>',{
         class:'mayBeEdit',
         click:()->
@@ -574,6 +574,7 @@ class zpMenRekTrObj
     salary:       '0.00'
     premium:      '0.00'
     return:       '0.00'
+    premium2:      '0.00'
   enterObj: {}
   options: {}
 
@@ -614,7 +615,7 @@ class createZpMenRekTbl
     tr = $('<tr/>',{
       class:'footer'
     })
-    for num in [5..1]
+    for num in [6..1]
       tr.append($('<td/>',{
         class:'mayBeEdit',
         click:()->
@@ -642,8 +643,11 @@ class createZpMenRekTbl
       css:{'width':px}
     }))
     tr.append($('<th/>',{
-      html:'премия(%)',
+      html:'оклдад',
       css:{'width':px}
+    }))
+    tr.append($('<th/>',{
+      html:'премия(%)',
     }))
     tr.append($('<th/>',{
       html:'оборот',
@@ -651,7 +655,6 @@ class createZpMenRekTbl
     }))
     tr.append($('<th/>',{
       html:'премия(%)',
-
     }))
     tr.append($('<th/>'))
     return tr
@@ -669,6 +672,7 @@ class createZpMenRekTbl
     tr.append(new tdEditRow(data.salary,'salary','money',@saveFunc))
     tr.append(new tdEditRow(data.premium,'premium','money',@saveFunc))
     tr.append(new tdEditRow(data.return,'return','money',@saveFunc))
+    tr.append(new tdEditRow(data.premium,'premium2','money',@saveFunc))
 
     # удаление строки
     tr.append($('<td/>',{
@@ -714,7 +718,7 @@ class createZpMenKonTbl
     tr = $('<tr/>',{
       class:'footer'
     })
-    for num in [3..1]
+    for num in [4..1]
       tr.append($('<td/>',{
         class:'mayBeEdit',
         click:()->
@@ -742,16 +746,16 @@ class createZpMenKonTbl
       css:{'width':px}
     }))
     tr.append($('<th/>',{
-      html:'премия(%)',
+      html:'оклдад',
       css:{'width':px}
     }))
 #    tr.append($('<th/>',{
 #      html:'оборот',
 #      css:{'width':px}
 #    }))
-#    tr.append($('<th/>',{
-#      html:'премия(%)',
-#    }))
+    tr.append($('<th/>',{
+      html:'премия(%)',
+    }))
     tr.append($('<th/>'))
     return tr
 
@@ -766,7 +770,7 @@ class createZpMenKonTbl
     tr.append(new tdEditRow(data.profit_start,'profit_start','money',@saveFunc))
     tr.append(new tdEditRow(data.profit_end,'profit_end','money',@saveFunc))
     tr.append(new tdEditRow(data.salary,'salary','money',@saveFunc))
-#    tr.append(new tdEditRow(data.premium,'premium','money',@saveFunc))
+    tr.append(new tdEditRow(data.premium,'premium','money',@saveFunc))
 #    tr.append(new tdEditRow(data.return,'return','money',@saveFunc))
 
     # удаление строки

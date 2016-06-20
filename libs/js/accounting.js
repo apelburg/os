@@ -543,7 +543,7 @@
         "class": 'footer'
       });
       tr.append($('<td/>'));
-      for (num = j = 9; j >= 1; num = --j) {
+      for (num = j = 10; j >= 1; num = --j) {
         tr.append($('<td/>', {
           "class": 'mayBeEdit',
           click: function() {
@@ -706,7 +706,8 @@
       profit_end: '0.00',
       salary: '0.00',
       premium: '0.00',
-      "return": '0.00'
+      "return": '0.00',
+      premium2: '0.00'
     };
 
     zpMenRekTrObj.prototype.enterObj = {};
@@ -767,7 +768,7 @@
       tr = $('<tr/>', {
         "class": 'footer'
       });
-      for (num = j = 5; j >= 1; num = --j) {
+      for (num = j = 6; j >= 1; num = --j) {
         tr.append($('<td/>', {
           "class": 'mayBeEdit',
           click: function() {
@@ -805,10 +806,13 @@
         }
       }));
       tr.append($('<th/>', {
-        html: 'премия(%)',
+        html: 'оклдад',
         css: {
           'width': px
         }
+      }));
+      tr.append($('<th/>', {
+        html: 'премия(%)'
       }));
       tr.append($('<th/>', {
         html: 'оборот',
@@ -837,6 +841,7 @@
       tr.append(new tdEditRow(data.salary, 'salary', 'money', this.saveFunc));
       tr.append(new tdEditRow(data.premium, 'premium', 'money', this.saveFunc));
       tr.append(new tdEditRow(data["return"], 'return', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.premium, 'premium2', 'money', this.saveFunc));
       tr.append($('<td/>', {
         "class": "delete_row",
         click: function() {
@@ -902,7 +907,7 @@
       tr = $('<tr/>', {
         "class": 'footer'
       });
-      for (num = j = 3; j >= 1; num = --j) {
+      for (num = j = 4; j >= 1; num = --j) {
         tr.append($('<td/>', {
           "class": 'mayBeEdit',
           click: function() {
@@ -940,10 +945,13 @@
         }
       }));
       tr.append($('<th/>', {
-        html: 'премия(%)',
+        html: 'оклдад',
         css: {
           'width': px
         }
+      }));
+      tr.append($('<th/>', {
+        html: 'премия(%)'
       }));
       tr.append($('<th/>'));
       return tr;
@@ -961,6 +969,7 @@
       tr.append(new tdEditRow(data.profit_start, 'profit_start', 'money', this.saveFunc));
       tr.append(new tdEditRow(data.profit_end, 'profit_end', 'money', this.saveFunc));
       tr.append(new tdEditRow(data.salary, 'salary', 'money', this.saveFunc));
+      tr.append(new tdEditRow(data.premium, 'premium', 'money', this.saveFunc));
       tr.append($('<td/>', {
         "class": "delete_row",
         click: function() {
