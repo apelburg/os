@@ -1,4 +1,123 @@
 <?php
+
+
+/**
+ * Class CalculateMoneyBlock
+ *
+ * расчет автоматической ЗП
+ *
+ */
+class CalculateMoneyBlock extends aplStdAJAXMethod{
+	public $manager_id = 0;
+	public $month = 0;
+	public $year = 0;
+
+
+
+	private $salary = 0;
+	private $premium = 0;
+	private $pension = 0;
+
+
+	public function __construct($manager_id = 0,$month = 0,$year = 0){
+		# подключение к БД
+		$this->db();
+
+		$this->manager_id  = $manager_id;
+		$this->month = $month;
+		$this->year = $year;
+
+	}
+
+	public function calculate(){
+		return [
+			'salary'=>$this->salary,
+			'premium'=> $this->premium,
+			'pension' => $this->pension
+		];
+	}
+
+
+	/**
+	 * подсчёт прибыли по закрытм за месяц счетам
+	 */
+	private function get_profit(){
+		$closed = $this->get_data_bill_closed();
+
+		$this->profit = 0;
+		foreach ($closed as $row){
+			$this->profit += $row['profit'];
+		}
+	}
+
+
+
+	/**
+	 * получаем информацию по менеджеру
+	 *
+	 * @param $id
+	 * @return array
+	 */
+	private function get_manager_data($id){
+		$query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id=? ";
+
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('i',$id) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
+
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				return $row;
+			}
+		}
+		return [];
+	}
+
+
+	/**
+	 * вычисляет строки закрытых за месяц счетов
+	 * @return array
+	 */
+	public function get_data_bill_closed(){
+		$query = "SELECT *";
+		$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`closed_date`,'%d.%m.%Y') as closed_date ";
+		$query .= ", RIGHT(CONCAT('00000000' , (invoice_num)),6) as invoice_num";
+		$query .= " , (price_out_payment - costs) as profit";
+		$query .= " ,CASE
+                WHEN price_out_payment = 0 THEN '0.00'
+                ELSE ROUND(((price_out_payment - costs) / price_out_payment * 100),2)
+            END AS 'pr'";
+		$query .= " FROM `".INVOICE_TBL."`";
+
+		$query .= " WHERE `manager_id`=?";
+		$query .= " AND YEAR(closed_date)=?";
+		$query .= " AND MONTH(closed_date)=?";
+
+		//		 echo $query.' - '.$this->manager_id.' - '. $this->year.' - '. $this->month;
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('iss',$this->manager_id, $this->year, $this->month ) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
+		$data_bill_closed = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$data_bill_closed[] = $row;
+			}
+		}
+//
+//		print_r($this);
+//		print_r($this->manager_id);
+
+
+		return $data_bill_closed;
+
+	}
+}
 /**
  * Class accounting
  *
@@ -77,14 +196,78 @@
 
 			$this->responseClass->response['data'] = $managers;
 		}
+		# пересчитываем и обновляем информацию по зп манагера
+		protected function calculate_and_update_accruals_tbl_AJAX(){
+			# БЛОК ПРОВЕРКИ ограничений на пересчёт
+			$date = new DateTime();
+			$time_stump = $date->getTimestamp();
+
+			# проверка прав
+			if ($this->user_access == 5 && $this->user_id != $_GET['manager_id']){
+				$this->responseClass->addMessage('У Вас недостаточно прав для получения данной информации','error_message');
+			}
+
+			# проверка наступления расчётного месяца
+			if($time_stump < strtotime('01.'.$_GET['month_number'].'.'.$_GET['year'])){
+				$this->responseClass->addMessage('Данный месяц ещё не наступил, расчёт запрещён','error_message');
+			}
+
+			# по умолчанию ставим разрешение на пересчет ЗП до 15 дней по прошествию расчетного месяца, потом пересчёт закрыт для расчёта
+			# делается это на случай чтобы случайно не пересчитали старые расчёты, относительно новых вводных, которые спустя скажем год могли измениться (ЗП, компенсации)
+			# иначе вся статистика полетит куда подальше
+			if(strtotime('01.'.$_GET['month_number'].'.'.$_GET['year']) - $time_stump > 1296000){
+				$this->responseClass->addMessage('К сожалению расчётный период по данному месяцу уже завершон, обратитесь за помощтью к администратору.','error_message');
+			}
+
+			# БЛОК ПЕРЕСЧЁТА
+
+			if( isset($_POST['id']) && (int)$_POST['id'] > 0){
+
+			}else{
+				$where['manager_id']  = (int)$_GET['manager_id'];
+				$where['month'] = (int)$_GET['month_number'];
+				$where['year']  = (int)$_GET['year'];
+				$old_row = $this->get_all_tbl(ACCOUNTING_ACCRUALS,$where);
+				if(count($old_row) == 0){
+
+				}else{
+
+				}
+			}
+
+			$this->responseClass->addSimpleWindow($this->printArr($old_row).''.$this->printArr($_POST),'',[]);
+		}
+		# создание новой строки с расчётом начислений
+		private function create_new_accruals_calc(){
+
+
+
+
+		}
+
+
+		# расчёт начислений
+		private function accruals_calc(){
+
+
+
+
+
+
+			$data = [
+				'salary'=>0,
+				'premium'=> 0,
+				'pension' => 0
+			];
+
+
+
+
+		}
+
 
 		# создание строки расчета
 		protected function create_new_accruals_calc_AJAX(){
-			$query = "INSERT INTO `".ACCOUNTING_ACCRUALS."` SET ";
-			// $query .= "`id` = '',";
-			// дата создания заявки
-
-
 			$query = "INSERT INTO `".ACCOUNTING_ACCRUALS."` SET ";
 
 			$query .= " `".$_POST['key']."`=? ";
@@ -111,7 +294,9 @@
 			if (!isset($_GET['manager_id']) || !isset($_GET['year'])|| !isset($_GET['month_number'])){
 				return;
 			}
-			$this->responseClass->response['data']['bill_closed'] = $this->get_data_bill_closed($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+
+			$Calc = new CalculateMoneyBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+			$this->responseClass->response['data']['bill_closed'] = $Calc->get_data_bill_closed();
 			// запрос рассчитанных начислений
 			$this->responseClass->response['data']['accruals'] = $this->get_data_accruals($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
 		}
@@ -167,40 +352,7 @@
 			return $data;
 		}
 
-		/**
-		 * вычисляет строки закрытых за месяц счетов
-		 * @return array
-		 */
-		private function get_data_bill_closed($manager_id,$year,$month){
-			$query = "SELECT *";
-			$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`closed_date`,'%d.%m.%Y') as closed_date ";
-			$query .= ", RIGHT(CONCAT('00000000' , (invoice_num)),6) as invoice_num";
-			$query .= " , (price_out_payment - costs) as profit";
-			$query .= " ,CASE
-                WHEN price_out_payment = 0 THEN '0.00'
-                ELSE ROUND(((price_out_payment - costs) / price_out_payment * 100),2)
-            END AS 'pr'";
-			$query .= " FROM `".INVOICE_TBL."`";
 
-			$query .= " WHERE `manager_id`=?";
-			$query .= " AND YEAR(closed_date)=?";
-			$query .= " AND MONTH(closed_date)=?";
-
-//			echo $query;
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('iss',$manager_id,$year,$month) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
-
-			$data_bill_closed = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$data_bill_closed[] = $row;
-				}
-			}
-			return $data_bill_closed;
-		}
 
 		/////////////////////////
 		//	Настройки
@@ -324,7 +476,7 @@
 			$w = 0;
 			foreach ($where as $key => $ask){
 				$query .= ($w==0)?' WHERE ':' AND ';
-				$query .= ",`$key`='$ask'";
+				$query .= " `$key`='$ask'";
 				$w++;
 			}
 			if ($sort['name'] != ''){
@@ -409,6 +561,9 @@
 			return $int;
 		}
 }
+
+
+
 
 
 

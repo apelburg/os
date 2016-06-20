@@ -1233,7 +1233,7 @@
     accruals_tbl.prototype.accruals_summ = 0;
 
     function accruals_tbl(data, dopData) {
-      var t, tblCase;
+      var tblCase;
       if (dopData == null) {
         dopData = {};
       }
@@ -1243,8 +1243,8 @@
         id: 'js-accruals-tbl',
         'class': 'accounting-tbl'
       });
-      this.tbl.append(this.trHead());
-      this.tbl.append(t = this.trBody(data));
+      this.tbl.append(this.trHead(data));
+      this.tbl.append(this.trBody(data));
       tblCase = $('<div/>').css({
         'float': 'left',
         'width': this.width,
@@ -1255,13 +1255,27 @@
       return tblCase.append(this.tbl);
     }
 
-    accruals_tbl.prototype.trHead = function() {
+    accruals_tbl.prototype.trOffset = function() {
+      var html;
+      return html = [];
+    };
+
+    accruals_tbl.prototype.trOffsetDop = function() {
+      var html;
+      return html = [];
+    };
+
+    accruals_tbl.prototype.trHead = function(data) {
       var self, tr;
       self = this;
       this.recalc_button = $('<button/>', {
         html: '',
         click: function() {
-          self.calcTbl();
+          new sendAjax("calculate_and_update_accruals_tbl", {
+            id: data[0].id
+          }, function() {
+            return self.calcTbl();
+          });
           return echo_message_js("отправка запроса на пересчёт всего блока");
         }
       });
@@ -1317,26 +1331,34 @@
 
   row = (function() {
     function row(n, parentObj) {
-      var tr;
+      var col, col1, tr;
       tr = $('<tr/>', {
         "class": 'body'
       }).data(n);
       if (Number(n.i) === 1) {
+        col = 'salary_r_fl';
+        col1 = 'salary_r';
         tr.append($('<td/>', {
           html: 'Оклад'
         }));
       }
       if (Number(n.i) === 2) {
+        col = 'premium_r_fl';
+        col1 = 'premium_r';
         tr.append($('<td/>', {
           html: 'Премия'
         }));
       }
       if (Number(n.i) === 3) {
+        col = 'pension_r_fl';
+        col1 = 'pension_r';
         tr.append($('<td/>', {
           html: 'Пенсия'
         }));
       }
       if (Number(n.i) === 4) {
+        col = 'none';
+        col1 = 'bonus';
         tr.append($('<td/>', {
           html: 'Бонус'
         }));
@@ -1356,15 +1378,15 @@
                 parentObj.calcTbl();
                 return new sendAjax('save_accruals_val', {
                   id: n.id,
-                  key: 'bonus',
+                  key: col1,
                   val: n.money
                 });
               } else {
                 return new sendAjax('create_new_accruals_calc', {
-                  key: 'bonus',
+                  key: col1,
                   val: Number(t.val())
                 }, function(response) {
-                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), this.dopOptions));
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
                 });
               }
             }
@@ -1374,7 +1396,27 @@
       } else if (Number(n.flag_r) > 0) {
         tr.append($('<td/>', {
           html: $('<input/>', {
-            val: round_money(n.r)
+            val: round_money(n.r),
+            blur: function() {
+              if (Number(n.id) !== 0) {
+                n.r = round_money(Number($(this).val()));
+                tr.data(n);
+                parentObj.calcTbl();
+                $(this).val(n.r);
+                return new sendAjax('save_accruals_val', {
+                  id: n.id,
+                  key: col1,
+                  val: n.r
+                });
+              } else {
+                return new sendAjax('create_new_accruals_calc', {
+                  key: col1,
+                  val: Number(t.val())
+                }, function(response) {
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                });
+              }
+            }
           })
         }));
         tr.append($('<td/>', {
@@ -1382,8 +1424,23 @@
             html: 'Р',
             "class": 'hand',
             click: function() {
-              n.flag_r = 0;
-              return tr.replaceWith(new row(n));
+              if (Number(n.id) !== 0) {
+                n.flag_r = 0;
+                new sendAjax('save_accruals_val', {
+                  id: n.id,
+                  key: col,
+                  val: n.flag_r
+                });
+                tr.replaceWith(new row(n, parentObj));
+                return parentObj.calcTbl();
+              } else {
+                return new sendAjax('create_new_accruals_calc', {
+                  key: col,
+                  val: n.flag_r
+                }, function(response) {
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                });
+              }
             }
           })
         }));
@@ -1396,7 +1453,22 @@
             html: 'А',
             click: function() {
               n.flag_r = 1;
-              return tr.replaceWith(new row(n));
+              if (Number(n.id) !== 0) {
+                new sendAjax('save_accruals_val', {
+                  id: n.id,
+                  key: col,
+                  val: n.flag_r
+                });
+                tr.replaceWith(new row(n, parentObj));
+                return parentObj.calcTbl();
+              } else {
+                return new sendAjax('create_new_accruals_calc', {
+                  key: col,
+                  val: n.flag_r
+                }, function(response) {
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                });
+              }
             }
           })
         }));

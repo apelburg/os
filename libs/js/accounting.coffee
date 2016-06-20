@@ -974,10 +974,16 @@ class accruals_tbl
     # сборка таблицы таблицы
     @tbl = $('<table/>',{id:'js-accruals-tbl','class':'accounting-tbl'});
     # сборка шапки
-    @tbl.append(@trHead())
+    @tbl.append(@trHead(data))
     
-    # сборка шапки
-    @tbl.append(t = @trBody(data))
+    # сборка основного блока начислений
+    @tbl.append(@trBody(data))
+
+    # сборка блока ежемесячных компенсаций
+    # @tbl.append(@trOffset(data))
+
+    # сборка блока дополнительных компенсаций
+    # @tbl.append(@trOffsetDop(data))
 
     tblCase = $('<div/>').css({
       'float':'left'
@@ -990,14 +996,24 @@ class accruals_tbl
 
     return tblCase.append(@tbl)
 
+  # сборка блока ежемесячных компенсаций
+  trOffset:()->
+    html = []
+
+  # сборка блока дополнительных компенсаций
+  trOffsetDop:()->
+    html = []
+
   # Шапка
-  trHead:()->
+  trHead:(data)->
     self = @
     @recalc_button = $('<button/>',{
       html:'',
       click:()->
         # пересчёт выгруженных данных
-        self.calcTbl()
+        new sendAjax("calculate_and_update_accruals_tbl",{id:data[0].id},()->
+          self.calcTbl()
+        )
 
         echo_message_js "отправка запроса на пересчёт всего блока"
     })
@@ -1039,13 +1055,21 @@ class row
   constructor:(n,parentObj)->
     tr = $('<tr/>',{class:'body'}).data(n)
     if Number(n.i) == 1
+      col = 'salary_r_fl'
+      col1 = 'salary_r'
       tr.append($('<td/>',{html:'Оклад'}))
     if Number(n.i) == 2
 #      n.type = ''
+      col = 'premium_r_fl'
+      col1 = 'premium_r'
       tr.append($('<td/>',{html:'Премия'}))
     if Number(n.i) == 3
+      col = 'pension_r_fl'
+      col1 = 'pension_r'
       tr.append($('<td/>',{html:'Пенсия'}))
     if Number(n.i) == 4
+      col = 'none'
+      col1 = 'bonus'
       tr.append($('<td/>',{html:'Бонус'}))
 
 
@@ -1058,33 +1082,59 @@ class row
           if Number(n.id) != 0
             n.flag_r = 0
             n.money = Number(t.val())
-
             tr.data(n)
-
-            
             parentObj.calcTbl()
-            new sendAjax('save_accruals_val',{id:n.id,key:'bonus',val:n.money})
+            new sendAjax('save_accruals_val',{id:n.id,key:col1,val:n.money})
           else
 
             new sendAjax('create_new_accruals_calc',{
-              key:'bonus',
+              key:col1,
               val:Number(t.val())
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), @dopOptions ))
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
             )
 #
       })}))
       tr.append($('<td/>'))
+
+    # вычисляем столбец
     else if Number(n.flag_r) > 0
       tr.append($('<td/>',{html:$('<input/>',{
-        val:round_money(n.r)})
-      }))
+        val:round_money(n.r)
+        blur:()->
+          if Number(n.id) != 0
+            n.r = round_money(Number($(this).val()))
+            tr.data(n)
+            parentObj.calcTbl()
+            $(this).val(n.r)
+            new sendAjax('save_accruals_val',{id:n.id,key:col1,val:n.r})
+          else
+            new sendAjax('create_new_accruals_calc',{
+              key:col1,
+              val:Number(t.val())
+            },(response)->
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+            )
+      })}))
       tr.append($('<td/>',{html:$('<button/>',{
         html:'Р',
         class:'hand',
         click:()->
-          n.flag_r = 0
-          tr.replaceWith(new row(n))
+          if Number(n.id) != 0
+            n.flag_r = 0
+
+            new sendAjax('save_accruals_val',{
+              id:n.id,
+              key:col,val:n.flag_r
+            })
+            tr.replaceWith(new row(n,parentObj))
+            parentObj.calcTbl()
+          else
+            new sendAjax('create_new_accruals_calc',{
+              key:col,val:n.flag_r
+            },(response)->
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+            )
       })}))
     else
       tr.append($('<td/>',{html:round_money(n.money)}))
@@ -1092,7 +1142,21 @@ class row
         html:'А',
         click:()->
           n.flag_r = 1
-          tr.replaceWith(new row(n))
+          if Number(n.id) != 0
+            new sendAjax('save_accruals_val',{
+              id:n.id,
+              key:col,
+              val:n.flag_r
+            })
+            tr.replaceWith(new row(n,parentObj))
+            parentObj.calcTbl()
+          else
+            new sendAjax('create_new_accruals_calc',{
+              key:col,
+              val:n.flag_r
+            },(response)->
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+            )
       })}))
 
     tr.append($('<td/>'))
