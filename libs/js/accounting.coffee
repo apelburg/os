@@ -1400,12 +1400,24 @@ class payments_tbl
       click:()->
         self.calcTbl()
     })
+    @recalc_button = $('<button/>',{
+      html:'',
+      click:()->
+        # пересчёт выгруженных данных
+        new sendAjax("calculate_and_update_payment_tbl",{id:data[0].id},(response)->
+          self.tbl.payments_tbl(new accruals_tbl(new accrualsObj(response.data.payments)))
+        )
+    })
 
     tr = $('<tr/>',{class:'head'})
     tr.append($('<th/>',{html:'Выплаты'}))
     tr.append(@accruals_summ = $('<th/>',{html:round_money(21000)}))
-    tr.append($('<th/>',{html:@recalc_button}))
+#    tr.append($('<th/>',{html:@recalc_button}))
     tr.append($('<th/>',{html:''}))
+    tr.append($('<th/>',{html:''}))
+
+  trFooter:()->
+    []
 
   trFooter:()->
     []
@@ -1503,7 +1515,7 @@ class create_bill_tbl
   trHead:()->
     tr = $('<tr/>',{class:'head'})
     tr.append($('<th/>',{html:'№счёта, дата'}))
-#    tr.append($('<th/>',{html:'заказа'}))
+    # tr.append($('<th/>',{html:'заказа'}))
     tr.append($('<th/>',{html:'выручка'}))
     tr.append($('<th/>',{html:'прибыль'}))
     tr.append($('<th/>',{html:'%'}))
@@ -1747,9 +1759,9 @@ class billTrPrototipe
 
         content.append( new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
 
-        content.append( new payments_tbl(response.data) )
+        content.append( new payments_tbl(response.data.payments) )
 
-        content.append( new credit_tbl(response.data) )
+#        content.append( new credit_tbl(response.data) )
 
 
 #      echo_message_js "сборка УЧЁТ",'error_message', 100

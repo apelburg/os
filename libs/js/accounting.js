@@ -1785,6 +1785,16 @@
           return self.calcTbl();
         }
       });
+      this.recalc_button = $('<button/>', {
+        html: '',
+        click: function() {
+          return new sendAjax("calculate_and_update_payment_tbl", {
+            id: data[0].id
+          }, function(response) {
+            return self.tbl.payments_tbl(new accruals_tbl(new accrualsObj(response.data.payments)));
+          });
+        }
+      });
       tr = $('<tr/>', {
         "class": 'head'
       });
@@ -1795,11 +1805,15 @@
         html: round_money(21000)
       }));
       tr.append($('<th/>', {
-        html: this.recalc_button
+        html: ''
       }));
       return tr.append($('<th/>', {
         html: ''
       }));
+    };
+
+    payments_tbl.prototype.trFooter = function() {
+      return [];
     };
 
     payments_tbl.prototype.trFooter = function() {
@@ -2251,8 +2265,7 @@
         new sendAjax("get_data", {}, function(response) {
           content.append(self.bill_tbl = new create_bill_tbl(response.data.bill_closed));
           content.append(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
-          content.append(new payments_tbl(response.data));
-          return content.append(new credit_tbl(response.data));
+          return content.append(new payments_tbl(response.data.payments));
         });
         if (this.body.find('#js-accounting-main-content-container').length > 0) {
           this.$el.find('#js-accounting-main-content-container').remove();

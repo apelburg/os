@@ -621,7 +621,11 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 				$this->responseClass->response['data']['compensation'] = $Calc->get_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
 			}
 
+				$this->responseClass->response['data']['payments'] = $this->get_get_data_payments();
+
 		}
+
+
 
 		/**
 		 * запрос расчёта ЗП
@@ -672,6 +676,15 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 				}
 			}
 			return $data;
+		}
+
+		private function get_get_data_payments(){
+			return $this->get_all_tbl_simple(ACCOUNTING_ACCRUALS_PAY);
+		}
+
+
+		protected function calculate_and_update_payment_tbl_AJAX(){
+			$this->get_get_data_payments();
 		}
 
 
@@ -796,6 +809,30 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 		 */
 		private function get_all_tbl($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
 			$query = "SELECT *,DATE_FORMAT(`".$table."`.`date`,'%d.%m.%Y') as date FROM `".$table."`";
+
+			$w = 0;
+			foreach ($where as $key => $ask){
+				$query .= ($w==0)?' WHERE ':' AND ';
+				$query .= " `$key`='$ask'";
+				$w++;
+			}
+			if ($sort['name'] != ''){
+				$query .= " ORDER BY `".$table."`.`".$sort['name']."` ".$sort['type'];
+			}
+
+
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$rows = array();
+			if($result->num_rows > 0) {
+				while ($row = $result->fetch_assoc()) {
+					$rows[] = $row;
+				}
+			}
+			return $rows;
+		}
+
+		private function get_all_tbl_simple($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
+			$query = "SELECT * FROM `".$table."`";
 
 			$w = 0;
 			foreach ($where as $key => $ask){
