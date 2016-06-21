@@ -57,18 +57,19 @@
 	define("INVOICE_COSTS_PAY",'os__invoice_costs_payment');// оплаты поставщикам
 	define("INVOICE_COMMENTS","os__invoice_comments"); // таблица комментариев по счетам
 
-	define("ACCOUNTING_PENSION","os__accounting_options_pension"); // таблица настроек пенсии
-	define("ACCOUNTING_ZP_KON","os__accounting_options_kon"); // таблица настроек расчета ЗП менам по рекламщикам
-	define("ACCOUNTING_ZP_REK","os__accounting_options_rek"); // таблица настроек расчета ЗП менам по рекламщикам
-	define("ACCOUNTING_ACCRUALS","os__accounting_accruals"); // таблица рассчитанных начислений по зп
-	define("ACCOUNTING_ACCRUALS_COMP","os__accounting_accruals_compensation_imp"); // таблица зафиксированных компенсаций
+	define("ACCOUNTING_PENSION","os__accounting_options_pension"); // 					таблица настроек пенсии
+	define("ACCOUNTING_ZP_KON","os__accounting_options_kon"); // 						таблица настроек расчета ЗП менам по конечникам
+	define("ACCOUNTING_ZP_REK","os__accounting_options_rek"); // 						таблица настроек расчета ЗП менам по рекламщикам
+	define("ACCOUNTING_ACCRUALS","os__accounting_accruals"); // 						таблица рассчитанных начислений по зп
+	define("ACCOUNTING_ACCRUALS_COMP","os__accounting_accruals_compensation_imp"); //	таблица зафиксированных компенсаций
+	define("ACCOUNTING_ACCRUALS_DOP","os__accounting_accruals_compensation_dop"); //	таблица зафиксированных компенсаций
 
-	define("SUPPLIERS_TBL","os__supplier_list"); // таблица поставщиков
-	define("SUPPLIERS_ACTIVITIES_TBL","os__suppliers_activities"); // таблица видов деятельности поставщиков	
-	define("SUPPLIERS_CONT_FACES_TBL","os__supplier_cont_faces_relation"); // таблица контактных лиц поставщиков
-	define("SUPPLIERS_RATINGS_TBL","os__suppliers_rating"); // таблица контактных лиц поставщиков	
-	define("RELATE_SUPPLIERS_ACTIVITIES_TBL","os__supplier_activity_relation"); // таблица соотношения клиентов и видов деятельности
-	define("MANAGERS_TBL","os__manager_list"); // таблица менеджеров
+	define("SUPPLIERS_TBL", "os__supplier_list"); // таблица поставщиков
+	define("SUPPLIERS_ACTIVITIES_TBL", "os__suppliers_activities"); // таблица видов деятельности поставщиков
+	define("SUPPLIERS_CONT_FACES_TBL", "os__supplier_cont_faces_relation"); // таблица контактных лиц поставщиков
+	define("SUPPLIERS_RATINGS_TBL", "os__suppliers_rating"); // таблица контактных лиц поставщиков
+	define("RELATE_SUPPLIERS_ACTIVITIES_TBL", "os__supplier_activity_relation"); // таблица соотношения клиентов и видов деятельности
+	define("MANAGERS_TBL", "os__manager_list"); // таблица менеджеров
 	define("COMPENSATION_TBL","os__manager_compensation"); // таблица компенсаций для работников компаниии
 	define("MANAGERS_DOP_INFO_TBL","os__manager_dop_info"); // таблица менеджеров c дополнительной информацией
 	define("PERSONAL_MANAGERS_GROUPS_TBL","os__personal_managers_groups"); // группы для страницы на сайте - "персональный менеджер"

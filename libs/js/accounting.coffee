@@ -161,8 +161,9 @@ class modalConfirm
         $(_this.selfObj.winDiv).dialog('close').dialog('destroy').remove()
 #          $(this).parent().parent().parent().parent().parent().prev().dialog('destroy').remove();
     }]
-
     @selfObj = new modalWindow(@options, {single: false})
+
+
 
 ###
 # прототип окна
@@ -249,7 +250,7 @@ class modalWindow
       close: (event, ui)->
         _this.sittings.close(event, ui)
 
-# // buttons: buttons
+    # // buttons: buttons
     }).parent();
     if(@options.buttons.length == 0)
       @options.buttons.push({
@@ -452,7 +453,7 @@ class createPensionTbl
       class:'footer'
     })
     tr.append($('<td/>'))
-    for num in [10..1]
+    for num in [9..1]
       tr.append($('<td/>',{
         class:'mayBeEdit',
         click:()->
@@ -971,9 +972,9 @@ class accruals_tbl
   paddingBlock:6
   accruals_summ: 0
 
-  constructor:(data,dopData = {})->
+  constructor:(data,dataComp = {}, dataDopComp = {})->
     @pribl = 0
-    @dopOptions = dopData
+    @dataComp = dataComp
 
     # сборка таблицы таблицы
     @tbl = $('<table/>',{id:'js-accruals-tbl','class':'accounting-tbl'});
@@ -982,6 +983,21 @@ class accruals_tbl
     
     # сборка основного блока начислений
     @tbl.append(@trBody(data))
+
+    # сборка блока компенсаций
+    @tbl.append(@trCompensationRows(dataComp))
+
+    # дополнительные компенсации
+    @tbl.append(@trDopCompRow(dataDopComp))
+
+    # кнопка добавления компенсаций
+    @tbl.append(@trFooter(data))
+
+
+    @tbl.find('tr.body.str:last td,tr.body.compRow:last td').css({
+      'borderBottom':'1px solid grey'
+    })
+
 
     # сборка блока ежемесячных компенсаций
     # @tbl.append(@trOffset(data))
@@ -1015,11 +1031,9 @@ class accruals_tbl
       html:'',
       click:()->
         # пересчёт выгруженных данных
-        new sendAjax("calculate_and_update_accruals_tbl",{id:data[0].id},()->
-          self.calcTbl()
+        new sendAjax("calculate_and_update_accruals_tbl",{id:data[0].id},(response)->
+          self.tbl.replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation))
         )
-
-        echo_message_js "отправка запроса на пересчёт всего блока"
     })
 
     tr = $('<tr/>',{class:'head'})
@@ -1032,14 +1046,98 @@ class accruals_tbl
     rows = []
     for i in [0..(data.length - 1)]
       rows.push(new row(data[i],@))
+    rows
 
+  trCompensationRows:(data)->
+    console.log data
+    rows = []
+    if data.length > 0
+      for i in [0..(data.length - 1)]
+        rows.push(new compRow(data[i],@))
+    rows
+
+  trDopCompRow:(data)->
+    console.log data
+    rows = []
+    if data.length > 0
+      for i in [0..(data.length - 1)]
+        rows.push(new dopCompRow(data[i],@))
     rows
 
 
+  trFooter:(data)->
+    self = @
+    console.log
+    rows = $('<tr/>')
+    rows.append($('<td/>',{
+      'colspan':4,
+      html:$('<div/>',{
+        html:'Добавить компенсацию',
+        'class':'link_add',
+        click:()->
+# контент для окна создания записи компенсации
+          html = $('<div/>',{
+            id:'user_window_compensations_form'
+          })
+          html.append($('<div/>').append(win_inp_name = $('<input/>',{
+            placeholder:'название'
+          })))
+          html.append($('<div/>').append(win_inp_val = $('<input/>',{
+            placeholder:'стоимость'
+            val:round_money(0)
+            focus:()->
+              if(Number($(this).val()) == 0)
+                $(this).val('')
+              else
+                t = $(this)
+                setTimeout(()->
+
+                  t.select()
+                , 50)
+            blur:()->
+              $(this).val(round_money(Number($(this).val())))
+          })))
+          # окна создания записи компенсации
+          self.win_window = new modalWindow({
+            html: html,
+            maxHeight: '100%',
+            maxWidth: '90%',
+            title: 'Завести строку компенсации',
+            buttons: [
+              {
+                text: 'Закрыть',
+                class: 'button_yes_or_no no',
+                click: ()->
+                  console.log self.win_window.winDiv[0]
+                  $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
+              },{
+                text: 'Создать',
+                class: 'button_yes_or_no',
+                click: ()->
+                  new sendAjax('create_dop_compensation',{
+                      id:data[0].id,
+                      name:win_inp_name.val(),
+                      val:win_inp_val.val(),
+                      flag_r:'1'
+                    },(response)->
+                    rows.before(new dopCompRow(new dopCompRowObj(response.data) ,self))
+                    $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
+                  )
+
+              }
+            ]
+          }, {
+            closeOnEscape: true,
+            single: true,
+            close: (event, ui) ->
+              $('#quick_button_div .button').eq(1).removeClass('checked')
+          })
 
 
-  trFooter:()->
-    []
+
+      })
+
+    }))
   # пересчёт выгруженных данных
   calcTbl:()->
 
@@ -1048,16 +1146,121 @@ class accruals_tbl
     @tbl.find('.body').each(()->
       data = $(this).data()
       if data.flag_r > 0 # если ручной режим
-        pribl = Number(data.r) + pribl
+        num = data.r
       else
-        pribl = Number(data.money) + pribl
+        num = data.money
+      if(data.name != undefined )
+        pribl = pribl + Number(num)
+      else
+        pribl = pribl + Number(num)
     )
     self.accruals_summ.html(round_money(pribl))
+
+class dopCompRowObj
+  defaults:
+    id: 0
+    name:'без названия'
+    r:    '0.00'
+
+  constructor: (data = {})->
+    @options = {}
+
+    for key,el of data
+      if el != null
+        @options[key] = el
+    return $.extend({}, @defaults, @options)
+
+
+# строка дополнителоьных компенсаций
+class dopCompRow
+  constructor:(n,parentObj)->
+    tr = $('<tr/>',{
+      class:'body doPcompRow',
+      click:()->
+        console.log $(this).data()
+    }).data(n)
+    # название
+    tr.append($('<td/>',{html:n.name}));
+
+    tr.append($('<td/>',{html:$('<input/>',{
+      val:round_money(n.r)
+      blur:()->
+        n.r = round_money(Number($(this).val()))
+        tr.data(n)
+        parentObj.calcTbl()
+        $(this).val(n.r)
+        new sendAjax('save_dop_compensation_val',{id:n.id,val:n.r,key:'r'})
+    })}))
+
+    tr.append($('<td/>',{html:$('<button/>',{
+      html:'X',
+      class:'hand delete',
+
+      click:()->
+        n.flag_r = 0
+        new sendAjax('delete_dop_compensation_val',{
+          id  : n.id
+        })
+        tr.remove()
+        parentObj.calcTbl()
+    })})).append($('<td/>'))
+
+    return tr
+
+class compRow
+  constructor:(n,parentObj)->
+    tr = $('<tr/>',{class:'body compRow'}).data(n)
+    # название
+    tr.append($('<td/>',{html:n.name}));
+
+
+    # вычисляем столбец
+    if Number(n.flag_r) > 0
+      tr.append($('<td/>',{html:$('<input/>',{
+        val:round_money(n.r)
+        blur:()->
+          n.r = round_money(Number($(this).val()))
+          tr.data(n)
+          parentObj.calcTbl()
+          $(this).val(n.r)
+          new sendAjax('save_compensation_val',{id:n.id,key:'r',val:n.r})
+      })}))
+
+      tr.append($('<td/>',{html:$('<button/>',{
+        html:'Р',
+        class:'hand',
+        click:()->
+          n.flag_r = 0
+          new sendAjax('save_compensation_val',{
+            id  : n.id ,
+            key : 'flag_r',
+            val : n.flag_r
+          })
+          tr.replaceWith(new compRow(n,parentObj))
+          parentObj.calcTbl()
+      })}))
+    else
+      tr.append($('<td/>',{html:round_money(n.money)}))
+      tr.append($('<td/>',{html:$('<button/>',{
+        html:'А',
+        click:()->
+          n.flag_r = 1
+          new sendAjax('save_compensation_val',{
+            id:n.id,
+            key : 'flag_r',
+            val:n.flag_r
+          })
+          tr.replaceWith(new compRow(n,parentObj))
+          parentObj.calcTbl()
+      })}))
+
+    tr.append($('<td/>'))
+    return tr
 
 
 class row
   constructor:(n,parentObj)->
-    tr = $('<tr/>',{class:'body'}).data(n)
+    tr = $('<tr/>',{class:'body str'}).data(n)
     if Number(n.i) == 1
       col = 'salary_r_fl'
       col1 = 'salary_r'
@@ -1089,13 +1292,13 @@ class row
             tr.data(n)
             parentObj.calcTbl()
             new sendAjax('save_accruals_val',{id:n.id,key:col1,val:n.money})
-          else
 
+          else
             new sendAjax('create_new_accruals_calc',{
               key:col1,
               val:Number(t.val())
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
             )
 #
       })}))
@@ -1117,7 +1320,7 @@ class row
               key:col1,
               val:Number(t.val())
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
             )
       })}))
       tr.append($('<td/>',{html:$('<button/>',{
@@ -1137,7 +1340,7 @@ class row
             new sendAjax('create_new_accruals_calc',{
               key:col,val:n.flag_r
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
             )
       })}))
     else
@@ -1159,7 +1362,7 @@ class row
               key:col,
               val:n.flag_r
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions ))
+              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals) ,response.data.compensation, response.data.dop_compensation))
             )
       })}))
 
@@ -1542,7 +1745,7 @@ class billTrPrototipe
       new sendAjax "get_data",{},(response)->
         content.append(self.bill_tbl =  new create_bill_tbl(response.data.bill_closed))
 
-        content.append( new accruals_tbl(new accrualsObj(response.data.accruals), self.bill_tbl.data()) )
+        content.append( new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
 
         content.append( new payments_tbl(response.data) )
 

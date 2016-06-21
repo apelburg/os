@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, cyrill_to_latin, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, pensionTrObj, round_money, row, sendAjax, tdEditRow, zpMenRekTrObj,
+  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, cyrill_to_latin, dopCompRow, dopCompRowObj, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, pensionTrObj, round_money, row, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -543,7 +543,7 @@
         "class": 'footer'
       });
       tr.append($('<td/>'));
-      for (num = j = 10; j >= 1; num = --j) {
+      for (num = j = 9; j >= 1; num = --j) {
         tr.append($('<td/>', {
           "class": 'mayBeEdit',
           click: function() {
@@ -1241,19 +1241,28 @@
 
     accruals_tbl.prototype.accruals_summ = 0;
 
-    function accruals_tbl(data, dopData) {
+    function accruals_tbl(data, dataComp, dataDopComp) {
       var tblCase;
-      if (dopData == null) {
-        dopData = {};
+      if (dataComp == null) {
+        dataComp = {};
+      }
+      if (dataDopComp == null) {
+        dataDopComp = {};
       }
       this.pribl = 0;
-      this.dopOptions = dopData;
+      this.dataComp = dataComp;
       this.tbl = $('<table/>', {
         id: 'js-accruals-tbl',
         'class': 'accounting-tbl'
       });
       this.tbl.append(this.trHead(data));
       this.tbl.append(this.trBody(data));
+      this.tbl.append(this.trCompensationRows(dataComp));
+      this.tbl.append(this.trDopCompRow(dataDopComp));
+      this.tbl.append(this.trFooter(data));
+      this.tbl.find('tr.body.str:last td,tr.body.compRow:last td').css({
+        'borderBottom': '1px solid grey'
+      });
       tblCase = $('<div/>').css({
         'float': 'left',
         'width': this.width,
@@ -1280,12 +1289,11 @@
       this.recalc_button = $('<button/>', {
         html: '',
         click: function() {
-          new sendAjax("calculate_and_update_accruals_tbl", {
+          return new sendAjax("calculate_and_update_accruals_tbl", {
             id: data[0].id
-          }, function() {
-            return self.calcTbl();
+          }, function(response) {
+            return self.tbl.replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
           });
-          return echo_message_js("отправка запроса на пересчёт всего блока");
         }
       });
       tr = $('<tr/>', {
@@ -1314,8 +1322,105 @@
       return rows;
     };
 
-    accruals_tbl.prototype.trFooter = function() {
-      return [];
+    accruals_tbl.prototype.trCompensationRows = function(data) {
+      var i, j, ref, rows;
+      console.log(data);
+      rows = [];
+      if (data.length > 0) {
+        for (i = j = 0, ref = data.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+          rows.push(new compRow(data[i], this));
+        }
+      }
+      return rows;
+    };
+
+    accruals_tbl.prototype.trDopCompRow = function(data) {
+      var i, j, ref, rows;
+      console.log(data);
+      rows = [];
+      if (data.length > 0) {
+        for (i = j = 0, ref = data.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+          rows.push(new dopCompRow(data[i], this));
+        }
+      }
+      return rows;
+    };
+
+    accruals_tbl.prototype.trFooter = function(data) {
+      var rows, self;
+      self = this;
+      console.log;
+      rows = $('<tr/>');
+      return rows.append($('<td/>', {
+        'colspan': 4,
+        html: $('<div/>', {
+          html: 'Добавить компенсацию',
+          'class': 'link_add',
+          click: function() {
+            var html, win_inp_name, win_inp_val;
+            html = $('<div/>', {
+              id: 'user_window_compensations_form'
+            });
+            html.append($('<div/>').append(win_inp_name = $('<input/>', {
+              placeholder: 'название'
+            })));
+            html.append($('<div/>').append(win_inp_val = $('<input/>', {
+              placeholder: 'стоимость',
+              val: round_money(0),
+              focus: function() {
+                var t;
+                if (Number($(this).val()) === 0) {
+                  return $(this).val('');
+                } else {
+                  t = $(this);
+                  return setTimeout(function() {
+                    return t.select();
+                  }, 50);
+                }
+              },
+              blur: function() {
+                return $(this).val(round_money(Number($(this).val())));
+              }
+            })));
+            return self.win_window = new modalWindow({
+              html: html,
+              maxHeight: '100%',
+              maxWidth: '90%',
+              title: 'Завести строку компенсации',
+              buttons: [
+                {
+                  text: 'Закрыть',
+                  "class": 'button_yes_or_no no',
+                  click: function() {
+                    console.log(self.win_window.winDiv[0]);
+                    return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
+                  }
+                }, {
+                  text: 'Создать',
+                  "class": 'button_yes_or_no',
+                  click: function() {
+                    return new sendAjax('create_dop_compensation', {
+                      id: data[0].id,
+                      name: win_inp_name.val(),
+                      val: win_inp_val.val(),
+                      flag_r: '1'
+                    }, function(response) {
+                      rows.before(new dopCompRow(new dopCompRowObj(response.data), self));
+                      return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
+                    });
+                  }
+                }
+              ]
+            }, {
+              closeOnEscape: true,
+              single: true,
+              close: function(event, ui) {
+                return $('#quick_button_div .button').eq(1).removeClass('checked');
+              }
+            });
+          }
+        })
+      }));
     };
 
     accruals_tbl.prototype.calcTbl = function() {
@@ -1323,12 +1428,17 @@
       self = this;
       pribl = 0;
       this.tbl.find('.body').each(function() {
-        var data;
+        var data, num;
         data = $(this).data();
         if (data.flag_r > 0) {
-          return pribl = Number(data.r) + pribl;
+          num = data.r;
         } else {
-          return pribl = Number(data.money) + pribl;
+          num = data.money;
+        }
+        if (data.name !== void 0) {
+          return pribl = pribl + Number(num);
+        } else {
+          return pribl = pribl + Number(num);
         }
       });
       return self.accruals_summ.html(round_money(pribl));
@@ -1338,11 +1448,156 @@
 
   })();
 
+  dopCompRowObj = (function() {
+    dopCompRowObj.prototype.defaults = {
+      id: 0,
+      name: 'без названия',
+      r: '0.00'
+    };
+
+    function dopCompRowObj(data) {
+      var el, key;
+      if (data == null) {
+        data = {};
+      }
+      this.options = {};
+      for (key in data) {
+        el = data[key];
+        if (el !== null) {
+          this.options[key] = el;
+        }
+      }
+      return $.extend({}, this.defaults, this.options);
+    }
+
+    return dopCompRowObj;
+
+  })();
+
+  dopCompRow = (function() {
+    function dopCompRow(n, parentObj) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'body doPcompRow',
+        click: function() {
+          return console.log($(this).data());
+        }
+      }).data(n);
+      tr.append($('<td/>', {
+        html: n.name
+      }));
+      tr.append($('<td/>', {
+        html: $('<input/>', {
+          val: round_money(n.r),
+          blur: function() {
+            n.r = round_money(Number($(this).val()));
+            tr.data(n);
+            parentObj.calcTbl();
+            $(this).val(n.r);
+            return new sendAjax('save_dop_compensation_val', {
+              id: n.id,
+              val: n.r,
+              key: 'r'
+            });
+          }
+        })
+      }));
+      tr.append($('<td/>', {
+        html: $('<button/>', {
+          html: 'X',
+          "class": 'hand delete',
+          click: function() {
+            n.flag_r = 0;
+            new sendAjax('delete_dop_compensation_val', {
+              id: n.id
+            });
+            tr.remove();
+            return parentObj.calcTbl();
+          }
+        })
+      })).append($('<td/>'));
+      return tr;
+    }
+
+    return dopCompRow;
+
+  })();
+
+  compRow = (function() {
+    function compRow(n, parentObj) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'body compRow'
+      }).data(n);
+      tr.append($('<td/>', {
+        html: n.name
+      }));
+      if (Number(n.flag_r) > 0) {
+        tr.append($('<td/>', {
+          html: $('<input/>', {
+            val: round_money(n.r),
+            blur: function() {
+              n.r = round_money(Number($(this).val()));
+              tr.data(n);
+              parentObj.calcTbl();
+              $(this).val(n.r);
+              return new sendAjax('save_compensation_val', {
+                id: n.id,
+                key: 'r',
+                val: n.r
+              });
+            }
+          })
+        }));
+        tr.append($('<td/>', {
+          html: $('<button/>', {
+            html: 'Р',
+            "class": 'hand',
+            click: function() {
+              n.flag_r = 0;
+              new sendAjax('save_compensation_val', {
+                id: n.id,
+                key: 'flag_r',
+                val: n.flag_r
+              });
+              tr.replaceWith(new compRow(n, parentObj));
+              return parentObj.calcTbl();
+            }
+          })
+        }));
+      } else {
+        tr.append($('<td/>', {
+          html: round_money(n.money)
+        }));
+        tr.append($('<td/>', {
+          html: $('<button/>', {
+            html: 'А',
+            click: function() {
+              n.flag_r = 1;
+              new sendAjax('save_compensation_val', {
+                id: n.id,
+                key: 'flag_r',
+                val: n.flag_r
+              });
+              tr.replaceWith(new compRow(n, parentObj));
+              return parentObj.calcTbl();
+            }
+          })
+        }));
+      }
+      tr.append($('<td/>'));
+      return tr;
+    }
+
+    return compRow;
+
+  })();
+
   row = (function() {
     function row(n, parentObj) {
       var col, col1, tr;
       tr = $('<tr/>', {
-        "class": 'body'
+        "class": 'body str'
       }).data(n);
       if (Number(n.i) === 1) {
         col = 'salary_r_fl';
@@ -1395,7 +1650,7 @@
                   key: col1,
                   val: Number(t.val())
                 }, function(response) {
-                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
                 });
               }
             }
@@ -1422,7 +1677,7 @@
                   key: col1,
                   val: Number(t.val())
                 }, function(response) {
-                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
                 });
               }
             }
@@ -1447,7 +1702,7 @@
                   key: col,
                   val: n.flag_r
                 }, function(response) {
-                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
                 });
               }
             }
@@ -1475,7 +1730,7 @@
                   key: col,
                   val: n.flag_r
                 }, function(response) {
-                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), parentObj.dopOptions));
+                  return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
                 });
               }
             }
@@ -1995,7 +2250,7 @@
         });
         new sendAjax("get_data", {}, function(response) {
           content.append(self.bill_tbl = new create_bill_tbl(response.data.bill_closed));
-          content.append(new accruals_tbl(new accrualsObj(response.data.accruals), self.bill_tbl.data()));
+          content.append(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
           content.append(new payments_tbl(response.data));
           return content.append(new credit_tbl(response.data));
         });

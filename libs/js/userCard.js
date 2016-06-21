@@ -485,69 +485,7 @@
         tbl.push(tr = $('<tr/>'));
         tr.append($('<td/>').append($('<button/>', {
           'html': "Добавить",
-          click: function() {
-            var html, win_inp_name, win_inp_val;
-            html = $('<div/>', {
-              id: 'user_window_compensations_form'
-            });
-            html.append($('<div/>').append(win_inp_name = $('<input/>', {
-              placeholder: 'название'
-            })));
-            html.append($('<div/>').append(win_inp_val = $('<input/>', {
-              placeholder: 'стоимость',
-              val: round_money(0),
-              focus: function() {
-                var t;
-                if (Number($(this).val()) === 0) {
-                  return $(this).val('');
-                } else {
-                  t = $(this);
-                  return setTimeout(function() {
-                    return t.select();
-                  }, 50);
-                }
-              },
-              blur: function() {
-                return $(this).val(round_money(Number($(this).val())));
-              }
-            })));
-            return self.win_window = new modalWindow({
-              html: html,
-              maxHeight: '100%',
-              maxWidth: '90%',
-              title: 'Завести строку компенсации',
-              buttons: [
-                {
-                  text: 'Закрыть',
-                  "class": 'button_yes_or_no no',
-                  click: function() {
-                    console.log(self.win_window.winDiv[0]);
-                    return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
-                  }
-                }, {
-                  text: 'Создать',
-                  "class": 'button_yes_or_no',
-                  click: function() {
-                    return new sendAjax('create_compensation_row', {
-                      user_id: self.options.id,
-                      name: win_inp_name.val(),
-                      val: win_inp_val.val(),
-                      url: 'http://' + window.location.hostname + '/os/?page=user_api'
-                    }, function(response) {
-                      tr.before(self.create_compensation_row(response.data));
-                      return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
-                    });
-                  }
-                }
-              ]
-            }, {
-              closeOnEscape: true,
-              single: true,
-              close: function(event, ui) {
-                return $('#quick_button_div .button').eq(1).removeClass('checked');
-              }
-            });
-          }
+          click: function() {}
         })));
         tr.append($('<td/>'));
         tr.append($('<td/>'));

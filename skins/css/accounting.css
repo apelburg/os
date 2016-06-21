@@ -276,9 +276,28 @@ tr td.mayBeEdit:hover{
         /* Standard */
     transition: all 0.3s ease;
 }
+#js-accruals-tbl tr td div.link_add{
+    font-style: italic;
+    font-size: 11px;
+    text-decoration: underline;
+    color:grey;
+    background-color: #fff;
+    padding: 20px;
+    cursor: pointer;
+}
+#js-accruals-tbl tr td div.link_add:hover{
+    background-color: #f1f1f1;
+}
 #js-accruals-tbl tr.head th:nth-of-type(3) button:active{
     /*background-position: 50% 65% ;*/
     transform: rotate(15deg)
+}
+
+#js-accruals-tbl.accounting-tbl tr.body.str:last td{
+    border-bottom: 1px solid grey;
+}
+#js-accruals-tbl.accounting-tbl tr.body.compRow:nth-last-of-type(1) td{
+    border-bottom: 1px solid grey;
 }
 
 /*
@@ -314,6 +333,8 @@ tr td.mayBeEdit:hover{
     font-weight: normal;
     font-size: 14px;
 }
+
+
 .accounting-tbl{
     width: 100%;
     padding: 0;
@@ -378,6 +399,13 @@ tr td.mayBeEdit:hover{
     background-color: #d1fdfe;
     border: 1px solid #dcdde1;
 
+}
+.accounting-tbl .body td:nth-of-type(3) button.delete{
+    background-color: #fff;
+    color: grey;
+}
+.accounting-tbl .body td:nth-of-type(3) button.delete:hover{
+    background-color: #f1f1f1;
 }
 
 /*
@@ -454,4 +482,10 @@ body .js-alert_union_buttons table td button.left{
     padding: 3px 0 0 0;
     border: 0;
     margin: 0;
+}
+#user_window_compensations_form div input {
+    width: calc(100% - 20px);
+}
+#user_window_compensations_form div {
+    padding: 10px;
 }
