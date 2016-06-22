@@ -348,6 +348,8 @@ class paymentObj
     price_out: 0
     price_out_payment: 0
     percent_payment: 0
+    conditions: 0
+    costs_supplier_bill:0
 
     invoice_create_date: '00.00.0000'
     invoice_num: ''
@@ -366,6 +368,7 @@ class paymentObj
   options: {}
 
   constructor: (data = {})->
+    @options = {}
     if data.edit == undefined
       data.edit = 1
     for key,el of data
@@ -773,8 +776,6 @@ class costsRow
 
               # подсветка несоответствия процента
               # вычисляем первую строку - строку счёта
-
-
               tr.attr('id', 'myGroupRowDelete')
               eachTrFirst = $(windowObj.$el).find('#myGroupRowDelete').attr('id', '')
 
@@ -797,7 +798,7 @@ class costsRow
               
               
               # сохраняем собщий процент оплаты по счёту
-              if percent != Number(eachTrFirst.data().percent)
+              if percent != Number(eachTrFirst.data().percent) || 1
                 console.log " != не равно !!!!"
                 # правим информацию в шапке окна
                 data_row.costs = 0
@@ -868,6 +869,21 @@ class costsRow
         td2.addClass('noBorderBottm')
     # пункт 1 есть везде
     button2 = []
+    if tr.hasClass('singleRow')
+      button2.push({
+        'name': 'вставить сумму счёта',
+        'class': '',
+        click: (e)->
+          td2.click()
+          setTimeout(()->
+            # правим дату на сегодня
+            _this.options.pay_date = getDateNow();
+            td1.html(_this.options.pay_date).addClass('redTD')
+            td2.find('input').val(_this.options.price).focus().blur()
+          ,200)
+
+
+      })
     # КНОПКА 1
     button2.push({
       'name': 'добавить оплату',
@@ -905,6 +921,7 @@ class costsRow
 
           new sendAjax('delete_costs_payment', {id: _this.options.pay_id}, ()->
             tr.remove()
+
           )
 
 
@@ -4469,7 +4486,7 @@ class invoiceWindow
             $(this).prev().click()
             return false
 
-          if Number(ttn.return) == 1
+          if Number(ttn.return) == 0
             # вставляем подтверждение
             t = $(this)
             ttn.return = 1

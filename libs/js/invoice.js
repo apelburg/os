@@ -432,6 +432,8 @@
       price_out: 0,
       price_out_payment: 0,
       percent_payment: 0,
+      conditions: 0,
+      costs_supplier_bill: 0,
       invoice_create_date: '00.00.0000',
       invoice_num: '',
       client_id: 0,
@@ -452,6 +454,7 @@
       if (data == null) {
         data = {};
       }
+      this.options = {};
       if (data.edit === void 0) {
         data.edit = 1;
       }
@@ -971,7 +974,7 @@
                   percent += Number(eachTr.data().pay_percent);
                   eachTr = eachTr.next();
                 }
-                if (percent !== Number(eachTrFirst.data().percent)) {
+                if (percent !== Number(eachTrFirst.data().percent) || 1) {
                   console.log(" != не равно !!!!");
                   data_row.costs = 0;
                   thisTr = thisTd.parent();
@@ -1049,6 +1052,20 @@
         }
       }
       button2 = [];
+      if (tr.hasClass('singleRow')) {
+        button2.push({
+          'name': 'вставить сумму счёта',
+          'class': '',
+          click: function(e) {
+            td2.click();
+            return setTimeout(function() {
+              _this.options.pay_date = getDateNow();
+              td1.html(_this.options.pay_date).addClass('redTD');
+              return td2.find('input').val(_this.options.price).focus().blur();
+            }, 200);
+          }
+        });
+      }
       button2.push({
         'name': 'добавить оплату',
         'class': '',
@@ -5063,7 +5080,7 @@
               $(this).prev().click();
               return false;
             }
-            if (Number(ttn["return"]) === 1) {
+            if (Number(ttn["return"]) === 0) {
               t = $(this);
               ttn["return"] = 1;
               ttn.date_return = getDateNow();

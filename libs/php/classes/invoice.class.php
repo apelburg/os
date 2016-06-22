@@ -1804,9 +1804,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 				define("OFFERTS_TBL","os__offerts"); // таблица созданных оферт
 				define("OFFERTS_ROWS_TBL","os__offerts_rows"); // таблица строк в офертах
 			 */
-			$message  = 'Тут будут обработаны данные<br>';
-			$message  .= 'и заведена строка в счетах';
-			$message .= $this->printArr($_POST);
+			//$message  = 'Тут будут обработаны данные<br>';
+			//$message  .= 'и заведена строка в счетах';
+			//$message .= $this->printArr($_POST);
 			// $this->responseClass->addMessage('create_invoice PHP.');
 			$options['width'] = 1200;
 			$options['height'] = 500;
@@ -1815,9 +1815,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 			if(!isset($_POST['doc']) || $_POST['doc'] == ''){
 				$this->responseClass->addMessage('Не получен тип документа');return;
 			}
-			if($_SESSION['access']['access'] != 1){
-				$this->responseClass->addMessage('Данный модуль находится в режиме тестирования и временно не доступен.');return;
-			}
+			//if($_SESSION['access']['access'] != 1){
+			//	$this->responseClass->addMessage('Данный модуль находится в режиме тестирования и временно не доступен.');return;
+			//}
 
 			switch ($_POST['doc']) {
 				// спецификация
@@ -1828,11 +1828,14 @@ class InvoiceNotify extends aplStdAJAXMethod
 					// номер спецификации к данному договору
 					$data['doc_num'] = $_POST['specification_num'];
 					$data['doc_id'] = $data['agreement_id'];
+
+
+
 					// проверка на существования запроса по данному документу
-					// if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
-					// 	$this->responseClass->addMessage('Дла данного документа счёт уже запрошен.');
-					// 	return;
-					// }
+					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
+					 	$this->responseClass->addMessage('Для данного документа счёт уже запрошен.');
+						return;
+					}
 					// получаем данные по спецификации
 					$positions = $this->getSpecificationRows($data['agreement_id'], $data['doc_num']);
 					$agr = $this->getAgreement($data['agreement_id']);
@@ -1864,7 +1867,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 					// проверка на существования запроса по данному документу
 					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
-						$this->responseClass->addMessage('Для данного документа номер уже запрошен.');
+						$this->responseClass->addMessage('Для данного документа номер уже запрошен.','error_message',1);
 						return;
 					}
 
