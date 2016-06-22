@@ -205,9 +205,17 @@ tr td.mayBeEdit:hover{
     font-size: 11px;
     height: auto;
     text-align: right;
-
     font-weight: normal;
 }
+#js-bill-tbl tr:hover td{
+    background-color: #f1f1f1;
+    cursor: default;
+}
+#js-bill-tbl tr.itog td{
+    background-color: #fff;
+    cursor: default;
+}
+
 #js-bill-tbl th:nth-of-type(2),
 #js-bill-tbl th:nth-of-type(3),
 #js-bill-tbl th:nth-of-type(4),
@@ -276,6 +284,7 @@ tr td.mayBeEdit:hover{
         /* Standard */
     transition: all 0.3s ease;
 }
+
 #js-accruals-tbl tr td div.link_add{
     font-style: italic;
     font-size: 11px;
@@ -292,7 +301,6 @@ tr td.mayBeEdit:hover{
     /*background-position: 50% 65% ;*/
     transform: rotate(15deg)
 }
-
 #js-accruals-tbl.accounting-tbl tr.body.str:last td{
     border-bottom: 1px solid grey;
 }
@@ -308,6 +316,30 @@ tr td.mayBeEdit:hover{
 }
 #js-payments-tbl tr.head th:nth-of-type(1){
     background-color: #007036;
+}
+#js-payments-tbl tr.head th:nth-of-type(3) button.reload{
+    background-image: url(../images/img_design/ref.png);
+    background-size: 80%;
+    background-repeat: no-repeat;
+    width: 42px;
+    padding: 0px;
+    height: 40px;
+    border: 1px;
+    background-position: 50%;
+    background-color: transparent;
+    outline:none;
+    /* Firefox */
+    -moz-transition: all 0.3s ease;
+    /* WebKit */
+    -webkit-transition: all 0.3s ease;
+    /* Opera */
+    -o-transition: all 0.3s ease;
+    /* Standard */
+    transition: all 0.3s ease;
+}
+#js-payments-tbl tr.head th:nth-of-type(3) button.reload:active{
+    /*background-position: 50% 65% ;*/
+    transform: rotate(15deg)
 }
 /*
     таблица кредит

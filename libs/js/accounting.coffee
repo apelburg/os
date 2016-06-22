@@ -795,7 +795,7 @@ class createZpMenKonTbl
 
 
 ###
-# вкладка настройки
+# прототип - вкладка настройки
 ###
 (($, window) ->
   class accountingOptions
@@ -928,7 +928,9 @@ class createZpMenKonTbl
       if typeof option == 'string'
         data[option].apply(data, args)) window.jQuery, window
 
-
+###
+# прототип объекта - вкладка учёт -> таблица начислений
+###
 class accrualsObj
   constructor: (data = {})->
     defaults = [
@@ -961,11 +963,10 @@ class accrualsObj
     options = []
     for key,el of data
       defaults[key] = el
-
-
     return defaults
+
 ###
-# вкладка учёт -> таблица начислений
+# прототип - вкладка учёт -> таблица начислений
 ###
 class accruals_tbl
   width:300
@@ -1075,7 +1076,7 @@ class accruals_tbl
         html:'Добавить компенсацию',
         'class':'link_add',
         click:()->
-# контент для окна создания записи компенсации
+          # контент для окна создания записи компенсации
           html = $('<div/>',{
             id:'user_window_compensations_form'
           })
@@ -1156,6 +1157,9 @@ class accruals_tbl
     )
     self.accruals_summ.html(round_money(pribl))
 
+###
+# прототип объекта дополнителоьных компенсаций
+###
 class dopCompRowObj
   defaults:
     id: 0
@@ -1171,7 +1175,10 @@ class dopCompRowObj
     return $.extend({}, @defaults, @options)
 
 
-# строка дополнителоьных компенсаций
+
+###
+# прототип строк дополнителоьных компенсаций
+###
 class dopCompRow
   constructor:(n,parentObj)->
     tr = $('<tr/>',{
@@ -1184,7 +1191,18 @@ class dopCompRow
 
     tr.append($('<td/>',{html:$('<input/>',{
       val:round_money(n.r)
+      focus:()->
+          t = $(this)
+          if(Number($(this).val()) == 0)
+            # если 0.00 подм  еняем на пусто
+            $(this).val('')
+          else
+            # выделение
+            setTimeout(()->
+              t.select()
+            , 50)
       blur:()->
+
         n.r = round_money(Number($(this).val()))
         tr.data(n)
         parentObj.calcTbl()
@@ -1207,6 +1225,9 @@ class dopCompRow
 
     return tr
 
+###
+# прототип строки компенсаций
+###
 class compRow
   constructor:(n,parentObj)->
     tr = $('<tr/>',{class:'body compRow'}).data(n)
@@ -1218,6 +1239,16 @@ class compRow
     if Number(n.flag_r) > 0
       tr.append($('<td/>',{html:$('<input/>',{
         val:round_money(n.r)
+        focus:()->
+          t = $(this)
+          if(Number($(this).val()) == 0)
+            # если 0.00 подм  еняем на пусто
+            $(this).val('')
+          else
+            # выделение
+            setTimeout(()->
+              t.select()
+            , 50)
         blur:()->
           n.r = round_money(Number($(this).val()))
           tr.data(n)
@@ -1257,7 +1288,9 @@ class compRow
     tr.append($('<td/>'))
     return tr
 
-
+###
+# прототип строк оклад/премия/пенсия/бонус
+###
 class row
   constructor:(n,parentObj)->
     tr = $('<tr/>',{class:'body str'}).data(n)
@@ -1284,19 +1317,32 @@ class row
       tr.append($('<td/>',{html:$('<input/>',{
         val:round_money(n.money)
         class:'mone'
+        focus:()->
+          t = $(this)
+          if(Number($(this).val()) == 0)
+            # если 0.00 подм  еняем на пусто
+            $(this).val('')
+          else
+            # выделение
+            setTimeout(()->
+              t.select()
+            , 50)
         blur:()->
           t = $(this)
           if Number(n.id) != 0
             n.flag_r = 0
-            n.money = Number(t.val())
+            n.money = round_money(Number($(this).val()))
+
+
             tr.data(n)
             parentObj.calcTbl()
-            new sendAjax('save_accruals_val',{id:n.id,key:col1,val:n.money})
 
+            new sendAjax('save_accruals_val',{id:n.id,key:col1,val:n.money})
+            $(this).val(n.money)
           else
             new sendAjax('create_new_accruals_calc',{
               key:col1,
-              val:Number(t.val())
+              val:Number(t.val(n.money))
             },(response)->
               tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
             )
@@ -1308,6 +1354,17 @@ class row
     else if Number(n.flag_r) > 0
       tr.append($('<td/>',{html:$('<input/>',{
         val:round_money(n.r)
+        focus:()->
+          t = $(this)
+          if(Number($(this).val()) == 0)
+            # если 0.00 подм  еняем на пусто
+            $(this).val('')
+          else
+            # выделение
+            setTimeout(()->
+              t.select()
+            , 50)
+
         blur:()->
           if Number(n.id) != 0
             n.r = round_money(Number($(this).val()))
@@ -1369,8 +1426,32 @@ class row
     tr.append($('<td/>'))
     return tr
 
+
 ###
-# вкладка учёт -> таблица выплат
+# прототип объекта - вкладка учёт -> таблица Выплаты
+###
+class payments_tblObj
+  defaults:
+    id: 0
+    oklad:        '0.00'
+    ovans_card:   '0.00'
+    ovans1:       '0.00'
+    ovans2:       '0.00'
+    ovans3:       '0.00'
+    flag_men:     0
+    flag_buch:    0
+
+  constructor: (data = {})->
+    @options = {}
+
+    for key,el of data
+      if el != null
+        @options[key] = el
+    return $.extend({}, @defaults, @options)
+
+
+###
+# прототп - вкладка учёт -> таблица Выплаты
 ###
 class payments_tbl
   paddingBlock:6
@@ -1381,7 +1462,7 @@ class payments_tbl
 # сборка таблицы таблицы
     @tbl = $('<table/>',{id:'js-payments-tbl','class':'accounting-tbl'});
     # сборка шапки
-    @tbl.append(@trHead())
+    @tbl.append(@trHead(data))
 
     tblCase = $('<div/>').css({
       'float':'left'
@@ -1392,8 +1473,8 @@ class payments_tbl
 
     return tblCase.append(@tbl)
 
-# Шапка
-  trHead:()->
+  # Шапка
+  trHead:(data)->
     self = @
     @recalc_button = $('<button>',{
       html:'в кредит ->',
@@ -1402,17 +1483,18 @@ class payments_tbl
     })
     @recalc_button = $('<button/>',{
       html:'',
+      'class':'reload',
       click:()->
         # пересчёт выгруженных данных
         new sendAjax("calculate_and_update_payment_tbl",{id:data[0].id},(response)->
-          self.tbl.payments_tbl(new accruals_tbl(new accrualsObj(response.data.payments)))
+          self.tbl.payments_tbl(new payments_tbl(new payments_tblObj(response.data.payments)))
         )
     })
 
     tr = $('<tr/>',{class:'head'})
     tr.append($('<th/>',{html:'Выплаты'}))
     tr.append(@accruals_summ = $('<th/>',{html:round_money(21000)}))
-#    tr.append($('<th/>',{html:@recalc_button}))
+    tr.append($('<th/>',{html:@recalc_button}))
     tr.append($('<th/>',{html:''}))
     tr.append($('<th/>',{html:''}))
 
@@ -1475,7 +1557,7 @@ class credit_tbl
 # вкладка учёт -> таблица закрытых счетов (за указанный месяц и год)
 ###
 class create_bill_tbl
-  width:405
+  width:'auto'
   paddingBlock:6
   itogo:
     percent: 0
@@ -1527,17 +1609,18 @@ class create_bill_tbl
     @itogo.price_out_payment = 0
 
     arr = []
-    num = 1
-    for n,i in data
-      arr.push(new billTrPrototipe(n))
+    num = 0
+    if data.length > 0
+      for n,i in data
+        arr.push(new billTrPrototipe(n))
 
-      @itogo.percent += Number(n.pr)
-      @itogo.profit += Number(n.profit)
-      @itogo.price_out_payment += Number(n.price_out_payment)
+        @itogo.percent += Number(n.pr)
+        @itogo.profit += Number(n.profit)
+        @itogo.price_out_payment += Number(n.price_out_payment)
 
-      num++
+        num++
 
-    @itogo.percent = @itogo.percent/num
+      @itogo.percent = @itogo.percent/num
 
     arr
 

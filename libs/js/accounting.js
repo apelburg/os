@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, cyrill_to_latin, dopCompRow, dopCompRowObj, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, pensionTrObj, round_money, row, sendAjax, tdEditRow, zpMenRekTrObj,
+  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, cyrill_to_latin, dopCompRow, dopCompRowObj, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, payments_tblObj, pensionTrObj, round_money, row, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -1005,7 +1005,7 @@
 
 
   /*
-   * вкладка настройки
+   * прототип - вкладка настройки
    */
 
   (function($, window) {
@@ -1184,6 +1184,11 @@
     });
   })(window.jQuery, window);
 
+
+  /*
+   * прототип объекта - вкладка учёт -> таблица начислений
+   */
+
   accrualsObj = (function() {
     function accrualsObj(data) {
       var defaults, el, key, options;
@@ -1231,7 +1236,7 @@
 
 
   /*
-   * вкладка учёт -> таблица начислений
+   * прототип - вкладка учёт -> таблица начислений
    */
 
   accruals_tbl = (function() {
@@ -1448,6 +1453,11 @@
 
   })();
 
+
+  /*
+   * прототип объекта дополнителоьных компенсаций
+   */
+
   dopCompRowObj = (function() {
     dopCompRowObj.prototype.defaults = {
       id: 0,
@@ -1474,6 +1484,11 @@
 
   })();
 
+
+  /*
+   * прототип строк дополнителоьных компенсаций
+   */
+
   dopCompRow = (function() {
     function dopCompRow(n, parentObj) {
       var tr;
@@ -1489,6 +1504,17 @@
       tr.append($('<td/>', {
         html: $('<input/>', {
           val: round_money(n.r),
+          focus: function() {
+            var t;
+            t = $(this);
+            if (Number($(this).val()) === 0) {
+              return $(this).val('');
+            } else {
+              return setTimeout(function() {
+                return t.select();
+              }, 50);
+            }
+          },
           blur: function() {
             n.r = round_money(Number($(this).val()));
             tr.data(n);
@@ -1523,6 +1549,11 @@
 
   })();
 
+
+  /*
+   * прототип строки компенсаций
+   */
+
   compRow = (function() {
     function compRow(n, parentObj) {
       var tr;
@@ -1536,6 +1567,17 @@
         tr.append($('<td/>', {
           html: $('<input/>', {
             val: round_money(n.r),
+            focus: function() {
+              var t;
+              t = $(this);
+              if (Number($(this).val()) === 0) {
+                return $(this).val('');
+              } else {
+                return setTimeout(function() {
+                  return t.select();
+                }, 50);
+              }
+            },
             blur: function() {
               n.r = round_money(Number($(this).val()));
               tr.data(n);
@@ -1593,6 +1635,11 @@
 
   })();
 
+
+  /*
+   * прототип строк оклад/премия/пенсия/бонус
+   */
+
   row = (function() {
     function row(n, parentObj) {
       var col, col1, tr;
@@ -1632,23 +1679,35 @@
           html: $('<input/>', {
             val: round_money(n.money),
             "class": 'mone',
+            focus: function() {
+              var t;
+              t = $(this);
+              if (Number($(this).val()) === 0) {
+                return $(this).val('');
+              } else {
+                return setTimeout(function() {
+                  return t.select();
+                }, 50);
+              }
+            },
             blur: function() {
               var t;
               t = $(this);
               if (Number(n.id) !== 0) {
                 n.flag_r = 0;
-                n.money = Number(t.val());
+                n.money = round_money(Number($(this).val()));
                 tr.data(n);
                 parentObj.calcTbl();
-                return new sendAjax('save_accruals_val', {
+                new sendAjax('save_accruals_val', {
                   id: n.id,
                   key: col1,
                   val: n.money
                 });
+                return $(this).val(n.money);
               } else {
                 return new sendAjax('create_new_accruals_calc', {
                   key: col1,
-                  val: Number(t.val())
+                  val: Number(t.val(n.money))
                 }, function(response) {
                   return tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation));
                 });
@@ -1661,6 +1720,17 @@
         tr.append($('<td/>', {
           html: $('<input/>', {
             val: round_money(n.r),
+            focus: function() {
+              var t;
+              t = $(this);
+              if (Number($(this).val()) === 0) {
+                return $(this).val('');
+              } else {
+                return setTimeout(function() {
+                  return t.select();
+                }, 50);
+              }
+            },
             blur: function() {
               if (Number(n.id) !== 0) {
                 n.r = round_money(Number($(this).val()));
@@ -1747,7 +1817,43 @@
 
 
   /*
-   * вкладка учёт -> таблица выплат
+   * прототип объекта - вкладка учёт -> таблица Выплаты
+   */
+
+  payments_tblObj = (function() {
+    payments_tblObj.prototype.defaults = {
+      id: 0,
+      oklad: '0.00',
+      ovans_card: '0.00',
+      ovans1: '0.00',
+      ovans2: '0.00',
+      ovans3: '0.00',
+      flag_men: 0,
+      flag_buch: 0
+    };
+
+    function payments_tblObj(data) {
+      var el, key;
+      if (data == null) {
+        data = {};
+      }
+      this.options = {};
+      for (key in data) {
+        el = data[key];
+        if (el !== null) {
+          this.options[key] = el;
+        }
+      }
+      return $.extend({}, this.defaults, this.options);
+    }
+
+    return payments_tblObj;
+
+  })();
+
+
+  /*
+   * прототп - вкладка учёт -> таблица Выплаты
    */
 
   payments_tbl = (function() {
@@ -1766,7 +1872,7 @@
         id: 'js-payments-tbl',
         'class': 'accounting-tbl'
       });
-      this.tbl.append(this.trHead());
+      this.tbl.append(this.trHead(data));
       tblCase = $('<div/>').css({
         'float': 'left',
         'width': this.width,
@@ -1776,7 +1882,7 @@
       return tblCase.append(this.tbl);
     }
 
-    payments_tbl.prototype.trHead = function() {
+    payments_tbl.prototype.trHead = function(data) {
       var self, tr;
       self = this;
       this.recalc_button = $('<button>', {
@@ -1787,11 +1893,12 @@
       });
       this.recalc_button = $('<button/>', {
         html: '',
+        'class': 'reload',
         click: function() {
           return new sendAjax("calculate_and_update_payment_tbl", {
             id: data[0].id
           }, function(response) {
-            return self.tbl.payments_tbl(new accruals_tbl(new accrualsObj(response.data.payments)));
+            return self.tbl.payments_tbl(new payments_tbl(new payments_tblObj(response.data.payments)));
           });
         }
       });
@@ -1803,6 +1910,9 @@
       }));
       tr.append(this.accruals_summ = $('<th/>', {
         html: round_money(21000)
+      }));
+      tr.append($('<th/>', {
+        html: this.recalc_button
       }));
       tr.append($('<th/>', {
         html: ''
@@ -1903,7 +2013,7 @@
    */
 
   create_bill_tbl = (function() {
-    create_bill_tbl.prototype.width = 405;
+    create_bill_tbl.prototype.width = 'auto';
 
     create_bill_tbl.prototype.paddingBlock = 6;
 
@@ -1982,16 +2092,18 @@
       this.itogo.profit = 0;
       this.itogo.price_out_payment = 0;
       arr = [];
-      num = 1;
-      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
-        n = data[i];
-        arr.push(new billTrPrototipe(n));
-        this.itogo.percent += Number(n.pr);
-        this.itogo.profit += Number(n.profit);
-        this.itogo.price_out_payment += Number(n.price_out_payment);
-        num++;
+      num = 0;
+      if (data.length > 0) {
+        for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+          n = data[i];
+          arr.push(new billTrPrototipe(n));
+          this.itogo.percent += Number(n.pr);
+          this.itogo.profit += Number(n.profit);
+          this.itogo.price_out_payment += Number(n.price_out_payment);
+          num++;
+        }
+        this.itogo.percent = this.itogo.percent / num;
       }
-      this.itogo.percent = this.itogo.percent / num;
       return arr;
     };
 

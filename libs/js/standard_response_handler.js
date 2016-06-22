@@ -27,10 +27,17 @@
 			
 			if($.isArray(data['function'])){
 			count = data['function'].length;
-			for (var i = count - 1; i >= 0; i--) {
+			// for (var i = count - 1; i >= 0; i--) {
+			// 	console.log(data['function'][i]);
+			// 	window[data['function'][i]['function']](data['function'][i]);
+			// };
+			for (var i = 0; i <= count - 1; i++) {
 				console.log(data['function'][i]);
 				window[data['function'][i]['function']](data['function'][i]);
 			};
+
+
+
 			window_preload_del();
 			}else{
 				window[data['function']](data);
