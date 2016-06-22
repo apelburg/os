@@ -1,34 +1,25 @@
 <?php
 
-
 /**
  * Class CalculateMoneyBlock
  *
  * расчет автоматической ЗП
  *
  */
-class CalculateMoneyBlock extends aplStdAJAXMethod{
+class CalculateMoneyBlock extends Accounting{
 	public $manager_id = 0;
 	public $month = 0;
 	public $year = 0;
-
-
-
 	private $salary = 0;
 	private $premium = 0;
 	private $pension = 0;
-
-
 	public function __construct($manager_id = 0,$month = 0,$year = 0){
 		# подключение к БД
 		$this->db();
-
 		$this->manager_id  	= (int)$manager_id;
 		$this->month 		= (int)$month;
 		$this->year 		= (int)$year;
-
 	}
-
 	public function calculate(){
 		return [
 			'salary'=>$this->salary,
@@ -36,83 +27,21 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 			'pension' => $this->pension
 		];
 	}
-
-
 	/**
 	 * подсчёт прибыли по закрытм за месяц счетам
 	 */
 	private function get_profit(){
 		$closed = $this->get_data_bill_closed();
-
 		$this->profit = 0;
 		$this->oborot = 0;
 		foreach ($closed as $row){
 			$this->profit += $row['profit'];
 			$this->oborot +=$row['price_out_payment'];
 		}
-
 		return [
 			'profit'=>$this->profit,
 			'oborot'=>$this->oborot
 		];
-	}
-
-
-
-	/**
-	 * получаем информацию по менеджеру
-	 *
-	 * @param $id
-	 * @return array
-	 */
-	private function get_manager_data($id){
-		$query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id=? ";
-
-		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-		$stmt->bind_param('i',$id) or die($this->mysqli->error);
-		$stmt->execute() or die($this->mysqli->error);
-		$result = $stmt->get_result();
-		$stmt->close();
-
-
-		if($result->num_rows > 0){
-			while($row = $result->fetch_assoc()){
-				return $row;
-			}
-		}
-		return [];
-	}
-
-	/**
-	 * возвращает массив данных по всей таблице
-	 *
-	 * @param $table
-	 * @param array $where
-	 * @param array $sort
-	 * @return array
-	 */
-	private function get_all_tbl($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
-		$query = "SELECT *,DATE_FORMAT(`".$table."`.`date`,'%d.%m.%Y') as date FROM `".$table."`";
-
-		$w = 0;
-		foreach ($where as $key => $ask){
-			$query .= ($w==0)?' WHERE ':' AND ';
-			$query .= " `$key`='$ask'";
-			$w++;
-		}
-		if ($sort['name'] != ''){
-			$query .= " ORDER BY `".$table."`.`".$sort['name']."` ".$sort['type'];
-		}
-
-
-		$result = $this->mysqli->query($query) or die($this->mysqli->error);
-		$rows = array();
-		if($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$rows[] = $row;
-			}
-		}
-		return $rows;
 	}
 
 	/**
@@ -122,7 +51,6 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 	public function delete_rows_compensations($id){
 		$query = "DELETE FROM `".ACCOUNTING_ACCRUALS_COMP."` WHERE `os__accounting_accruals_id`=?";
 		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
 		$stmt->bind_param('i',$id) or die($this->mysqli->error);
 		$stmt->execute() or die($this->mysqli->error);
 		$result = $stmt->get_result();
@@ -135,12 +63,10 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 	public function get_rows_compensations($id){
 		$query = "SELECT * FROM `".ACCOUNTING_ACCRUALS_COMP."` WHERE `os__accounting_accruals_id`=?";
 		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
 		$stmt->bind_param('i',$id) or die($this->mysqli->error);
 		$stmt->execute() or die($this->mysqli->error);
 		$result = $stmt->get_result();
 		$stmt->close();
-
 		$rows = array();
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
@@ -149,7 +75,6 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 		}
 		return $rows;
 	}
-
 	/**
 	 * запрос строк ДОП компенсаций
 	 * @param $id
@@ -157,12 +82,10 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 	public function get_rows_dopCompensations($id){
 		$query = "SELECT * FROM `".ACCOUNTING_ACCRUALS_DOP."` WHERE `os__accounting_accruals_id`=?";
 		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
 		$stmt->bind_param('i',$id) or die($this->mysqli->error);
 		$stmt->execute() or die($this->mysqli->error);
 		$result = $stmt->get_result();
 		$stmt->close();
-
 		$rows = array();
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
@@ -171,7 +94,6 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 		}
 		return $rows;
 	}
-
 	/**
 	 * копирует строки компенсаций в расчет
 	 *
@@ -185,66 +107,27 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 		$query .="	FROM    ".COMPENSATION_TBL."";
 		$query .="	WHERE   ".COMPENSATION_TBL.".user_id = '".$this->manager_id."' ";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
-
 		return $this->get_rows_compensations($id);
-
 	}
-
-
-
-
-
-
 	/**
 	 * @return array
 	 */
 	public function calculate_and_update_accruals_tbl(){
 		# БЛОК ПЕРЕСЧЁТА
-
-
-
 		# запрашиваем строку
 		$where['manager_id']  = $this->manager_id;
 		$where['month'] = $this->month;
 		$where['year']  = $this->year;
-		
+
 		$old_row = $this->get_all_tbl(ACCOUNTING_ACCRUALS,$where);
-
-
 		if(count($old_row) == 0){
 			# если строка не найдена
 			# создание новой строки расчёта с расчитанными параметрами
 			return $this->create_new_row();
-
 		}else{
 			# обновление старой строки расчёта с расчитанными параметрами
-
 			return $this->update_old_row($old_row[0]['id']);
 		}
-	}
-
-	/**
-	 * создание пустой строки в базе
-	 *
-	 * @param $table
-	 * @param array $data
-	 * @return array
-	 */
-	private function insert_empty_row($table,$data = array()){
-		$query = "INSERT INTO `".$table."` ";
-		$i = 0;
-		if (count($data)>0){
-			$query .=" SET ";
-		}
-		foreach ($data as $key => $val){
-			$query .= ($i>0)?',':'';
-			$query .= "`$key` = '$val'";
-			$i++;
-		}
-		$result = $this->mysqli->query($query) or die($this->mysqli->error);
-
-		$data['id'] = $this->mysqli->insert_id;
-		return $data;
 	}
 
 	/**
@@ -254,21 +137,15 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 	 * @return array
 	 */
 	private function update_old_row($id){
-		# получаем актуальные данные по ЗП
-		$data = $this->accruals_calc();
-
-		# обнуляем флаги ручного ввода
-		# при этом данные ранее введенные в ручном режиме останутся не тронутыми
-		$data['salary_r_fl'] = 0;
-		$data['premium_r_fl'] = 0;
-		$data['pension_r_fl'] = 0;
-
 		# обновляем
+		$data = $this->accruals_calc();
+		$data['salary_r_fl']=0;
+		$data['premium_r_fl']=0;
+		$data['pension_r_fl']=0;
 		$this->update__row(ACCOUNTING_ACCRUALS,$data,$id);
 		# возвращаем обновленные данные
 		return $this->get_all_tbl(ACCOUNTING_ACCRUALS,['id'=>$id]);
 	}
-
 	/**
 	 * создание новой строки с расчётом начислений
 	 *
@@ -282,47 +159,21 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 		return $this->insert_empty_row(ACCOUNTING_ACCRUALS,$data);
 	}
 
-	# апдейт старой строки с расчётом начислений
-	private function update__row($table,$data = [],$id){
-		$query = "UPDATE `".$table."` SET ";
-
-		$i = 0;
-		foreach ($data as $key => $val){
-			$query .= ($i>0)?',':'';
-			$query .= " `$key` = '$val'";
-			$i++;
-		}
-
-		$query .= " WHERE `id` =?";
-
-		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-		$stmt->bind_param('i',$id ) or die($this->mysqli->error);
-		$stmt->execute() or die($this->mysqli->error);
-		$result = $stmt->get_result();
-		$stmt->close();
-	}
-
-
 
 	# расчёт начислений
 	private function accruals_calc(){
-
 		$arr = [
 			'salary'=>0,
 			'premium'=> 0,
 			'pension' => 0
 		];
-
 		# получаем данные по манагеру
-		$this->manager_data = $this->get_manager_data($this->manager_id);
-
+		$this->manager_data = $this->getManager_data($this->manager_id);
 		if($this->manager_data){
 			# получаем прибыль
 			$this->get_profit();
-
 			# менеджер рекламных агенств
 			if($this->manager_data['manager'] == 1){
-
 				$tbl_zp = $this->get_all_tbl(ACCOUNTING_ZP_REK, array(), array('name'=>'profit_start','type'=>"ASC"));
 				foreach ($tbl_zp as $row){
 					if($row['profit_start'] <= $this->profit && $row['profit_end'] >= $this->profit){
@@ -335,10 +186,8 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 					}
 				}
 			}
-
 			# менеджер конечных клиентов
 			if($this->manager_data['manager'] == 2){
-
 				$tbl_zp = $this->get_all_tbl(ACCOUNTING_ZP_KON, array(), array('name'=>'profit_start','type'=>"ASC"));
 				foreach ($tbl_zp as $row){
 					if((int)$row['profit_start'] <= (int)$this->profit && (int)$row['profit_end'] >= (int)$this->profit){
@@ -348,15 +197,11 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 					}
 				}
 			}
-
 			# расчет бонуса пенсии
 			if ($this->manager_data['date_start_wock'] != ''){
 				$pension_rows = $this->get_all_tbl(ACCOUNTING_PENSION,array('checked'=>'1'));
-
 				$time = time() - strtotime($this->manager_data['date_start_wock']);
-
 				$year = floor($time/31536000);
-
 				$s = 0;
 				foreach ($pension_rows as $row){
 					if ($s > 0){break;}
@@ -375,13 +220,8 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 				}
 			}
 		}
-
 		return $arr;
 	}
-
-
-
-
 	/**
 	 * вычисляет строки закрытых за месяц счетов
 	 * @return array
@@ -396,18 +236,15 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
                 ELSE ROUND(((price_out_payment - costs) / price_out_payment * 100),2)
             END AS 'pr'";
 		$query .= " FROM `".INVOICE_TBL."`";
-
 		$query .= " WHERE `manager_id`=?";
 		$query .= " AND YEAR(closed_date)=?";
 		$query .= " AND MONTH(closed_date)=?";
-
 		//		 echo $query.' - '.$this->manager_id.' - '. $this->year.' - '. $this->month;
 		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 		$stmt->bind_param('iss',$this->manager_id, $this->year, $this->month ) or die($this->mysqli->error);
 		$stmt->execute() or die($this->mysqli->error);
 		$result = $stmt->get_result();
 		$stmt->close();
-
 		$data_bill_closed = array();
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
@@ -417,11 +254,158 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
 //
 //		print_r($this);
 //		print_r($this->manager_id);
-
-
 		return $data_bill_closed;
+	}
+}
+/**
+ * Class PaymentBlock
+ *
+ */
+class PaymentBlock extends Accounting{
+	public $manager_id = 0;
+	public $month = 0;
+	public $year = 0;
+
+	# денежная информация
+	private $oklad = 0;
+	private $ovans_card = 0;
+	private $ovans1 = 0;
+	private $ovans2 = 0;
+	private $ovans3 = 0;
+
+	# флаги мен/бух
+	private $flag_buch = 0;
+	private $flag_men = 0;
+
+
+
+
+	public function __construct($manager_id = 0,$month = 0,$year = 0){
+		# подключение к БД
+		$this->db();
+
+		$this->manager_id  	= (int)$manager_id;
+		$this->month 		= (int)$month;
+		$this->year 		= (int)$year;
+	}
+
+	/**
+	 * объект для создания записи
+	 *
+	 * @return array
+	 */
+	public function insert_data_obj(){
+		return [
+			'oklad'=>$this->oklad,
+			'ovans_card'=> $this->ovans_card,
+			'manager_id'=>$this->manager_id,
+			'month'=>$this->month,
+			'year'=>$this->year
+		];
+	}
+
+	/**
+	 * объект для перезаписи
+	 *
+	 * @return array
+	 */
+	public function update_data_obj(){
+		return [
+			'oklad'=>$this->oklad,
+			'ovans_card'=> $this->ovans_card
+		];
+	}
+
+	/**
+	 * объект для возврата пустого значения
+	 *
+	 * @return array
+	 */
+	private function simple_obj(){
+		return [
+			'oklad'=>$this->oklad,
+			'ovans_card'=> $this->ovans_card,
+			'ovans1' => $this->ovans1,
+			'ovans2' => $this->ovans2,
+			'ovans3' => $this->ovans3,
+			'flag_buch' => $this->flag_buch,
+			'flag_men' => $this->flag_men
+		];
+	}
+
+
+	/**
+	 * запрос строи выплат
+	 * @param $id
+	 */
+	public function get_row($id = 0 ){
+		# запрашиваем строку
+		$where['manager_id']  = $this->manager_id;
+		$where['month'] = $this->month;
+		$where['year']  = $this->year;
+
+		if ( $id > 0 ){
+			$where['id']  = (int)$id;
+		}
+		$data = $this->get_all_tbl(ACCOUNTING_ACCRUALS_PAY,$where);
+		if (isset($data['id'])){
+			$this->id = $data['id'];
+		}
+
+		return $data;
+	}
+
+
+	/**
+	 * @return array
+	 */
+	public function get_data(){
+		# запрашиваем строку
+		$data = $this->get_row();
+
+		if (count($data) == 0){
+			$data = $this->simple_obj();
+			$data['id'] = 0;
+		}
+		return $data;
+	}
+
+	/**
+	 * обновление данных по окладу и авансоваой части
+	 *
+	 * @param int $id
+	 */
+	public  function update_payment_tbl($id = 0){
+		# запрос актуальных данных по ЗП
+		$this->manager_data = $this->getManager_data($this->manager_id);
+		# внесение данных в объект
+		$this->oklad = $this->manager_data['salary'];
+		$this->ovans_card = $this->manager_data['avans'];
+
+		// обновление данных
+
+
+
+		# проверка записи на существование
+		if(count($this->get_row()) > 0){
+			$data = $this->update_data_obj();
+
+			$this->update__row(ACCOUNTING_ACCRUALS_PAY,$this->update_data_obj(),$this->id);
+			$data['id'] = $this->id;
+
+
+		}else{
+			// создание новой строки расчета ЗП
+			$data = $this->insert_data_obj();
+
+			$data = array_merge($data,$this->insert_empty_row(ACCOUNTING_ACCRUALS_PAY,$data));
+		}
+
+		return $data;
 
 	}
+
+
 }
 /**
  * Class accounting
@@ -432,7 +416,8 @@ class CalculateMoneyBlock extends aplStdAJAXMethod{
  */
 class Accounting  extends aplStdAJAXMethod
 {
-	private $production = FALSE; //  в режиме отладки должно быть FALSE
+	// для перевода всех приложений в режим разработки раскоментировать и установить FALSE
+	protected $production = true;
 
 	public 	$user_access = 0; 		// user right (int)
 	protected 	$user_id = 0;			// user id with base
@@ -550,7 +535,7 @@ class Accounting  extends aplStdAJAXMethod
 		# проверка наступления расчётного месяца
 		if($time_stump < strtotime('01.'.$_GET['month_number'].'.'.$_GET['year'])){
 			$this->responseClass->addMessage('Данный месяц ещё не наступил, расчёт запрещён','error_message',1000);
-			if ($this->check_production()){return;}
+			if ($this->prod__check()){return;}
 		}
 
 		# по умолчанию ставим разрешение на пересчет ЗП до 15 дней по прошествию расчетного месяца, потом пересчёт закрыт для расчёта
@@ -558,7 +543,7 @@ class Accounting  extends aplStdAJAXMethod
 		# иначе вся статистика полетит куда подальше
 		if(strtotime('01.'.$_GET['month_number'].'.'.$_GET['year']) - $time_stump > 1296000){
 			$this->responseClass->addMessage('К сожалению расчётный период по данному месяцу уже завершён, обратитесь за помощтью к администратору.','error_message',1);
-			if ($this->check_production()){return;}
+			if ($this->prod__check()){return;}
 		}
 
 		$Calc = new CalculateMoneyBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
@@ -572,29 +557,9 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->response['data']['compensation'] = $Calc->copy_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
 		}
+		# запрос данных по выплатам за месяц
+		$this->responseClass->response['data']['payments'] = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
 	}
-
-	/**
-	 * используется для проверки флага продакшен и отмены исключений в режиме разработки
-	 *
-	 * @return bool
-	 */
-	private function check_production(){
-		if (!$this->production){
-			$this->responseClass->addMessage('В режиме разработки ограничение отменено!!!','successful_message',1500);
-		}
-		return $this->production;
-	}
-	/**
-	 *
-	 */
-	/**
-	 *
-	 */
-
-
-
-
 
 
 	# создание строки расчета
@@ -619,10 +584,11 @@ class Accounting  extends aplStdAJAXMethod
 		if (isset($this->responseClass->response['data']['accruals'][0]['id'])){
 			$Calc = new CalculateMoneyBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 			$this->responseClass->response['data']['compensation'] = $Calc->get_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
-
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
-
 		}
+		# запрос данных по выплатам за месяц
+		$this->responseClass->response['data']['payments'] = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+
 	}
 
 	/**
@@ -636,8 +602,9 @@ class Accounting  extends aplStdAJAXMethod
 		}
 
 		$Calc = new CalculateMoneyBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+
 		$this->responseClass->response['data']['bill_closed'] = $Calc->get_data_bill_closed();
-		//			echo 654654;
+
 		// запрос рассчитанных начислений
 		$this->responseClass->response['data']['accruals'] = $this->get_data_accruals($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
 
@@ -648,8 +615,10 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
 			$this->responseClass->response['data']['compensation'] = $Calc->get_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
 		}
+		# запрос данных по выплатам за месяц
+		$this->responseClass->response['data']['payments'] = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
 
-			$this->responseClass->response['data']['payments'] = $this->get_data_payments();
+
 
 	}
 
@@ -706,13 +675,33 @@ class Accounting  extends aplStdAJAXMethod
 		return $data;
 	}
 
-	private function get_data_payments(){
-		return $this->get_all_tbl_simple(ACCOUNTING_ACCRUALS_PAY);
+	/**
+	 * запрос данных по выплатам из базы
+	 *
+	 * @param $manager_id
+	 * @param $year
+	 * @param $month
+	 * @return array
+	 */
+	private function get_data_payments($manager_id,$year,$month){
+		$where['manager_id'] = (int)$manager_id;
+		$where['year'] = (int)$year;
+		$where['month'] = (int)$month;
+		return $this->get_all_tbl_simple(ACCOUNTING_ACCRUALS_PAY,$where);
 	}
 
-
+	/**
+	 * пересчет данных по выплатам зарплаты
+	 */
 	protected function calculate_and_update_payment_tbl_AJAX(){
-		$this->get_data_payments();
+		# запрос данных по выплатам за месяц
+		$data = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+
+		if(count($data) > 0){
+			// update
+		}else{
+			// create
+		}
 	}
 
 
@@ -830,14 +819,42 @@ class Accounting  extends aplStdAJAXMethod
 		$stmt->close();
 	}
 
+
+	/**
+	 * апдейт старой строки с расчётом начислений
+	 *
+	 * @param $table
+	 * @param array $data
+	 * @param $id
+	 */
+	protected function update__row($table,$data = [],$id){
+		$query = "UPDATE `".$table."` SET ";
+
+		$i = 0;
+		foreach ($data as $key => $val){
+			$query .= ($i>0)?',':'';
+			$query .= " `$key` = '$val'";
+			$i++;
+		}
+
+		$query .= " WHERE `id` =?";
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('i',$id ) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+	}
+
 	/**
 	 * возвращает массив данных по всей таблице
+	 *
 	 * @param $table
+	 * @param array $where
+	 * @param array $sort
 	 * @return array
 	 */
-	private function get_all_tbl($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
+	protected function get_all_tbl($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
 		$query = "SELECT *,DATE_FORMAT(`".$table."`.`date`,'%d.%m.%Y') as date FROM `".$table."`";
-
 		$w = 0;
 		foreach ($where as $key => $ask){
 			$query .= ($w==0)?' WHERE ':' AND ';
@@ -847,8 +864,6 @@ class Accounting  extends aplStdAJAXMethod
 		if ($sort['name'] != ''){
 			$query .= " ORDER BY `".$table."`.`".$sort['name']."` ".$sort['type'];
 		}
-
-
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		$rows = array();
 		if($result->num_rows > 0) {
@@ -859,7 +874,30 @@ class Accounting  extends aplStdAJAXMethod
 		return $rows;
 	}
 
-	private function get_all_tbl_simple($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
+	/**
+	 * выборка данных по менеджеру
+	 *
+	 * @param $id
+	 * @return array
+	 */
+	protected function getManager_data($id){
+		$arr = $this->getUserArrDatabase([$id]);
+		if(isset($arr[0])){
+			return $arr[0];
+		}else{
+			return [];
+		}
+	}
+
+	/**
+	 * выборка данных из одной таблицы
+	 *
+	 * @param $table
+	 * @param array $where
+	 * @param array $sort
+	 * @return array
+	 */
+	protected function get_all_tbl_simple($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
 		$query = "SELECT * FROM `".$table."`";
 
 		$w = 0;
@@ -918,7 +956,7 @@ class Accounting  extends aplStdAJAXMethod
 	 * @param $table
 	 * @param array $data
 	 */
-	private function insert_empty_row($table,$data = array()){
+	protected function insert_empty_row($table,$data = array()){
 		$query = "INSERT INTO `".$table."` ";
 		$i = 0;
 		if (count($data)>0){
@@ -929,7 +967,6 @@ class Accounting  extends aplStdAJAXMethod
 			$query .= "`$key` = '$val'";
 			$i++;
 		}
-
 
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
@@ -956,4 +993,5 @@ class Accounting  extends aplStdAJAXMethod
 		return $int;
 	}
 }
+
 ?>

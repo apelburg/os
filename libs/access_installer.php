@@ -158,6 +158,7 @@
 	// БУХГАЛТЕР						  
 	$ACCESS_SHABLON[2] = array(
 		'agreement'=> array('access'=> true),
+		'sklad'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
 		'accounting'=> array('access'=> true),
 		'cabinet'=> array('access'=> false),
@@ -200,7 +201,7 @@
 		'agreement'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
 		'accounting'=> array('access'=> true),
-		'sklad'=> array('access'=> true),
+		//'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
 		'suppliers'=> array(
 			'access'=> true,

@@ -324,7 +324,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$Invoice = new InvoiceNotify();
 			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') была создана УПД №'.$_POST['number'];
 			$userName = $_POST['manager_name'];
-			$message= 'Для клиента '.$_POST['client_name'].' заведён новый счет';
+			$message= 'Для клиента '.$_POST['client_name'].' создан новый счет';
 			$href = 'http://www.apelburg.ru/os/?page=invoice&section=6&client_id='.$_POST['client_id'];
 			# подгружаем шаблон
 			ob_start();

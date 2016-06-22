@@ -1895,10 +1895,8 @@
         html: '',
         'class': 'reload',
         click: function() {
-          return new sendAjax("calculate_and_update_payment_tbl", {
-            id: data[0].id
-          }, function(response) {
-            return self.tbl.payments_tbl(new payments_tbl(new payments_tblObj(response.data.payments)));
+          return new sendAjax("calculate_and_update_payment_tbl", {}, function(response) {
+            return self.tbl.replaceWith(new payments_tbl(new payments_tblObj(response.data.payments)));
           });
         }
       });
@@ -1909,7 +1907,7 @@
         html: 'Выплаты'
       }));
       tr.append(this.accruals_summ = $('<th/>', {
-        html: round_money(21000)
+        html: round_money(0)
       }));
       tr.append($('<th/>', {
         html: this.recalc_button

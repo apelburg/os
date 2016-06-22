@@ -1486,14 +1486,15 @@ class payments_tbl
       'class':'reload',
       click:()->
         # пересчёт выгруженных данных
-        new sendAjax("calculate_and_update_payment_tbl",{id:data[0].id},(response)->
-          self.tbl.payments_tbl(new payments_tbl(new payments_tblObj(response.data.payments)))
+        new sendAjax("calculate_and_update_payment_tbl",{},(response)->
+#          console.log
+          self.tbl.replaceWith(new payments_tbl(new payments_tblObj(response.data.payments)))
         )
     })
 
     tr = $('<tr/>',{class:'head'})
     tr.append($('<th/>',{html:'Выплаты'}))
-    tr.append(@accruals_summ = $('<th/>',{html:round_money(21000)}))
+    tr.append(@accruals_summ = $('<th/>',{html:round_money(0)}))
     tr.append($('<th/>',{html:@recalc_button}))
     tr.append($('<th/>',{html:''}))
     tr.append($('<th/>',{html:''}))
