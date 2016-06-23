@@ -315,7 +315,7 @@
 	
 	function echo_message_js(text, message_type, timer){
 		message_type = message_type || 'system_message';
-		timer = timer || 7000;
+		timer = timer || 1;
 		$("<li/>", {
 			"class": message_type,
 			"css":{"opacity":1,"top":0},

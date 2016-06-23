@@ -337,9 +337,41 @@ tr td.mayBeEdit:hover{
     /* Standard */
     transition: all 0.3s ease;
 }
+#js-payments-tbl tr.head th:nth-of-type(4) button.to_right{
+    background-image: url(../images/img_design/to_right.png);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    width: 42px;
+    padding: 0px;
+    height: 40px;
+    border: 1px solid red;
+    background-position: 50%;
+    background-color: transparent;
+    outline:none;
+    /* Firefox */
+    -moz-transition: all 0.3s ease;
+    /* WebKit */
+    -webkit-transition: all 0.3s ease;
+    /* Opera */
+    -o-transition: all 0.3s ease;
+    /* Standard */
+    transition: all 0.3s ease;
+}
 #js-payments-tbl tr.head th:nth-of-type(3) button.reload:active{
     /*background-position: 50% 65% ;*/
     transform: rotate(15deg)
+}
+#js-payments-tbl tr.footer td{
+    font-style: italic;
+    font-size: 12px;
+    color: grey;
+    background: #fff;
+}
+#js-payments-tbl tr.footer td:nth-of-type(1){
+    padding: 5px 5px 5px 20px;
+}
+#js-payments-tbl tr td button{
+
 }
 /*
     таблица кредит
@@ -419,7 +451,8 @@ tr td.mayBeEdit:hover{
     padding: 5px 15px;
 }
 
-.accounting-tbl .body td:nth-of-type(3) button{
+.accounting-tbl .body td:nth-of-type(3) button,
+.accounting-tbl .body td:nth-of-type(4) button{
     float: left;
     padding: 11px 16px;
     border: 1px solid #deedcc;
@@ -430,8 +463,16 @@ tr td.mayBeEdit:hover{
 .accounting-tbl .body td:nth-of-type(3) button.hand{
     background-color: #d1fdfe;
     border: 1px solid #dcdde1;
-
 }
+.accounting-tbl .body td button.alert{
+    background-color: #f1949c;
+    border: 1px solid #dcdde1;
+}
+.accounting-tbl .body td button.checked{
+    background-color: #dcdde1;
+    border: 1px solid #dcdde1;
+}
+
 .accounting-tbl .body td:nth-of-type(3) button.delete{
     background-color: #fff;
     color: grey;

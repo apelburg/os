@@ -64,7 +64,7 @@
 	define("ACCOUNTING_ACCRUALS_COMP","os__accounting_accruals_compensation_imp"); //	таблица зафиксированных компенсаций
 	define("ACCOUNTING_ACCRUALS_DOP","os__accounting_accruals_compensation_dop"); //	таблица дополнителоьных компенсаций
 	define("ACCOUNTING_ACCRUALS_PAY","os__accounting_payment"); //	таблица выплат по зарплате
-
+	define("ACCOUNTING_ACCRUALS_CREDIT","os__accounting_credit"); //	таблица выплат по зарплате
 
 	define("SUPPLIERS_TBL", "os__supplier_list"); // таблица поставщиков
 	define("SUPPLIERS_ACTIVITIES_TBL", "os__suppliers_activities"); // таблица видов деятельности поставщиков

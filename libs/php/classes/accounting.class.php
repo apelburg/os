@@ -266,6 +266,7 @@ class PaymentBlock extends Accounting{
 	public $month = 0;
 	public $year = 0;
 
+	public $id = 0;
 	# денежная информация
 	private $oklad = 0;
 	private $ovans_card = 0;
@@ -274,8 +275,17 @@ class PaymentBlock extends Accounting{
 	private $ovans3 = 0;
 
 	# флаги мен/бух
-	private $flag_buch = 0;
-	private $flag_men = 0;
+
+	private  $oklad_fl_m = 0;
+	private  $oklad_fl_b = 0;
+	private  $ovans_card_fl_m = 0;
+	private  $ovans_card_fl_b = 0;
+	private  $ovans1_fl_m = 0;
+	private  $ovans1_fl_b = 0;
+	private  $ovans2_fl_m = 0;
+	private  $ovans2_fl_b = 0;
+	private  $ovans3_fl_m = 0;
+	private  $ovans3_fl_b = 0;
 
 
 
@@ -283,26 +293,29 @@ class PaymentBlock extends Accounting{
 	public function __construct($manager_id = 0,$month = 0,$year = 0){
 		# подключение к БД
 		$this->db();
-
 		$this->manager_id  	= (int)$manager_id;
 		$this->month 		= (int)$month;
 		$this->year 		= (int)$year;
 	}
 
 	/**
-	 * объект для создания записи
+	 * проверка
 	 *
-	 * @return array
+	 * @return bool
 	 */
-	public function insert_data_obj(){
-		return [
-			'oklad'=>$this->oklad,
-			'ovans_card'=> $this->ovans_card,
-			'manager_id'=>$this->manager_id,
-			'month'=>$this->month,
-			'year'=>$this->year
-		];
+	public function check_closed_pay(){
+//		return $this->printArr($this);
+		if($this->oklad_fl_m > 0
+			&&	$this->ovans_card_fl_m > 0
+			&&	$this->ovans1_fl_m > 0
+			&&	$this->ovans2_fl_m > 0
+			&&	$this->ovans3_fl_m > 0 ){
+			return 1;
+		}
+		return 0;
+
 	}
+
 
 	/**
 	 * объект для перезаписи
@@ -316,6 +329,20 @@ class PaymentBlock extends Accounting{
 		];
 	}
 
+
+	/**
+	 * редактируемые данные
+	 *
+	 * @return array
+	 */
+	public function user_insert_data_obj(){
+		return [
+			'ovans1'=>$this->ovans1,
+			'ovans2'=>$this->ovans2,
+			'ovans3'=>$this->ovans3
+		];
+	}
+
 	/**
 	 * объект для возврата пустого значения
 	 *
@@ -323,13 +350,40 @@ class PaymentBlock extends Accounting{
 	 */
 	private function simple_obj(){
 		return [
+			'id'=>$this->id,
+			'oklad'=>$this->oklad,
+			'oklad_fl_m' => $this->oklad_fl_m,
+			'oklad_fl_b' => $this->oklad_fl_b,
+			'ovans_card'=> $this->ovans_card,
+			'ovans_card_fl_m' => $this->ovans_card_fl_m,
+			'ovans_card_fl_b' => $this->ovans_card_fl_b,
+			'ovans1'=>$this->ovans1,
+			'ovans2'=>$this->ovans2,
+			'ovans3'=>$this->ovans3,
+			'ovans1_fl_m' => $this->ovans1_fl_m,
+			'ovans1_fl_b' => $this->ovans1_fl_b,
+			'ovans2_fl_m' => $this->ovans2_fl_m,
+			'ovans2_fl_b' => $this->ovans2_fl_b,
+			'ovans3_fl_m' => $this->ovans3_fl_m,
+			'ovans3_fl_b' => $this->ovans3_fl_b,
+		];
+	}
+
+	/**
+	 * объект для создания записи
+	 *
+	 * @return array
+	 */
+	public function insert_data_obj(){
+		return [
 			'oklad'=>$this->oklad,
 			'ovans_card'=> $this->ovans_card,
-			'ovans1' => $this->ovans1,
-			'ovans2' => $this->ovans2,
-			'ovans3' => $this->ovans3,
-			'flag_buch' => $this->flag_buch,
-			'flag_men' => $this->flag_men
+			'manager_id'=>$this->manager_id,
+			'ovans1'=>$this->ovans1,
+			'ovans2'=>$this->ovans2,
+			'ovans3'=>$this->ovans3,
+			'month'=>$this->month,
+			'year'=>$this->year
 		];
 	}
 
@@ -347,10 +401,30 @@ class PaymentBlock extends Accounting{
 		if ( $id > 0 ){
 			$where['id']  = (int)$id;
 		}
-		$data = $this->get_all_tbl(ACCOUNTING_ACCRUALS_PAY,$where);
-		if (isset($data['id'])){
-			$this->id = $data['id'];
+
+		$data = $this->get_all_tbl_simple(ACCOUNTING_ACCRUALS_PAY,$where);
+
+		if (isset($data[0]['id'])){
+			$this->id = $data[0]['id'];
+
+			$this->ovans1 = $data[0]['ovans1'];
+			$this->ovans2 = $data[0]['ovans2'];
+			$this->ovans3 = $data[0]['ovans3'];
+
+			$this->oklad_fl_m = $data[0]['oklad_fl_m'];
+			$this->oklad_fl_b = $data[0]['oklad_fl_b'];
+			$this->ovans_card_fl_m = $data[0]['ovans_card_fl_m'];
+			$this->ovans_card_fl_b = $data[0]['ovans_card_fl_b'];
+			$this->ovans1_fl_m = $data[0]['ovans1_fl_m'];
+			$this->ovans1_fl_b = $data[0]['ovans1_fl_b'];
+			$this->ovans2_fl_m = $data[0]['ovans2_fl_m'];
+			$this->ovans2_fl_b = $data[0]['ovans2_fl_b'];
+			$this->ovans3_fl_m = $data[0]['ovans3_fl_m'];
+			$this->ovans3_fl_b = $data[0]['ovans3_fl_b'];
+
+			$data = $data[0];
 		}
+
 
 		return $data;
 	}
@@ -363,12 +437,78 @@ class PaymentBlock extends Accounting{
 		# запрашиваем строку
 		$data = $this->get_row();
 
+
+
 		if (count($data) == 0){
 			$data = $this->simple_obj();
 			$data['id'] = 0;
+//		}else{
+//			$data = $arr[0];
+//			$this->id = $data['id'];
 		}
 		return $data;
 	}
+
+
+	/**
+	 * обновление по одному полю
+	 *
+	 * @return array
+	 */
+	public function updatePaymentsRow(){
+		# список разрешённых к редактированию полей
+		$edit_arr = [
+			'ovans1',
+			'ovans2',
+			'ovans3',
+			'ovans1_fl_m',
+			'ovans1_fl_b',
+			'ovans2_fl_m',
+			'ovans2_fl_b',
+			'ovans3_fl_m',
+			'ovans3_fl_b',
+			'oklad_fl_m',
+			'oklad_fl_b',
+			'ovans_card_fl_m',
+			'ovans_card_fl_b'
+		];
+
+		$data = [];
+
+		if (isset($_POST['key'])){
+			if (in_array($_POST['key'],$edit_arr)){
+				$this->get_row();
+
+				$key = $_POST['key'];
+
+				$this->$key = $_POST['val'];
+				$data  = [$key => $this->$key];
+			}
+		}
+
+		if (isset($_POST['id']) and $_POST['id'] > 0){
+			# update
+			$this->id = (int)$_POST['id'];
+
+			$this->update__row(ACCOUNTING_ACCRUALS_PAY, $data, $this->id);
+
+			return [];
+		}else{
+			# запрос актуальных данных по ЗП
+			$this->manager_data = $this->getManager_data($this->manager_id);
+			# внесение данных в объект
+			$this->oklad = $this->manager_data['salary'];
+			$this->ovans_card = $this->manager_data['avans'];
+
+			# insert new
+			$data = $this->insert_data_obj();
+			$data = array_merge($data ,$this->insert_empty_row(ACCOUNTING_ACCRUALS_PAY, $data));
+			return  $data;
+		}
+	}
+
+
+
 
 	/**
 	 * обновление данных по окладу и авансоваой части
@@ -383,15 +523,14 @@ class PaymentBlock extends Accounting{
 		$this->ovans_card = $this->manager_data['avans'];
 
 		// обновление данных
-
-
-
 		# проверка записи на существование
+
+
 		if(count($this->get_row()) > 0){
-			$data = $this->update_data_obj();
 
 			$this->update__row(ACCOUNTING_ACCRUALS_PAY,$this->update_data_obj(),$this->id);
-			$data['id'] = $this->id;
+			//			echo $this->printArr($this);
+			$data = $this->simple_obj();
 
 
 		}else{
@@ -417,7 +556,7 @@ class PaymentBlock extends Accounting{
 class Accounting  extends aplStdAJAXMethod
 {
 	// для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-	protected $production = true;
+	protected $production = false;
 
 	public 	$user_access = 0; 		// user right (int)
 	protected 	$user_id = 0;			// user id with base
@@ -439,7 +578,13 @@ class Accounting  extends aplStdAJAXMethod
 
 		// calls ajax methods from POST
 		if(isset($_POST['AJAX'])){
+
+
 			$this->_AJAX_($_POST['AJAX']);
+			$this->responseClass->response['data']['access'] = $this->user_access;
+			$this->responseClass->response['data']['id'] = $this->user_id;
+
+
 		}
 
 		// calls ajax methods from GET
@@ -521,10 +666,9 @@ class Accounting  extends aplStdAJAXMethod
 	# пересчитываем и обновляем информацию по зп манагера
 	protected function calculate_and_update_accruals_tbl_AJAX(){
 		# проверка прав
-		if ($this->user_access == 5 && $this->user_id != $this->manager_id){
+		if ($this->user_access == 5 && $this->user_id != $_GET['manager_id']){
 			$this->responseClass->addMessage('У Вас недостаточно прав для получения данной информации','error_message',1000);
 			return;
-
 		}
 
 		# БЛОК ПРОВЕРКИ ограничений на пересчёт
@@ -546,8 +690,13 @@ class Accounting  extends aplStdAJAXMethod
 			if ($this->prod__check()){return;}
 		}
 
+		# передача в скрипт прав пользователя
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+
 		$Calc = new CalculateMoneyBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 		$Calc->calculate_and_update_accruals_tbl();
+
 
 		$this->responseClass->response['data']['accruals'] = $this->get_data_accruals($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
 
@@ -558,7 +707,8 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
 		}
 		# запрос данных по выплатам за месяц
-		$this->responseClass->response['data']['payments'] = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+		$Payments = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['payments'] = $Payments->get_row();
 	}
 
 
@@ -586,8 +736,13 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->response['data']['compensation'] = $Calc->get_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
 		}
+
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+
 		# запрос данных по выплатам за месяц
-		$this->responseClass->response['data']['payments'] = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+		$Payments = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['payments'] = $Payments->get_row();
 
 	}
 
@@ -598,6 +753,12 @@ class Accounting  extends aplStdAJAXMethod
 		$this->responseClass->response['data']['access'] = $this->user_access;
 		// запрос строк закрытых за месяц счетов
 		if (!isset($_GET['manager_id']) || !isset($_GET['year'])|| !isset($_GET['month_number'])){
+			return;
+		}
+
+		# проверка прав
+		if ($this->user_access == 5 && $this->user_id != $_GET['manager_id']){
+			$this->responseClass->addMessage('У Вас недостаточно прав для получения данной информации','error_message',1000);
 			return;
 		}
 
@@ -615,8 +776,13 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
 			$this->responseClass->response['data']['compensation'] = $Calc->get_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
 		}
+
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+
 		# запрос данных по выплатам за месяц
-		$this->responseClass->response['data']['payments'] = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
+		$Payments = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['payments'] = $Payments->get_row();
 
 
 
@@ -690,18 +856,44 @@ class Accounting  extends aplStdAJAXMethod
 		return $this->get_all_tbl_simple(ACCOUNTING_ACCRUALS_PAY,$where);
 	}
 
+	protected function update_payments_row_AJAX(){
+		$Paymewnt = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+		$this->responseClass->response['data']['payments'] = $Paymewnt->updatePaymentsRow();
+
+		// если все закрыто
+		if($Paymewnt->check_closed_pay() > 0){
+
+		}
+
+
+	}
+
 	/**
 	 * пересчет данных по выплатам зарплаты
 	 */
 	protected function calculate_and_update_payment_tbl_AJAX(){
 		# запрос данных по выплатам за месяц
-		$data = $this->get_data_payments($_GET['manager_id'],$_GET['year'],$_GET['month_number']);
-
-		if(count($data) > 0){
-			// update
-		}else{
-			// create
+		# проверка прав
+		if ($this->user_access == 5 && $this->user_id != $_GET['manager_id']){
+			$this->responseClass->addMessage('У Вас недостаточно прав для получения данной информации','error_message',1000);
+			return;
 		}
+
+
+		$Paymewnt = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+
+		if (isset($_POST['id'])){
+			$id = (int)$_POST['id'];
+		}else{
+			$id = 0;
+		}
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+		$this->responseClass->response['data']['payments'] = $Paymewnt->update_payment_tbl($id);
+
 	}
 
 

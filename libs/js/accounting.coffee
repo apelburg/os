@@ -910,7 +910,7 @@ class createZpMenKonTbl
           tab1 = tab
           num++
         else if subsection != undefined
-          console.log subsection, tab.data().index
+
           if Number(subsection) == Number(tab.data().index)
             tab1 = tab
       # выбор первого пункта
@@ -969,30 +969,38 @@ class accrualsObj
 # прототип - вкладка учёт -> таблица начислений
 ###
 class accruals_tbl
-  width:300
+  width:320
   paddingBlock:6
   accruals_summ: 0
-
-  constructor:(data,dataComp = {}, dataDopComp = {})->
-    @pribl = 0
+  constructor:(data, dataComp = {}, dataDopComp = {}, dataPayments = {},options)->
+    @data = data
     @dataComp = dataComp
+    @dataDopComp = dataDopComp
+    @dataPayments = dataPayments
+    if options[0] != undefined
+      @options = options[0]
+
+  init:()->
+    @pribl = 0
 
     # сборка таблицы таблицы
     @tbl = $('<table/>',{id:'js-accruals-tbl','class':'accounting-tbl'});
     # сборка шапки
-    @tbl.append(@trHead(data))
+    @tbl.append(@trHead(@data))
     
     # сборка основного блока начислений
-    @tbl.append(@trBody(data))
+    @tbl.append(@trBody(@data))
 
     # сборка блока компенсаций
-    @tbl.append(@trCompensationRows(dataComp))
+    @tbl.append(@trCompensationRows(@dataComp))
 
     # дополнительные компенсации
-    @tbl.append(@trDopCompRow(dataDopComp))
+    @tbl.append(@trDopCompRow(@dataDopComp))
 
     # кнопка добавления компенсаций
-    @tbl.append(@trFooter(data))
+    
+    if Number(@data[0].id) > 0
+      @tbl.append(@trFooter(@data))
 
 
     @tbl.find('tr.body.str:last td,tr.body.compRow:last td').css({
@@ -1017,6 +1025,13 @@ class accruals_tbl
 
     return tblCase.append(@tbl)
 
+  # создание таблицы Выплат
+  payments_tbl:()->
+    @dataPayments.the_balance = @the_balance;
+    @paymentsTable = new payments_tbl(new payments_tblObj(@dataPayments))
+    @paymentsTbl = @paymentsTable.init()
+
+
   # сборка блока ежемесячных компенсаций
   trOffset:()->
     html = []
@@ -1033,7 +1048,12 @@ class accruals_tbl
       click:()->
         # пересчёт выгруженных данных
         new sendAjax("calculate_and_update_accruals_tbl",{id:data[0].id},(response)->
-          self.tbl.replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation))
+          options = [
+            access: response.data.access
+            user_id: response.data.user_id
+          ];
+          accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments, options)
+          self.tbl.replaceWith(accruals.init())
         )
     })
 
@@ -1050,7 +1070,7 @@ class accruals_tbl
     rows
 
   trCompensationRows:(data)->
-    console.log data
+    
     rows = []
     if data.length > 0
       for i in [0..(data.length - 1)]
@@ -1058,7 +1078,7 @@ class accruals_tbl
     rows
 
   trDopCompRow:(data)->
-    console.log data
+    
     rows = []
     if data.length > 0
       for i in [0..(data.length - 1)]
@@ -1068,7 +1088,12 @@ class accruals_tbl
 
   trFooter:(data)->
     self = @
-    console.log
+
+    if Number(@options.access) != 1 && Number(@options.access) != 2
+      return []
+
+
+
     rows = $('<tr/>')
     rows.append($('<td/>',{
       'colspan':4,
@@ -1076,6 +1101,7 @@ class accruals_tbl
         html:'Добавить компенсацию',
         'class':'link_add',
         click:()->
+
           # контент для окна создания записи компенсации
           html = $('<div/>',{
             id:'user_window_compensations_form'
@@ -1109,7 +1135,7 @@ class accruals_tbl
                 text: 'Закрыть',
                 class: 'button_yes_or_no no',
                 click: ()->
-                  console.log self.win_window.winDiv[0]
+#                  console.log self.win_window.winDiv[0]
                   $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
               },{
                 text: 'Создать',
@@ -1122,6 +1148,7 @@ class accruals_tbl
                       flag_r:'1'
                     },(response)->
                     rows.before(new dopCompRow(new dopCompRowObj(response.data) ,self))
+                    self.calcTbl()
                     $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
                   )
 
@@ -1143,7 +1170,7 @@ class accruals_tbl
   calcTbl:()->
 
     self = @
-    pribl = 0
+    @the_balance = 0
     @tbl.find('.body').each(()->
       data = $(this).data()
       if data.flag_r > 0 # если ручной режим
@@ -1151,11 +1178,15 @@ class accruals_tbl
       else
         num = data.money
       if(data.name != undefined )
-        pribl = pribl + Number(num)
+        self.the_balance =  self.the_balance + Number(num)
       else
-        pribl = pribl + Number(num)
+        self.the_balance =  self.the_balance + Number(num)
     )
-    self.accruals_summ.html(round_money(pribl))
+    @accruals_summ.html(round_money(@the_balance))
+
+
+    if $('#js-payments-tbl').find('.footer td').eq(1).length >0
+      $('#js-payments-tbl').find('.footer td').eq(1).html(@accruals_summ.html());
 
 ###
 # прототип объекта дополнителоьных компенсаций
@@ -1184,33 +1215,35 @@ class dopCompRow
     tr = $('<tr/>',{
       class:'body doPcompRow',
       click:()->
-        console.log $(this).data()
+        
     }).data(n)
     # название
     tr.append($('<td/>',{html:n.name}));
+    if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+      tr.append($('<td/>',{html:round_money(n.r)}))
+    else
+      tr.append($('<td/>',{html:$('<input/>',{
+        val:round_money(n.r)
+        focus:()->
+            t = $(this)
+            if(Number($(this).val()) == 0)
+              # если 0.00 подм  еняем на пусто
+              $(this).val('')
+            else
+              # выделение
+              setTimeout(()->
+                t.select()
+              , 50)
+        blur:()->
 
-    tr.append($('<td/>',{html:$('<input/>',{
-      val:round_money(n.r)
-      focus:()->
-          t = $(this)
-          if(Number($(this).val()) == 0)
-            # если 0.00 подм  еняем на пусто
-            $(this).val('')
-          else
-            # выделение
-            setTimeout(()->
-              t.select()
-            , 50)
-      blur:()->
+          n.r = round_money(Number($(this).val()))
+          tr.data(n)
+          parentObj.calcTbl()
+          $(this).val(n.r)
+          new sendAjax('save_dop_compensation_val',{id:n.id,val:n.r,key:'r'})
+      })}))
 
-        n.r = round_money(Number($(this).val()))
-        tr.data(n)
-        parentObj.calcTbl()
-        $(this).val(n.r)
-        new sendAjax('save_dop_compensation_val',{id:n.id,val:n.r,key:'r'})
-    })}))
-
-    tr.append($('<td/>',{html:$('<button/>',{
+    del = $('<button/>',{
       html:'X',
       class:'hand delete',
 
@@ -1221,7 +1254,15 @@ class dopCompRow
         })
         tr.remove()
         parentObj.calcTbl()
-    })})).append($('<td/>'))
+    })
+
+
+    if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+      tr.append($('<td/>'))
+    else
+      tr.append($('<td/>',{html:del}))
+
+    tr.append($('<td/>'))
 
     return tr
 
@@ -1235,8 +1276,19 @@ class compRow
     tr.append($('<td/>',{html:n.name}));
 
 
+
+
+
+
     # вычисляем столбец
     if Number(n.flag_r) > 0
+      if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+        tr.append($('<td/>',{html:round_money(n.r)}));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        return tr
+
+
       tr.append($('<td/>',{html:$('<input/>',{
         val:round_money(n.r)
         focus:()->
@@ -1271,6 +1323,12 @@ class compRow
           parentObj.calcTbl()
       })}))
     else
+      if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+        tr.append($('<td/>',{html:round_money(n.money)}));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        return tr
+
       tr.append($('<td/>',{html:round_money(n.money)}))
       tr.append($('<td/>',{html:$('<button/>',{
         html:'А',
@@ -1293,7 +1351,15 @@ class compRow
 ###
 class row
   constructor:(n,parentObj)->
+
+
+
+
     tr = $('<tr/>',{class:'body str'}).data(n)
+
+
+
+
     if Number(n.i) == 1
       col = 'salary_r_fl'
       col1 = 'salary_r'
@@ -1314,6 +1380,15 @@ class row
 
 
     if Number(n.i) == 4
+
+      if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+        tr.append($('<td/>',{html:round_money(n.money)}));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        return tr
+
+
+
       tr.append($('<td/>',{html:$('<input/>',{
         val:round_money(n.money)
         class:'mone'
@@ -1344,7 +1419,13 @@ class row
               key:col1,
               val:Number(t.val(n.money))
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
+              options = [
+                access: response.data.access
+                user_id: response.data.user_id
+              ]
+              accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments,options)
+              tr.parent().parent().replaceWith(accruals.init())
+
             )
 #
       })}))
@@ -1352,6 +1433,12 @@ class row
 
     # вычисляем столбец
     else if Number(n.flag_r) > 0
+      if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+        tr.append($('<td/>',{html:round_money(n.money)}));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        return tr
+
       tr.append($('<td/>',{html:$('<input/>',{
         val:round_money(n.r)
         focus:()->
@@ -1377,7 +1464,13 @@ class row
               key:col1,
               val:Number(t.val())
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
+              options = [
+                access: response.data.access
+                user_id: response.data.user_id
+              ]
+              accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments,options)
+
+              tr.parent().parent().replaceWith(accruals.init())
             )
       })}))
       tr.append($('<td/>',{html:$('<button/>',{
@@ -1397,10 +1490,20 @@ class row
             new sendAjax('create_new_accruals_calc',{
               key:col,val:n.flag_r
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
+              options = [
+                access: response.data.access
+                user_id: response.data.user_id
+              ]
+              accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments,options)
+              tr.parent().parent().replaceWith(accruals.init())
             )
       })}))
     else
+      if Number(parentObj.options.access) != 1 && Number(parentObj.options.access) != 2
+        tr.append($('<td/>',{html:round_money(n.money)}));
+        tr.append($('<td/>'));
+        tr.append($('<td/>'));
+        return tr
       tr.append($('<td/>',{html:round_money(n.money)}))
       tr.append($('<td/>',{html:$('<button/>',{
         html:'А',
@@ -1419,7 +1522,12 @@ class row
               key:col,
               val:n.flag_r
             },(response)->
-              tr.parent().parent().replaceWith(new accruals_tbl(new accrualsObj(response.data.accruals) ,response.data.compensation, response.data.dop_compensation))
+              options = [
+                access: response.data.access
+                user_id: response.data.user_id
+              ]
+              accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments,options)
+              tr.parent().parent().replaceWith(accruals.init())
             )
       })}))
 
@@ -1440,10 +1548,10 @@ class payments_tblObj
     ovans3:       '0.00'
     flag_men:     0
     flag_buch:    0
+    balance: 0
 
   constructor: (data = {})->
     @options = {}
-
     for key,el of data
       if el != null
         @options[key] = el
@@ -1456,23 +1564,44 @@ class payments_tblObj
 class payments_tbl
   paddingBlock:6
   accruals_summ: 0
-  width:300
+  width:320
+  constructor:(data)->
+    @data = data
+    return @
 
-  constructor:(data = {})->
-# сборка таблицы таблицы
-    @tbl = $('<table/>',{id:'js-payments-tbl','class':'accounting-tbl'});
+  init:()->
+    # сборка таблицы таблицы
+    @tbl = $('<table/>',{id:'js-payments-tbl','class':'accounting-tbl'}).data(@data);
     # сборка шапки
-    @tbl.append(@trHead(data))
+    @tbl.append(@trHead(@data))
+    # сборка тело
+    @tbl.append(@trBody(@data))
 
-    tblCase = $('<div/>').css({
+    # итого к оплате
+    @tbl.append(@trFooter(@data))
+
+    # итого выплачено
+    @calcTbl()
+
+
+    @tblCase = $('<div/>').css({
       'float':'left'
       'width':@width
       'paddingRight':@paddingBlock
       'paddingBottom':@paddingBlock
     })
 
-    return tblCase.append(@tbl)
 
+#    div2.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
+#      position: "right",
+#      className: 'invoice_12px',
+#      autoHide: false
+#    })
+    return @tblCase.append(@tbl)
+
+
+  the_balance_new:(data)->
+    @to_payment.html(data)
   # Шапка
   trHead:(data)->
     self = @
@@ -1485,27 +1614,228 @@ class payments_tbl
       html:'',
       'class':'reload',
       click:()->
+        # console.log data.id
         # пересчёт выгруженных данных
-        new sendAjax("calculate_and_update_payment_tbl",{},(response)->
-#          console.log
-          self.tbl.replaceWith(new payments_tbl(new payments_tblObj(response.data.payments)))
+        new sendAjax("calculate_and_update_payment_tbl",{id:data.id},(response)->
+          tbl = new payments_tbl(new payments_tblObj(response.data.payments))
+          self.tblCase.replaceWith(tbl.init())
         )
     })
 
+    @to_right = $('<button/>',{
+      html:'',
+      'class':'to_right',
+      click:()->
+        
+        # пересчёт выгруженных данных
+        echo_message_js "ГО в кредит"
+    })
     tr = $('<tr/>',{class:'head'})
+    # название строки
     tr.append($('<th/>',{html:'Выплаты'}))
-    tr.append(@accruals_summ = $('<th/>',{html:round_money(0)}))
+    # деньги
+    tr.append(@itogo = $('<th/>',{html:''}))
+
+    # кнопка бух
     tr.append($('<th/>',{html:@recalc_button}))
+    # унопка мен
+    tr.append(@td_to_right = $('<th/>'))
+    # пробельный символ
     tr.append($('<th/>',{html:''}))
-    tr.append($('<th/>',{html:''}))
+    tr
+  trBody:(data)->
+    arr = []
+    arr.push(@trRow({
+      id:data.id,
+      name:'Карта(а)',
+      money:data.oklad,
+      key:'oklad',
+      fl_b:data.oklad_fl_b,
+      fl_m:data.oklad_fl_m
+    }))
+    arr.push(@trRow({
+      id:data.id,
+      name:'Карта(зп)',
+      money:data.ovans_card,
+      key:'ovans_card',
+      fl_b:data.ovans_card_fl_b,
+      fl_m:data.ovans_card_fl_m}))
+    arr.push(@trRow({
+      id:data.id,
+      name:'Аванс 1',
+      money:data.ovans1,
+      key:'ovans1',
+      fl_b:data.ovans1_fl_b,
+      fl_m:data.ovans1_fl_m
+    },{
+      edit:true,
+      copy:true
+    } ))
+    arr.push(@trRow({
+      id:data.id,
+      name:'Аванс 2',
+      money:data.ovans2,
+      key:'ovans2',
+      fl_b:data.ovans2_fl_b,
+      fl_m:data.ovans2_fl_m
+    },{
+      edit:true,
+      copy:true
+    }))
 
-  trFooter:()->
-    []
+    arr.push(@trRow({
+      id:data.id,
+      name:'Аванс 3',
+      money:data.ovans3,
+      key:'ovans3',
+      fl_b:data.ovans3_fl_b,
+      fl_m:data.ovans3_fl_m
+    },{
+      edit:true,
+      copy:true
+    }))
+    arr
+  trRow:(params, options = [])->
+    tr = $('<tr/>',{class:'body'}).data(params)
+    # название строки
+    tr.append($('<td/>',{html:params.name}))
 
-  trFooter:()->
-    []
+    # деньги
+    if options.edit && (Number(params.fl_m) == 0)
+      tr.append($('<td/>',{html: @inputMoney( params.id, round_money(params.money), params.key, tr,params,options )}))
+    else
+      
+      tr.append($('<td/>',{html: round_money( params.money ) }))
+
+    # кнопка бух
+    tr.append($('<td/>',{html: @buttton(params.id,'В',params.key, params.fl_b, tr, 'fl_b',params,options) }))
+    # унопка мен
+    tr.append($('<td/>',{html: @buttton(params.id,'П',params.key, params.fl_m, tr, 'fl_m',params,options) }))
+    # пробельный символ
+    tr.append($('<td/>',{html:''}))
+    tr.data(params)
+  inputMoney:(id, val, key, tr, params,options, ajax = 'update_payments_row')->
+    self = @
+
+    $('<input/>',{
+      val:round_money(val)
+      focus:()->
+        t = $(this)
+        if(Number($(this).val()) == 0)
+          # если 0.00 подм  еняем на пусто
+          $(this).val('')
+        else
+          # выделение
+          setTimeout(()->
+            t.select()
+          , 50)
+
+      blur:()->
+        val = round_money(Number($(this).val()))
+        data = tr.data()
+        params.money = val
+        data.money = val
+        tr.data(data)
+        $(this).val(val)
+
+        new sendAjax(ajax,{id:id,key:key,val:val},(response)->
+          if Number(id) == 0
+            tbl = new payments_tbl(new payments_tblObj(response.data.payments)
+            self.tblCase.replaceWith(tbl.init()))
+          else
+            tr.replaceWith(self.trRow(params,options))
+        )
+        # пересчёт
+
+        self.calcTbl()
+    })
+  buttton:(id, name, key, val, tr, type = 'fl_m', params, options, ajax = 'update_payments_row')->
+    self = @
+    dopClass = ''
+
+    console.log type,Number(params.money),Number(val)
+
+    if type == 'fl_b' && Number(params.money) > 0 && Number(val) == 0
+      dopClass = ' alert';
+    if type == 'fl_m' && Number(params.fl_b) > 0 && Number(val) == 0
+      dopClass = ' alert';
+
+    else if Number(val) > 0
+      dopClass = ' checked';
+    k = key + '_' + type
+    $('<button/>',{
+      html:name,
+      class:'' + dopClass,
+      click:()->
+        
+        # нажатие по кнопке манагера
+        if(type == 'fl_m')
+
+          if (Number(params.fl_b) == 0)
+
+            echo_message_js("Сначала действие должен подтвердить бухгалтер","error_message",1)
+            return
+
+        # нажатие по кнопке буха
+        if(type == 'fl_b' && Number(params.money) <=0)
+          echo_message_js("Введите сумму","error_message",1)
+          return
+
+
+
+        if Number(val) < 20
+          if (Number(val) == 0)
+            $(this).addClass('checked')
+            val = 1
+          else
+            $(this).removeClass('checked')
+            val = 0
+#          val = 1
+
+
+          new sendAjax(ajax,{
+            id  : id ,
+            key : k,
+            val : val
+          },(response)->
+            if Number(id) == 0
+              tbl = new payments_tbl(new payments_tblObj(response.data.payments)
+              self.tblCase.replaceWith(tbl.init()))
+
+          )
+          params[type]= val;
+
+
+          tr.replaceWith(self.trRow(params,options))
+          # пересчёт
+          self.calcTbl()
+
+    })
+  trFooter:(data)->
+    tr = $('<tr/>',{class:'footer'})
+    # название строки
+    tr.append($('<td/>',{
+      colspan:2,
+      html:"текущий остаток к оплате"
+    }))
+    tr.append(@to_payment = $('<td/>',{
+      colspan:2,
+      html:round_money(data.the_balance)
+    }))
+    tr.append($('<td/>'))
+    
+    tr
   calcTbl:()->
-    []
+
+
+    itogo = 0
+    @tbl.find('tr.body').each(()->
+      data = $(this).data()
+      itogo += Number(data.money)
+
+    )
+    @itogo.html(round_money(itogo))
+    @the_balance_new($('#js-accruals-tbl .head th').eq(1).html())
 
 
 ###
@@ -1840,10 +2170,13 @@ class billTrPrototipe
       # первый блок
       new sendAjax "get_data",{},(response)->
         content.append(self.bill_tbl =  new create_bill_tbl(response.data.bill_closed))
-
-        content.append( new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation ))
-
-        content.append( new payments_tbl(response.data.payments) )
+        options = [
+          access: response.data.access
+          user_id: response.data.user_id
+        ]
+        accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments,options)
+        content.append(accruals.init())
+        content.append(accruals.payments_tbl())
 
 #        content.append( new credit_tbl(response.data) )
 
