@@ -279,6 +279,15 @@ class CreditBlock extends Accounting{
 		$this->manager_id  	= (int)$manager_id;
 		$this->month 		= (int)$month;
 		$this->year 		= (int)$year;
+
+		$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
+
+		// geting rights
+		if ($this->user_id > 0){
+
+			$this->user_access = $this->get_user_access_Database_Int($this->user_id);
+		}
+
 	}
 
 	/**
@@ -302,20 +311,24 @@ class CreditBlock extends Accounting{
 		# список разрешённых к редактированию полей
 		$edit_arr = $this->tpl__edit_data();
 
+
+
 		if (isset($_POST['key'])){
 			if (in_array($_POST['key'],$edit_arr)){
-
+				$key = $_POST['key'];
 				$this->$key = $_POST['val'];
 				$data  = [$key => $this->$key];
 			}
 		}
+
+
 
 		// если изменения были
 		if (isset($_POST['id']) and $_POST['id'] > 0 and count($data) > 0){
 			# update
 			$id = (int)$_POST['id'];
 
-			$this->update__row(ACCOUNTING_ACCRUALS_CREDIT, $data, $this->id);
+			$this->update__row(ACCOUNTING_ACCRUALS_CREDIT, $data, $id);
 
 			return true;
 		}else{
@@ -346,11 +359,24 @@ class CreditBlock extends Accounting{
 	 *
 	 * @return array
 	 */
-	private function tpl__edit_data($access = 0){
-		return [
-			'fl_b',
-			'fl_m'
-		];
+	private function tpl__edit_data(){
+
+
+		switch ($this->user_access){
+			case 1:
+				$enable = ['money','fl_b','fl_m'];
+				break;
+			case 2:
+				$enable = ['money','fl_b'];
+				break;
+			case 5:
+				$enable = ['fl_m'];
+				break;
+			default:
+				$enable = [];
+				break;
+		}
+		return $enable;
 	}
 
 	/**
@@ -389,6 +415,8 @@ class CreditBlock extends Accounting{
 	private function check_and_del($data){
 		$summ = 0;
 		$ids = [];
+		$flad_no_del = true;
+
 		foreach ($data as $row){
 //			echo $this->printArr($row);
 			$ids[] = $row['id'];
@@ -396,11 +424,18 @@ class CreditBlock extends Accounting{
 			if ($row['minus'] == 1){
 				$row['money'] = $row['money']*(-1);
 			}
+
+
 			$summ += $row['money'];
+
+			# если в блоке кредита есть неподтверждённые строки, удалять ничего нельзя
+			if ($row['fl_b'] == 0 || $row['fl_m'] == 0){
+				$flad_no_del = 0;
+			}
 		}
 
 
-		if($summ == 0){
+		if($summ == 0 && $flad_no_del == true){
 			$this->delete_rows_from_table(ACCOUNTING_ACCRUALS_CREDIT,$ids);
 			return [];
 		}
@@ -1415,7 +1450,7 @@ class Accounting  extends aplStdAJAXMethod
 	 * @param $id
 	 * @return int
 	 */
-	private function get_user_access_Database_Int($id){
+	public function get_user_access_Database_Int($id){
 		$query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		$int = 0;

@@ -2393,8 +2393,46 @@
    */
 
   rowCredit = (function() {
+    rowCredit.prototype.inputMoney = function(id, val, key, tr, n, parentObj, ajax) {
+      var self;
+      if (ajax == null) {
+        ajax = 'update_credit_row';
+      }
+      self = this;
+      return $('<input/>', {
+        "class": 'credit_money_div',
+        val: round_money(val),
+        focus: function() {
+          var t;
+          t = $(this);
+          if (Number($(this).val()) === 0) {
+            return $(this).val('');
+          } else {
+            return setTimeout(function() {
+              return t.select();
+            }, 50);
+          }
+        },
+        blur: function() {
+          val = round_money(Number($(this).val()));
+          n.money = val;
+          tr.data(n);
+          $(this).val(val);
+          new sendAjax(ajax, {
+            id: id,
+            key: key,
+            val: val
+          }, function(response) {
+            return tr.replaceWith(new rowCredit(n, parentObj));
+          });
+          return parentObj.calcTbl();
+        }
+      });
+    };
+
     function rowCredit(n, parentObj) {
-      var min, tr;
+      var dopclass, min, self, tr;
+      self = this;
       tr = $('<tr/>', {
         "class": 'body'
       }).data(n);
@@ -2413,39 +2451,69 @@
       }
       if (Number(n.fl_b) === 0) {
         tr.append($('<td/>', {
-          html: $('<input/>', {
-            "class": 'credit_money_div',
-            val: n.money
-          })
+          html: self.inputMoney(n.id, n.money, 'money', tr, n, parentObj)
         }));
       } else {
         tr.append($('<td/>', {
           html: $('<div/>', {
             "class": 'credit_money_div',
-            html: n.money
+            html: round_money(n.money)
           })
         }));
       }
+      dopclass = '';
+      if (Number(n.money) > 0 && Number(n.fl_b) === 0) {
+        dopclass = ' alert';
+      }
       tr.append($('<td/>', {
         html: $('<button/>', {
-          "class": 'hand',
+          "class": 'hand' + dopclass,
           html: 'В',
           click: function() {
+            console.log(parentObj.options.access);
             if (parentObj.options.access !== 2 && parentObj.options.access !== 1) {
-              echo_message_js("У вас не достатьчно прав для данного действия", "error_message", 1);
+              echo_message_js("У вас не достатчно прав для данного действия", "error_message", 1);
+              return false;
+            } else if (n.fl_b === 1) {
+              echo_message_js("Платеж уже был подтвержден", "error_message", 1);
               return false;
             }
+            n.fl_b = 1;
+            return new sendAjax('update_credit_row', {
+              id: n.id,
+              key: 'fl_b',
+              val: 1
+            }, function(response) {
+              return tr.replaceWith(new rowCredit(n, parentObj));
+            });
           }
         })
       }));
+      dopclass = '';
+      if (Number(n.money) > 0 && Number(n.fl_m) === 0) {
+        dopclass = ' alert';
+      }
       tr.append($('<td/>', {
         html: $('<button/>', {
-          "class": 'hand',
+          "class": 'hand' + dopclass,
           html: 'П',
           click: function() {
-            if (parentObj.options.user_id !== parentObj.urlManId || parentObj.options.access !== 5) {
+            console.log(parentObj.options.access);
+            if (parentObj.options.access !== 5 && parentObj.options.user_id !== parentObj.urlManId) {
+              echo_message_js("У вас не достатчно прав для данного действия", "error_message", 1);
+              return false;
+            } else if (n.fl_m === 1) {
+              echo_message_js("Платеж уже был подтвержден", "error_message", 1);
               return false;
             }
+            n.fl_m = 1;
+            return new sendAjax('update_credit_row', {
+              id: n.id,
+              key: 'fl_m',
+              val: 1
+            }, function(response) {
+              return tr.replaceWith(new rowCredit(n, parentObj));
+            });
           }
         })
       }));
@@ -2502,8 +2570,6 @@
         for (i = j = 0, ref = data.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
           rows.push(new rowCredit(new credit_tbl_rowObj(data[i]), this));
         }
-      } else {
-        this.tbl.find('.head').addClass('noCredit');
       }
       return rows;
     };
@@ -2605,7 +2671,7 @@
                       minus: html.find('.checked').attr('data-val')
                     }, function(response) {
                       self.data.push(response.data.credit);
-                      self.tbl.find('.head').after(new rowCredit(new credit_tbl_rowObj(response.data.credit), this));
+                      self.tbl.find('.head').after(new rowCredit(new credit_tbl_rowObj(response.data.credit), self));
                       $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
                       return self.calcTbl();
                     });
@@ -2640,10 +2706,11 @@
         return self.the_balance = self.the_balance + Number(num);
       });
       this.accruals_summ.html(round_money(this.the_balance));
-      if (this.the_balance > 0) {
-        return this.tbl.find('.head').removeClass('noCredit');
-      } else {
+      console.log(Number(this.the_balance));
+      if (Number(this.the_balance) === 0) {
         return this.tbl.find('.head').addClass('noCredit');
+      } else {
+        return this.tbl.find('.head').removeClass('noCredit');
       }
     };
 

@@ -1942,7 +1942,43 @@ class credit_tbl_rowObj
 # строка кредита
 ###
 class rowCredit
+  inputMoney:(id, val, key, tr, n,parentObj, ajax = 'update_credit_row')->
+    self = @
+
+    $('<input/>',{
+      class:'credit_money_div',
+      val:round_money(val)
+      focus:()->
+        t = $(this)
+        if(Number($(this).val()) == 0)
+          # если 0.00 подм  еняем на пусто
+          $(this).val('')
+        else
+          # выделение
+          setTimeout(()->
+            t.select()
+          , 50)
+
+      blur:()->
+
+        val = round_money(Number($(this).val()))
+
+
+
+        n.money = val
+
+        tr.data(n)
+        $(this).val(val)
+
+        new sendAjax(ajax,{id:id,key:key,val:val},(response)->
+          tr.replaceWith(new rowCredit(n,parentObj))
+        )
+        # пересчёт
+
+        parentObj.calcTbl()
+    })
   constructor:(n,parentObj)->
+    self = @
     tr = $('<tr/>',{
       class:'body'
     }).data(n)
@@ -1962,38 +1998,61 @@ class rowCredit
 
     if Number(n.fl_b) == 0
       tr.append($('<td/>',{
-        html:$('<input/>',{
-          class:'credit_money_div',
-          val:n.money,
-        })
+        html: self.inputMoney(n.id, n.money, 'money', tr, n,parentObj)
       }))
     else
       tr.append($('<td/>',{
         html:$('<div/>',{
           class:'credit_money_div',
-          html:n.money,
+          html: round_money(n.money)
         })
       }))
+    dopclass = ''
+    dopclass = ' alert' if Number(n.money) > 0 && Number(n.fl_b) == 0
 
     tr.append($('<td/>',{
       html:$('<button/>',{
-        class:'hand',
+        class:'hand' + dopclass,
         html:'В',
         click:()->
+          console.log parentObj.options.access
           if parentObj.options.access != 2 && parentObj.options.access != 1
-            echo_message_js("У вас не достатьчно прав для данного действия","error_message",1)
+            echo_message_js("У вас не достатчно прав для данного действия","error_message",1)
             return false
+          else if n.fl_b == 1
+            echo_message_js("Платеж уже был подтвержден","error_message",1)
+            return false
+
+          n.fl_b = 1
+          new sendAjax('update_credit_row',{id:n.id,key:'fl_b',val:1},(response)->
+            tr.replaceWith(new rowCredit(n,parentObj))
+          )
+          
 
       })
     }))
+
+
+    dopclass = ''
+    dopclass = ' alert' if Number(n.money) > 0 && Number(n.fl_m) == 0
+
     tr.append($('<td/>',{
       html:$('<button/>',{
-        class:'hand',
+        class:'hand' + dopclass,
         html:'П',
         click:()->
-          if parentObj.options.user_id != parentObj.urlManId || parentObj.options.access != 5
+          console.log parentObj.options.access
+          if parentObj.options.access != 5 && parentObj.options.user_id != parentObj.urlManId
+            echo_message_js("У вас не достатчно прав для данного действия","error_message",1)
+            return false
+          else if n.fl_m == 1
+            echo_message_js("Платеж уже был подтвержден","error_message",1)
             return false
 
+          n.fl_m = 1
+          new sendAjax('update_credit_row',{id:n.id,key:'fl_m',val:1},(response)->
+            tr.replaceWith(new rowCredit(n,parentObj))
+          )
       })
     }))
 
@@ -2042,8 +2101,8 @@ class credit_tbl
     if data.length > 0
       for i in [0..(data.length - 1)]
         rows.push(new rowCredit(new credit_tbl_rowObj(data[i]),@))
-    else
-      @tbl.find('.head').addClass('noCredit')
+
+
     return rows
 
 
@@ -2136,7 +2195,7 @@ class credit_tbl
                       minus:html.find('.checked').attr('data-val')
                     },(response)->
                     self.data.push(response.data.credit)
-                    self.tbl.find('.head').after(new rowCredit(new credit_tbl_rowObj(response.data.credit),@))
+                    self.tbl.find('.head').after(new rowCredit(new credit_tbl_rowObj(response.data.credit),self))
                     $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
                     self.calcTbl()
                   )
@@ -2166,10 +2225,12 @@ class credit_tbl
     )
     @accruals_summ.html(round_money(@the_balance))
 
-    if @the_balance > 0
-      @tbl.find('.head').removeClass('noCredit')
-    else
+    console.log Number(@the_balance)
+    if Number(@the_balance) == 0
+
       @tbl.find('.head').addClass('noCredit')
+    else
+      @tbl.find('.head').removeClass('noCredit')
 
   updateTbl:()->
     self = @
