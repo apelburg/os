@@ -14,7 +14,7 @@
  */
 
 (function() {
-  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, cyrill_to_latin, dopCompRow, dopCompRowObj, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, payments_tblObj, pensionTrObj, round_money, row, sendAjax, tdEditRow, zpMenRekTrObj,
+  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, credit_tbl_rowObj, cyrill_to_latin, dopCompRow, dopCompRowObj, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, payments_tblObj, pensionTrObj, round_money, row, rowCredit, sendAjax, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
 
   getDateNow = function() {
@@ -1293,7 +1293,7 @@
 
     accruals_tbl.prototype.payments_tbl = function() {
       this.dataPayments.the_balance = this.the_balance;
-      this.paymentsTable = new payments_tbl(new payments_tblObj(this.dataPayments));
+      this.paymentsTable = new payments_tbl(new payments_tblObj(this.dataPayments), this.options);
       return this.paymentsTbl = this.paymentsTable.init();
     };
 
@@ -1456,7 +1456,7 @@
     };
 
     accruals_tbl.prototype.calcTbl = function() {
-      var self;
+      var itogo, real_ostatoc, self;
       self = this;
       this.the_balance = 0;
       this.tbl.find('.body').each(function() {
@@ -1475,7 +1475,19 @@
       });
       this.accruals_summ.html(round_money(this.the_balance));
       if ($('#js-payments-tbl').find('.footer td').eq(1).length > 0) {
-        return $('#js-payments-tbl').find('.footer td').eq(1).html(this.accruals_summ.html());
+        $('#js-payments-tbl').find('.footer td').eq(1).html(round_money(this.the_balance));
+        itogo = Number($('#js-payments-tbl .head th').eq(1).html());
+        real_ostatoc = Number(this.the_balance) - Number(itogo);
+        $('#js-payments-tbl').find('.footer2 td').eq(1).html(round_money(real_ostatoc));
+        if (real_ostatoc < 0) {
+          return $('#js-payments-tbl').find('.footer2 td').eq(1).css({
+            'color': 'red'
+          });
+        } else {
+          return $('#js-payments-tbl').find('.footer2 td').eq(1).css({
+            'color': 'grey'
+          });
+        }
       }
     };
 
@@ -1942,7 +1954,8 @@
       ovans3: '0.00',
       flag_men: 0,
       flag_buch: 0,
-      balance: 0
+      balance: 0,
+      go_to_credit: 0
     };
 
     function payments_tblObj(data) {
@@ -1974,14 +1987,24 @@
 
     payments_tbl.prototype.accruals_summ = 0;
 
-    payments_tbl.prototype.width = 320;
+    payments_tbl.prototype.width = 350;
 
-    function payments_tbl(data) {
+    function payments_tbl(data, options) {
+      if (options == null) {
+        options = {};
+      }
       this.data = data;
+      this.options = options;
       return this;
     }
 
     payments_tbl.prototype.init = function() {
+      this.urlManId = Number($.urlVar('manager_id'));
+      if (this.options.access !== 1 && this.options.access !== 2) {
+        if (Number(this.options.user_id) !== Number(this.urlManId) && this.options.access === 5) {
+          return [];
+        }
+      }
       this.tbl = $('<table/>', {
         id: 'js-payments-tbl',
         'class': 'accounting-tbl'
@@ -1989,6 +2012,7 @@
       this.tbl.append(this.trHead(this.data));
       this.tbl.append(this.trBody(this.data));
       this.tbl.append(this.trFooter(this.data));
+      this.tbl.append(this.trFooter2(this.data));
       this.calcTbl();
       this.tblCase = $('<div/>').css({
         'float': 'left',
@@ -2006,12 +2030,6 @@
     payments_tbl.prototype.trHead = function(data) {
       var self, tr;
       self = this;
-      this.recalc_button = $('<button>', {
-        html: 'в кредит ->',
-        click: function() {
-          return self.calcTbl();
-        }
-      });
       this.recalc_button = $('<button/>', {
         html: '',
         'class': 'reload',
@@ -2020,18 +2038,35 @@
             id: data.id
           }, function(response) {
             var tbl;
-            tbl = new payments_tbl(new payments_tblObj(response.data.payments));
+            tbl = new payments_tbl(new payments_tblObj(response.data.payments), self.options);
             return self.tblCase.replaceWith(tbl.init());
           });
         }
       });
-      this.to_right = $('<button/>', {
-        html: '',
-        'class': 'to_right',
-        click: function() {
-          return echo_message_js("ГО в кредит");
-        }
-      });
+      this.to_right = '';
+      if (Number(data.go_to_credit) === 555) {
+        this.to_right = $('<button/>', {
+          html: '',
+          'class': 'to_right',
+          click: function() {
+            var message;
+            message = 'Отрицательный баланс будет перенесён в блок "Кредита",<br> при этом все действия с блоками "Начислений" и "Выплат" будут заблокированы.<br> Проделжить?';
+            return new modalConfirm({
+              html: message
+            }, function() {
+              return new sendAjax("update_payments_row", {
+                id: data.id,
+                key: 'go_to_credit',
+                val: '1'
+              }, function(response) {
+                var tbl;
+                tbl = new payments_tbl(new payments_tblObj(response.data.payments), self.options);
+                return self.tblCase.replaceWith(tbl.init());
+              });
+            });
+          }
+        });
+      }
       tr = $('<tr/>', {
         "class": 'head'
       });
@@ -2117,7 +2152,7 @@
       tr.append($('<td/>', {
         html: params.name
       }));
-      if (options.edit && (Number(params.fl_m) === 0)) {
+      if (options.edit && Number(params.fl_m) === 0 && (Number(this.options.access) === 2 || Number(this.options.access) === 1)) {
         tr.append($('<td/>', {
           html: this.inputMoney(params.id, round_money(params.money), params.key, tr, params, options)
         }));
@@ -2172,7 +2207,8 @@
           }, function(response) {
             var tbl;
             if (Number(id) === 0) {
-              return tbl = new payments_tbl(new payments_tblObj(response.data.payments), self.tblCase.replaceWith(tbl.init()));
+              tbl = new payments_tbl(new payments_tblObj(response.data.payments), self.options);
+              return self.tblCase.replaceWith(tbl.init());
             } else {
               return tr.replaceWith(self.trRow(params, options));
             }
@@ -2192,7 +2228,6 @@
       }
       self = this;
       dopClass = '';
-      console.log(type, Number(params.money), Number(val));
       if (type === 'fl_b' && Number(params.money) > 0 && Number(val) === 0) {
         dopClass = ' alert';
       }
@@ -2207,10 +2242,18 @@
         "class": '' + dopClass,
         click: function() {
           if (type === 'fl_m') {
+            if (Number(self.options.user_id) !== Number(self.urlManId)) {
+              echo_message_js("У вас недостаточно прав для доступа к данной опции");
+              return false;
+            }
             if (Number(params.fl_b) === 0) {
               echo_message_js("Сначала действие должен подтвердить бухгалтер", "error_message", 1);
               return;
             }
+          }
+          if ((Number(self.options.access) !== 2 && Number(self.options.access) !== 1) && type === 'fl_b') {
+            echo_message_js("У вас недостаточно прав для доступа к данной опции");
+            return false;
           }
           if (type === 'fl_b' && Number(params.money) <= 0) {
             echo_message_js("Введите сумму", "error_message", 1);
@@ -2231,7 +2274,8 @@
             }, function(response) {
               var tbl;
               if (Number(id) === 0) {
-                return tbl = new payments_tbl(new payments_tblObj(response.data.payments), self.tblCase.replaceWith(tbl.init()));
+                tbl = new payments_tbl(new payments_tblObj(response.data.payments), self.options);
+                return self.tblCase.replaceWith(tbl.init());
               }
             });
             params[type] = val;
@@ -2249,7 +2293,7 @@
       });
       tr.append($('<td/>', {
         colspan: 2,
-        html: "текущий остаток к оплате"
+        html: "итого к оплате"
       }));
       tr.append(this.to_payment = $('<td/>', {
         colspan: 2,
@@ -2259,8 +2303,25 @@
       return tr;
     };
 
+    payments_tbl.prototype.trFooter2 = function(data) {
+      var tr;
+      tr = $('<tr/>', {
+        "class": 'footer2'
+      });
+      tr.append($('<td/>', {
+        colspan: 2,
+        html: "текущий остаток к оплате"
+      }));
+      tr.append(this.to_payment2 = $('<td/>', {
+        colspan: 2,
+        html: round_money(data.the_balance)
+      }));
+      tr.append($('<td/>'));
+      return tr;
+    };
+
     payments_tbl.prototype.calcTbl = function() {
-      var itogo;
+      var balance, itogo, real_ostatoc;
       itogo = 0;
       this.tbl.find('tr.body').each(function() {
         var data;
@@ -2268,10 +2329,131 @@
         return itogo += Number(data.money);
       });
       this.itogo.html(round_money(itogo));
-      return this.the_balance_new($('#js-accruals-tbl .head th').eq(1).html());
+      this.the_balance_new(balance = $('#js-accruals-tbl .head th').eq(1).html());
+      real_ostatoc = Number(balance) - Number(itogo);
+      this.to_payment2.html(round_money(real_ostatoc));
+      if (real_ostatoc < 0) {
+        this.to_payment2.css({
+          'color': 'red'
+        });
+        if (Number(this.options.access) === 1 || Number(this.options.access) === 2) {
+          return this.td_to_right.html(this.to_right);
+        }
+      } else {
+        this.to_payment2.css({
+          'color': 'grey'
+        });
+        if (Number(this.options.access) === 1 || Number(this.options.access) === 2) {
+          return this.td_to_right.html('');
+        }
+      }
     };
 
     return payments_tbl;
+
+  })();
+
+
+  /*
+   * прототип объекта строки - вкладка учёт -> таблица Кредит -> строка
+   */
+
+  credit_tbl_rowObj = (function() {
+    credit_tbl_rowObj.prototype.defaults = {
+      id: 0,
+      money: '0.00',
+      date: '00.00.00000',
+      fl_m: 0,
+      fl_b: 0,
+      manager_id: 0
+    };
+
+    function credit_tbl_rowObj(data) {
+      var el, key;
+      if (data == null) {
+        data = {};
+      }
+      this.options = {};
+      for (key in data) {
+        el = data[key];
+        if (el !== null) {
+          this.options[key] = el;
+        }
+      }
+      return $.extend({}, this.defaults, this.options);
+    }
+
+    return credit_tbl_rowObj;
+
+  })();
+
+
+  /*
+   * строка кредита
+   */
+
+  rowCredit = (function() {
+    function rowCredit(n, parentObj) {
+      var min, tr;
+      tr = $('<tr/>', {
+        "class": 'body'
+      }).data(n);
+      tr.append($('<td/>', {
+        html: n.date
+      }));
+      tr.append($('<td/>', {
+        html: min = $('<span/>', {
+          "class": 'credit_money_pl_min'
+        })
+      }));
+      if (Number(n.minus) > 0) {
+        min.html('-').addClass('minus');
+      } else {
+        min.html('+').addClass('plus');
+      }
+      if (Number(n.fl_b) === 0) {
+        tr.append($('<td/>', {
+          html: $('<input/>', {
+            "class": 'credit_money_div',
+            val: n.money
+          })
+        }));
+      } else {
+        tr.append($('<td/>', {
+          html: $('<div/>', {
+            "class": 'credit_money_div',
+            html: n.money
+          })
+        }));
+      }
+      tr.append($('<td/>', {
+        html: $('<button/>', {
+          "class": 'hand',
+          html: 'В',
+          click: function() {
+            if (parentObj.options.access !== 2 && parentObj.options.access !== 1) {
+              echo_message_js("У вас не достатьчно прав для данного действия", "error_message", 1);
+              return false;
+            }
+          }
+        })
+      }));
+      tr.append($('<td/>', {
+        html: $('<button/>', {
+          "class": 'hand',
+          html: 'П',
+          click: function() {
+            if (parentObj.options.user_id !== parentObj.urlManId || parentObj.options.access !== 5) {
+              return false;
+            }
+          }
+        })
+      }));
+      tr.append($('<td/>'));
+      return tr;
+    }
+
+    return rowCredit;
 
   })();
 
@@ -2283,28 +2465,48 @@
   credit_tbl = (function() {
     credit_tbl.prototype.paddingBlock = 6;
 
-    credit_tbl.prototype.accruals_summ = 0;
-
     credit_tbl.prototype["with"] = 300;
 
-    function credit_tbl(data) {
-      var tblCase;
+    function credit_tbl(data, options) {
       if (data == null) {
         data = {};
       }
+      this.urlManId = Number($.urlVar('manager_id'));
+      this.data = data;
+      this.options = options[0];
+      return this;
+    }
+
+    credit_tbl.prototype.init = function() {
       this.tbl = $('<table/>', {
         id: 'js-credit-tbl',
         'class': 'accounting-tbl'
       });
       this.tbl.append(this.trHead());
-      tblCase = $('<div/>').css({
+      this.tbl.append(this.trBody(this.data));
+      this.tbl.append(this.trFooter(this.data));
+      this.tblCase = $('<div/>').css({
         'float': 'left',
         'paddingRight': this.paddingBlock,
         'paddingBottom': this.paddingBlock,
         'width': this["with"]
       });
-      return tblCase.append(this.tbl);
-    }
+      this.calcTbl();
+      return this.tblCase.append(this.tbl);
+    };
+
+    credit_tbl.prototype.trBody = function(data) {
+      var i, j, ref, rows;
+      rows = [];
+      if (data.length > 0) {
+        for (i = j = 0, ref = data.length - 1; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+          rows.push(new rowCredit(new credit_tbl_rowObj(data[i]), this));
+        }
+      } else {
+        this.tbl.find('.head').addClass('noCredit');
+      }
+      return rows;
+    };
 
     credit_tbl.prototype.trHead = function() {
       var self, tr;
@@ -2322,22 +2524,143 @@
         html: 'Кредит'
       }));
       tr.append(this.accruals_summ = $('<th/>', {
-        html: round_money(3000)
-      }));
-      tr.append($('<th/>', {
-        html: this.recalc_button
+        colspan: 2,
+        html: round_money(0)
       }));
       return tr.append($('<th/>', {
-        html: ''
+        html: '',
+        colspan: 3
       }));
     };
 
-    credit_tbl.prototype.trFooter = function() {
-      return [];
+    credit_tbl.prototype.trFooter = function(data) {
+      var self, tr;
+      self = this;
+      tr = $('<tr/>', {
+        "class": 'footer'
+      });
+      tr.append($('<td/>', {
+        colspan: 6,
+        html: $('<div/>', {
+          html: "Добавить запись",
+          'class': 'link_add',
+          click: function() {
+            var html, radio, win_inp_val;
+            html = $('<div/>', {
+              id: 'user_window_credit_form'
+            });
+            html.append(radio = $('<div/>', {
+              "class": 'radio_m_p'
+            }).append($('<span/>', {
+              "class": "radio minus credit_money_pl_min checked",
+              html: '-',
+              click: function() {
+                $(this).parent().find('.checked').removeClass('checked');
+                return $(this).addClass('checked');
+              }
+            }).attr('data-val', '1')).append($('<span/>', {
+              "class": "radio plus credit_money_pl_min",
+              html: '+',
+              click: function() {
+                $(this).parent().find('.checked').removeClass('checked');
+                return $(this).addClass('checked');
+              }
+            }).attr('data-val', '0')));
+            html.append($('<div/>').append(win_inp_val = $('<input/>', {
+              placeholder: 'сколько денег?',
+              val: round_money(0),
+              focus: function() {
+                var t;
+                if (Number($(this).val()) === 0) {
+                  return $(this).val('');
+                } else {
+                  t = $(this);
+                  return setTimeout(function() {
+                    return t.select();
+                  }, 50);
+                }
+              },
+              blur: function() {
+                return $(this).val(round_money(Number($(this).val())));
+              }
+            })));
+            return self.win_window = new modalWindow({
+              html: html,
+              maxHeight: '100%',
+              maxWidth: '90%',
+              title: 'Завести строку компенсации',
+              buttons: [
+                {
+                  text: 'Закрыть',
+                  "class": 'button_yes_or_no no',
+                  click: function() {
+                    return $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
+                  }
+                }, {
+                  text: 'Создать',
+                  "class": 'button_yes_or_no',
+                  click: function() {
+                    return new sendAjax('create_credit_row', {
+                      money: win_inp_val.val(),
+                      minus: html.find('.checked').attr('data-val')
+                    }, function(response) {
+                      self.data.push(response.data.credit);
+                      self.tbl.find('.head').after(new rowCredit(new credit_tbl_rowObj(response.data.credit), this));
+                      $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove();
+                      return self.calcTbl();
+                    });
+                  }
+                }
+              ]
+            }, {
+              closeOnEscape: true,
+              single: true,
+              close: function(event, ui) {
+                return $('#quick_button_div .button').eq(1).removeClass('checked');
+              }
+            });
+          }
+        })
+      }));
+      return tr;
     };
 
     credit_tbl.prototype.calcTbl = function() {
-      return [];
+      var self;
+      self = this;
+      self.the_balance = 0;
+      this.tbl.find('.body').each(function() {
+        var data, num, znak;
+        data = $(this).data();
+        znak = 1;
+        if (Number(data.minus) === 1) {
+          znak = -1;
+        }
+        num = data.money * znak;
+        return self.the_balance = self.the_balance + Number(num);
+      });
+      this.accruals_summ.html(round_money(this.the_balance));
+      if (this.the_balance > 0) {
+        return this.tbl.find('.head').removeClass('noCredit');
+      } else {
+        return this.tbl.find('.head').addClass('noCredit');
+      }
+    };
+
+    credit_tbl.prototype.updateTbl = function() {
+      var self;
+      self = this;
+      return new sendAjax('update_credit_table', {}, function(response) {
+        var Credit, options;
+        options = [
+          {
+            access: response.data.access,
+            user_id: response.data.user_id
+          }
+        ];
+        Credit = new credit_tbl(response.data.credit, options);
+        return self.tblCase.replaceWith(Credit.init());
+      });
     };
 
     return credit_tbl;
@@ -2712,7 +3035,7 @@
           id: 'first_tab'
         });
         new sendAjax("get_data", {}, function(response) {
-          var accruals, options;
+          var Credit, accruals, options;
           content.append(self.bill_tbl = new create_bill_tbl(response.data.bill_closed));
           options = [
             {
@@ -2722,7 +3045,9 @@
           ];
           accruals = new accruals_tbl(new accrualsObj(response.data.accruals), response.data.compensation, response.data.dop_compensation, response.data.payments, options);
           content.append(accruals.init());
-          return content.append(accruals.payments_tbl());
+          content.append(accruals.payments_tbl());
+          Credit = new credit_tbl(response.data.credit, options);
+          return content.append(Credit.init());
         });
         if (this.body.find('#js-accounting-main-content-container').length > 0) {
           this.$el.find('#js-accounting-main-content-container').remove();

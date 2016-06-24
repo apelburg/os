@@ -257,6 +257,194 @@ class CalculateMoneyBlock extends Accounting{
 		return $data_bill_closed;
 	}
 }
+
+/**
+ * Class CreditBlock
+ *
+ * блок Кредит
+ *
+ * баботает с таблицей ACCOUNTING_ACCRUALS_CREDIT
+ */
+class CreditBlock extends Accounting{
+
+	private $minus = 0;
+	private $money = 0;
+	private $fl_b = 0;
+	private $fl_m = 0;
+	private $date = 0;
+
+	public function __construct($manager_id = 0,$month = 0,$year = 0){
+		# подключение к БД
+		$this->db();
+		$this->manager_id  	= (int)$manager_id;
+		$this->month 		= (int)$month;
+		$this->year 		= (int)$year;
+	}
+
+	/**
+	 * запрос данных
+	 *
+	 * @return array
+	 */
+	public function get_data(){
+		$where['manager_id']  = $this->manager_id;
+		return $this->check_and_del($this->get_all_tbl(ACCOUNTING_ACCRUALS_CREDIT,$where,array('name' => 'id', 'type' => "DESC")));
+	}
+
+	/**
+	 * редактирование строки
+	 *
+	 * @return bool
+	 */
+	public  function edit_data(){
+		$data = [];
+
+		# список разрешённых к редактированию полей
+		$edit_arr = $this->tpl__edit_data();
+
+		if (isset($_POST['key'])){
+			if (in_array($_POST['key'],$edit_arr)){
+
+				$this->$key = $_POST['val'];
+				$data  = [$key => $this->$key];
+			}
+		}
+
+		// если изменения были
+		if (isset($_POST['id']) and $_POST['id'] > 0 and count($data) > 0){
+			# update
+			$id = (int)$_POST['id'];
+
+			$this->update__row(ACCOUNTING_ACCRUALS_CREDIT, $data, $this->id);
+
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	/**
+	 * создание строки
+	 */
+	public function create_data(){
+		$this->minus = $_POST['minus'];
+		$this->money = $_POST['money'];
+
+
+		$data = $this->insert_empty_row(ACCOUNTING_ACCRUALS_CREDIT,$this->tpl__create_row_data());
+		$date = date('d.m.Y',time());
+
+		$data['date'] = $date;
+		$data['fl_m'] = 0;
+		$data['fl_b'] = 0;
+		return $data;
+	}
+
+
+	/**
+	 * шаблон разрешённых к редактированию полей
+	 *
+	 * @return array
+	 */
+	private function tpl__edit_data($access = 0){
+		return [
+			'fl_b',
+			'fl_m'
+		];
+	}
+
+	/**
+	 * обновление данных
+	 *
+	 * @param $table
+	 * @param array $data
+	 * @param $id
+	 */
+	function update__row($table, $data = [], $id)
+	{
+		parent::update__row($table, $data, $id);
+	}
+
+	/**
+	 * шаблон создания новой строки кредита
+	 *
+	 * @return array
+	 */
+	private function tpl__create_row_data(){
+		return [
+			'minus' => $this->minus,
+			'money' => $this->money,
+			'manager_id'=>$this->manager_id
+		];
+	}
+
+	/**
+	 * проверяет возвращён ли долг, при полном расчёте вычищает данные из базы
+	 *
+	 * возвращает актуальные данные
+	 *
+	 * @param $data
+	 * @return array
+	 */
+	private function check_and_del($data){
+		$summ = 0;
+		$ids = [];
+		foreach ($data as $row){
+//			echo $this->printArr($row);
+			$ids[] = $row['id'];
+
+			if ($row['minus'] == 1){
+				$row['money'] = $row['money']*(-1);
+			}
+			$summ += $row['money'];
+		}
+
+
+		if($summ == 0){
+			$this->delete_rows_from_table(ACCOUNTING_ACCRUALS_CREDIT,$ids);
+			return [];
+		}
+		return $data;
+	}
+
+	/**
+	 * удаляет строки по набору id
+	 *
+	 * @param $table
+	 * @param $ids
+	 */
+	function delete_rows_from_table($table, $ids)
+	{
+		parent::delete_rows_from_table($table, $ids);
+	}
+
+	/**
+	 * получаем информацию из базы
+	 *
+	 * @param $table
+	 * @param array $data
+	 * @return array
+	 */
+	public function insert_empty_row($table, $data = array())
+	{
+		return parent::insert_empty_row($table, $data);
+	}
+
+	/**
+	 * получаем информацию из базы
+	 * преобразует колонку date в читабельный вид
+	 *
+	 * @param $table
+	 * @param array $where
+	 * @param array $sort
+	 * @return array
+	 */
+	function get_all_tbl($table, $where = array(), $sort = array('name' => '', 'type' => "ASC"))
+	{
+		return parent::get_all_tbl($table, $where, $sort);
+	}
+
+}
 /**
  * Class PaymentBlock
  *
@@ -265,8 +453,8 @@ class PaymentBlock extends Accounting{
 	public $manager_id = 0;
 	public $month = 0;
 	public $year = 0;
-
 	public $id = 0;
+
 	# денежная информация
 	private $oklad = 0;
 	private $ovans_card = 0;
@@ -406,11 +594,9 @@ class PaymentBlock extends Accounting{
 
 		if (isset($data[0]['id'])){
 			$this->id = $data[0]['id'];
-
 			$this->ovans1 = $data[0]['ovans1'];
 			$this->ovans2 = $data[0]['ovans2'];
 			$this->ovans3 = $data[0]['ovans3'];
-
 			$this->oklad_fl_m = $data[0]['oklad_fl_m'];
 			$this->oklad_fl_b = $data[0]['oklad_fl_b'];
 			$this->ovans_card_fl_m = $data[0]['ovans_card_fl_m'];
@@ -436,28 +622,21 @@ class PaymentBlock extends Accounting{
 	public function get_data(){
 		# запрашиваем строку
 		$data = $this->get_row();
-
-
-
 		if (count($data) == 0){
 			$data = $this->simple_obj();
 			$data['id'] = 0;
-//		}else{
-//			$data = $arr[0];
-//			$this->id = $data['id'];
 		}
 		return $data;
 	}
 
-
 	/**
-	 * обновление по одному полю
+	 * шаблон разрешённых к редактированию полей
 	 *
+	 * @param int $access
 	 * @return array
 	 */
-	public function updatePaymentsRow(){
-		# список разрешённых к редактированию полей
-		$edit_arr = [
+	private function tpl__edit_data($access = 0){
+		return [
 			'ovans1',
 			'ovans2',
 			'ovans3',
@@ -470,8 +649,20 @@ class PaymentBlock extends Accounting{
 			'oklad_fl_m',
 			'oklad_fl_b',
 			'ovans_card_fl_m',
-			'ovans_card_fl_b'
+			'ovans_card_fl_b',
+			'go_to_credit'
 		];
+	}
+
+
+	/**
+	 * обновление по одному полю
+	 *
+	 * @return array
+	 */
+	public function updatePaymentsRow(){
+		# список разрешённых к редактированию полей
+		$edit_arr = $this->tpl__edit_data();
 
 		$data = [];
 
@@ -578,12 +769,9 @@ class Accounting  extends aplStdAJAXMethod
 
 		// calls ajax methods from POST
 		if(isset($_POST['AJAX'])){
-
-
 			$this->_AJAX_($_POST['AJAX']);
 			$this->responseClass->response['data']['access'] = $this->user_access;
 			$this->responseClass->response['data']['id'] = $this->user_id;
-
 
 		}
 
@@ -706,9 +894,19 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->response['data']['compensation'] = $Calc->copy_rows_compensations($this->responseClass->response['data']['accruals'][0]['id']);
 			$this->responseClass->response['data']['dop_compensation'] = $Calc->get_rows_dopCompensations($this->responseClass->response['data']['accruals'][0]['id']);
 		}
+
+
 		# запрос данных по выплатам за месяц
 		$Payments = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 		$this->responseClass->response['data']['payments'] = $Payments->get_row();
+
+		# запрос данных по кредату
+		$Credit = new CreditBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['credit'] = $Credit->get_data();
+
+
+
+
 	}
 
 
@@ -743,6 +941,7 @@ class Accounting  extends aplStdAJAXMethod
 		# запрос данных по выплатам за месяц
 		$Payments = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 		$this->responseClass->response['data']['payments'] = $Payments->get_row();
+
 
 	}
 
@@ -784,7 +983,9 @@ class Accounting  extends aplStdAJAXMethod
 		$Payments = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 		$this->responseClass->response['data']['payments'] = $Payments->get_row();
 
-
+		# запрос данных по кредату
+		$Credit = new CreditBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['credit'] = $Credit->get_data();
 
 	}
 
@@ -856,20 +1057,47 @@ class Accounting  extends aplStdAJAXMethod
 		return $this->get_all_tbl_simple(ACCOUNTING_ACCRUALS_PAY,$where);
 	}
 
+	/**
+	 * обновление (редактирование) информации по выплатам
+	 */
 	protected function update_payments_row_AJAX(){
 		$Paymewnt = new PaymentBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 
 		$this->responseClass->response['data']['access'] = $this->user_access;
 		$this->responseClass->response['data']['user_id'] = $this->user_id;
 		$this->responseClass->response['data']['payments'] = $Paymewnt->updatePaymentsRow();
-
-		// если все закрыто
-		if($Paymewnt->check_closed_pay() > 0){
-
-		}
-
-
 	}
+
+	/**
+	 * редактирование блока кредит
+	 */
+	protected function update_credit_row_AJAX(){
+		# запрос данных по кредату
+		$Credit = new CreditBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+
+
+		# выброс сообщения по ошибке
+		if(!$Credit->edit_data()){
+			$this->responseClass->response['errors']['update'] = false;
+
+			$mess = "Что-то пошло не так! Данные не были изменены !";
+			$this->responseClass->addMessage($mess,'error_message',1000);
+		}
+	}
+
+	/**
+	 * создание строки в блоке кредит
+	 */
+	protected function create_credit_row_AJAX(){
+		$this->responseClass->response['data']['access'] = $this->user_access;
+		$this->responseClass->response['data']['user_id'] = $this->user_id;
+
+		$Credit = new CreditBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
+		$this->responseClass->response['data']['credit'] = $Credit->create_data();
+	}
+
 
 	/**
 	 * пересчет данных по выплатам зарплаты
@@ -1010,6 +1238,21 @@ class Accounting  extends aplStdAJAXMethod
 		$result = $stmt->get_result();
 		$stmt->close();
 	}
+
+	/**
+	 * удаляет набор строк по массиву id
+	 * @param table $
+	 * @param $id
+	 */
+	protected function delete_rows_from_table($table,$ids){
+		if(is_array($ids) && count($ids) > 0){
+			$query = "DELETE FROM `".$table."` WHERE `id` IN ('".implode("','",$ids)."')";
+			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			return true;
+		}
+		return false;
+	}
+
 
 
 	/**

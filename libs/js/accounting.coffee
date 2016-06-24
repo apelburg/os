@@ -1028,7 +1028,7 @@ class accruals_tbl
   # создание таблицы Выплат
   payments_tbl:()->
     @dataPayments.the_balance = @the_balance;
-    @paymentsTable = new payments_tbl(new payments_tblObj(@dataPayments))
+    @paymentsTable = new payments_tbl(new payments_tblObj(@dataPayments),@options)
     @paymentsTbl = @paymentsTable.init()
 
 
@@ -1186,7 +1186,29 @@ class accruals_tbl
 
 
     if $('#js-payments-tbl').find('.footer td').eq(1).length >0
-      $('#js-payments-tbl').find('.footer td').eq(1).html(@accruals_summ.html());
+      $('#js-payments-tbl').find('.footer td').eq(1).html(round_money(@the_balance));
+
+
+
+      itogo = Number($('#js-payments-tbl .head th').eq(1).html())
+
+
+      real_ostatoc = Number(@the_balance) - Number(itogo);
+
+
+
+
+
+      $('#js-payments-tbl').find('.footer2 td').eq(1).html(round_money(real_ostatoc))
+
+      if real_ostatoc < 0
+        $('#js-payments-tbl').find('.footer2 td').eq(1).css({
+          'color':'red'
+        })
+      else
+        $('#js-payments-tbl').find('.footer2 td').eq(1).css({
+          'color':'grey'
+        })
 
 ###
 # прототип объекта дополнителоьных компенсаций
@@ -1352,13 +1374,7 @@ class compRow
 class row
   constructor:(n,parentObj)->
 
-
-
-
     tr = $('<tr/>',{class:'body str'}).data(n)
-
-
-
 
     if Number(n.i) == 1
       col = 'salary_r_fl'
@@ -1549,6 +1565,7 @@ class payments_tblObj
     flag_men:     0
     flag_buch:    0
     balance: 0
+    go_to_credit:0
 
   constructor: (data = {})->
     @options = {}
@@ -1564,12 +1581,21 @@ class payments_tblObj
 class payments_tbl
   paddingBlock:6
   accruals_summ: 0
-  width:320
-  constructor:(data)->
+  width:350
+  constructor:(data,options = {})->
     @data = data
+    @options = options
+
     return @
 
   init:()->
+
+    @urlManId = Number($.urlVar('manager_id'))
+
+    if @options.access != 1 && @options.access != 2
+      if Number(@options.user_id) != Number(@urlManId) && @options.access == 5
+        return []
+        
     # сборка таблицы таблицы
     @tbl = $('<table/>',{id:'js-payments-tbl','class':'accounting-tbl'}).data(@data);
     # сборка шапки
@@ -1579,9 +1605,13 @@ class payments_tbl
 
     # итого к оплате
     @tbl.append(@trFooter(@data))
+    # текущий остаток к оплате
+    @tbl.append(@trFooter2(@data))
 
     # итого выплачено
     @calcTbl()
+
+
 
 
     @tblCase = $('<div/>').css({
@@ -1597,6 +1627,8 @@ class payments_tbl
 #      className: 'invoice_12px',
 #      autoHide: false
 #    })
+
+
     return @tblCase.append(@tbl)
 
 
@@ -1605,11 +1637,6 @@ class payments_tbl
   # Шапка
   trHead:(data)->
     self = @
-    @recalc_button = $('<button>',{
-      html:'в кредит ->',
-      click:()->
-        self.calcTbl()
-    })
     @recalc_button = $('<button/>',{
       html:'',
       'class':'reload',
@@ -1617,19 +1644,30 @@ class payments_tbl
         # console.log data.id
         # пересчёт выгруженных данных
         new sendAjax("calculate_and_update_payment_tbl",{id:data.id},(response)->
-          tbl = new payments_tbl(new payments_tblObj(response.data.payments))
+
+          tbl = new payments_tbl(new payments_tblObj(response.data.payments),self.options)
           self.tblCase.replaceWith(tbl.init())
         )
     })
 
-    @to_right = $('<button/>',{
-      html:'',
-      'class':'to_right',
-      click:()->
-        
-        # пересчёт выгруженных данных
-        echo_message_js "ГО в кредит"
-    })
+    @to_right = '';
+    if Number(data.go_to_credit) == 555
+      @to_right = $('<button/>',{
+        html:'',
+        'class':'to_right',
+
+        click:()->
+          message = 'Отрицательный баланс будет перенесён в блок "Кредита",<br> при этом все действия с блоками "Начислений" и "Выплат" будут заблокированы.<br> Проделжить?';
+          # пересчёт выгруженных данных
+          new modalConfirm({html:message},()->
+            new sendAjax("update_payments_row",{id:data.id, key:'go_to_credit', val:'1'},(response)->
+              tbl = new payments_tbl(new payments_tblObj(response.data.payments),self.options)
+              self.tblCase.replaceWith(tbl.init())
+            )
+          )
+
+      })
+
     tr = $('<tr/>',{class:'head'})
     # название строки
     tr.append($('<th/>',{html:'Выплаты'}))
@@ -1701,7 +1739,7 @@ class payments_tbl
     tr.append($('<td/>',{html:params.name}))
 
     # деньги
-    if options.edit && (Number(params.fl_m) == 0)
+    if options.edit && Number(params.fl_m) == 0 && (Number(@options.access) == 2 || Number(@options.access) == 1)
       tr.append($('<td/>',{html: @inputMoney( params.id, round_money(params.money), params.key, tr,params,options )}))
     else
       
@@ -1711,6 +1749,7 @@ class payments_tbl
     tr.append($('<td/>',{html: @buttton(params.id,'В',params.key, params.fl_b, tr, 'fl_b',params,options) }))
     # унопка мен
     tr.append($('<td/>',{html: @buttton(params.id,'П',params.key, params.fl_m, tr, 'fl_m',params,options) }))
+
     # пробельный символ
     tr.append($('<td/>',{html:''}))
     tr.data(params)
@@ -1740,8 +1779,8 @@ class payments_tbl
 
         new sendAjax(ajax,{id:id,key:key,val:val},(response)->
           if Number(id) == 0
-            tbl = new payments_tbl(new payments_tblObj(response.data.payments)
-            self.tblCase.replaceWith(tbl.init()))
+            tbl = new payments_tbl(new payments_tblObj(response.data.payments),self.options)
+            self.tblCase.replaceWith(tbl.init())
           else
             tr.replaceWith(self.trRow(params,options))
         )
@@ -1753,8 +1792,8 @@ class payments_tbl
     self = @
     dopClass = ''
 
-    console.log type,Number(params.money),Number(val)
-
+    
+    
     if type == 'fl_b' && Number(params.money) > 0 && Number(val) == 0
       dopClass = ' alert';
     if type == 'fl_m' && Number(params.fl_b) > 0 && Number(val) == 0
@@ -1770,16 +1809,24 @@ class payments_tbl
         
         # нажатие по кнопке манагера
         if(type == 'fl_m')
-
+          if Number(self.options.user_id) != Number(self.urlManId)
+            echo_message_js "У вас недостаточно прав для доступа к данной опции"
+            return false
           if (Number(params.fl_b) == 0)
 
             echo_message_js("Сначала действие должен подтвердить бухгалтер","error_message",1)
             return
 
-        # нажатие по кнопке буха
+        # нажатие по кнопке буха не бухом и не админов
+        if((Number(self.options.access) != 2 && Number(self.options.access) != 1) && type == 'fl_b')
+          echo_message_js "У вас недостаточно прав для доступа к данной опции"
+          return false
+
+        # клик по кнопке буха при неверно ведённом авансе
         if(type == 'fl_b' && Number(params.money) <=0)
           echo_message_js("Введите сумму","error_message",1)
           return
+
 
 
 
@@ -1799,8 +1846,8 @@ class payments_tbl
             val : val
           },(response)->
             if Number(id) == 0
-              tbl = new payments_tbl(new payments_tblObj(response.data.payments)
-              self.tblCase.replaceWith(tbl.init()))
+              tbl = new payments_tbl(new payments_tblObj(response.data.payments),self.options)
+              self.tblCase.replaceWith(tbl.init())
 
           )
           params[type]= val;
@@ -1816,14 +1863,28 @@ class payments_tbl
     # название строки
     tr.append($('<td/>',{
       colspan:2,
-      html:"текущий остаток к оплате"
+      html:"итого к оплате"
     }))
     tr.append(@to_payment = $('<td/>',{
       colspan:2,
       html:round_money(data.the_balance)
     }))
     tr.append($('<td/>'))
-    
+
+    tr
+  trFooter2:(data)->
+    tr = $('<tr/>',{class:'footer2'})
+    # название строки
+    tr.append($('<td/>',{
+      colspan:2,
+      html:"текущий остаток к оплате"
+    }))
+    tr.append(@to_payment2 = $('<td/>',{
+      colspan:2,
+      html:round_money(data.the_balance)
+    }))
+    tr.append($('<td/>'))
+
     tr
   calcTbl:()->
 
@@ -1835,35 +1896,162 @@ class payments_tbl
 
     )
     @itogo.html(round_money(itogo))
-    @the_balance_new($('#js-accruals-tbl .head th').eq(1).html())
+
+    @the_balance_new(balance = $('#js-accruals-tbl .head th').eq(1).html())
+
+    real_ostatoc = Number(balance) - Number(itogo);
+    @to_payment2.html(round_money(real_ostatoc))
+
+    if real_ostatoc < 0
+      @to_payment2.css({
+        'color':'red'
+      })
+      if(Number(@options.access) == 1 || Number(@options.access) == 2)
+        @td_to_right.html(@to_right)
+    else
+      @to_payment2.css({
+        'color':'grey'
+      })
+      if(Number(@options.access) == 1 || Number(@options.access) == 2)
+        @td_to_right.html('')
 
 
+
+
+
+###
+# прототип объекта строки - вкладка учёт -> таблица Кредит -> строка
+###
+class credit_tbl_rowObj
+  defaults:
+    id: 0
+    money:        '0.00'
+    date:         '00.00.00000'
+    fl_m:         0
+    fl_b:         0
+    manager_id:   0
+
+  constructor: (data = {})->
+    @options = {}
+    for key,el of data
+      if el != null
+        @options[key] = el
+    return $.extend({}, @defaults, @options)
+
+###
+# строка кредита
+###
+class rowCredit
+  constructor:(n,parentObj)->
+    tr = $('<tr/>',{
+      class:'body'
+    }).data(n)
+
+    tr.append($('<td/>',{
+      html:n.date
+    }))
+    tr.append($('<td/>',{
+      html:min = $('<span/>',{
+        class:'credit_money_pl_min'
+      })
+    }))
+    if Number(n.minus) > 0
+      min.html('-').addClass('minus')
+    else
+      min.html('+').addClass('plus')
+
+    if Number(n.fl_b) == 0
+      tr.append($('<td/>',{
+        html:$('<input/>',{
+          class:'credit_money_div',
+          val:n.money,
+        })
+      }))
+    else
+      tr.append($('<td/>',{
+        html:$('<div/>',{
+          class:'credit_money_div',
+          html:n.money,
+        })
+      }))
+
+    tr.append($('<td/>',{
+      html:$('<button/>',{
+        class:'hand',
+        html:'В',
+        click:()->
+          if parentObj.options.access != 2 && parentObj.options.access != 1
+            echo_message_js("У вас не достатьчно прав для данного действия","error_message",1)
+            return false
+
+      })
+    }))
+    tr.append($('<td/>',{
+      html:$('<button/>',{
+        class:'hand',
+        html:'П',
+        click:()->
+          if parentObj.options.user_id != parentObj.urlManId || parentObj.options.access != 5
+            return false
+
+      })
+    }))
+
+    tr.append($('<td/>'))
+
+    return tr
 ###
 # вкладка учёт -> таблица кредит
 ###
 class credit_tbl
   paddingBlock: 6
-  accruals_summ: 0
+
   with:300
 
-  constructor:(data = {})->
-# сборка таблицы таблицы
+  constructor:(data = {},options)->
+    @urlManId = Number($.urlVar('manager_id'))
+    @data = data
+    @options = options[0]
+    return @
+
+  init:()->
+
+    # сборка таблицы таблицы
     @tbl = $('<table/>',{id:'js-credit-tbl','class':'accounting-tbl'});
     # сборка шапки
     @tbl.append(@trHead())
 
-    tblCase = $('<div/>').css({
+    @tbl.append(@trBody(@data))
+    # добавить запись
+    @tbl.append(@trFooter(@data))
+
+    @tblCase = $('<div/>').css({
       'float':'left',
       'paddingRight':@paddingBlock
       'paddingBottom':@paddingBlock
       'width':@with
     })
 
-    return tblCase.append(@tbl)
+    @calcTbl()
 
-# Шапка
+
+    return @tblCase.append(@tbl)
+  trBody:(data)->
+
+    rows = []
+    if data.length > 0
+      for i in [0..(data.length - 1)]
+        rows.push(new rowCredit(new credit_tbl_rowObj(data[i]),@))
+    else
+      @tbl.find('.head').addClass('noCredit')
+    return rows
+
+
+  # Шапка
   trHead:()->
     self = @
+
+
     @recalc_button = $('<button>',{
       html:'Расчёт',
       click:()->
@@ -1872,14 +2060,131 @@ class credit_tbl
 
     tr = $('<tr/>',{class:'head'})
     tr.append($('<th/>',{html:'Кредит'}))
-    tr.append(@accruals_summ = $('<th/>',{html:round_money(3000)}))
-    tr.append($('<th/>',{html:@recalc_button}))
-    tr.append($('<th/>',{html:''}))
+    tr.append(@accruals_summ = $('<th/>',{colspan:2,html:round_money(0)}))
+#    tr.append($('<th/>',{html:@recalc_button}))
+    tr.append($('<th/>',{html:'',colspan:3}))
 
-  trFooter:()->
-    []
+  trFooter:(data)->
+    self = @
+    tr = $('<tr/>',{class:'footer'})
+    # название строки
+    tr.append($('<td/>',{
+      colspan:6,
+      html:$('<div/>', {
+        html: "Добавить запись"
+        'class': 'link_add',
+        click: ()->
+# контент для окна создания записи компенсации
+          html = $('<div/>',{
+            id:'user_window_credit_form'
+          })
+
+          # minus / plus
+          html.append(radio = $('<div/>',{
+            class:'radio_m_p'
+          }).append($('<span/>',{
+            class:"radio minus credit_money_pl_min checked",
+            html:'-',
+            click:()->
+              $(this).parent().find('.checked').removeClass('checked')
+              $(this).addClass('checked')
+
+          }).attr('data-val','1')).append($('<span/>',{
+            class:"radio plus credit_money_pl_min",
+            html:'+',
+            click:()->
+              $(this).parent().find('.checked').removeClass('checked')
+              $(this).addClass('checked')
+          }).attr('data-val','0')))
+
+
+          html.append($('<div/>').append(win_inp_val = $('<input/>',{
+            placeholder:'сколько денег?'
+            val:round_money(0)
+            focus:()->
+              if(Number($(this).val()) == 0)
+                $(this).val('')
+              else
+                t = $(this)
+                setTimeout(()->
+
+                  t.select()
+                , 50)
+            blur:()->
+              $(this).val(round_money(Number($(this).val())))
+
+          })))
+          # окна создания записи компенсации
+          self.win_window = new modalWindow({
+            html: html,
+            maxHeight: '100%',
+            maxWidth: '90%',
+            title: 'Завести строку компенсации',
+            buttons: [
+              {
+                text: 'Закрыть',
+                class: 'button_yes_or_no no',
+                click: ()->
+#                  console.log self.win_window.winDiv[0]
+                  $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
+              },{
+                text: 'Создать',
+                class: 'button_yes_or_no',
+                click: ()->
+                  new sendAjax('create_credit_row',{
+                      money:win_inp_val.val(),
+                      minus:html.find('.checked').attr('data-val')
+                    },(response)->
+                    self.data.push(response.data.credit)
+                    self.tbl.find('.head').after(new rowCredit(new credit_tbl_rowObj(response.data.credit),@))
+                    $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
+                    self.calcTbl()
+                  )
+
+              }
+            ]
+          }, {
+            closeOnEscape: true,
+            single: true,
+            close: (event, ui) ->
+              $('#quick_button_div .button').eq(1).removeClass('checked')
+          })
+      })
+    }))
+
+    tr
   calcTbl:()->
-    []
+    self = @
+    self.the_balance = 0
+    @tbl.find('.body').each(()->
+      data = $(this).data()
+      znak = 1
+      znak = -1 if Number(data.minus) == 1
+      num = data.money * znak
+
+      self.the_balance =  self.the_balance + Number(num)
+    )
+    @accruals_summ.html(round_money(@the_balance))
+
+    if @the_balance > 0
+      @tbl.find('.head').removeClass('noCredit')
+    else
+      @tbl.find('.head').addClass('noCredit')
+
+  updateTbl:()->
+    self = @
+
+    new sendAjax('update_credit_table',{},(response)->
+      options = [
+        access: response.data.access
+        user_id: response.data.user_id
+      ]
+
+      Credit = new credit_tbl(response.data.credit,options)
+      self.tblCase.replaceWith(Credit.init())
+    )
+
+
 
 
 
@@ -1963,7 +2268,7 @@ class billTrPrototipe
   constructor:(data)->
 
     tr = $('<tr/>').data(data)
-    tr.append($('<td/>',{html:data.invoice_num}).append($('<span/>',{class:'row_invoice_date',html:data.closed_date})))
+    tr.append($('<td/>',{html:data.invoice_num}).append($('<span/>',{class:'row_invoice_date', html:data.closed_date})))
     tr.append($('<td/>',{html:round_money(data.price_out_payment)}))
     tr.append($('<td/>',{html:round_money(data.profit)}))
     tr.append($('<td/>',{html:data.pr+'%'}))
@@ -2177,6 +2482,9 @@ class billTrPrototipe
         accruals = new accruals_tbl(new accrualsObj(response.data.accruals),response.data.compensation, response.data.dop_compensation, response.data.payments,options)
         content.append(accruals.init())
         content.append(accruals.payments_tbl())
+
+        Credit = new credit_tbl(response.data.credit,options)
+        content.append(Credit.init())
 
 #        content.append( new credit_tbl(response.data) )
 
