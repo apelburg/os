@@ -2242,8 +2242,8 @@
         "class": '' + dopClass,
         click: function() {
           if (type === 'fl_m') {
-            if (Number(self.options.user_id) !== Number(self.urlManId)) {
-              echo_message_js("У вас недостаточно прав для доступа к данной опции");
+            if (Number(self.options.user_id) !== Number(self.urlManId) && Number(self.options.access) !== 1) {
+              echo_message_js("У вас не достатчно прав для данного действия", "error_message", 1);
               return false;
             }
             if (Number(params.fl_b) === 0) {
@@ -2252,7 +2252,7 @@
             }
           }
           if ((Number(self.options.access) !== 2 && Number(self.options.access) !== 1) && type === 'fl_b') {
-            echo_message_js("У вас недостаточно прав для доступа к данной опции");
+            echo_message_js("У вас не достатчно прав для данного действия", "error_message", 1);
             return false;
           }
           if (type === 'fl_b' && Number(params.money) <= 0) {
@@ -2499,7 +2499,7 @@
           html: 'П',
           click: function() {
             console.log(parentObj.options.access);
-            if (parentObj.options.access !== 5 && parentObj.options.user_id !== parentObj.urlManId) {
+            if (parentObj.options.access !== 5 && parentObj.options.user_id !== parentObj.urlManId && parentObj.options.access !== 1) {
               echo_message_js("У вас не достатчно прав для данного действия", "error_message", 1);
               return false;
             } else if (n.fl_m === 1) {
