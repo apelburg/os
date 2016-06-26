@@ -4732,6 +4732,7 @@ class invoiceRow
     })
     # подкрашиваем красным если сумма по счётам не соответствует сумме оплат
     if Number(@options.price_out) != Number(@options.price_out_payment)
+    
       div2.addClass('redText')
     td = $('<td/>', {
       'data-id': @options.id,
@@ -4748,22 +4749,17 @@ class invoiceRow
       on:
         mouseenter: ()->
           $(this).css('backgroundColor': '#f1f1f1', 'cursor': 'pointer')
-
           if !div2.hasClass('notify')
             div2.addClass('notify')
-
             setTimeout(()->
-#              echo_message_js _this.options.id
               if div2.hasClass('notify')
-
-                new sendAjax('get_payment', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
-                  div2.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
+                new sendAjax('get_payment', {'id': _this.options.id , 'not_deleted_row': 1}, (response)->
+                  div2.notify(notifyContent = $('<div/>', {'html': simle_text}), {
                     position: "right",
                     className: 'invoice_12px',
                     autoHide: false
                   })
                   if response.data.length > 0
-
                     tbl = $('<table/>', {'class': 'notify-table', 'id': 'invoice-row--price-payment-table'})
                     tbl.append(ptr = $('<tr/>'))
                     ptr.append($('<td/>', {'html': 'сумма'}))
