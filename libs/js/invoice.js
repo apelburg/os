@@ -2587,7 +2587,6 @@
             }));
             $(this).addClass('tdInputHere');
             input.datetimepicker({
-              minDate: new Date(),
               timepicker: false,
               dayOfWeekStart: 1,
               onSelectDate: function(ct, $i) {
@@ -6625,5 +6624,3 @@
   });
 
 }).call(this);
-
-//# sourceMappingURL=invoice.js.map

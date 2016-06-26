@@ -933,7 +933,7 @@ class costsRow
       td1.menuRightClick({'buttons': button2})
       td2.menuRightClick({'buttons': button2})
       td3.menuRightClick({'buttons': button2})
-# добавляем обработчик для на элементы поиска по счетам
+  # добавляем обработчик для на элементы поиска по счетам
   supplierSearch: (td)->
     _this = @
 
@@ -2186,7 +2186,7 @@ class paymentRow
           }))
           $(this).addClass('tdInputHere')
           input.datetimepicker({
-            minDate: new Date(),
+#            minDate: new Date(),
             timepicker: false,
             dayOfWeekStart: 1,
             onSelectDate: (ct, $i)->
@@ -4158,7 +4158,6 @@ class invoiceWindow
   # Define the plugin class Invoice
   ###
   class invoice
-
     defaults:
       start: false
     showMore: []  # кнопка показать ещё
@@ -4168,9 +4167,6 @@ class invoiceWindow
     Pmax: 0
 
     tabMenu: []   # меню
-
-
-
     access_def: 0
     response_def: {}
     constructor: (el, options) ->
@@ -4187,7 +4183,7 @@ class invoiceWindow
         self.init()
 
         self.quick_button_div = $('#quick_button_div')
-        if self.access == 2 or self.access == 1
+        if self.access == 2 && self.access == 1 # временно отключено
           self.quick_button_div.append($('<span/>', {
             'html': 'приходы',
             'class': 'button',
@@ -4203,8 +4199,7 @@ class invoiceWindow
               new costsWindow(new paymentObj(), {})
           }))
 
-
-# обновление одной строки
+    # обновление одной строки
     reflesh: (id)->
       if typeof id is 'string'
         if $(@$el).find('#tt_' + id).length > 0
