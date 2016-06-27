@@ -4743,14 +4743,14 @@
               'html': 'приходы',
               'class': 'button',
               click: function(e) {
-                return new paymentWindow(new paymentObj(), {});
+                return new paymentWindow(new paymentObj(), {}, self.access);
               }
             }));
             return self.quick_button_div.append($('<apsn/>', {
               'html': 'расходы',
               'class': 'button',
               click: function(e) {
-                return new costsWindow(new paymentObj(), {});
+                return new costsWindow(new paymentObj(), {}, self.access);
               }
             }));
           }

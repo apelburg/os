@@ -4193,14 +4193,14 @@ class invoiceWindow
             'class': 'button',
             click: (e)->
               # Окно с поиском по приходам","successful_message
-              new paymentWindow(new paymentObj(), {})
+              new paymentWindow(new paymentObj(), {}, self.access)
           }))
           self.quick_button_div.append($('<apsn/>', {
             'html': 'расходы',
             'class': 'button',
             click: (e)->
               # Окно с поиском по приходам","successful_message
-              new costsWindow(new paymentObj(), {})
+              new costsWindow(new paymentObj(), {}, self.access)
           }))
 
 
