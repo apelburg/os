@@ -423,7 +423,7 @@ class modalWindow
       tr.append($('<td/>').append($('<button/>',{
         'html':"Добавить",
         click:()->
-          
+
       })))
       tr.append($('<td/>'))
       tr.append($('<td/>'))

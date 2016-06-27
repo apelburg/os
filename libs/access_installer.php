@@ -201,7 +201,7 @@
 		'agreement'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
 		'accounting'=> array('access'=> true),
-		//'sklad'=> array('access'=> true),
+		'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
 		'suppliers'=> array(
 			'access'=> true,

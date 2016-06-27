@@ -933,7 +933,7 @@ class costsRow
       td1.menuRightClick({'buttons': button2})
       td2.menuRightClick({'buttons': button2})
       td3.menuRightClick({'buttons': button2})
-  # добавляем обработчик для на элементы поиска по счетам
+# добавляем обработчик для на элементы поиска по счетам
   supplierSearch: (td)->
     _this = @
 
@@ -1863,7 +1863,7 @@ class costsWindow
     @saveObj = {}
     buttons = []
     #    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
-    if @access == 2
+    if @access == 2 && Number(data_row.id) > 0
       buttons.push(
         text: 'Добавить счёт поставщика',
         class: 'button_yes_or_no yes add_payment_button',
@@ -2047,7 +2047,7 @@ class commentsWindow
     self = @
     for row,i in responseData
       main.append(new commentsRow(row, @access))
-    main 
+    main
 
 
 
@@ -2082,6 +2082,131 @@ class commentsWindow
           self.main_form.find('textarea').val('')
           $(self.myObj.buttonDiv).find("#js--send_comment").addClass('no')
 
+    )
+
+    return buttons
+
+  destroy: ()->
+    $(@$el).parent().dialog('close').dialog('destroy').remove()
+
+
+
+###
+# прототип окна комментариев
+#  costsWindow
+###
+class errorWindow
+  defaults:
+    id: 0
+  MessageMinLen:1
+
+  constructor: () ->
+# запоминаем уровень допуска
+
+
+    @init()
+
+# собираем окно счёт
+  init: (data_row,responseData)->
+# запрос данных
+    ###
+    # создание контейнера
+    ###
+    @main_div = $('<div/>', {
+      'id': 'dialog_gen_window_form',
+      'class':'add_new_comment',
+      css:{
+        'padding':'15px'
+      }
+    })
+
+    @main_div.append(@main_form = @getForm())
+
+
+    ###
+    # создание окна
+    ###
+
+
+    @myObj = new modalWindow({
+      html: @main_div,
+      maxHeight: '100%',
+      width: '800px',
+      title: 'Описание ошибки',
+      buttons: @getButtons(),
+    }, {
+      closeOnEscape: true,
+      single: true
+    })
+    @$el = @myObj.options.html[0]
+    $(@$el).parent().css('padding', '0')
+
+  getForm: (data_row)->
+    self = @
+    main = $('<div/>', {'class': 'comment table'})
+
+    #column 1
+    main.append(tr = $('<div/>', {'class': 'row'}))
+    cell1 = $('<div/>', {'class': 'cell user_name_comments'})
+    cell1.append($('<div/>', {
+      'class': 'user_name',
+      'html': 'Вы...'
+    })).append($('<div/>', {
+      'class': 'create_time_message',
+      'html': getDateNow()
+    }))
+    tr.append(cell1)
+
+    cell2 = $('<div/>', {'class': 'cell comment_text'})
+    cell2.append(textarea = $('<textarea/>', {
+      'name': 'comment_text',
+      keyup:()->
+        if $(this).val().length > self.MessageMinLen
+          console.log $(this).val().length
+          $(self.myObj.buttonDiv).find("#js--send_comment").removeClass('no')
+        else
+          console.log $(this).val().length
+          $(self.myObj.buttonDiv).find("#js--send_comment").addClass('no')
+    }))
+
+    tr.append(cell2)
+
+
+    $('<div/>',{'class':'add_new_comment'}).append(main)
+  getContent: (responseData)->
+    main = $('<div/>',{'class':'contaner_sm'})
+    self = @
+    for row,i in responseData
+      main.append(new commentsRow(row, @access))
+    main
+
+
+
+  getButtons: (data_row, responseData)->
+    self = @
+    @saveObj = {}
+    buttons = []
+
+    buttons.push(
+      text: 'Закрыть',
+      class: 'button_yes_or_no no',
+      click: ()->
+        self.destroy()
+    )
+
+    buttons.push(
+      text: 'Отправить',
+      class: 'button_yes_or_no no',
+      id: 'js--send_comment'
+      click: ()->
+        comment = self.main_form.find('textarea').val()
+        if comment.length <= self.MessageMinLen
+          echo_message_js "Сообщение должно быть не короче "+self.MessageMinLen+" символов"
+        else
+          
+          new sendAjax('send__error_message',{ message:comment},(response)->
+            self.destroy()
+          )
     )
 
     return buttons
@@ -2186,7 +2311,7 @@ class paymentRow
           }))
           $(this).addClass('tdInputHere')
           input.datetimepicker({
-#            minDate: new Date(),
+            minDate: new Date(),
             timepicker: false,
             dayOfWeekStart: 1,
             onSelectDate: (ct, $i)->
@@ -2678,7 +2803,8 @@ class paymentWindow
     @saveObj = {}
     buttons = []
     #    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
-    if @access == 2
+    console.log 'data_row -- >',data_row
+    if @access == 2 && Number(data_row.id) > 0
       buttons.push(
         text: 'Добавить платеж',
         class: 'button_yes_or_no yes add_payment_button',
@@ -4158,6 +4284,7 @@ class invoiceWindow
   # Define the plugin class Invoice
   ###
   class invoice
+
     defaults:
       start: false
     showMore: []  # кнопка показать ещё
@@ -4167,6 +4294,9 @@ class invoiceWindow
     Pmax: 0
 
     tabMenu: []   # меню
+
+
+
     access_def: 0
     response_def: {}
     constructor: (el, options) ->
@@ -4183,7 +4313,7 @@ class invoiceWindow
         self.init()
 
         self.quick_button_div = $('#quick_button_div')
-        if self.access == 2 && self.access == 1 # временно отключено
+        if self.access == 2 or self.access == 1
           self.quick_button_div.append($('<span/>', {
             'html': 'приходы',
             'class': 'button',
@@ -4199,7 +4329,27 @@ class invoiceWindow
               new costsWindow(new paymentObj(), {}, self.access)
           }))
 
-    # обновление одной строки
+        # кнопка сообщения об ошибке
+        $('#js-main-invoice-div').append($('<button/>',{
+          id:'button_send_error_message',
+          html:'Нашли ошибку?',
+          css:{
+            'top':'33px',
+            'right':'0',
+            'position':'fixed',
+            'color':'#7a7a7a',
+            'border':'1px solid #f3f1f1',
+            'background':'#ffc3b5',
+            'padding':'10px 15px'
+          },
+          click:()->
+            window.open('https://docs.google.com/forms/d/1TFOEjiuwPpiCRrnqY6Jp5CSiPqC-3rEId6-xUNKcUCM/viewform?c=0&w=1','_blank');
+#            new errorWindow()
+        }))
+
+
+
+# обновление одной строки
     reflesh: (id)->
       if typeof id is 'string'
         if $(@$el).find('#tt_' + id).length > 0
@@ -4504,7 +4654,7 @@ class invoiceWindow
                     'css': {'textAlign': 'left'},
                     'html': 'дата возврата:<br>' + ttn.date_return
                   }), {position: "right", className: 'invoice_12px', autoHide: false})
-              , 1000)
+              , 1)
           mouseleave: ()->
             $(this).find('div.notifyjs-wrapper').remove()
             $(this).attr('style', '').width(_this.defttn[2])
@@ -4732,7 +4882,6 @@ class invoiceRow
     })
     # подкрашиваем красным если сумма по счётам не соответствует сумме оплат
     if Number(@options.price_out) != Number(@options.price_out_payment)
-    
       div2.addClass('redText')
     td = $('<td/>', {
       'data-id': @options.id,
@@ -4749,17 +4898,22 @@ class invoiceRow
       on:
         mouseenter: ()->
           $(this).css('backgroundColor': '#f1f1f1', 'cursor': 'pointer')
+
           if !div2.hasClass('notify')
             div2.addClass('notify')
+
             setTimeout(()->
+#              echo_message_js _this.options.id
               if div2.hasClass('notify')
-                new sendAjax('get_payment', {'id': _this.options.id , 'not_deleted_row': 1}, (response)->
-                  div2.notify(notifyContent = $('<div/>', {'html': simle_text}), {
+
+                new sendAjax('get_payment', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
+                  div2.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
                     position: "right",
                     className: 'invoice_12px',
                     autoHide: false
                   })
                   if response.data.length > 0
+
                     tbl = $('<table/>', {'class': 'notify-table', 'id': 'invoice-row--price-payment-table'})
                     tbl.append(ptr = $('<tr/>'))
                     ptr.append($('<td/>', {'html': 'сумма'}))

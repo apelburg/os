@@ -21,6 +21,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 	public function triger_buch_message_CRON(){
 		$message = '';
 		# 1
+		$text = 0;
 		# проверка неотработанных счетов
 		# при наличии строк счетов - сборка строк в одно сообщение
 		$query = "select * FROM `".INVOICE_TBL."` WHERE `invoice_num` = '0'";
@@ -38,9 +39,10 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$message .='<div>В ос есть счета ('.count($invoice_rows).' шт.) ожидающие присвоения им номера<div>';
 
 			foreach ($invoice_rows as $invoice){
-				$html .="<div>счет от менеджера: ".$row['manager_name']."</div>";
-
+				$text = 1;
+				$message .="<div>счет от менеджера: ".$row['manager_name']."</div>";
 			}
+
 			$message .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=1\">ссылке</a></div>";
 		}
 
@@ -62,28 +64,22 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 		if (count($ttn) > 0){
 			$message .='<div>В ос есть заявки на создание УПД ('.count($ttn).' шт.) <div>';
-			foreach ($ttn as $ttn_row){
-				$message .= "<div>Запрос УПД от менеджера: ".$ttn_row['manager_name']."</div>";
 
+			foreach ($ttn as $ttn_row){
+				$text = 1;
+				$message .= "<div>Запрос УПД от менеджера: ".$ttn_row['manager_name']."</div>";
 			}
 			$message .= "<div>Для заполнения необходимой информации Вы можете пройти по <a href=\"http://www.apelburg.ru/os/?page=invoice&section=2\">ссылке</a></div>";
 		}
 
 
-
-
-
-
 		# 3
 		# отправка собранного сообщени
 
-		# необходимо написть метод отправляющий текст по массиву id вида
-		# array(42, 33)
-		# где 42 и 33 - id юзеров - адресатов
 		# по id должны отправляться сообщения, с приоритетом на ящик с доменом apelburg.ru
 		# при его отсутствии напрямую на gmail
-		if ($html != ''){
-
+		if ($text > 0){
+			// $message = '';
 			$subject = 'Сводка из ОС';
 			$userName = '';
 			$href = '';
@@ -93,8 +89,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			// include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
 			$html = ob_get_contents();
 			ob_get_clean();
-			$this->sendMessageToId([39],'',$subject,$html);
-
+			$this->sendMessageToId([81,92,39],'',$subject,$html);
 			return $html;
 		}
 
@@ -286,6 +281,67 @@ class InvoiceNotify extends aplStdAJAXMethod
 				$this->_AJAX_($_GET['AJAX']);		
 			}
 		}
+		/*
+		 $.post('', {
+			AJAX: 'get_link',
+			id: $(this).attr('data-rt_id')
+
+			}, function(data, textStatus, xhr) {
+				standard_response_handler(data);
+			},'json');
+		 */
+
+		/**
+		 * модуль я нашел ошибку
+		 */
+		protected function send__error_message_AJAX(){
+			$message = '<div>от '.$this->getAuthUserName().'<div/>';
+			$message .= "<div>http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</div>";
+
+			if (isset($_POST['message'])){
+				$message .= '<div style="padding-top:15px;">'.$_POST['message'].'</div>';
+			}
+
+			$this->send__error_message($message);
+			$this->responseClass->addMessage('Сообщение об ошибке отправлено. Мы благодарим Вас за вашу бдительность. =) ','system_message', 2000);
+		}
+
+		/**
+		 * отправка сообщения по ошибке
+		 *
+		 * @param $message
+		 */
+		private function send__error_message($message){
+			// объект с инфой по пользователю
+//			$this->user;
+
+			$subject = 'Я нашёл ошибку (счета)';
+
+			// получаем  email отправителя сообщения об ошибке
+			if(filter_var($this->user['email'], FILTER_VALIDATE_EMAIL)){
+				$from = $this->user['email'];
+			}else if(filter_var($this->user['email_2'], FILTER_VALIDATE_EMAIL)){
+				$from = $this->user['email_2'];
+			}
+
+			if ($message != ''){
+				// $message = '';
+
+				$userName = '';
+				$href = '';
+				# подгружаем шаблон
+				ob_start();
+				include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+
+				$html = ob_get_contents();
+				ob_get_clean();
+
+
+				$Invoice = new InvoiceNotify();
+				$Invoice->sendMessageToId([42],$from,$subject,$html);
+			}
+		}
+
 
 
 
@@ -585,9 +641,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 
 
-
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
-			if ($i>1){
+//			$this->responseClass->addSimpleWindow($this->printArr($_POST).'<br>'.$query.'<br>'.$i,'');
+			if ($i>0){
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
 
 				# сообщение на почтуconfirm_create_ttn
@@ -606,6 +662,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 			}else{
 				$this->responseClass->addMessage('Вы не указали данные для сохранения');
+
+
 			}
 		}
 		protected function test_message_template_AJAX(){
@@ -2329,6 +2387,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			return $int;
 		}
 }
+
 
 
 

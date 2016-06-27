@@ -128,6 +128,9 @@ class CalculateMoneyBlock extends Accounting{
 			# обновление старой строки расчёта с расчитанными параметрами
 			return $this->update_old_row($old_row[0]['id']);
 		}
+
+
+		return $old_row;
 	}
 
 	/**
@@ -142,6 +145,7 @@ class CalculateMoneyBlock extends Accounting{
 		$data['salary_r_fl']=0;
 		$data['premium_r_fl']=0;
 		$data['pension_r_fl']=0;
+
 		$this->update__row(ACCOUNTING_ACCRUALS,$data,$id);
 		# возвращаем обновленные данные
 		return $this->get_all_tbl(ACCOUNTING_ACCRUALS,['id'=>$id]);
@@ -198,19 +202,28 @@ class CalculateMoneyBlock extends Accounting{
 				}
 			}
 			# расчет бонуса пенсии
+//			echo $this->printArr($arr);
 			if ($this->manager_data['date_start_wock'] != ''){
 				$pension_rows = $this->get_all_tbl(ACCOUNTING_PENSION,array('checked'=>'1'));
+
 				$time = time() - strtotime($this->manager_data['date_start_wock']);
-				$year = floor($time/31536000);
+				$month = floor($time/2628000); // 2628000
+				$year = $month / 12;
 				$s = 0;
+//				echo $year.' / '.$month;
+//							echo $this->printArr($pension_rows);
 				foreach ($pension_rows as $row){
 					if ($s > 0){break;}
 					# перебор колонок
 					foreach ($row as $key => $val){
+						if ($s > 0){break;}
 						# перебор по колонкам с префиксом n_
 						if(substr($key,0,2) == 'n_'){
-							$filter = explode("_",substr($key, 0, -2));
-							if ($filter[0] >= $year && $filter[1]<=$year){
+
+							$filter = explode("_",substr($key, 2));
+
+							if ($filter[0] <= $year and $filter[1] >= $year){
+//								echo $val;
 								$arr['pension'] += $val;
 								$s = 1;
 								break;
@@ -220,6 +233,7 @@ class CalculateMoneyBlock extends Accounting{
 				}
 			}
 		}
+//					echo $this->printArr($arr);
 		return $arr;
 	}
 	/**
@@ -912,6 +926,8 @@ class Accounting  extends aplStdAJAXMethod
 			$this->responseClass->addMessage('К сожалению расчётный период по данному месяцу уже завершён, обратитесь за помощтью к администратору.','error_message',1);
 			if ($this->prod__check()){return;}
 		}
+
+
 
 		# передача в скрипт прав пользователя
 		$this->responseClass->response['data']['access'] = $this->user_access;
