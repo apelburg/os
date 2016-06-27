@@ -941,7 +941,9 @@ div#js-alert_union{
 #js-main-invoice-table tr td.invoice-row--checkboxtd.red1c,
 #js-main-invoice-table tr td.redTD,
 #js-main-invoice-table tr td .redTD,
-#js--payment-window--body_info-table tr td.redTD{
+#js-main-invoice-table tbody tr td div.redTD:hover,
+#js--payment-window--body_info-table tr td.redTD,
+#js-main-invoice-table tbody tr td.red1c:hover{
 	background-color: rgba(255,195,181,1);
 }
 

@@ -933,7 +933,7 @@ class costsRow
       td1.menuRightClick({'buttons': button2})
       td2.menuRightClick({'buttons': button2})
       td3.menuRightClick({'buttons': button2})
-# добавляем обработчик для на элементы поиска по счетам
+  # добавляем обработчик для на элементы поиска по счетам
   supplierSearch: (td)->
     _this = @
 
@@ -2186,7 +2186,7 @@ class paymentRow
           }))
           $(this).addClass('tdInputHere')
           input.datetimepicker({
-            minDate: new Date(),
+#            minDate: new Date(),
             timepicker: false,
             dayOfWeekStart: 1,
             onSelectDate: (ct, $i)->
@@ -4158,7 +4158,6 @@ class invoiceWindow
   # Define the plugin class Invoice
   ###
   class invoice
-
     defaults:
       start: false
     showMore: []  # кнопка показать ещё
@@ -4168,9 +4167,6 @@ class invoiceWindow
     Pmax: 0
 
     tabMenu: []   # меню
-
-
-
     access_def: 0
     response_def: {}
     constructor: (el, options) ->
@@ -4187,7 +4183,7 @@ class invoiceWindow
         self.init()
 
         self.quick_button_div = $('#quick_button_div')
-        if self.access == 2 or self.access == 1
+        if self.access == 2 && self.access == 1 # временно отключено
           self.quick_button_div.append($('<span/>', {
             'html': 'приходы',
             'class': 'button',
@@ -4203,8 +4199,7 @@ class invoiceWindow
               new costsWindow(new paymentObj(), {}, self.access)
           }))
 
-
-# обновление одной строки
+    # обновление одной строки
     reflesh: (id)->
       if typeof id is 'string'
         if $(@$el).find('#tt_' + id).length > 0
@@ -4737,6 +4732,7 @@ class invoiceRow
     })
     # подкрашиваем красным если сумма по счётам не соответствует сумме оплат
     if Number(@options.price_out) != Number(@options.price_out_payment)
+    
       div2.addClass('redText')
     td = $('<td/>', {
       'data-id': @options.id,
@@ -4753,22 +4749,17 @@ class invoiceRow
       on:
         mouseenter: ()->
           $(this).css('backgroundColor': '#f1f1f1', 'cursor': 'pointer')
-
           if !div2.hasClass('notify')
             div2.addClass('notify')
-
             setTimeout(()->
-#              echo_message_js _this.options.id
               if div2.hasClass('notify')
-
-                new sendAjax('get_payment', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
-                  div2.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
+                new sendAjax('get_payment', {'id': _this.options.id , 'not_deleted_row': 1}, (response)->
+                  div2.notify(notifyContent = $('<div/>', {'html': simle_text}), {
                     position: "right",
                     className: 'invoice_12px',
                     autoHide: false
                   })
                   if response.data.length > 0
-
                     tbl = $('<table/>', {'class': 'notify-table', 'id': 'invoice-row--price-payment-table'})
                     tbl.append(ptr = $('<tr/>'))
                     ptr.append($('<td/>', {'html': 'сумма'}))
