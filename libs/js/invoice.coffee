@@ -51,7 +51,11 @@ round_money = (num) ->
 # @discount   discount - скидка
 ###
 calc_price_with_discount = (price_out, discount) ->
-  return Number(price_out / 100) * (100 + Number(discount));
+
+
+  return (Number(price_out / 100) * (100 + Number(discount))).toFixed(2);
+
+
 
 ###
 # транслитерация
@@ -890,14 +894,24 @@ class costsRow
       'class': '',
       click: (e)->
         eachTr = tr
+        # получаем сумму оплаты по первой строке
+        summ = Number(tr.data().pay_price)
+
         while eachTr.hasClass('subRow')
           eachTr = eachTr.prev()
+          # получаем сумму оплаты по подстрокам
+          summ += Number(eachTr.data().pay_price)
+
         r = eachTr.find('td[rowspan]')
+        # подсчитываем оставшуюся доплату по счёту
+        podst = Number(tr.data().price) - summ
         if(r)
           r_old = Number(eachTr.find('td[rowspan]').eq(0).attr('rowspan'))
           eachTr.find('td[rowspan]').attr('rowspan', (r_old + 1))
 
         new sendAjax('new_costs_payment_row', {parent_id: _this.options.id}, (response)->
+          response.data.pay_price = round_money(podst)
+
           newData = $.extend({}, _this.options, response.data)
           # rData,i,access=0,windowObj,data_row, rowspan = 1
           tr.after(new costsRow([newData], 0, _this.access, windowObj, data_row, 0))
@@ -1707,7 +1721,10 @@ class costsWindow
     div1 = $('<div/>')
     .append($('<span/>', {'html': data_row.invoice_create_date}).css('paddingLeft', '10px'))
     .append($('<span/>', {'html': ' на сумму ', 'class': 'span-greyText', css: {'paddingLeft': '10px'}}))
-    .append(@head.price = $('<span/>', {'html': data_row.price_out}).css('paddingLeft', '10px'))
+    .append(@head.price = $('<span/>', {'html': data_row.price_out}).css({
+      'paddingLeft':'10px',
+      'fontSize':'16px'
+    }))
     div2 = $('<div/>')
     .append($('<span/>', {'html': data_row.client_name, 'data-id': data_row.client_id}))
     tr.append($('<td/>', {'class': 'head-main-info-right'}).append(div1).append(div2))
@@ -1863,7 +1880,7 @@ class costsWindow
     @saveObj = {}
     buttons = []
     #    if Number(data_row.invoice_num) <= 0 ||  data_row.invoice_create_date == '00.00.0000'
-    if @access == 2 && Number(data_row.id) > 0
+    if Number(data_row.id) > 0
       buttons.push(
         text: 'Добавить счёт поставщика',
         class: 'button_yes_or_no yes add_payment_button',
@@ -2702,7 +2719,10 @@ class paymentWindow
     .append($('<span/>', {'html': ' от ', 'class': 'span-greyText'}).css('paddingLeft', '10px'))
     .append($('<span/>', {'html': data_row.invoice_create_date}).css('paddingLeft', '10px'))
     .append($('<span/>', {'html': ' на сумму ', 'class': 'span-greyText'}).css('paddingLeft', '10px'))
-    .append(@head.price = $('<span/>', {'html': data_row.price_out}).css('paddingLeft', '10px'))
+    .append(@head.price = $('<span/>', {'html': data_row.price_out}).css({
+      'paddingLeft':'10px',
+      'fontSize':'16px'
+    }))
 
     div2 = $('<div/>')
     .append($('<span/>', {'html': data_row.manager_name, 'data-id': data_row.manager_id}))
@@ -3965,6 +3985,7 @@ class invoiceWindow
       tr.append(td)
 
       # Price for one
+
       pr_out = calc_price_with_discount(position.price, position.discount)
       position.pr_out = round_money(pr_out) + ' р.';
       # td  = $('<td/>').append(round_money(pr_out)+' р.')
@@ -3973,8 +3994,9 @@ class invoiceWindow
       # Price for all
       if position.quantity == 0
         position.quantity = 1
-
+      
       main_price += pr_out * position.quantity
+      console.warn(" --- 1 >>> ",Number(pr_out * position.quantity),main_price)
 
       nds += Number(round_money(pr_out * position.quantity / 118 * 18))
       position.main_price = round_money(pr_out * position.quantity) + ' р.'
@@ -4569,12 +4591,13 @@ class invoiceWindow
 
 
     getTtnRow: (row, ttn, i)->
+      console.log "--->>>> getTtnRow>>>>"
       _this = @
       tr = $('<div/>', {
         'id': ttn.id,
         'class': 'row'
       }).data(ttn)
-      console.log ttn.ttn_lok
+
       if ttn.ttn_bgcolor_class != undefined
         tr.addClass(ttn.ttn_bgcolor_class)
       # определяем номер
@@ -4630,19 +4653,21 @@ class invoiceWindow
           if _this.options.access != 2
             $(this).prev().click()
             return false
-
+          t = $(this)
           if Number(ttn.return) == 0
-            # вставляем подтверждение
-            t = $(this)
+
             ttn.return = 1
             ttn.date_return = getDateNow();
             t.addClass('checked')
+            new sendAjax 'ttn_was_returned', {id: row.ttn[i].id, val: ttn.return}
           else
-            ttn.return = 0
-            ttn.date_return = getDateNow();
-            $(this).removeClass('checked')
+            new modalConfirm({html:"Данное действие отмечено системой как не логичное. <br>Вы уверены?"},()->
+              ttn.return = 0
+              ttn.date_return = getDateNow();
+              t.removeClass('checked')
+              new sendAjax 'ttn_was_returned', {id: row.ttn[i].id, val: ttn.return}
+            )
 
-          new sendAjax 'ttn_was_returned', {id: row.ttn[i].id, val: ttn.return}
         on:
           mouseenter: ()->
             $(this).css( 'cursor': 'posinter')
@@ -4738,12 +4763,6 @@ class invoiceWindow
 
 
       td
-
-
-
-
-
-
 
     ###
     # create tr
@@ -4905,14 +4924,14 @@ class invoiceRow
             setTimeout(()->
 #              echo_message_js _this.options.id
               if div2.hasClass('notify')
-
                 new sendAjax('get_payment', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
-                  div2.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
-                    position: "right",
-                    className: 'invoice_12px',
-                    autoHide: false
-                  })
+
                   if response.data.length > 0
+                    div2.notify(notifyContent = $('<div/>'), {
+                      position: "right",
+                      className: 'invoice_12px',
+                      autoHide: false
+                    })
 
                     tbl = $('<table/>', {'class': 'notify-table', 'id': 'invoice-row--price-payment-table'})
                     tbl.append(ptr = $('<tr/>'))
@@ -4948,8 +4967,14 @@ class invoiceRow
                         'html': 'Сумма по счёту не соответствует сумме оплаты'
                       }))
                       notifyContent.append(dopText)
+                  else if Number(_this.options.price_out_payment) == 0
+                    div2.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
+                      position: "right",
+                      className: 'invoice_12px',
+                      autoHide: true
+                    })
                 )
-            , 1000)
+            , 100)
 
         mouseleave: ()->
 
@@ -5065,12 +5090,13 @@ class invoiceRow
               if div3.hasClass('notify')
 
                 new sendAjax('get_costs_qtip', {'id': _this.options.id, 'not_deleted_row': 1}, (response)->
-                  div3.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
-                    position: "right",
-                    className: 'invoice_12px',
-                    autoHide: false
-                  })
+
                   if response.data.length > 0
+                    div3.notify(notifyContent = $('<div/>'), {
+                      position: "right",
+                      className: 'invoice_12px',
+                      autoHide: false
+                    })
                     tbl = $('<table/>', {'class': 'notify-table', 'id': 'invoice-row--price-payment-table'})
                     tbl.append(ptr = $('<tr/>'))
                     ptr.append($('<td/>', {'html': 'Поставщик'}))
@@ -5088,8 +5114,15 @@ class invoiceRow
                       'html': 'Сумма по счёту не соответствует сумме оплаты'
                     }))
                     notifyContent.append(dopText)
+                  else if Number(_this.options.costs) == 0
+                    div3.notify(notifyContent = $('<div/>', {'html': 'нет оплаты'}), {
+                      position: "right",
+                      className: 'invoice_12px',
+                      autoHide: true
+                    })
+
                 )
-            , 1000)
+            , 100)
 
         mouseleave: ()->
           $(this).find('div.notifyjs-wrapper').remove()
@@ -5206,7 +5239,7 @@ class invoiceRow
                   'css': {'textAlign': 'left'},
                   'html': 'дата возврата:<br>' + _this.options.spf_return_date
                 }), {position: "right", className: 'invoice_12px', autoHide: false})
-            , 1000)
+            , 100)
         mouseleave: ()->
           $(this).find('div.notifyjs-wrapper').remove()
           $(this).attr('style', '')
@@ -5643,7 +5676,8 @@ class invoiceRow
             return false
           console.log
 
-          # echo_message_js(ttn.id+' + '+$(this).attr('data-id'))
+          # echo_message_j  s(ttn.id+' + '+$(this).attr('data-id'))
+          
           if Number(ttn.return) == 0
 # вставляем подтверждение
             t = $(this)
@@ -5894,8 +5928,8 @@ class skladRow
 
     button2.push(btn1)
     button2.push(btn2)
-
-    status_shipment.menuRightClick({'buttons': button2})
+    if @access == 7
+      status_shipment.menuRightClick({'buttons': button2})
 
 
     #    console.log tr

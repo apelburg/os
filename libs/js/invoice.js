@@ -74,7 +74,7 @@
    */
 
   calc_price_with_discount = function(price_out, discount) {
-    return Number(price_out / 100) * (100 + Number(discount));
+    return (Number(price_out / 100) * (100 + Number(discount))).toFixed(2);
   };
 
 
@@ -1070,12 +1070,15 @@
         'name': 'добавить оплату',
         'class': '',
         click: function(e) {
-          var eachTr, r, r_old;
+          var eachTr, podst, r, r_old, summ;
           eachTr = tr;
+          summ = Number(tr.data().pay_price);
           while (eachTr.hasClass('subRow')) {
             eachTr = eachTr.prev();
+            summ += Number(eachTr.data().pay_price);
           }
           r = eachTr.find('td[rowspan]');
+          podst = Number(tr.data().price) - summ;
           if (r) {
             r_old = Number(eachTr.find('td[rowspan]').eq(0).attr('rowspan'));
             eachTr.find('td[rowspan]').attr('rowspan', r_old + 1);
@@ -1084,6 +1087,7 @@
             parent_id: _this.options.id
           }, function(response) {
             var newData;
+            response.data.pay_price = round_money(podst);
             newData = $.extend({}, _this.options, response.data);
             return tr.after(new costsRow([newData], 0, _this.access, windowObj, data_row, 0));
           });
@@ -2036,7 +2040,10 @@
         }
       })).append(this.head.price = $('<span/>', {
         'html': data_row.price_out
-      }).css('paddingLeft', '10px'));
+      }).css({
+        'paddingLeft': '10px',
+        'fontSize': '16px'
+      }));
       div2 = $('<div/>').append($('<span/>', {
         'html': data_row.client_name,
         'data-id': data_row.client_id
@@ -2204,7 +2211,7 @@
       _this = this;
       this.saveObj = {};
       buttons = [];
-      if (this.access === 2 && Number(data_row.id) > 0) {
+      if (Number(data_row.id) > 0) {
         buttons.push({
           text: 'Добавить счёт поставщика',
           "class": 'button_yes_or_no yes add_payment_button',
@@ -3187,7 +3194,10 @@
         'class': 'span-greyText'
       }).css('paddingLeft', '10px')).append(this.head.price = $('<span/>', {
         'html': data_row.price_out
-      }).css('paddingLeft', '10px'));
+      }).css({
+        'paddingLeft': '10px',
+        'fontSize': '16px'
+      }));
       div2 = $('<div/>').append($('<span/>', {
         'html': data_row.manager_name,
         'data-id': data_row.manager_id
@@ -4522,6 +4532,7 @@
           position.quantity = 1;
         }
         main_price += pr_out * position.quantity;
+        console.warn(" --- 1 >>> ", Number(pr_out * position.quantity), main_price);
         nds += Number(round_money(pr_out * position.quantity / 118 * 18));
         position.main_price = round_money(pr_out * position.quantity) + ' р.';
         td = _this.createTS_copyContent(position, 'main_price', table);
@@ -5171,12 +5182,12 @@
 
       invoice.prototype.getTtnRow = function(row, ttn, i) {
         var _this, check, d, div22, divw, number, tr;
+        console.log("--->>>> getTtnRow>>>>");
         _this = this;
         tr = $('<div/>', {
           'id': ttn.id,
           'class': 'row'
         }).data(ttn);
-        console.log(ttn.ttn_lok);
         if (ttn.ttn_bgcolor_class !== void 0) {
           tr.addClass(ttn.ttn_bgcolor_class);
         }
@@ -5240,20 +5251,28 @@
               $(this).prev().click();
               return false;
             }
+            t = $(this);
             if (Number(ttn["return"]) === 0) {
-              t = $(this);
               ttn["return"] = 1;
               ttn.date_return = getDateNow();
               t.addClass('checked');
+              return new sendAjax('ttn_was_returned', {
+                id: row.ttn[i].id,
+                val: ttn["return"]
+              });
             } else {
-              ttn["return"] = 0;
-              ttn.date_return = getDateNow();
-              $(this).removeClass('checked');
+              return new modalConfirm({
+                html: "Данное действие отмечено системой как не логичное. <br>Вы уверены?"
+              }, function() {
+                ttn["return"] = 0;
+                ttn.date_return = getDateNow();
+                t.removeClass('checked');
+                return new sendAjax('ttn_was_returned', {
+                  id: row.ttn[i].id,
+                  val: ttn["return"]
+                });
+              });
             }
-            return new sendAjax('ttn_was_returned', {
-              id: row.ttn[i].id,
-              val: ttn["return"]
-            });
           },
           on: {
             mouseenter: function() {
@@ -5572,14 +5591,12 @@
                     'not_deleted_row': 1
                   }, function(response) {
                     var dopText, i, j, len1, notifyContent, ptr, ref, row, tbl;
-                    div2.notify(notifyContent = $('<div/>', {
-                      'html': 'нет оплаты'
-                    }), {
-                      position: "right",
-                      className: 'invoice_12px',
-                      autoHide: false
-                    });
                     if (response.data.length > 0) {
+                      div2.notify(notifyContent = $('<div/>'), {
+                        position: "right",
+                        className: 'invoice_12px',
+                        autoHide: false
+                      });
                       tbl = $('<table/>', {
                         'class': 'notify-table',
                         'id': 'invoice-row--price-payment-table'
@@ -5647,10 +5664,18 @@
                         }));
                         return notifyContent.append(dopText);
                       }
+                    } else if (Number(_this.options.price_out_payment) === 0) {
+                      return div2.notify(notifyContent = $('<div/>', {
+                        'html': 'нет оплаты'
+                      }), {
+                        position: "right",
+                        className: 'invoice_12px',
+                        autoHide: true
+                      });
                     }
                   });
                 }
-              }, 1000);
+              }, 100);
             }
           },
           mouseleave: function() {
@@ -5766,14 +5791,12 @@
                     'not_deleted_row': 1
                   }, function(response) {
                     var dopText, i, j, len1, notifyContent, ptr, ref, row, tbl;
-                    div3.notify(notifyContent = $('<div/>', {
-                      'html': 'нет оплаты'
-                    }), {
-                      position: "right",
-                      className: 'invoice_12px',
-                      autoHide: false
-                    });
                     if (response.data.length > 0) {
+                      div3.notify(notifyContent = $('<div/>'), {
+                        position: "right",
+                        className: 'invoice_12px',
+                        autoHide: false
+                      });
                       tbl = $('<table/>', {
                         'class': 'notify-table',
                         'id': 'invoice-row--price-payment-table'
@@ -5811,10 +5834,18 @@
                         'html': 'Сумма по счёту не соответствует сумме оплаты'
                       }));
                       return notifyContent.append(dopText);
+                    } else if (Number(_this.options.costs) === 0) {
+                      return div3.notify(notifyContent = $('<div/>', {
+                        'html': 'нет оплаты'
+                      }), {
+                        position: "right",
+                        className: 'invoice_12px',
+                        autoHide: true
+                      });
                     }
                   });
                 }
-              }, 1000);
+              }, 100);
             }
           },
           mouseleave: function() {
@@ -5932,7 +5963,7 @@
                     autoHide: false
                   });
                 }
-              }, 1000);
+              }, 100);
             }
           },
           mouseleave: function() {
@@ -6680,9 +6711,11 @@
       };
       button2.push(btn1);
       button2.push(btn2);
-      status_shipment.menuRightClick({
-        'buttons': button2
-      });
+      if (this.access === 7) {
+        status_shipment.menuRightClick({
+          'buttons': button2
+        });
+      }
       if (rowspan === 0) {
         tr = $('<tr/>', {
           'class': 'subRow',

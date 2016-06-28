@@ -251,6 +251,10 @@ class InvoiceNotify extends aplStdAJAXMethod
  */
 	class Invoice  extends aplStdAJAXMethod
 	{
+		# установив флаг на FALSE - вы отмените некоторые строгие ограничения и войдете в режим тестирования
+		protected 	$production = true;
+
+
 		public 		$tabName = 'Счета';		// имя вкладки
 		protected 	$user_access = 0; 		// user right (int)
 		protected 	$user_id = 0;			// user id with base
@@ -344,7 +348,6 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 
 
-
 		/**
 		 * buch the confirmation create ttn
 		 */
@@ -406,6 +409,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$message .= 'что составляет '.$_POST['percent_payment'].'% от суммы счёта';
 			$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
 			# подгружаем шаблон
+
 			ob_start();
 			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
 			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
@@ -1160,8 +1164,11 @@ class InvoiceNotify extends aplStdAJAXMethod
 					$data[] = $row;
 				}
 			}
+
 			return $data;
 		}
+
+
 		/**
 		 * запрос ttn по id счёта
 		 * @param $id
@@ -1520,6 +1527,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$this->responseClass->addMessage('Запись была удалена.','successful_message');
 		}
 
+
+
 		/**
 		 * get pp from invoice id
 		 */
@@ -1546,9 +1555,10 @@ class InvoiceNotify extends aplStdAJAXMethod
 					$data[] = $row;
 				}
 			}
+
 			// возвращаем полученные данные
 			$this->responseClass->response['data'] = $data;
-			// $this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
+//			$this->responseClass->addSimpleWindow($this->printArr($data),'Создание TTN');
 		}
 
 		/**
@@ -1892,7 +1902,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 					// проверка на существования запроса по данному документу
 					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
 					 	$this->responseClass->addMessage('Для данного документа счёт уже запрошен.');
-						return;
+						if ($this->prod__check()){return;}
 					}
 					// получаем данные по спецификации
 					$positions = $this->getSpecificationRows($data['agreement_id'], $data['doc_num']);
@@ -1926,7 +1936,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 					// проверка на существования запроса по данному документу
 					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
 						$this->responseClass->addMessage('Для данного документа номер уже запрошен.','error_message',1);
-						return;
+						if ($this->prod__check()){return;}
 					}
 
 
@@ -1946,6 +1956,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 					$data['client_id'] = $Oferta[0]['client_id'];
 					$data['requisit_id'] = $Oferta[0]['client_requisit_id'];
 					$data['price_in'] = $this->getPriceIn($positions);
+//					$this->prod__window($this->printArr($positions));
+
 					$data['price_out'] = $this->getPriceOut($positions);
 
 					$this->responseClass->addMessage('Номер счёта запрошен', 'successful_message',1);
@@ -1968,8 +1980,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 		}
 
 		private function calc_price_width_discount($price_out, $discount){
-			$num = ($price_out / 100) * (100 + $discount);
-			return $num;
+			$num = $price_out / 100 * (100 + $discount);
+			return round($num,2);
 		}
 
 		/**
@@ -2243,8 +2255,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 		private function getPriceOut($arr){
 			$price = 0;
 			foreach($arr as $row){
-				// $price += $row['quantity']*$row['price'];
-				$price += $this->calc_price_width_discount($row['summ'], $row['discount']);
+				$price += round($this->calc_price_width_discount($row['price'], $row['discount']),2) * $row['quantity'];
 			}
 			return $price;
 		}

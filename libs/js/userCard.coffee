@@ -423,9 +423,63 @@ class modalWindow
       tr.append($('<td/>').append($('<button/>',{
         'html':"Добавить",
         click:()->
+# контент для окна создания записи компенсации
+          html = $('<div/>',{
+            id:'user_window_compensations_form'
+          })
+          html.append($('<div/>').append(win_inp_name = $('<input/>',{
+            placeholder:'название'
+          })))
+          html.append($('<div/>').append(win_inp_val = $('<input/>',{
+            placeholder:'стоимость'
+            val:round_money(0)
+            focus:()->
+              if(Number($(this).val()) == 0)
+                $(this).val('')
+              else
+                t = $(this)
+                setTimeout(()->
 
+                  t.select()
+                , 50)
+            blur:()->
+              $(this).val(round_money(Number($(this).val())))
+          })))
+          # окна создания записи компенсации
+          self.win_window = new modalWindow({
+            html: html,
+            maxHeight: '100%',
+            maxWidth: '90%',
+            title: 'Завести строку компенсации',
+            buttons: [
+              {
+                text: 'Закрыть',
+                class: 'button_yes_or_no no',
+                click: ()->
+                  console.log self.win_window.winDiv[0]
+                  $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
+              },{
+                text: 'Создать',
+                class: 'button_yes_or_no',
+                click: ()->
+                  new sendAjax('create_compensation_row',{
+                      user_id:self.options.id,
+                      name:win_inp_name.val(),
+                      val:win_inp_val.val(),
+                      url:'http://'+window.location.hostname+'/os/?page=user_api'},(response)->
+                    tr.before(self.create_compensation_row(response.data))
+                    $(self.win_window.winDiv[0]).dialog('close').dialog('destroy').remove()
+                  )
+
+              }
+            ]
+          }, {
+            closeOnEscape: true,
+            single: true,
+            close: (event, ui) ->
+              $('#quick_button_div .button').eq(1).removeClass('checked')
+          })
       })))
-      tr.append($('<td/>'))
       tr.append($('<td/>'))
 
       return tbl
@@ -482,13 +536,13 @@ class modalWindow
               t.select()
             , 50)
         blur:()->
-          if Number($(this).val()) != Number(self.options.avans)
-            self.options.avans = round_money($(this).val())
-            $(this).val(self.options.avans)
-            new sendAjax('save_salary',{id:self.options.id,val:self.options.avans,url:'http://'+window.location.hostname+'/os/?page=user_api'})
+          if Number($(this).val()) != Number(self.options.salary)
+            self.options.salary = round_money($(this).val())
+            $(this).val(self.options.salary)
+            new sendAjax('save_salary',{id:self.options.id,val:self.options.salary,url:'http://'+window.location.hostname+'/os/?page=user_api'})
 
           else
-            $(this).val(self.options.avans)
+            $(this).val(self.options.salary)
       })))
       tr.append($('<td/>'))
 
