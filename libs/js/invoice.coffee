@@ -803,6 +803,8 @@ class costsRow
               
               # сохраняем собщий процент оплаты по счёту
               if percent != Number(eachTrFirst.data().percent) || 1
+
+
                 console.log " != не равно !!!!"
                 # правим информацию в шапке окна
                 data_row.costs = 0
@@ -818,6 +820,12 @@ class costsRow
                 windowObj.updateHead(data_row)
                 _this.options.pay_date = getDateNow();
 
+
+                # кликаем глаз если выполнены условия
+                if Number(percent) == 100 && Number(eachTrFirst.data().flag_ice) == 0 || Number(percent) != 100 && Number(eachTrFirst.data().flag_ice) == 1
+                  tr.find('.ice').click()
+                  
+        
                 new sendAjax "save_payment_costs", {
                   invoice_id:data_row.id,
                   pay_date:_this.options.pay_date,
@@ -825,39 +833,41 @@ class costsRow
                   costs:data_row.costs,
                   id:_this.options.id,
                   percent: percent}, ()->
-
-                  $('#js-main-invoice-table').invoice('reflesh', data_row)
-
-                
-                  console.log " != не равно !!!!"
-                  # дата платежа обновлена, убираем выделение
-                  td1.html(_this.options.pay_date).stop().animate({backgroundColor:"transparent"}, 200, null,()->
-                    $(this).removeClass('redTD').attr('style','')
-                  )
+                    $('#js-main-invoice-table').invoice('reflesh', data_row)
 
 
-                  # сохраняем данные
-
-                  data = eachTrFirst.data()
-                  data.percent = percent
-                  eachTr = eachTrFirst.next()
-                  # подсвечиваем проценты при условии оплаты не 100%
-                  if percent != 100
-                    eachTrFirst.find('.percent_payment_inf').addClass('warning')
-                  else
-                    eachTrFirst.find('.percent_payment_inf').removeClass('warning')
-
-                  while eachTr.hasClass('subRow')
+                    console.log " != не равно !!!!"
+                    # дата платежа обновлена, убираем выделение
+                    td1.html(_this.options.pay_date).stop().animate({backgroundColor:"transparent"}, 200, null,()->
+                      $(this).removeClass('redTD').attr('style','')
+                    )
                     # сохраняем данные
-                    data = eachTr.data()
+
+                    data = eachTrFirst.data()
                     data.percent = percent
-                    eachTr.data(data)
+                    eachTr = eachTrFirst.next()
                     # подсвечиваем проценты при условии оплаты не 100%
                     if percent != 100
-                      eachTr.find('.percent_payment_inf').addClass('warning')
+                      eachTrFirst.find('.percent_payment_inf').addClass('warning')
                     else
-                      eachTr.find('.percent_payment_inf').removeClass('warning')
-                    eachTr = eachTr.next()
+                      eachTrFirst.find('.percent_payment_inf').removeClass('warning')
+
+                    while eachTr.hasClass('subRow')
+                      # сохраняем данные
+                      data = eachTr.data()
+                      data.percent = percent
+                      eachTr.data(data)
+                      # подсвечиваем проценты при условии оплаты не 100%
+                      if percent != 100
+                        eachTr.find('.percent_payment_inf').addClass('warning')
+                      else
+                        eachTr.find('.percent_payment_inf').removeClass('warning')
+                      eachTr = eachTr.next()
+
+
+                
+
+
           )
     }))
     tr.append(td3 = $('<td/>', {'class': 'percent_payment_inf'})
@@ -1272,7 +1282,7 @@ class costsRow
 
         click: ()->
           # ограничения для менеджера
-          if @access == 5
+          if _this.access == 5
             return false
 
           if $(this).hasClass('checked')

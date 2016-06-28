@@ -817,6 +817,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 							$query .= ($w>0?' AND ':' WHERE ');
 //							$query .= " `price_out_payment` >=  `price_out` ";
 							$query .= " `price_out_payment` >  0 ";
+							$query .= " AND `status` <>  'отгружен' ";
 							$w++;
 							break;
 						// Запрос ТТН

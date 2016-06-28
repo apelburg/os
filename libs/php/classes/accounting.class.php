@@ -888,6 +888,9 @@ class Accounting  extends aplStdAJAXMethod
 		}
 
 
+		$query .= " order by `last_name` ASC";
+
+
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		$managers = array();
 		if($result->num_rows > 0){

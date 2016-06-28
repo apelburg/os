@@ -989,6 +989,9 @@
                   data_row.costs = round_money(data_row.costs);
                   windowObj.updateHead(data_row);
                   _this.options.pay_date = getDateNow();
+                  if (Number(percent) === 100 && Number(eachTrFirst.data().flag_ice) === 0 || Number(percent) !== 100 && Number(eachTrFirst.data().flag_ice) === 1) {
+                    tr.find('.ice').click();
+                  }
                   return new sendAjax("save_payment_costs", {
                     invoice_id: data_row.id,
                     pay_date: _this.options.pay_date,
@@ -1490,7 +1493,7 @@
           'class': 'ice',
           click: function() {
             var flag_ice, tbl;
-            if (this.access === 5) {
+            if (_this.access === 5) {
               return false;
             }
             if ($(this).hasClass('checked')) {
