@@ -4426,8 +4426,18 @@ class invoiceWindow
         }, {
           index: 9
           name: 'Закрытые'
+        }, {
+          index: 14
+          name: 'Аннулированные'
         }
       ]
+      
+      if Number(_this.access) == 1
+        tabs.push({
+          index: 15
+          name: 'Удаленные'
+        })
+
       for n,i in tabs
         @tabMenu.append(li = $('<li/>', {
           click: (e)->
@@ -4601,7 +4611,6 @@ class invoiceWindow
 
 
     getTtnRow: (row, ttn, i)->
-      console.log "--->>>> getTtnRow>>>>"
       _this = @
       tr = $('<div/>', {
         'id': ttn.id,
@@ -5263,6 +5272,40 @@ class invoiceRow
     tr.append(td)
     # статус
     td = $('<td/>', {'html': @options.status})
+
+    button = []
+    btn1 = {
+      'name': 'Аннулировать',
+      'class': '',
+      click: (e)->
+        echo_message_js "'Аннулировать'"
+    }
+    btn2 = {
+      'name': 'Удалить',
+      'class': '',
+      click: (e)->
+        echo_message_js "'Удалить'"
+    }
+    btn3 = {
+      'name': 'Удалить навсегда',
+      'class': '',
+      click: (e)->
+        echo_message_js "'Удалить навсегда'"
+    }
+    btn4 = {
+      'name': 'Восстановить',
+      'class': '',
+      click: (e)->
+        echo_message_js "'Восстановить'"
+    }
+
+    button.push(btn1)
+    button.push(btn2)
+    button.push(btn3)
+
+    td.menuRightClick({'buttons': button})
+
+
     tr.append(td)
     # диндин
     td = $('<td/>')

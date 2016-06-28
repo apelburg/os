@@ -4982,8 +4982,17 @@
           }, {
             index: 9,
             name: 'Закрытые'
+          }, {
+            index: 14,
+            name: 'Аннулированные'
           }
         ];
+        if (Number(_this.access) === 1) {
+          tabs.push({
+            index: 15,
+            name: 'Удаленные'
+          });
+        }
         results = [];
         for (i = j = 0, len1 = tabs.length; j < len1; i = ++j) {
           n = tabs[i];
@@ -5185,7 +5194,6 @@
 
       invoice.prototype.getTtnRow = function(row, ttn, i) {
         var _this, check, d, div22, divw, number, tr;
-        console.log("--->>>> getTtnRow>>>>");
         _this = this;
         tr = $('<div/>', {
           'id': ttn.id,
@@ -5473,7 +5481,7 @@
     }
 
     invoiceRow.prototype.init = function(ttn) {
-      var _this, commentDiv, d, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
+      var _this, btn1, btn2, btn3, btn4, button, commentDiv, d, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
       _this = this;
       tr = $('<tr/>', {
         id: 'tt_' + this.options.id
@@ -5983,6 +5991,41 @@
       tr.append(td);
       td = $('<td/>', {
         'html': this.options.status
+      });
+      button = [];
+      btn1 = {
+        'name': 'Аннулировать',
+        'class': '',
+        click: function(e) {
+          return echo_message_js("'Аннулировать'");
+        }
+      };
+      btn2 = {
+        'name': 'Удалить',
+        'class': '',
+        click: function(e) {
+          return echo_message_js("'Удалить'");
+        }
+      };
+      btn3 = {
+        'name': 'Удалить навсегда',
+        'class': '',
+        click: function(e) {
+          return echo_message_js("'Удалить навсегда'");
+        }
+      };
+      btn4 = {
+        'name': 'Восстановить',
+        'class': '',
+        click: function(e) {
+          return echo_message_js("'Восстановить'");
+        }
+      };
+      button.push(btn1);
+      button.push(btn2);
+      button.push(btn3);
+      td.menuRightClick({
+        'buttons': button
       });
       tr.append(td);
       td = $('<td/>');

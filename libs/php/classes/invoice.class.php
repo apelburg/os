@@ -850,17 +850,33 @@ class InvoiceNotify extends aplStdAJAXMethod
 							$query .= " `closed` > 0";
 							$w++;
 							break;
+						// аннулирован
+						case 14:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `basket` = '1'";
+							$w++;
+							break;
+						// удален бухгалтерией
+						case 15:
+							$query .= ($w>0?' AND ':' WHERE ');
+							$query .= " `basket` = '2'";
+							$w++;
+							break;
 						// все остальные
 						default:
 							break;
 					}
-					if($_GET['section'] != 9){
+					if($_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
 						$query .= ($w>0?' AND ':' WHERE ');
 						$query .= " `closed` = '0'";
 						$w++;
 					}
+					if($_GET['section'] != 14 && $_GET['section'] != 15){
+						$query .= ($w>0?' AND ':' WHERE ');
+						$query .= " `basket` = '0'";
+						$w++;
+					}
 				}
-
 			}
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -880,8 +896,63 @@ class InvoiceNotify extends aplStdAJAXMethod
 			}
 			// запрос ттн
 			$this->get_ttn_rows($data_id_s,$curSearch);
+//			echo $query;
 			return $this->data;
+
+
 		}
+
+		/**
+		 * положить счёт в корзину
+		 */
+		protected function delete_to_basket_invoice_AJAX(){
+			$this->responseClass->addMessage('положить счёт в корзину - в разработке ','error_message',2000);
+			if(isset($_POST['id']) && isset($_POST['val'])){
+				$this->change_basket_status((int)$_POST['id'],2);
+			}
+		}
+
+		/**
+		 * аннулировать
+		 */
+		protected function repeal_invoice_AJAX(){
+			$this->responseClass->addMessage('аннулировать - в разработке ','error_message',2000);
+
+		}
+
+		/**
+		 * полное удаление счёта из базы
+		 */
+		protected function delete_invoice_AJAX(){
+
+			if(isset($_POST['id']) && isset($_POST['val'])){
+				$this->change_basket_status((int)$_POST['id'],1);
+			}
+		}
+
+
+
+		/**
+		 * смена статуса корзины
+		 *
+		 * @param $id
+		 * @param $status
+		 */
+		private function change_basket_status($id,$status){
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `basket`=?";
+			$query .= " WHERE `id` =?";
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('ii',$status, $id) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+		}
+
+
 		/**
 		 * запрос из базы строк для приложения склад
 		 *
