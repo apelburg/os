@@ -716,7 +716,8 @@ class costsRow
             'type': 'text',
             'val': $(this).html(),
             keyup: ()->
-              $(this).val($(this).val().replace(/[^-0-9/.]/gim, ''))
+#              $(this).val($(this).val().replace(/[^-0-9/.]/gim, ''))
+              $(this).val($(this).val().replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' ))
 
               per = round_money(Number($(this).val()) * 100 / Number(_this.options.price))
 
@@ -1203,7 +1204,8 @@ class costsRow
               'type': 'text',
               'val': $(this).html(),
               keyup: ()->
-                $(this).val($(this).val().replace(/[^-0-9/.]/gim, ''))
+#                $(this).val($(this).val().replace(/[^-0-9/.]/gim, ''))
+                $(this).val($(this).val().replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' ))
 
                 per = round_money(Number(_this.options.pay_price) * 100 / Number($(this).val()))
 
@@ -2375,7 +2377,7 @@ class paymentRow
             'type': 'text',
             'val': $(this).html(),
             keyup: ()->
-              $(this).val($(this).val().replace(/[^-0-9/.]/gim, ''))
+              $(this).val($(this).val().replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' ))
 
               per = round_money(Number($(this).val()) * 100 / Number(data_row.price_out))
               _this.percentSpan.html(per)

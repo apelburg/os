@@ -905,7 +905,7 @@
               'val': $(this).html(),
               keyup: function() {
                 var per;
-                $(this).val($(this).val().replace(/[^-0-9\/.]/gim, ''));
+                $(this).val($(this).val().replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1'));
                 per = round_money(Number($(this).val()) * 100 / Number(_this.options.price));
                 if (Number(_this.options.price) === 0) {
                   per = round_money(0);
@@ -1411,7 +1411,7 @@
                 'val': $(this).html(),
                 keyup: function() {
                   var per;
-                  $(this).val($(this).val().replace(/[^-0-9\/.]/gim, ''));
+                  $(this).val($(this).val().replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1'));
                   per = round_money(Number(_this.options.pay_price) * 100 / Number($(this).val()));
                   if (Number(_this.options.pay_price) === 0) {
                     per = round_money(0);
@@ -2784,7 +2784,7 @@
               'val': $(this).html(),
               keyup: function() {
                 var per;
-                $(this).val($(this).val().replace(/[^-0-9\/.]/gim, ''));
+                $(this).val($(this).val().replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1'));
                 per = round_money(Number($(this).val()) * 100 / Number(data_row.price_out));
                 return _this.percentSpan.html(per);
               },

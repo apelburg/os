@@ -642,9 +642,6 @@ class InvoiceNotify extends aplStdAJAXMethod
 				$query .= (($i>0)?',':'')." `invoice_num` = '".$_POST['number']."'";$i++;
 			}
 
-
-
-
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 //			$this->responseClass->addSimpleWindow($this->printArr($_POST).'<br>'.$query.'<br>'.$i,'');
 			if ($i>0){
@@ -758,6 +755,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$w = 0;
 			//  получаем информацию по строкам
 			$query = "SELECT * ";
+			$query .= ", invoice_num as invoice_num_old";
 			$query .= ", RIGHT(CONCAT('0000000' , (invoice_num)),8) as invoice_num";
 			$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date ";
 			$query .= " , DATE_FORMAT(`".INVOICE_TBL."`.`spf_return_date`,'%d.%m.%Y') as spf_return_date ";
@@ -791,6 +789,14 @@ class InvoiceNotify extends aplStdAJAXMethod
 				// если мы не используем поиск
 				// правила выборки счетов по вкладкам
 				if (isset($_GET['section'])){
+
+					if($_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
+						$query .= ($w>0?' AND ':' WHERE ');
+						$query .= " `closed` = '0'";
+						$w++;
+					}
+
+
 					switch ((int)$_GET['section']){
 						// Запрос
 						case 1:
@@ -866,13 +872,16 @@ class InvoiceNotify extends aplStdAJAXMethod
 						default:
 							break;
 					}
-					if($_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
-						$query .= ($w>0?' AND ':' WHERE ');
-						$query .= " `closed` = '0'";
-						$w++;
-					}
+				}
+
+				# сортировка по номеру счёта
+				if($_GET['section'] != 1 && $_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
+					$query.= " ORDER BY `invoice_num_old` DESC";
 				}
 			}
+
+
+
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$this->data =$this->depending['id']= array();
@@ -1543,10 +1552,6 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$result = $stmt->get_result();
 			$stmt->close();
 
-
-
-
-
 			# сообщение менеджеру edit_ttn_status
 			# сообщение на почтуconfirm_create_ttn
 			$Invoice = new InvoiceNotify();
@@ -1562,6 +1567,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 			ob_get_clean();
 			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
 		}
+
+
 		/**
 		 * редактирование информации по отгрузке для отдельных артикулов
 		 */
@@ -2088,9 +2095,10 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 					// проверка на существования запроса по данному документу
 					if($this->check_invoice($data['doc_type'],$data['doc_id'],$data['doc_num'])){
-					 	$this->responseClass->addMessage('Для данного документа счёт уже запрошен.');
+					 	$this->responseClass->addMessage('Для данного документа счёт уже запрошен.','error_message',1);
 						if ($this->prod__check()){return;}
 					}
+
 					// получаем данные по спецификации
 					$positions = $this->getSpecificationRows($data['agreement_id'], $data['doc_num']);
 					$agr = $this->getAgreement($data['agreement_id']);
@@ -2103,6 +2111,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 //					$message .= $this->printArr($positions);
 					// $this->responseClass->addSimpleWindow($message,'Создание счета',$options);
 					// return
+
 					$data['client_id'] = $agr[0]['client_id'];
 					$data['positions_num'] = count($positions);
 					$data['requisit_id'] = $agr[0]['client_requisit_id'];
@@ -2110,6 +2119,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 					$data['price_out'] = $this->getPriceOut($positions);
 					$data['conditions'] = $positions[0]['prepayment'];
 					$this->responseClass->addMessage('Счёт запрошен','successful_message',1);
+
 					break;
 				// оферта
 				case 'oferta':					
@@ -2234,6 +2244,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$query .= "WHERE `doc_type` = '".$doc_type."'";
 			$query .= " AND `doc_id` = '".$doc_id."'";
 			$query .= " AND `doc_num` = '".$doc_num."'";
+			$query .= " AND `closed` <= '1'";
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
