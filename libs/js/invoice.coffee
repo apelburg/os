@@ -2916,17 +2916,28 @@ class ttnWindow
   # checkbox number
   checkNumber: 0
   saveObj: {}
-  defaults:
+  defaults1:
     id: 0,
     number: '0000',
     type: "new"
 
   constructor: (obj, data_row, data, accces, ttn) ->
     if ttn != null
-      @defaults = $.extend({}, @defaults, ttn)
+      @defaults = $.extend({}, @defaults1, ttn)
       @defaults.number = '0000' if @defaults.number == null
+
+
+      if ttn.ttn_build != undefined
+        @defaults.build = ttn.ttn_build
+      if ttn.ttn_date != undefined
+        @defaults.date = ttn.ttn_date
+      if @defaults.ttn_id != undefined
+        @defaults.id = ttn.ttn_id
+      if ttn.ttn_query != undefined
+        @defaults.query = ttn.ttn_query
     else
       ttn = {}
+    console.warn ttn
     # запоминаем уровень допуска
     @access = accces
     # сохраняем информацию по строке
@@ -5278,32 +5289,119 @@ class invoiceRow
       'name': 'Аннулировать',
       'class': '',
       click: (e)->
-        echo_message_js "'Аннулировать'"
+        new sendAjax('repeal_invoice',{id:_this.options.id},()->
+          tr.remove()
+        )
     }
     btn2 = {
       'name': 'Удалить',
       'class': '',
       click: (e)->
-        echo_message_js "'Удалить'"
+        if _this.access == 2
+          message = "Счёт будет полностью удален из системы. <br><br>Продолжить?"
+          new modalConfirm({html:message},()->
+            new sendAjax('delete_to_basket_invoice',{id:_this.options.id},()->
+              tr.remove()
+            )
+          )
+        else
+          new sendAjax('delete_to_basket_invoice',{id:_this.options.id},()->
+            tr.remove()
+          )
     }
     btn3 = {
       'name': 'Удалить навсегда',
       'class': '',
       click: (e)->
-        echo_message_js "'Удалить навсегда'"
+        message = "Счёт и все связанные с ним данные будут полностью удалены из системы.<br> Восстановить информацию по счёту после данной операции будет невозможно!!!<br><br>Продолжить?"
+        new modalConfirm({html:message},()->
+          new sendAjax('delete_invoice_row',{id:_this.options.id},()->
+            tr.remove()
+          )
+        )
+        
     }
     btn4 = {
-      'name': 'Восстановить',
+      'name': 'Вернуть в работу',
       'class': '',
       click: (e)->
-        echo_message_js "'Восстановить'"
+        new sendAjax("remove_from_closed",{id:_this.options.id},()->
+          tr.remove()
+        )
     }
 
-    button.push(btn1)
-    button.push(btn2)
-    button.push(btn3)
+    btn5 = {
+      'name': 'Закрыть счёт',
+      'class': '',
+      click: (e)->
+        content = $('<div/>').append($('<div/>', {
+          'html': 'Укажите дату закрытия',
 
-    td.menuRightClick({'buttons': button})
+        })).append($('<div/>', {
+          'css': {
+            'padding': '5px',
+            'margin': '10px 0 0 0'
+          }
+        }).append(date = $('<input/>', {
+          'val': getDateNow(),
+          'css': {
+            'padding': '5px'
+          }
+        })))
+        date.datetimepicker({
+          timepicker: false,
+          dayOfWeekStart: 1,
+          onSelectDate: (ct, $i)->
+            $i.blur();
+
+          onGenerate: (ct)->
+            $(this).find('.xdsoft_date.xdsoft_weekend')
+            .addClass('xdsoft_disabled');
+            $(this).find('.xdsoft_date');
+
+          closeOnDateSelect: true,
+          format: 'd.m.Y'
+        }).blur();
+
+        wDate = new modalWindow({
+          html: content,
+          title: 'Укажите дату',
+          buttons: [{
+            text: 'Отмена',
+            class: 'button_yes_or_no no',
+            click: ()->
+              $(wDate.winDiv).dialog('close').dialog('destroy').remove()
+          }, {
+            text: 'OK',
+            class: 'button_yes_or_no yes',
+            click: ()->
+              $(wDate.winDiv).dialog('close').dialog('destroy').remove()
+              # отправляем запрос
+              new sendAjax 'closed_invoice_row', {id: _this.options.id, date: date.val()}, (response)->
+                tr.remove()
+          }]
+        }, {single: false})
+    }
+    @options.closed = Number(@options.closed)
+    if @access == 1
+      # аннулировать
+      button.push(btn1) if @options.closed != 2 && @options.closed != 3
+      # удалить в корзину
+      button.push(btn2)  if @options.closed != 3
+      # удалить навсегда
+      button.push(btn3)
+      # вернуть
+      button.push(btn4)  if @options.closed != 0
+      # закрыть
+      button.push(btn5)  if @options.closed != 1
+    if @access == 2
+      # аннулировать
+      button.push(btn1)  if @options.closed != 2 && @options.closed != 3
+      # удалить в корзину
+      button.push(btn2)  if @options.closed != 3
+    console.log @options.closed
+    if button.length > 0
+      td.menuRightClick({'buttons': button})
 
 
     tr.append(td)
@@ -5829,7 +5927,7 @@ class skladRow
         t = $(@)
 
         new sendAjax('get_ttn', {'id': self.options.id}, (response)->
-# создаем экземпляр окна ттн
+          # создаем экземпляр окна ттн
           new invoiceWindow(t, self.options, response.data, self.access)
         )
     })
@@ -5907,7 +6005,7 @@ class skladRow
 # окно Запрос ТТН
         t = $(this)
         new sendAjax('get_ttn', {'id': self.options.id}, (response)->
-# создаем экземпляр окна ттн
+          # создаем экземпляр окна ттн
           new ttnWindow(t, self.options, response.data, self.access, self.options) if response.data != undefined
         )
     }))

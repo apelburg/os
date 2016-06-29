@@ -228,8 +228,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 		if (count($rows) > 0){
 			# переводим найденныйе счета в статус закрытые
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
-			$query .= " `closed` = (closed + 1)";
-			$query .= " `closed_date` = NOW()";
+			$query .= " `closed` = '1'";
+			$query .= " `closed_date` = '".date('Y-m-d',time())."'";
 			$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
@@ -847,19 +847,19 @@ class InvoiceNotify extends aplStdAJAXMethod
 						// Закрытые
 						case 9:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `closed` > 0";
+							$query .= " `closed` = 1";
 							$w++;
 							break;
 						// аннулирован
 						case 14:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `basket` = '1'";
+							$query .= " `closed` = '2'";
 							$w++;
 							break;
 						// удален бухгалтерией
 						case 15:
 							$query .= ($w>0?' AND ':' WHERE ');
-							$query .= " `basket` = '2'";
+							$query .= " `closed` = '3'";
 							$w++;
 							break;
 						// все остальные
@@ -869,11 +869,6 @@ class InvoiceNotify extends aplStdAJAXMethod
 					if($_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
 						$query .= ($w>0?' AND ':' WHERE ');
 						$query .= " `closed` = '0'";
-						$w++;
-					}
-					if($_GET['section'] != 14 && $_GET['section'] != 15){
-						$query .= ($w>0?' AND ':' WHERE ');
-						$query .= " `basket` = '0'";
 						$w++;
 					}
 				}
@@ -906,29 +901,151 @@ class InvoiceNotify extends aplStdAJAXMethod
 		 * положить счёт в корзину
 		 */
 		protected function delete_to_basket_invoice_AJAX(){
-			$this->responseClass->addMessage('положить счёт в корзину - в разработке ','error_message',2000);
-			if(isset($_POST['id']) && isset($_POST['val'])){
-				$this->change_basket_status((int)$_POST['id'],2);
+			# в корзину кладут бухи и админы
+			if($this->user_access != 1 && $this->user_access != 2){
+				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
+				if ($this->prod__check()){return;}
 			}
+
+
+			$this->responseClass->addMessage('Счёт успешно удалён ','successful_message',2000);
+			$this->change_closed_status((int)$_POST['id'],3);
+
 		}
 
 		/**
 		 * аннулировать
 		 */
 		protected function repeal_invoice_AJAX(){
-			$this->responseClass->addMessage('аннулировать - в разработке ','error_message',2000);
+			# бух и админ
+			if($this->user_access != 1 && $this->user_access != 2){
+				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
+				if ($this->prod__check()){return;}
+			}
 
+			$this->responseClass->addMessage('Счёт успешно аннулирован','successful_message',1000);
+			$this->change_closed_status((int)$_POST['id'],2);
+		}
+
+		/**
+		 * возврат счёта из закрытых в работу
+		 */
+		protected function remove_from_closed_AJAX(){
+			# бух и админ
+			if($this->user_access != 1 && $this->user_access != 2){
+				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
+				if ($this->prod__check()){return;}
+			}
+
+
+			$this->change_closed_status((int)$_POST['id'],0);
+			$this->responseClass->addMessage('Счёт возвращён в работу','successful_message',1000);
 		}
 
 		/**
 		 * полное удаление счёта из базы
 		 */
-		protected function delete_invoice_AJAX(){
-
-			if(isset($_POST['id']) && isset($_POST['val'])){
-				$this->change_basket_status((int)$_POST['id'],1);
+		protected function delete_invoice_row_AJAX(){
+			# админ
+			if($this->user_access != 1){
+				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
+				if ($this->prod__check()){return;}
 			}
+
+
+			# удаление самого счёта
+			$query = "DELETE FROM `".INVOICE_TBL."` WHERE `id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			# удаление платёжных поручений по счёту
+			$query = "DELETE FROM `".INVOICE_PP."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+			# удаление строк позиций
+			$query = "DELETE FROM `".INVOICE_ROWS."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+			# удаление запрошенных ттн
+			$query = "DELETE FROM `".INVOICE_TTN."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+			# удаление комментариев
+			$query = "DELETE FROM `".INVOICE_COMMENTS."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+
+			# выборка данных по счетам от поставщиков
+			$query = "SELECT * FROM `".INVOICE_COSTS."` WHERE `invoice_id`=?";
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$ids = array();
+			if($result->num_rows > 0){
+				while($row = $result->fetch_assoc()){
+					$ids[] = $row['id'];
+				}
+			}
+			# если строки от поставщиков были найдены
+			if(count($ids)){
+				# удаление данных по счетам от поставщиков
+				$query = "DELETE FROM `".INVOICE_COSTS."` WHERE `id` IN ('".implode("','",$ids)."')";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+				$query = "DELETE FROM `".INVOICE_COSTS_PAY."` WHERE `parent_id` IN ('".implode("','",$ids)."')";
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			}
+
+			$this->responseClass->addMessage('Все данные по счёту были полность удалены','successful_message',2000);
 		}
+
+		/**
+		 * принудительное закрытие заказа
+		 * только для админов
+		 */
+		protected function closed_invoice_row_AJAX(){
+			# админ
+			if($this->user_access != 1){
+				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
+				if ($this->prod__check()){return;}
+			}
+
+			$query = "UPDATE `".INVOICE_TBL."` SET ";
+			$query .= " `closed`='1'";
+			$query .= ", `closed_date`=?";
+			$query .= " WHERE `id` =?";
+
+			$date = date('Y-m-d',strtotime($_POST['date']));
+
+			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+			$stmt->bind_param('si',$date, $_POST['id']) or die($this->mysqli->error);
+			$stmt->execute() or die($this->mysqli->error);
+			$result = $stmt->get_result();
+			$stmt->close();
+
+			$this->responseClass->addMessage('Счёт закрыт','successful_message',1000);
+		}
+
+
 
 
 
@@ -938,9 +1055,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 		 * @param $id
 		 * @param $status
 		 */
-		private function change_basket_status($id,$status){
+		private function change_closed_status($id,$status){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
-			$query .= " `basket`=?";
+			$query .= " `closed`=?";
 			$query .= " WHERE `id` =?";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
@@ -948,8 +1065,6 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
-
 		}
 
 

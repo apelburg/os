@@ -3416,7 +3416,7 @@
 
     ttnWindow.prototype.saveObj = {};
 
-    ttnWindow.prototype.defaults = {
+    ttnWindow.prototype.defaults1 = {
       id: 0,
       number: '0000',
       type: "new"
@@ -3424,13 +3424,26 @@
 
     function ttnWindow(obj, data_row, data, accces, ttn) {
       if (ttn !== null) {
-        this.defaults = $.extend({}, this.defaults, ttn);
+        this.defaults = $.extend({}, this.defaults1, ttn);
         if (this.defaults.number === null) {
           this.defaults.number = '0000';
+        }
+        if (ttn.ttn_build !== void 0) {
+          this.defaults.build = ttn.ttn_build;
+        }
+        if (ttn.ttn_date !== void 0) {
+          this.defaults.date = ttn.ttn_date;
+        }
+        if (this.defaults.ttn_id !== void 0) {
+          this.defaults.id = ttn.ttn_id;
+        }
+        if (ttn.ttn_query !== void 0) {
+          this.defaults.query = ttn.ttn_query;
         }
       } else {
         ttn = {};
       }
+      console.warn(ttn);
       this.access = accces;
       this.options = data_row;
       this.init(obj, data_row, data, accces, ttn);
@@ -5481,7 +5494,7 @@
     }
 
     invoiceRow.prototype.init = function(ttn) {
-      var _this, btn1, btn2, btn3, btn4, button, commentDiv, d, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
+      var _this, btn1, btn2, btn3, btn4, btn5, button, commentDiv, d, div1, div2, div22, div3, div31, doc_type, pr, td, tr;
       _this = this;
       tr = $('<tr/>', {
         id: 'tt_' + this.options.id
@@ -5997,36 +6010,156 @@
         'name': 'Аннулировать',
         'class': '',
         click: function(e) {
-          return echo_message_js("'Аннулировать'");
+          return new sendAjax('repeal_invoice', {
+            id: _this.options.id
+          }, function() {
+            return tr.remove();
+          });
         }
       };
       btn2 = {
         'name': 'Удалить',
         'class': '',
         click: function(e) {
-          return echo_message_js("'Удалить'");
+          var message;
+          if (_this.access === 2) {
+            message = "Счёт будет полностью удален из системы. <br><br>Продолжить?";
+            return new modalConfirm({
+              html: message
+            }, function() {
+              return new sendAjax('delete_to_basket_invoice', {
+                id: _this.options.id
+              }, function() {
+                return tr.remove();
+              });
+            });
+          } else {
+            return new sendAjax('delete_to_basket_invoice', {
+              id: _this.options.id
+            }, function() {
+              return tr.remove();
+            });
+          }
         }
       };
       btn3 = {
         'name': 'Удалить навсегда',
         'class': '',
         click: function(e) {
-          return echo_message_js("'Удалить навсегда'");
+          var message;
+          message = "Счёт и все связанные с ним данные будут полностью удалены из системы.<br> Восстановить информацию по счёту после данной операции будет невозможно!!!<br><br>Продолжить?";
+          return new modalConfirm({
+            html: message
+          }, function() {
+            return new sendAjax('delete_invoice_row', {
+              id: _this.options.id
+            }, function() {
+              return tr.remove();
+            });
+          });
         }
       };
       btn4 = {
-        'name': 'Восстановить',
+        'name': 'Вернуть в работу',
         'class': '',
         click: function(e) {
-          return echo_message_js("'Восстановить'");
+          return new sendAjax("remove_from_closed", {
+            id: _this.options.id
+          }, function() {
+            return tr.remove();
+          });
         }
       };
-      button.push(btn1);
-      button.push(btn2);
-      button.push(btn3);
-      td.menuRightClick({
-        'buttons': button
-      });
+      btn5 = {
+        'name': 'Закрыть счёт',
+        'class': '',
+        click: function(e) {
+          var content, date, wDate;
+          content = $('<div/>').append($('<div/>', {
+            'html': 'Укажите дату закрытия'
+          })).append($('<div/>', {
+            'css': {
+              'padding': '5px',
+              'margin': '10px 0 0 0'
+            }
+          }).append(date = $('<input/>', {
+            'val': getDateNow(),
+            'css': {
+              'padding': '5px'
+            }
+          })));
+          date.datetimepicker({
+            timepicker: false,
+            dayOfWeekStart: 1,
+            onSelectDate: function(ct, $i) {
+              return $i.blur();
+            },
+            onGenerate: function(ct) {
+              $(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+              return $(this).find('.xdsoft_date');
+            },
+            closeOnDateSelect: true,
+            format: 'd.m.Y'
+          }).blur();
+          return wDate = new modalWindow({
+            html: content,
+            title: 'Укажите дату',
+            buttons: [
+              {
+                text: 'Отмена',
+                "class": 'button_yes_or_no no',
+                click: function() {
+                  return $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+                }
+              }, {
+                text: 'OK',
+                "class": 'button_yes_or_no yes',
+                click: function() {
+                  $(wDate.winDiv).dialog('close').dialog('destroy').remove();
+                  return new sendAjax('closed_invoice_row', {
+                    id: _this.options.id,
+                    date: date.val()
+                  }, function(response) {
+                    return tr.remove();
+                  });
+                }
+              }
+            ]
+          }, {
+            single: false
+          });
+        }
+      };
+      this.options.closed = Number(this.options.closed);
+      if (this.access === 1) {
+        if (this.options.closed !== 2 && this.options.closed !== 3) {
+          button.push(btn1);
+        }
+        if (this.options.closed !== 3) {
+          button.push(btn2);
+        }
+        button.push(btn3);
+        if (this.options.closed !== 0) {
+          button.push(btn4);
+        }
+        if (this.options.closed !== 1) {
+          button.push(btn5);
+        }
+      }
+      if (this.access === 2) {
+        if (this.options.closed !== 2 && this.options.closed !== 3) {
+          button.push(btn1);
+        }
+        if (this.options.closed !== 3) {
+          button.push(btn2);
+        }
+      }
+      console.log(this.options.closed);
+      if (button.length > 0) {
+        td.menuRightClick({
+          'buttons': button
+        });
+      }
       tr.append(td);
       td = $('<td/>');
       tr.append(td);
