@@ -1,123 +1,121 @@
 <?php
-class Client extends aplStdAJAXMethod{	
-	#################################
-	###         СВОЙСТВА          ###
-	#################################
-	// содержит название и пути к изображениям для каждого типа контактных данных
-	static $array_img = array('email'=>'<img src="skins/images/img_design/social_icon1.png" >','skype' => '<img src="skins/images/img_design/social_icon2.png" >','isq' => '<img src="skins/images/img_design/social_icon3.png" >','twitter' => '<img src="skins/images/img_design/social_icon4.png" >','fb' => '<img src="skins/images/img_design/social_icon5.png" >',
-'vk' => '<img src="skins/images/img_design/social_icon6.png" >','other' => '<img src="skins/images/img_design/social_icon7.png" >');
+
+/**
+ * Class Client
+ *
+ * @author  	Alexey Kapitonov
+ * @version 	10:21 09.02.2016
+ */
+class Client extends aplStdAJAXMethod{
+
+	/**
+	 * типы контактных данных
+	 *
+	 * @var array
+	 */
+	static $array_img = array(
+		'email'		=>	'<img src="skins/images/img_design/social_icon1.png" >',
+		'skype' 	=> 	'<img src="skins/images/img_design/social_icon2.png" >',
+		'isq' 		=> 	'<img src="skins/images/img_design/social_icon3.png" >',
+		'twitter' 	=> 	'<img src="skins/images/img_design/social_icon4.png" >',
+		'fb' 		=> 	'<img src="skins/images/img_design/social_icon5.png" >',
+		'vk' 		=> 	'<img src="skins/images/img_design/social_icon6.png" >',
+		'other' 	=> 	'<img src="skins/images/img_design/social_icon7.png" >'
+	);
 
 	#################################
 	###          МЕТОДЫ           ###
 	#################################
 	/*
-	__construct($id) 
-	(id клиента , массив)
-	// получает основные данные о клиенте 
-	
-	public function create($array_in)
-	(массив с ключами в виде названий колонок основной таблицы клиентов)
-	// создаёт клиента
 
 
-	static function delete($id)
-	(id клиента)
-	// удалить клиента и всё, что с ним связано
-	// возвращает строку сообщене об успешном удалении
-	
+		get_contact_info_arr($tbl,$type,$parent_id)
+		(имя константы с названием таблицы, фильтр по типу (если не указан выводит все),
+		id строки родителя из той таблицы по которой выполняется поиск)
+		// получаем контактные данные только по клиенту
 
-	get_addres($id)  
-	(id клиента , массив)
-	//получает адрес доставки и фактический адрес клиента
-	
-	get_requisites($client_id) 
-	(id клиента)
-	// получает массив реквизитов 
+		get_contats_info_all($type, $client_id)
+		(фильтр по типу (если не указан выводит все),
+		id строки родителя из той таблицы по которой выполняется поиск)
+		// получаем контактные данные по клиенту и его контактным лицам
 
-	get_contact_info_arr($tbl,$type,$parent_id)
-	(имя константы с названием таблицы, фильтр по типу (если не указан выводит все), 
-	id строки родителя из той таблицы по которой выполняется поиск)
-	// получаем контактные данные только по клиенту
-	
-	get_contats_info_all($type, $client_id)
-	(фильтр по типу (если не указан выводит все), 
-	id строки родителя из той таблицы по которой выполняется поиск)
-	// получаем контактные данные по клиенту и его контактным лицам
-	
-	requisites($id)
-	(id клиента) int
-	// получаем массив реквизитов
-	
-	cont_faces($id)
-	(id клиента) int
-	//получаем данные о контактных дицах компании
+		requisites($id)
+		(id клиента) int
+		// получаем массив реквизитов
 
-	get_relate_managers($id)
-	(id клиента)
-	// получаем кураторов клиента в массиве
-	
-	private function get_manager_info_by_id($manager_id)
-	//Получение данных о Менеджере по id
-	//возвращает одномерный массив
+		cont_faces($id)
+		(id клиента) int
+		//получаем данные о контактных дицах компании
 
-	function cor_data_for_SQL($data)
-	//защита от sql инъекций
-	
-	######################################################
-	###   НЕ УНИФИЦИРОВАННЫЕ (УЗКОНАПРАВЛЕННЫЕ) МЕТОДЫ ###
-	######################################################
+		get_relate_managers($id)
+		(id клиента)
+		// получаем кураторов клиента в массиве
 
-	get_contact_row($contact_company, $type,$array_dop_contacts_img) 
-	(массив контактов,строка тип, массив с изображениями)
-	// вывод доп контактов в табличном виде,
-	
-	get__clients_persons_for_requisites($type)
-	(id уже выбранной строки, по умолчанию необходимо посылать 0)
-	// отдает список <option> с названиями занесенных в базу должностей сотрудников для реквизитов
-	
-	edit_requsits_show_person($requisites_id)
-	(id реквизита)
-	// лица (контрагенты) имеющие право подписи  для реквизитов в массиве
+		private function get_manager_info_by_id($manager_id)
+		//Получение данных о Менеджере по id
+		//возвращает одномерный массив
 
-	edit_requsits_show_person_all($arr,$client_id)
-	(массив персон имеющих право подписи, id клиента)
-	// выводит html форму редактирования персон имеющих право подписи
+		function cor_data_for_SQL($data)
+		//защита от sql инъекций
 
-	get_relate_managers($client_id)
-	(id клиента)
-	// получаем кураторов клиента 
-	
-	get_ralate_manager_names($client_id)
-	(id клиента)
-	// получаем кураторов клиента через запятую
+		######################################################
+		###   НЕ УНИФИЦИРОВАННЫЕ (УЗКОНАПРАВЛЕННЫЕ) МЕТОДЫ ###
+		######################################################
 
-	get_reiting($id,$rate)
-	(id клиента, число рейтинга от 0-5)
-	// вывод html рейтинга
-	
-	get_contact_info($tbl,$parent_id)
-	(константа таблицы, id строки родителя')
-	// выовд контактных данных в html
+		get_contact_row($contact_company, $type,$array_dop_contacts_img)
+		(массив контактов,строка тип, массив с изображениями)
+		// вывод доп контактов в табличном виде,
+
+		get__clients_persons_for_requisites($type)
+		(id уже выбранной строки, по умолчанию необходимо посылать 0)
+		// отдает список <option> с названиями занесенных в базу должностей сотрудников для реквизитов
+
+		edit_requsits_show_person($requisites_id)
+		(id реквизита)
+		// лица (контрагенты) имеющие право подписи  для реквизитов в массиве
+
+		edit_requsits_show_person_all($arr,$client_id)
+		(массив персон имеющих право подписи, id клиента)
+		// выводит html форму редактирования персон имеющих право подписи
+
+		get_relate_managers($client_id)
+		(id клиента)
+		// получаем кураторов клиента
+
+		get_ralate_manager_names($client_id)
+		(id клиента)
+		// получаем кураторов клиента через запятую
+
+		get_reiting($id,$rate)
+		(id клиента, число рейтинга от 0-5)
+		// вывод html рейтинга
+
+		get_contact_info($tbl,$parent_id)
+		(константа таблицы, id строки родителя')
+		// выовд контактных данных в html
 
 	*/
 
-	public $user_access = 0;
+	public  $user_access = 0;
 	private $user_id = 0;
 	
-	
+	/**
+	 * получает основные данные о клиенте
+	 */
 	public function __construct($id = 0 ) {
 		// подключение к базе
 		$this->db();
 
-		$this->user_id = isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0;
-		$this->user_access = $this->get_user_access_Database_Int($this->user_id);
+		$this->setUserId(isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0);
+
+		$this->setUserAccess($this->get_user_access_Database_Int($this->user_id));
 
 
 		## данные POST
 		if(isset($_POST['AJAX'])){
 			// получаем данные пользователя
 			$User = $this->getUserDatabase($this->user_id);
-			
+
 			$this->user_last_name = $User['last_name'];
 			$this->user_name = $User['name'];
 
@@ -128,416 +126,405 @@ class Client extends aplStdAJAXMethod{
 		if(isset($_GET['AJAX'])){
 			// получаем данные пользователя
 			$User = $this->getUserDatabase($this->user_id);
-			
+
 			$this->user_last_name = $User['last_name'];
 			$this->user_name = $User['name'];
 
 			$this->_AJAX_($_GET['AJAX']);
 		}
 
-
 		if($id > 0){
 			$this->get_object($id);
 		}
-
-
 	}
 
-	// стандартный AJAX обработчик
-	// protected function _AJAX_($name){
-	// 	$method_AJAX = $name.'_AJAX';
-	// 	// если в этом классе существует искомый метод для AJAX - выполняем его и выходим
-	// 	if(method_exists($this, $method_AJAX)){
-	// 		$this->$method_AJAX();
-	// 		exit;
-	// 	}					
-	// }
+	/**
+	 * @param int $user_access
+	 * @return Client
+	 */
+	public function setUserAccess($user_access)
+	{
+		$this->user_access = $user_access;
+		return $this;
+	}
 
-	//////////////////////////
-	//	AJAX
-	//////////////////////////
-		/*
-			ВНИМАНИЕ !!!!
-			если в конце _AJAX метода стоит exit, то метод не работает со стандартным ответчиком
-			и для того чтобы туда передать какие-либо доп. функции JS нужно переписывать JS приёмник
-		*/
+	/**
+	 * @param int $user_id
+	 * @return Client
+	 */
+	public function setUserId($user_id)
+	{
+		$this->user_id = $user_id;
+		return $this;
+	}
 
-		/**
-		 *	апдейт должностей в реквизитах
-		 *
-		 *	@author  	Алексей Капитонов
-		 *	@version 	12:23 28.01.2016
-		 */
-		/*
-		protected function update_requisits_tbl_AJAX(){
-			// скрипт отработан и более не нужен
-			exit;
 
-			global $mysqli;
-			$query = "SELECT * FROM `".CLIENT_REQUISITES_MANAGMENT_FACES_TBL."`";
-			$requesit = array();
-	        
-	        $result = $this->mysqli->query($query) or die($this->mysqli->error);
-	        if ($result->num_rows > 0) {
-	            while ($row = $result->fetch_assoc()) {
-	                $requesit[$row['id']] = $row;
-	            }
-	        }
+	/**
+	 * окно просмотра реквизитов
+	 */
+	protected function show_requesit_AJAX() {
+		$requesit = self::get_requesit($this->mysqli, (int)$_POST['id']);
+		ob_start();
+		include ('./skins/tpl/clients/client_folder/client_card/show_requsits.tpl');
+		$html = ob_get_contents();
+		ob_get_clean();
 
-	        $get__clients_persons_arr = $this->get__clients_persons();
+		$options['width'] = 1200;
+		$this->responseClass->addSimpleWindow($html,$_POST['title'],$options);
+	}
 
-	        $query = ''; $i = 0;
-	        foreach ($requesit as $key => $value) {
-	        	if($i >= 20){
-	        		$result = $mysqli->multi_query($query) or die($mysqli->error);	
-	        		
-	        		echo "Скопировано $i строк<br>";
-	        		$query = ''; $i = 0;
-	        	}
+	/**
+	 * @param $mysqli
+	 * @param $id
+	 * @return array
+     */
+	static function get_requesit($mysqli, $id){
+		$query = "SELECT * FROM `" . CLIENT_REQUISITES_TBL . "` WHERE `id` =?";
 
-	        	if(isset($get__clients_persons_arr[$value['post_id']])){
-		        	$query = "UPDATE `" . CLIENT_REQUISITES_MANAGMENT_FACES_TBL . "` SET  ";
-		        	$query.= "`position` =  '" . $get__clients_persons_arr[$value['post_id']]['position'] . "',";	
-					$query.= "`position_in_padeg` =  '" . $get__clients_persons_arr[$value['post_id']]['position_in_padeg'] . "'";
-					$query.= " WHERE id = '".$key."'; ";
-					//$i++;
-					$result = $mysqli->query($query) or die($query.'<br>'.$mysqli->error);	
-				}
-	        }
-	        echo "<strong>Скрипт завершён!!!</strong>";
+		$stmt = $mysqli->prepare($query) or die($mysqli->error);
+		$stmt->bind_param('i', $id) or die($mysqli->error);
+		$stmt->execute() or die($mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				return $row;
+			}
 		}
-		*/
+		return [];
+	}
 
-		// окно просмотра реквизитов
-		protected function show_requesit_AJAX() {
-			$requesit = self::get_requesit($this->mysqli, (int)$_POST['id']);
-	        ob_start();
-		    include ('./skins/tpl/clients/client_folder/client_card/show_requsits.tpl');
-		    $html = ob_get_contents();
-		    ob_get_clean();
+	/**
+	 *	получить окно со списком реквизитов
+	 *
+	 */
+	protected function get_requisites_AJAX(){
+		if(!isset($_GET['client_id'])){
+			$html = 'Не указан ID клиента.';
+			$this->responseClass->addMessage($html,'error_message');
+			return;
+		}
 
-	        $options['width'] = 1200;
-			$this->responseClass->addSimpleWindow($html,$_POST['title'],$options);	        
+		// получаем реквизиты
+		$query = "SELECT * FROM `".CLIENT_REQUISITES_TBL."` ";
+		$query .= " WHERE client_id =?";
+
+
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('i', $_GET['client_id']) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
+	    $requisites = array();
+
+	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+	    if ($result->num_rows > 0) {
+	        while ($row = $result->fetch_assoc()) {
+	            $requisites[] = $row;
+	        }
 	    }
 
-		static function get_requesit($mysqli,$id){
+	    $html = '';
+	    $html .= '<style type="text/css">#requesites_form{}#requesites_form table tr td:nth-of-type(2){min-width: 50px;text-align: right;}#requesites_form table tr td:nth-of-type(2) img{ margin: 0 0 0 10px; border: 1px solid #fff; padding: 1px 7px}#requesites_form table tr td:nth-of-type(2) img:hover{ border:1px solid #DBDBDB;}</style>';
+	    $html .= '<div id="requesites_form">';
+		$html .= '<form>';
+		$html .= '<table>';
 
-			$query = "SELECT * FROM `" . CLIENT_REQUISITES_TBL . "` WHERE `id` = '" .(int)$id . "'";
-			$requesit = array();
 
-			$result = $mysqli->query($query) or die($mysqli->error);
-			if ($result->num_rows > 0) {
-				while ($row = $result->fetch_assoc()) {
-					$requesit = $row;
+		$edit_buttons = ($this->user_access == 1 || $this->user_access == 5)?'':' style="display:none;"';
+		$edit_buttons_all = (!isset($_POST['no_edit']))?'':' style="display:none;"';
+
+			if (count($requisites)>0) {
+				foreach ($requisites as $key => $value) {
+					$html .= "<tr>
+							<td>
+							".++$key.". <a class=\"show_requesit\" href=\"#\" data-id=\"".$value['id']."\" title=\"".$value['company']."\">".$value['company']."</a>
+							</td>
+							<td ".$edit_buttons_all.">";
+							if ($this->user_access != '2'){
+								$html .= "<img title=\"Редактировать реквизиты\" class=\"edit_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/edit.png\" >";
+							}
+							$html .="<img title=\"Удалить реквизиты\" class=\"delete_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/delete.png\" ".$edit_buttons.">
+							</td>
+						</tr>";
 				}
 			}
-			return $requesit;
+		$html .= '</table>';
+		$html .= '</form>';
+		$html .= '</div>';
+		if(!isset($_POST['no_edit'])){
+			// выводим новое окно с кнопкой добавить
+			$option['html'] = $html;
+			$option['title'] = 'Реквизиты';
+			$this->responseClass->addResponseFunction('get_requisites_window',$option);
+		}else{
+			// стандартное окно с кнопкой "Закрыть"
+			$this->responseClass->addSimpleWindow($html,'Реквизиты');
 		}
+	}
 
-	    /**
-	     *	получить окно со списком реквизитов
-	     *
-	     *	@author  	Alexey Kapitonov
-	     *	@version 	10:21 09.02.2016
-	     */
-	    protected function get_requisites_AJAX(){
-	    	if(!isset($_GET['client_id'])){
-	    		$html = 'Не указан ID клиента.';
-				$this->responseClass->addMessage($html,'error_message');
-				return;
+
+	/**
+	 *	изменения рейтинга клиента
+     */
+	protected function update_reiting_cont_face_AJAX() {
+		$query = "UPDATE  `" . CLIENTS_TBL . "`";
+		$query .= " SET  `rate` =? ";
+		$query .= " WHERE  `id` =? ";
+
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('si',$_POST['rate'], $_POST['id']) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
+
+		$this->responseClass->addMessage('Рейтинг успешно обнавлён. Спасибо.','successful_message',1000);
+	}
+
+	/**
+	 * выбор контактного лица по умолчанию
+	 */
+	protected function check_the_main_contact_face_AJAX(){
+		$query = "UPDATE  `" . RELATE_CLIENT_MANAGER_TBL . "`";
+		$query .= " SET  `cont_faces_relation_id` =? ";
+		$query .= " WHERE  `id` =? ";
+
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('ii',$_POST['contact_face_id'], $_POST['relate_id']) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
+		$this->responseClass->addMessage("Контактное лицо по умолчанию сохранено.",'successful_message',1000);
+	}
+
+	/**
+	 * окно заведения новых реквизитов
+	 */
+	protected function create_requesit_AJAX() {
+	    include ('./skins/tpl/clients/client_folder/client_card/new_requsits.tpl');
+	    exit;
+	}
+
+	protected function get_manager_lis_for_curator_AJAX() {
+		$query = "SELECT * FROM ".MANAGERS_TBL." ORDER BY  `name` ASC ";
+		$requesit = array();
+	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+	    if ($result->num_rows > 0) {
+	        while ($row = $result->fetch_assoc()) {
+	            $managers[] = $row;
+	        }
+	    }
+	    $num_rows = floor(count($managers)/3);
+	    $client_id = $_GET['client_id'];
+	    //получаем список менеджеров прикреплённых к клиенту
+	    $curators_arr = Client::get_relate_managers($client_id);
+
+	    $num = 0;
+	    $html = '';
+	    foreach ($managers as $key => $value) {
+	    	if(trim($value['name'])!="" || trim($value['last_name'])!=""){
+	    	// перебираем всех менеджеров
+	    	// если менеджер прикреплён добавляем ему класс enabled
+	    	$enable = '';
+	    	foreach($curators_arr as $k => $v){
+	    		if($v['id']==$value['id']){
+	    			$enable = 'enabled';
+	    		}
 	    	}
-	    	// получаем реквизиты
-	    	$query = "SELECT * FROM `".CLIENT_REQUISITES_TBL."` "; 
-	    	// $query .= " INNER JOIN `".CLIENTS_TBL."` ON `".CLIENTS_TBL."`.`id` = `".CLIENT_REQUISITES_TBL."`.`client_id` ";
-	    	$query .= " WHERE client_id = '".$_GET['client_id']."'";
-	        $requisites = array();
-	        
-	        $result = $this->mysqli->query($query) or die($this->mysqli->error);
-	        if ($result->num_rows > 0) {
-	            while ($row = $result->fetch_assoc()) {
-	                $requisites[] = $row;
-	            }
+
+	    	$str = '<span data-id="'.$value['id'].'" class="chose_curators '.$enable.'">'.$value['name'].' '.$value['last_name'].'</span>';
+
+	        if($num==0){
+	        	$str = '<div class="column_chose_window">'.$str;
+	        }else if($num==$num_rows){
+	        	$str = $str.'</div>';
+	        	$num=-1;
 	        }
+	          $html .= $str;
 
-	        $html = '';
-	        $html .= '<style type="text/css">#requesites_form{}#requesites_form table tr td:nth-of-type(2){min-width: 50px;text-align: right;}#requesites_form table tr td:nth-of-type(2) img{ margin: 0 0 0 10px; border: 1px solid #fff; padding: 1px 7px}#requesites_form table tr td:nth-of-type(2) img:hover{ border:1px solid #DBDBDB;}</style>';
-	        $html .= '<div id="requesites_form">';
-			$html .= '<form>';
-			$html .= '<table>';
-
-
-			$edit_buttons = ($this->user_access == 1 || $this->user_access == 5)?'':' style="display:none;"';
-			$edit_buttons_all = (!isset($_POST['no_edit']))?'':' style="display:none;"';
-
-				if (count($requisites)>0) {
-					foreach ($requisites as $key => $value) {
-						$html .= "<tr>
-								<td>
-								".++$key.". <a class=\"show_requesit\" href=\"#\" data-id=\"".$value['id']."\" title=\"".$value['company']."\">".$value['company']."</a>
-								</td>
-								<td ".$edit_buttons_all.">";
-								if ($this->user_access != '2'){
-									$html .= "<img title=\"Редактировать реквизиты\" class=\"edit_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/edit.png\" >";
-								}
-								$html .="<img title=\"Удалить реквизиты\" class=\"delete_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/delete.png\" ".$edit_buttons.">
-								</td>
-							</tr>";
-					}
-				}
-			$html .= '</table>';
-			$html .= '</form>';
-			$html .= '</div>';
-			if(!isset($_POST['no_edit'])){
-				// выводим новое окно с кнопкой добавить
-				$option['html'] = $html;
-				$option['title'] = 'Реквизиты';
-				$this->responseClass->addResponseFunction('get_requisites_window',$option);	
-			}else{
-				// стандартное окно с кнопкой "Закрыть"
-				$this->responseClass->addSimpleWindow($html,'Реквизиты');
-			}
-			
-		}
-
-	    // изменения рейтинга клиента
-	    protected function update_reiting_cont_face_AJAX() {
-	    	$query = "UPDATE  `" . CLIENTS_TBL . "` SET  `rate` =  '" . $_POST['rate'] . "' WHERE  `id` = '" . $_POST['id'] . "';";
-	        $result = $this->mysqli->query($query) or die($this->mysqli->error);
-	        // сообщение
-	        $html = 'Рейтинг успешно обнавлён. Спасибо.';
-			$this->responseClass->addMessage($html,'successful_message');	        
+	    	$num++;
+	    	}
 	    }
-	    protected function check_the_main_contact_face_AJAX(){
-	    	$query  = "UPDATE  `" . RELATE_CLIENT_MANAGER_TBL . "` ";
-	    	$query .= "SET  `cont_faces_relation_id` =  '" . $_POST['contact_face_id'] . "' ";
-	    	$query .= "WHERE  `id` = '" . $_POST['relate_id'] . "';";
+	    echo $html;
+		exit;
+	}
 
-	        $result = $this->mysqli->query($query);// or die($this->mysqli->error);
-	        if(!$result){
-	        	$html = 'Ошибка записи';
-				$this->responseClass->addMessage($html,'error_message');		
-	        }else{
-	        	$html = 'Контактное лицо по умолчанию сохранено.';
-				$this->responseClass->addMessage($html,'successful_message');		
+	/**
+	 * окно редактирования реквизитов
+	 */
+	protected function edit_requesit_AJAX() {
+	    $query = "SELECT * FROM `" . CLIENT_REQUISITES_TBL . "` WHERE `id` = '" . $_POST['id'] . "'";
+	    $requesit = array();
+
+	    // echo $query;exit;
+	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+	    if ($result->num_rows > 0) {
+	        while ($row = $result->fetch_assoc()) {
+	            $requesit = $row;
 	        }
-	    	
-		}
-
-	    // окно заведения новых реквизитов
-	    protected function create_requesit_AJAX() {        
-	        include ('./skins/tpl/clients/client_folder/client_card/new_requsits.tpl');	        
-	        exit;
 	    }
 
-	   	protected function get_manager_lis_for_curator_AJAX() { 
-	    	$query = "SELECT * FROM ".MANAGERS_TBL." ORDER BY  `name` ASC ";
-	    	$requesit = array();
-	        $result = $this->mysqli->query($query) or die($this->mysqli->error);
-	        if ($result->num_rows > 0) {
-	            while ($row = $result->fetch_assoc()) {
-	                $managers[] = $row;
-	            }
-	        }
-	        $num_rows = floor(count($managers)/3);
-	        $client_id = $_GET['client_id'];
-	        //получаем список менеджеров прикреплённых к клиенту
-	        $curators_arr = Client::get_relate_managers($client_id);
-	        
-	        $num = 0;
-	        $html = '';
-	        foreach ($managers as $key => $value) {
-	        	if(trim($value['name'])!="" || trim($value['last_name'])!=""){
-	        	// перебираем всех менеджеров
-	        	// если менеджер прикреплён добавляем ему класс enabled
-	        	$enable = '';
-	        	foreach($curators_arr as $k => $v){
-	        		if($v['id']==$value['id']){
-	        			$enable = 'enabled';
-	        		}
-	        	}
-	        	
-	        	$str = '<span data-id="'.$value['id'].'" class="chose_curators '.$enable.'">'.$value['name'].' '.$value['last_name'].'</span>';
-		        	
-		        if($num==0){
-		        	$str = '<div class="column_chose_window">'.$str;
-		        }else if($num==$num_rows){
-		        	$str = $str.'</div>';
-		        	$num=-1;
-		        }
-		          $html .= $str;
-	        	
-	        	$num++;
-	        	}
-	        }
-	        echo $html;
-	    	exit;
-	    }
+	    // получаем список должностей для персональных данных контактных лиц из реквизитов
+	    //$get__clients_persons_for_requisites = Client::get__clients_persons_for_requisites($client_id);
+	    // получаем контактные лица для реквизитов
+	    $client_id = $_GET['client_id'];
+	    include ('./skins/tpl/clients/client_folder/client_card/edit_requsits.tpl');
+	    exit;
+	}
 
-	    // окно редактирования реквизитов
-	    protected function edit_requesit_AJAX() {
-	        $query = "SELECT * FROM `" . CLIENT_REQUISITES_TBL . "` WHERE `id` = '" . $_POST['id'] . "'";
-	        $requesit = array();
-	        
-	        // echo $query;exit;
-	        $result = $this->mysqli->query($query) or die($this->mysqli->error);
-	        if ($result->num_rows > 0) {
-	            while ($row = $result->fetch_assoc()) {
-	                $requesit = $row;
-	            }
-	        }
-	        
-	        // получаем список должностей для персональных данных контактных лиц из реквизитов
-	        //$get__clients_persons_for_requisites = Client::get__clients_persons_for_requisites($client_id);
-	        // получаем контактные лица для реквизитов
-	        $client_id = $_GET['client_id'];
-	        include ('./skins/tpl/clients/client_folder/client_card/edit_requsits.tpl');
-	        exit;
-	    }
+	/**
+	 * окно редактирования имени компании
+	 */
+	protected function getWindowChengeNameCompany_AJAX(){
+		$html = '';
+		$html .= '<form>';
+			$html .= '<input type="text" name="company" onkeyup="$(\'#chenge_name_company\').html($(this).val());" value="'.$_POST['company'].'">';
+			$html .= '<input type="hidden" name="AJAX" value="chenge_name_company">';
+			$html .= '<input type="hidden" name="id" value="'.$_POST['id'].'">';
+			$html .= '<input type="hidden" name="tbl" value="'.$_POST['tbl'].'">';
+		$html .= '</form>';
 
-	    // окно редактирования имени компании
-	    protected function getWindowChengeNameCompany_AJAX(){
-	    	$html = '';
-	    	$html .= '<form>';
-	    		$html .= '<input type="text" name="company" onkeyup="$(\'#chenge_name_company\').html($(this).val());" value="'.$_POST['company'].'">';
-		    	$html .= '<input type="hidden" name="AJAX" value="chenge_name_company">';
-		    	$html .= '<input type="hidden" name="id" value="'.$_POST['id'].'">';
-		    	$html .= '<input type="hidden" name="tbl" value="'.$_POST['tbl'].'">';
-	    	$html .= '</form>';
-	    	
-	    	// добавляем окно
-			$this->responseClass->addPostWindow($html,'Редактировать название',array('width' => '1000'));
-	    }
+		// добавляем окно
+		$this->responseClass->addPostWindow($html,'Редактировать название',array('width' => '1000'));
+	}
 
-	    // сохранение данных их формы редактирования имени компании
-	    protected function chenge_name_company_AJAX() {
-			$tbl = $_POST['tbl'];
-			$client_id = $_GET['client_id'];
-			$company = $_POST['company'];
-			$id_row = $_POST['id'];
-			$tbl = "CLIENTS_TBL";
-			//-- START -- //  логирование
-			$client_name_i = Client::get_client_name($client_id); // получаем название клиента
+	/**
+	 * сохранение данных их формы редактирования имени компании
+	 */
+	protected function chenge_name_company_AJAX() {
+		$tbl = $_POST['tbl'];
+		$client_id = $_GET['client_id'];
+		$company = $_POST['company'];
+		$id_row = $_POST['id'];
+		$tbl = "CLIENTS_TBL";
+		//-- START -- //  логирование
+		$client_name_i = Client::get_client_name($client_id); // получаем название клиента
 
 
 
-			$user_n = $this->user_name.' '.$this->user_last_name;
-			$text_history = $user_n.' изменил название клиента ';
-			Client::history_edit_type($client_id, $this->user_id, $text_history ,'delete_cont_face',$tbl,$_POST,$id_row);
-			//-- END -- //  
+		$user_n = $this->user_name.' '.$this->user_last_name;
+		$text_history = $user_n.' изменил название клиента ';
+		Client::history_edit_type($client_id, $this->user_id, $text_history ,'delete_cont_face',$tbl,$_POST,$id_row);
+		//-- END -- //
 
 
-			//тут обновляем название компании
-			
-			$query = "UPDATE  `" . constant($tbl) . "` SET  `company` =  '" . $company . "' WHERE  `id` ='" . $id_row . "'; ";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			
-			$html = 'Имя клиента изменено на « '.$company.' »';
-			$this->responseClass->addMessage($html,'successful_message');
-		}
+		//тут обновляем название компании
+
+		$query = "UPDATE  `" . constant($tbl) . "` SET  `company` =  '" . $company . "' WHERE  `id` ='" . $id_row . "'; ";
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		$html = 'Имя клиента изменено на « '.$company.' »';
+		$this->responseClass->addMessage($html,'successful_message');
+	}
 				    
-		protected function get_adres_AJAX() {
-		    $id_row = $_POST['id_row'];
-		    $tbl = "CLIENT_ADRES_TBL";
-		    $query = "SELECT * FROM " . constant($tbl) . " WHERE `id` = '" . $id_row . "'";
-		    $result = $this->mysqli->query($query) or die($this->mysqli->error);
-		    if ($result->num_rows > 0) {
-		        while ($row = $result->fetch_assoc()) {
-		            $arr_adres = $row;
-		        }
-		    }
-		    extract($arr_adres, EXTR_PREFIX_SAME, "wddx");			        
-		    //получаем контент для окна
-		    ob_start();
-		    include ('./skins/tpl/clients/client_folder/client_card/edit_adres.tpl');
-		    $content = ob_get_contents();
-		    ob_get_clean();
-		    echo $content;
-		    exit;
-		}
+	protected function get_adres_AJAX() {
+	    $id_row = $_POST['id_row'];
+	    $tbl = "CLIENT_ADRES_TBL";
+	    $query = "SELECT * FROM " . constant($tbl) . " WHERE `id` = '" . $id_row . "'";
+	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+	    if ($result->num_rows > 0) {
+	        while ($row = $result->fetch_assoc()) {
+	            $arr_adres = $row;
+	        }
+	    }
+	    extract($arr_adres, EXTR_PREFIX_SAME, "wddx");
+	    //получаем контент для окна
+	    ob_start();
+	    include ('./skins/tpl/clients/client_folder/client_card/edit_adres.tpl');
+	    $content = ob_get_contents();
+	    ob_get_clean();
+	    echo $content;
+	    exit;
+	}
 				    
-		protected function edit_adress_row_AJAX() {
-		    $id_row = $_POST['id'];
-		    $tbl = "CLIENT_ADRES_TBL";
-		    //-- START -- //  логирование
-		    $client_id = $_GET['client_id'];
-		    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
-		    $user_n = $this->user_name.' '.$this->user_last_name;
-		    $text_history = $user_n.' отредактировал адрес клиента '.$client_name_i.' ';
-		    Client::history_edit_type($client_id, $this->user_id, $text_history ,'delete_cont_face',$tbl,$_POST,$id_row);
-		    //-- END -- //  
-		    //-- START --// сохранение данных
-		    
-		    $query = "UPDATE  `" . constant($_POST['tbl']) . "` SET  
-			`city` =  '" . $_POST['city'] . "',
-			`street` =  '" . $_POST['street'] . "',
-			`house_number` =  '" . $_POST['house_number'] . "', 
-			`korpus` =  '" . $_POST['korpus'] . "',
-			`office` =  '" . $_POST['office'] . "',
-			`liter` =  '" . $_POST['liter'] . "', 
-			`bilding` =  '" . $_POST['bilding'] . "',
-			`postal_code` =  '" . $_POST['postal_code'] . "',
-			`note` =  '" . $_POST['note'] . "' WHERE  `id` ='" . $_POST['id'] . "';";
-				    $result = $this->mysqli->query($query) or die($this->mysqli->error);
-			echo '{
-			       "response":"1",
-			       "text":"Данные сохранены"
-			}';
-		    //-- END --// сохранение данных
-		    exit;
-		}
-		protected function delete_adress_row_AJAX() {
-		    $id_row = $_POST['id_row'];
-		    $tbl = "CLIENT_ADRES_TBL";
-		    $client_id = $_GET['client_id'];
-		    //-- START -- //  логирование
-		    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
-		    $user_n = $this->user_name.' '.$this->user_last_name;
-		    $text_history = $user_n.' удалил(а) адрес клиента '.$client_name_i.' ';
-		    Client::history_delete_type($client_id,$this->user_id, $text_history ,'delete_cont_face',$tbl,$_POST,$id_row);
-		    //-- END -- //  
+	protected function edit_adress_row_AJAX() {
+	    $id_row = $_POST['id'];
+	    $tbl = "CLIENT_ADRES_TBL";
+	    //-- START -- //  логирование
+	    $client_id = $_GET['client_id'];
+	    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
+	    $user_n = $this->user_name.' '.$this->user_last_name;
+	    $text_history = $user_n.' отредактировал адрес клиента '.$client_name_i.' ';
+	    Client::history_edit_type($client_id, $this->user_id, $text_history ,'delete_cont_face',$tbl,$_POST,$id_row);
+	    //-- END -- //
+	    //-- START --// сохранение данных
 
-		    $query = "DELETE FROM " . constant($tbl) . " WHERE `id`= '" . $id_row . "'";
-		    $result = $this->mysqli->query($query) or die($this->mysqli->error);
-		    
-			$html = 'Данные успешно удалены';
-			$this->responseClass->addMessage($html,'successful_message');
-		    // exit;
-		}
-		protected function add_new_adress_row_AJAX() {
-		    //-- START -- //  логирование
-		    $client_id = $_GET['client_id'];
-		    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
-		    $user_n = $this->user_name.' '.$this->user_last_name;
-		    $text_history = $user_n.' создал новый адрес для клиента '.$client_name_i.' ';
-		    Client::history($this->user_id, $text_history ,'add_new_adress_row',$_GET['client_id']);
-		    //-- END -- //  логирование
-		    $tbl = 'CLIENT_ADRES_TBL';
-		    $query = "";
-		    $adres_type = (isset($_POST['adress_type']) && $_POST['adress_type'] != "") ? $_POST['adress_type'] : 'office';
-		    $query = "INSERT INTO `" . constant($tbl) . "` SET 
-				`parent_id` = '" . addslashes($_POST['parent_id']) . "',
-				`table_name` = '" . addslashes($_POST['tbl']) . "',
-				`adress_type` = '" . addslashes($adres_type) . "',
-				`city` = '" . addslashes($_POST['city']) . "',
-				`street` = '" . addslashes($_POST['street']) . "',
-				`house_number` = '" . addslashes($_POST['house_number']) . "',
-				`korpus` = '" . addslashes($_POST['korpus']) . "',
-				`office` = '" . addslashes($_POST['office']) . "',
-				`liter` = '" . addslashes($_POST['liter']) . "',
-				`bilding` = '" . addslashes($_POST['bilding']) . "',
-				`postal_code` = '" . addslashes($_POST['postal_code']) . "',
-				`note` = '" . addslashes($_POST['note']) . "'
-				;";
-				        
-		    $result = $this->mysqli->query($query) or die($this->mysqli->error);
-		    // echo $this->mysqli->insert_id;
+	    $query = "UPDATE  `" . constant($_POST['tbl']) . "` SET  
+		`city` =  '" . $_POST['city'] . "',
+		`street` =  '" . $_POST['street'] . "',
+		`house_number` =  '" . $_POST['house_number'] . "', 
+		`korpus` =  '" . $_POST['korpus'] . "',
+		`office` =  '" . $_POST['office'] . "',
+		`liter` =  '" . $_POST['liter'] . "', 
+		`bilding` =  '" . $_POST['bilding'] . "',
+		`postal_code` =  '" . $_POST['postal_code'] . "',
+		`note` =  '" . $_POST['note'] . "' WHERE  `id` ='" . $_POST['id'] . "';";
+			    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+		echo '{
+		       "response":"1",
+		       "text":"Данные сохранены"
+		}';
+	    exit;
+	}
 
-		    $html = 'Данные добавлены';
-			$this->responseClass->addMessage($html,'successful_message');
-			// добавляем функцию JS
-			$this->responseClass->addResponseFunction('edit_general_info');
-		    // exit;
-		}
+	protected function delete_adress_row_AJAX() {
+	    $id_row = $_POST['id_row'];
+	    $tbl = "CLIENT_ADRES_TBL";
+	    $client_id = $_GET['client_id'];
+	    //-- START -- //  логирование
+	    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
+	    $user_n = $this->user_name.' '.$this->user_last_name;
+	    $text_history = $user_n.' удалил(а) адрес клиента '.$client_name_i.' ';
+	    Client::history_delete_type($client_id,$this->user_id, $text_history ,'delete_cont_face',$tbl,$_POST,$id_row);
+	    //-- END -- //
+
+	    $query = "DELETE FROM " . constant($tbl) . " WHERE `id`= '" . $id_row . "'";
+	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+		$html = 'Данные успешно удалены';
+		$this->responseClass->addMessage($html,'successful_message');
+	    // exit;
+	}
+
+	protected function add_new_adress_row_AJAX() {
+	    //-- START -- //  логирование
+	    $client_id = $_GET['client_id'];
+	    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
+	    $user_n = $this->user_name.' '.$this->user_last_name;
+	    $text_history = $user_n.' создал новый адрес для клиента '.$client_name_i.' ';
+	    Client::history($this->user_id, $text_history ,'add_new_adress_row',$_GET['client_id']);
+	    //-- END -- //  логирование
+	    $tbl = 'CLIENT_ADRES_TBL';
+	    $query = "";
+	    $adres_type = (isset($_POST['adress_type']) && $_POST['adress_type'] != "") ? $_POST['adress_type'] : 'office';
+	    $query  = "INSERT INTO `" . constant($tbl) . "` SET ";
+		$query .= "`parent_id` = '" . addslashes($_POST['parent_id']) . "'";
+		$query .= ", `table_name` = '" . addslashes($_POST['tbl']) . "'";
+		$query .= ", `adress_type` = '" . addslashes($adres_type) . "'";
+		$query .= ", `city` = '" . addslashes($_POST['city']) . "'";
+		$query .= ", `street` = '" . addslashes($_POST['street']) . "'";
+		$query .= ", `house_number` = '" . addslashes($_POST['house_number']) . "'";
+		$query .= ", `korpus` = '" . addslashes($_POST['korpus']) . "'";
+		$query .= ", `office` = '" . addslashes($_POST['office']) . "'";
+		$query .= ", `liter` = '" . addslashes($_POST['liter']) . "'";
+		$query .= ", `bilding` = '" . addslashes($_POST['bilding']) . "'";
+		$query .= ", `postal_code` = '" . addslashes($_POST['postal_code']) . "'";
+		$query .= ", `note` = '" . addslashes($_POST['note']) . "'";
+
+
+	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+
+	    $html = 'Данные добавлены';
+		$this->responseClass->addMessage($html,'successful_message');
+		// добавляем функцию JS
+		$this->responseClass->addResponseFunction('edit_general_info');
+	    
+	}
 		
 		// окно добавления адреса	    
 		protected function new_adress_row_AJAX() {
@@ -1888,7 +1875,13 @@ class Client extends aplStdAJAXMethod{
 		
 		return;
 	}
-	
+
+	/**
+	 * получает адрес доставки и фактический адрес клиента
+	 *
+	 * @param $id
+	 * @return array
+	 */
 	static function get_addres($id){
 		global $mysqli;
 		$parent_tbl = 'CLIENTS_TBL';
@@ -2047,10 +2040,24 @@ class Client extends aplStdAJAXMethod{
 		}
 		return $array;
 	}
+
+	/**
+	 * получает массив реквизитов
+	 *
+	 * @param $client_id
+	 * @return array
+	 */
 	static function get_requisites($client_id){
 		global $mysqli;
-		$query = "SELECT * FROM `".CLIENT_REQUISITES_TBL."` WHERE `client_id` = '".(int)$client_id."'";
-		$result = $mysqli->query($query) or die($mysqli->error);					
+
+		$query = "SELECT * FROM `".CLIENT_REQUISITES_TBL."` WHERE `client_id` =?";
+
+		$stmt = $mysqli->prepare($query) or die($mysqli->error);
+		$stmt->bind_param('i', $client_id) or die($mysqli->error);
+		$stmt->execute() or die($mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
 		$array = array();
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
@@ -2059,6 +2066,7 @@ class Client extends aplStdAJAXMethod{
 		}
 		return $array;
 	}
+
 	static function fetch_requisites($requisit_id){
 	    // Я ИСПОЛЬЗУЮ ПРИ СОЗДАНИИ СПЕЦИФИКАЦИЙ (АНДРЕЙ)
 		global $mysqli;
@@ -2375,6 +2383,16 @@ class Client extends aplStdAJAXMethod{
 		return 1;
 	}
 
+
+	/**
+	 * удалить клиента и всё, что с ним связано
+	 *
+	 * было отключено, т.к. это маловероятный сценарий
+	 * клиентов мы не удаляем
+	 *
+	 * @param $id
+	 * @return int
+	 */
 	static function delete($id){
 		/*
 		global $mysqli;
@@ -2412,10 +2430,15 @@ class Client extends aplStdAJAXMethod{
 		return 1;	
 		*/	
 		return 1;
-	}	
+	}
 
 
-
+	/**
+	 * создаёт клиента
+	 *
+	 * @param $array_in - массив с ключами в виде названий колонок основной таблицы клиентов
+	 * @return mixed|string
+	 */
 	public function create($array_in){
 		if(empty($array_in))return "не достаточно данных";
 		global $mysqli;
