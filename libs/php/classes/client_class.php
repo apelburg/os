@@ -208,8 +208,7 @@ class Client extends aplStdAJAXMethod{
 
 		// получаем реквизиты
 		$query = "SELECT * FROM `".CLIENT_REQUISITES_TBL."` ";
-		$query .= " WHERE client_id =?";
-
+		$query .= " WHERE `client_id` =?";
 
 		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 		$stmt->bind_param('i', $_GET['client_id']) or die($this->mysqli->error);
@@ -219,7 +218,7 @@ class Client extends aplStdAJAXMethod{
 
 	    $requisites = array();
 
-	    $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
 	    if ($result->num_rows > 0) {
 	        while ($row = $result->fetch_assoc()) {
 	            $requisites[] = $row;
@@ -494,12 +493,14 @@ class Client extends aplStdAJAXMethod{
 	    //-- START -- //  логирование
 	    $client_id = $_GET['client_id'];
 	    $client_name_i = Client::get_client_name($client_id); // получаем название клиента
+
 	    $user_n = $this->user_name.' '.$this->user_last_name;
 	    $text_history = $user_n.' создал новый адрес для клиента '.$client_name_i.' ';
 	    Client::history($this->user_id, $text_history ,'add_new_adress_row',$_GET['client_id']);
 	    //-- END -- //  логирование
+
 	    $tbl = 'CLIENT_ADRES_TBL';
-	    $query = "";
+
 	    $adres_type = (isset($_POST['adress_type']) && $_POST['adress_type'] != "") ? $_POST['adress_type'] : 'office';
 	    $query  = "INSERT INTO `" . constant($tbl) . "` SET ";
 		$query .= "`parent_id` = '" . addslashes($_POST['parent_id']) . "'";

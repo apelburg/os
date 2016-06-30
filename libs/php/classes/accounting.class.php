@@ -172,7 +172,7 @@ class CalculateMoneyBlock extends Accounting{
 			'pension' => 0
 		];
 		# получаем данные по манагеру
-		$this->manager_data = $this->getManager_data($this->manager_id);
+		$this->manager_data = $this->getUserDatabase($this->manager_id);
 		if($this->manager_data){
 			# получаем прибыль
 			$this->get_profit();
@@ -735,7 +735,7 @@ class PaymentBlock extends Accounting{
 			return [];
 		}else{
 			# запрос актуальных данных по ЗП
-			$this->manager_data = $this->getManager_data($this->manager_id);
+			$this->manager_data = $this->getUserDatabase($this->manager_id);
 			# внесение данных в объект
 			$this->oklad = $this->manager_data['salary'];
 			$this->ovans_card = $this->manager_data['avans'];
@@ -757,7 +757,7 @@ class PaymentBlock extends Accounting{
 	 */
 	public  function update_payment_tbl($id = 0){
 		# запрос актуальных данных по ЗП
-		$this->manager_data = $this->getManager_data($this->manager_id);
+		$this->manager_data = $this->getUserDatabase($this->manager_id);
 		# внесение данных в объект
 		$this->oklad = $this->manager_data['salary'];
 		$this->ovans_card = $this->manager_data['avans'];
@@ -1278,61 +1278,9 @@ class Accounting  extends aplStdAJAXMethod
 	}
 
 
-	/**
-	 * удаляет строку из таблицы
-	 * @param table $
-	 * @param $id
-	 */
-	private function delete_row_from_table($table,$id){
-		$query = "DELETE FROM `".$table."` WHERE `id`=?";
-		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-
-		$stmt->bind_param('i',$id) or die($this->mysqli->error);
-		$stmt->execute() or die($this->mysqli->error);
-		$result = $stmt->get_result();
-		$stmt->close();
-	}
-
-	/**
-	 * удаляет набор строк по массиву id
-	 * @param table $
-	 * @param $id
-	 */
-	protected function delete_rows_from_table($table,$ids){
-		if(is_array($ids) && count($ids) > 0){
-			$query = "DELETE FROM `".$table."` WHERE `id` IN ('".implode("','",$ids)."')";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			return true;
-		}
-		return false;
-	}
+	
 
 
-
-	/**
-	 * апдейт старой строки с расчётом начислений
-	 *
-	 * @param $table
-	 * @param array $data
-	 * @param $id
-	 */
-	protected function update__row($table,$data = [],$id){
-		$query = "UPDATE `".$table."` SET ";
-
-		$i = 0;
-		foreach ($data as $key => $val){
-			$query .= ($i>0)?',':'';
-			$query .= " `$key` = '$val'";
-			$i++;
-		}
-
-		$query .= " WHERE `id` =?";
-		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-		$stmt->bind_param('i',$id ) or die($this->mysqli->error);
-		$stmt->execute() or die($this->mysqli->error);
-		$result = $stmt->get_result();
-		$stmt->close();
-	}
 
 	/**
 	 * возвращает массив данных по всей таблице
@@ -1343,7 +1291,7 @@ class Accounting  extends aplStdAJAXMethod
 	 * @return array
 	 */
 	protected function get_all_tbl($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
-		$query = "SELECT *,DATE_FORMAT(`".$table."`.`date`,'%d.%m.%Y') as date FROM `".$table."`";
+		$query = "SELECT *, DATE_FORMAT(`".$table."`.`date`,'%d.%m.%Y') as date FROM `".$table."`";
 		$w = 0;
 		foreach ($where as $key => $ask){
 			$query .= ($w==0)?' WHERE ':' AND ';
@@ -1363,105 +1311,6 @@ class Accounting  extends aplStdAJAXMethod
 		return $rows;
 	}
 
-	/**
-	 * выборка данных по менеджеру
-	 *
-	 * @param $id
-	 * @return array
-	 */
-	protected function getManager_data($id){
-		$arr = $this->getUserArrDatabase([$id]);
-		if(isset($arr[0])){
-			return $arr[0];
-		}else{
-			return [];
-		}
-	}
-
-	/**
-	 * выборка данных из одной таблицы
-	 *
-	 * @param $table
-	 * @param array $where
-	 * @param array $sort
-	 * @return array
-	 */
-	protected function get_all_tbl_simple($table,$where = array(),$sort = array('name'=>'','type'=>"ASC")){
-		$query = "SELECT * FROM `".$table."`";
-
-		$w = 0;
-		foreach ($where as $key => $ask){
-			$query .= ($w==0)?' WHERE ':' AND ';
-			$query .= " `$key`='$ask'";
-			$w++;
-		}
-		if ($sort['name'] != ''){
-			$query .= " ORDER BY `".$table."`.`".$sort['name']."` ".$sort['type'];
-		}
-
-
-		$result = $this->mysqli->query($query) or die($this->mysqli->error);
-		$rows = array();
-		if($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$rows[] = $row;
-			}
-		}
-		return $rows;
-	}
-
-	/**
-	 * обновление одного значения в одной таблице
-	 * @param $table
-	 * @param $id
-	 * @param $key
-	 * @param $val
-	 */
-	private function update_one_val_in_one_row($table,$id,$key,$val){
-		switch ($key){
-			case 'date':
-				$type = 's';
-				break;
-			default:
-				$type = 'd';
-				break;
-		}
-
-		$query = "UPDATE `".$table."` SET ";
-		$query .= " `".addslashes($key)."`=?";
-		$type .= 'i';
-		$query .= " WHERE `id` =?";
-
-		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-		$stmt->bind_param($type,$val, $id) or die($this->mysqli->error);
-		$stmt->execute() or die($this->mysqli->error);
-		$result = $stmt->get_result();
-		$stmt->close();
-	}
-
-
-	/**
-	 * создание пустой строки в базе
-	 * @param $table
-	 * @param array $data
-	 */
-	protected function insert_empty_row($table,$data = array()){
-		$query = "INSERT INTO `".$table."` ";
-		$i = 0;
-		if (count($data)>0){
-			$query .=" SET ";
-		}
-		foreach ($data as $key => $val){
-			$query .= ($i>0)?',':'';
-			$query .= "`$key` = '$val'";
-			$i++;
-		}
-
-		$result = $this->mysqli->query($query) or die($this->mysqli->error);
-
-		$data['id'] = $this->mysqli->insert_id;
-		return $data;
-	}
 
 	/**
 	 * get user access

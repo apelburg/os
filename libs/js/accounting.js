@@ -10,370 +10,12 @@
 
 
 /*
- * возвращяет текущую дату в читабельном формате
+ * прототип объекта данных строки таблицы пенсий
  */
 
 (function() {
-  var accrualsObj, accruals_tbl, billTrPrototipe, calc_price_with_discount, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, credit_tbl_rowObj, cyrill_to_latin, dopCompRow, dopCompRowObj, getDateNow, getDateTomorrow, mainMenuTab, modalConfirm, modalWindow, payments_tbl, payments_tblObj, pensionTrObj, round_money, row, rowCredit, sendAjax, tdEditRow, zpMenRekTrObj,
+  var accrualsObj, accruals_tbl, billTrPrototipe, compRow, createPensionTbl, createZpMenKonTbl, createZpMenRekTbl, create_bill_tbl, credit_tbl, credit_tbl_rowObj, dopCompRow, dopCompRowObj, mainMenuTab, payments_tbl, payments_tblObj, pensionTrObj, row, rowCredit, tdEditRow, zpMenRekTrObj,
     slice = [].slice;
-
-  getDateNow = function() {
-    var d, dd, mm, yy;
-    d = new Date();
-    dd = d.getDate();
-    if (dd < 10) {
-      dd = '0' + dd;
-    }
-    mm = d.getMonth() + 1;
-    if (mm < 10) {
-      mm = '0' + mm;
-    }
-    yy = d.getFullYear();
-    return dd + '.' + mm + '.' + yy;
-  };
-
-
-  /*
-   * возвращяет текущую дату в читабельном формате
-   */
-
-  getDateTomorrow = function() {
-    var d, dd, mm, yy;
-    d = new Date();
-    d.setDate(d.getDate() + 1);
-    dd = d.getDate();
-    if (dd < 10) {
-      dd = '0' + dd;
-    }
-    mm = d.getMonth() + 1;
-    if (mm < 10) {
-      mm = '0' + mm;
-    }
-    yy = d.getFullYear();
-    return dd + '.' + mm + '.' + yy;
-  };
-
-
-  /*
-   * округляет и приводит числа к денежному формату
-   * строку преобразует в число
-   */
-
-  round_money = function(num) {
-    var new_num;
-    num = Number(num);
-    new_num = Math.ceil(num * 100) / 100;
-    return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
-  };
-
-
-  /*
-   * подсчет скидки
-   * @param      price_out - входящая цена
-   * @discount   discount - скидка
-   */
-
-  calc_price_with_discount = function(price_out, discount) {
-    return Number(price_out / 100) * (100 + Number(discount));
-  };
-
-
-  /*
-   * транслитерация
-   */
-
-  cyrill_to_latin = function(text) {
-    var arren, arrru, i, itm, j, len1, reg;
-    arrru = ['Я', 'я', 'Ю', 'ю', 'Ч', 'ч', 'Ш', 'ш', 'Щ', 'щ', 'Ж', 'ж', 'А', 'а', 'Б', 'б', 'В', 'в', 'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ё', 'ё', 'З', 'з', 'И', 'и', 'Й', 'й', 'К', 'к', 'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о', 'П', 'п', 'Р', 'р', 'С', 'с', 'Т', 'т', 'У', 'у', 'Ф', 'ф', 'Х', 'х', 'Ц', 'ц', 'Ы', 'ы', 'Ь', 'ь', 'Ъ', 'ъ', 'Э', 'э', ' '];
-    arren = ['Ya', 'ya', 'Yu', 'yu', 'Ch', 'ch', 'Sh', 'sh', 'Sh', 'sh', 'Zh', 'zh', 'A', 'a', 'B', 'b', 'V', 'v', 'G', 'g', 'D', 'd', 'E', 'e', 'E', 'e', 'Z', 'z', 'I', 'i', 'J', 'j', 'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u', 'F', 'f', 'H', 'h', 'C', 'c', 'Y', 'y', '`', '`', '\'', '\'', 'E', 'e', '_'];
-    for (i = j = 0, len1 = arrru.length; j < len1; i = ++j) {
-      itm = arrru[i];
-      reg = new RegExp(arrru[i], "g");
-      text = text.replace(reg, arren[i]);
-    }
-    return text;
-  };
-
-
-  /*
-   * метод отправки запроса AJAX
-   */
-
-  sendAjax = (function() {
-    sendAjax.prototype.defaults = {
-      AJAX: 'test',
-      options: {}
-    };
-
-    sendAjax.prototype.func = function() {
-      return true;
-    };
-
-    sendAjax.prototype.response = {};
-
-    function sendAjax(ajaxName, options, func) {
-      var opt;
-      if (options == null) {
-        options = {};
-      }
-      if (func == null) {
-        func = function() {
-          return true;
-        };
-      }
-      this.href = window.location.href;
-      if (options.url) {
-        this.href = options.url;
-        options.url = void 0;
-      }
-      opt = {
-        AJAX: ajaxName,
-        options: options
-      };
-      this.func = func;
-      this.options = $.extend({}, this.defaults, opt);
-      this.sendAjax();
-    }
-
-    sendAjax.prototype.sendAjax = function() {
-      var _this, data, k, ref, v;
-      _this = this;
-      data = {
-        AJAX: this.options.AJAX
-      };
-      ref = this.options.options;
-      for (k in ref) {
-        v = ref[k];
-        data[k] = v;
-      }
-      return $.ajax({
-        url: this.href,
-        type: "POST",
-        data: data,
-        dataType: "json",
-        error: function(jqXHR, textStatus, errorThrown) {
-          echo_message_js("AJAX Error: " + textStatus);
-        },
-        success: function(data, textStatus, jqXHR) {
-          _this.response = $.extend({}, _this.response, jqXHR.responseJSON);
-          standard_response_handler(_this.response);
-          return _this.func(_this.response);
-        }
-      });
-    };
-
-    return sendAjax;
-
-  })();
-
-
-  /*
-   * прототип окна Confirm
-   *
-   * @version   21.04.2016 11:20:30
-   */
-
-  modalConfirm = (function() {
-    modalConfirm.prototype.defaults = {
-      title: 'Подтвердите действие',
-      html: 'Вы уверены'
-    };
-
-    function modalConfirm(data, func, func2) {
-      var _this;
-      if (data == null) {
-        data = {};
-      }
-      if (func == null) {
-        func = function() {};
-      }
-      if (func2 == null) {
-        func2 = function() {};
-      }
-      _this = this;
-      this.options = $.extend({}, this.defaults, data);
-      this.options.buttons = [
-        {
-          text: 'Да',
-          "class": 'button_yes_or_no no',
-          style: 'float:right;',
-          click: function() {
-            func();
-            return $(_this.selfObj.winDiv).dialog('close').dialog('destroy').remove();
-          }
-        }, {
-          text: 'Нет, Спасибо.',
-          "class": 'button_yes_or_no no',
-          style: 'float:right;',
-          click: function() {
-            func2();
-            return $(_this.selfObj.winDiv).dialog('close').dialog('destroy').remove();
-          }
-        }
-      ];
-      this.selfObj = new modalWindow(this.options, {
-        single: false
-      });
-    }
-
-    return modalConfirm;
-
-  })();
-
-
-  /*
-   * прототип окна
-   *
-   * @param     data = {html='текст не был передан', title='имя окна не было передано', buttons={}}
-   * @version   18.04.2016 12:53:01
-   */
-
-  modalWindow = (function() {
-    modalWindow.prototype.sittings = {
-      modal: true,
-      autoOpen: true,
-      closeOnEscape: false,
-      single: true,
-      close: function(event, ui) {
-        return true;
-      },
-      beforeClose: function(event, ui) {
-        return true;
-      }
-    };
-
-    modalWindow.prototype.defaults = {
-      id: 'js-alert_union',
-      title: '*** Название окна ***',
-      width: 'auto',
-      height: 'auto',
-      html: 'Текст в окне',
-      buttons: []
-    };
-
-    function modalWindow(data, sittings) {
-      if (data == null) {
-        data = {};
-      }
-      if (sittings == null) {
-        sittings = {};
-      }
-      this.options = $.extend({}, this.defaults, data);
-      this.sittings = $.extend({}, this.sittings, sittings);
-      if (this.options.maxWidth && this.options.maxWidth.indexOf('%') + 1) {
-        this.options.maxWidth = $(window).width() / 100 * Number(this.options.maxWidth.substring(this.options.maxWidth.length - 1, 0));
-      }
-      if (this.options.maxHeight && this.options.maxHeight.indexOf('%') + 1) {
-        this.options.maxHeight = $(window).height() / 100 * Number(this.options.maxHeight.substring(this.options.maxHeight.length - 1, 0));
-      }
-      this.init();
-    }
-
-    modalWindow.prototype.destroy = function() {
-      return this.winDiv.dialog('close').dialog('destroy').remove();
-    };
-
-    modalWindow.prototype.init = function() {
-      var _this, button, button_n, buttons_html, i, j, len, len1, ref, self, td, tr;
-      _this = this;
-      if (this.sittings.single) {
-        if ($('#js-alert_union').length > 0) {
-          $('#js-alert_union').remove();
-        }
-        $('body').append(this.winDiv = $('<div/>', {
-          "id": this.defaults.id,
-          "style": "height:45px;",
-          'html': this.options.html,
-          "class": "js-alert_union"
-        }));
-      } else {
-        len = $('.js-alert_union').length;
-        this.defaults.id = this.defaults.id + len;
-        $('body').append(this.winDiv = $('<div/>', {
-          "id": this.defaults.id,
-          "style": "height:45px;",
-          'html': this.options.html,
-          "class": "js-alert_union"
-        }));
-      }
-      self = this.winDiv.dialog({
-        width: this.options.width,
-        height: this.options.height,
-        modal: this.sittings.modal,
-        title: this.options.title,
-        autoOpen: this.sittings.autoOpen,
-        closeOnEscape: this.sittings.closeOnEscape,
-        beforeClose: function(event, ui) {
-          return _this.sittings.beforeClose(event, ui);
-        },
-        close: function(event, ui) {
-          return _this.sittings.close(event, ui);
-        }
-      }).parent();
-      if (this.options.buttons.length === 0) {
-        this.options.buttons.push({
-          text: 'Закрыть',
-          "class": 'button_yes_or_no no',
-          style: 'float:right;',
-          click: function() {
-            return $('#' + _this.defaults.id).dialog('close').dialog('destroy').remove();
-          }
-        });
-      }
-      this.winDiv.dialog("option", "buttons", {
-        buttons: {
-          text: 'Закрыть',
-          "class": 'button_yes_or_no no',
-          style: 'float:right;',
-          click: function() {
-            return $('#' + _this.defaults.id).dialog('close').dialog('destroy').remove();
-          }
-        }
-      });
-      if (this.options.maxHeight) {
-        this.winDiv.dialog("option", "maxHeight", this.options.maxHeight);
-      }
-      if (this.options.maxWidth) {
-        this.winDiv.dialog("option", "maxWidth", this.options.maxWidth);
-      }
-      buttons_html = $('<table/>').append(tr = $('<tr/>'));
-      ref = this.options.buttons;
-      for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
-        button_n = ref[i];
-        button = $('<button/>', {
-          html: button_n['text'],
-          click: button_n['click']
-        });
-        if (button_n['class']) {
-          button.attr('class', button_n['class']);
-        }
-        if (button_n['style']) {
-          button.attr('style', button_n['style']);
-        }
-        if (button_n['id']) {
-          button.attr('id', button_n['id']);
-        }
-        tr.append(td = $('<td/>').append(button));
-        if (button_n.data !== void 0) {
-          button.data(button_n.data);
-        }
-        if (i > 0) {
-          td.css('textAlign', 'right');
-        }
-      }
-      return self.find('.ui-dialog-buttonpane').html(this.buttonDiv = $('<div/>', {
-        'class': 'js-alert_union_buttons ui-dialog-buttonpane ui-widget-content ui-helper-clearfix'
-      }).append(buttons_html));
-    };
-
-    return modalWindow;
-
-  })();
-
-
-  /*
-   * прототип объекта данных строки таблицы пенсий
-   */
 
   pensionTrObj = (function() {
     pensionTrObj.prototype.defaults = {
@@ -520,12 +162,12 @@
 
   createPensionTbl = (function() {
     function createPensionTbl(data) {
-      var i, j, len1, n, tbl, tblCase;
+      var i, j, len, n, tbl, tblCase;
       tbl = $('<table/>', {
         id: 'js-options-tbl'
       });
       tbl.append(this.penciaTrHead());
-      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+      for (i = j = 0, len = data.length; j < len; i = ++j) {
         n = data[i];
         tbl.append(this.penciaTrSimple(new pensionTrObj(data[i])));
       }
@@ -745,13 +387,13 @@
     createZpMenRekTbl.prototype.width = 900;
 
     function createZpMenRekTbl(data) {
-      var i, j, len1, n, tbl, tblCase;
+      var i, j, len, n, tbl, tblCase;
       tbl = $('<table/>', {
         id: 'js-options-tbl',
         'class': 'zp_men_rek'
       });
       tbl.append(this.trHead());
-      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+      for (i = j = 0, len = data.length; j < len; i = ++j) {
         n = data[i];
         tbl.append(this.trSimple(new zpMenRekTrObj(data[i])));
       }
@@ -884,13 +526,13 @@
     createZpMenKonTbl.prototype.width = 900;
 
     function createZpMenKonTbl(data) {
-      var i, j, len1, n, tbl, tblCase;
+      var i, j, len, n, tbl, tblCase;
       tbl = $('<table/>', {
         id: 'js-options-tbl',
         'class': 'zp_men_kon'
       });
       tbl.append(this.trHead());
-      for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+      for (i = j = 0, len = data.length; j < len; i = ++j) {
         n = data[i];
         tbl.append(this.trSimple(new zpMenRekTrObj(data[i])));
       }
@@ -1089,7 +731,7 @@
       };
 
       accountingOptions.prototype.addMenu = function() {
-        var i, j, len1, n, ref, results, section, self, ul;
+        var i, j, len, n, ref, results, section, self, ul;
         self = this;
         if (this.$el.find('#js-general-accounting-menu').length > 0) {
           ul = this.$el.find('#js-general-accounting-menu ul');
@@ -1106,7 +748,7 @@
         section = Number($.urlVar('section'));
         ref = this.tabs;
         results = [];
-        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+        for (i = j = 0, len = ref.length; j < len; i = ++j) {
           n = ref[i];
           results.push(ul.append(this.mainTabHtml = new mainMenuTab(n, section, ul, 'section', function() {
             self.addMenu2();
@@ -1119,7 +761,7 @@
       };
 
       accountingOptions.prototype.addMenu2 = function() {
-        var i, j, len1, n, num, ref, subsection, tab, tab1, ul;
+        var i, j, len, n, num, ref, subsection, tab, tab1, ul;
         this.body.html('');
         if (this.$el.find('#js-accounting-menu').length > 0) {
           ul = this.$el.find('#js-accounting-menu ul');
@@ -1141,7 +783,7 @@
         subsection = Number($.urlVar('subsection'));
         num = 0;
         ref = this.tabs2level;
-        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+        for (i = j = 0, len = ref.length; j < len; i = ++j) {
           n = ref[i];
           tab = new mainMenuTab(n, subsection, ul, 'subsection');
           ul.append(tab);
@@ -2814,14 +2456,14 @@
     };
 
     create_bill_tbl.prototype.trBody = function(data) {
-      var arr, i, j, len1, n, num;
+      var arr, i, j, len, n, num;
       this.itogo.percent = 0;
       this.itogo.profit = 0;
       this.itogo.price_out_payment = 0;
       arr = [];
       num = 0;
       if (data.length > 0) {
-        for (i = j = 0, len1 = data.length; j < len1; i = ++j) {
+        for (i = j = 0, len = data.length; j < len; i = ++j) {
           n = data[i];
           arr.push(new billTrPrototipe(n));
           this.itogo.percent += Number(n.pr);
@@ -2901,7 +2543,7 @@
       }
 
       accountingCalculation.prototype.addMenu = function() {
-        var i, j, len1, n, ref, results, section, self, ul;
+        var i, j, len, n, ref, results, section, self, ul;
         self = this;
         if (this.$el.find('#js-general-accounting-menu').length > 0) {
           ul = this.$el.find('#js-general-accounting-menu ul');
@@ -2918,7 +2560,7 @@
         section = Number($.urlVar('section'));
         ref = this.tabs;
         results = [];
-        for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+        for (i = j = 0, len = ref.length; j < len; i = ++j) {
           n = ref[i];
           results.push(ul.append(this.mainTabHtml = new mainMenuTab(n, section, ul, 'section', function() {
             self.addMenu2();
@@ -2954,9 +2596,9 @@
         manager_id = $.urlVar('manager_id');
         num = 0;
         return new sendAjax('get_managers_tabs', {}, function(response) {
-          var i, j, len1, n, ref, tab, tab1;
+          var i, j, len, n, ref, tab, tab1;
           ref = response.data;
-          for (i = j = 0, len1 = ref.length; j < len1; i = ++j) {
+          for (i = j = 0, len = ref.length; j < len; i = ++j) {
             n = ref[i];
             tab = new mainMenuTab(n, manager_id, ul, 'manager_id', function() {
               return self.constructMainContent();
@@ -2976,7 +2618,7 @@
       };
 
       accountingCalculation.prototype.addMenu3 = function() {
-        var i, j, len1, month, month_now, month_number, n, num, self, tab, tab1, ul;
+        var i, j, len, month, month_now, month_number, n, num, self, tab, tab1, ul;
         self = this;
         if (this.body.find('#js-accounting-month-menu').length > 0) {
           ul = this.$el.find('#js-accounting-month-menu ul');
@@ -3039,7 +2681,7 @@
         month_now = new Date().getMonth();
         month_number = $.urlVar('month_number');
         num = 0;
-        for (i = j = 0, len1 = month.length; j < len1; i = ++j) {
+        for (i = j = 0, len = month.length; j < len; i = ++j) {
           n = month[i];
           tab = new mainMenuTab(n, month_number, ul, 'month_number', function() {
             return self.constructMainContent();
@@ -3058,7 +2700,7 @@
       };
 
       accountingCalculation.prototype.yearTab = function() {
-        var Y, i, j, l, len1, li, num, oldYear, opt, option_obj, select, self, year;
+        var Y, i, j, l, len, li, num, oldYear, opt, option_obj, select, self, year;
         self = this;
         year = new Date().getFullYear();
         l = year + 3;
@@ -3082,7 +2724,7 @@
             return self.constructMainContent();
           }
         }));
-        for (i = j = 0, len1 = option_obj.length; j < len1; i = ++j) {
+        for (i = j = 0, len = option_obj.length; j < len; i = ++j) {
           Y = option_obj[i];
           select.append(opt = $('<option/>', {
             html: Y,

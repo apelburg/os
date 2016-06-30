@@ -273,6 +273,8 @@
 	// СНАБЖЕНИЕ
 	$ACCESS_SHABLON[8] = array(
 						'default'=>array('access'=>true),
+						'sklad'=> array('access'=> true),
+						'invoice'=> array('access'=> true),
 						'suppliers'=> array(
 							'access'=> true,
 							'full_suppliers_delete'=> true

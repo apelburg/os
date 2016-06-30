@@ -21,6 +21,7 @@
 	$view_button = '<div class="quick_view_button_div"><a href="#11" class="button">&nbsp;</a></div>';
 
 	/////////////////////////////////// AJAX //////////////////////////////////////
+
 	if(isset($_POST['AJAX'])){
 
 		if($_POST['AJAX']=="client_delete"){
@@ -180,74 +181,14 @@
 			exit;
 		}
 
-		// if($_POST['AJAX']=="delete_cont_face_row"){
 
-		// 	$id_row = $_POST['id'];
-		// 	$tbl = "SUPPLIERS_CONT_FACES_TBL";
-		// 	//-- START -- //  логирование
-	 //        $supplier_name_i = Supplier::get_supplier_name($supplier_id); // получаем название клиента
-	 //        $user_n = $user_name.' '.$user_last_name;
-	 //        $text_history = $user_n.' удалил контактное лицо у поставщика '.$supplier_name_i;
-	 //        Supplier::history_delete_type($supplier_id,$user_id, $text_history ,'delete_supplier_cont_face',$tbl,$_POST,$id_row);
-	 //        //-- END -- //
-
-		// 	$query = "DELETE FROM ".constant($tbl)." WHERE `id`= '".$id_row."'";
-		// 	$result = $mysqli->query($query) or die($mysqli->error);
-		// 	// echo $query;
-		// 	echo '{
-		//        "response":"1",
-		//        "text":"Данные успешно удалены"
-		//       }';
-		// 	exit;
-		// }
-
-		// if($_POST['AJAX']=="edit_client_dop_information"){
-		// 	$tbl = "SUPPLIERS_TBL";
-		// 	$id_row = $_POST['id'];
-		// 	//-- START -- //  логирование
-	 //        $supplier_name_i = Supplier::get_supplier_name($supplier_id); // получаем название клиента
-	 //        $user_n = $user_name.' '.$user_last_name;
-	 //        $text_history = $user_n.' обновил информацию по поставщику '.$supplier_name_i;
-	 //        Supplier::history_edit_type($supplier_id,$user_id, $text_history ,'delete_supplier_cont_face',$tbl,$_POST,$id_row);
-	 //        //-- END -- //
-
-		// 	global $mysqli;
-		// 	# пока что без папки поставщика
-		// 	/*$query = "UPDATE  `".SUPPLIERS_TBL."` SET  
-		// 	`dop_info` =  '".$_POST['dop_info']."',
-		// 	`ftp_folder` =  '".$_POST['ftp_folder']."' WHERE  `id` ='".$_POST['id']."';";*/
-		// 	$query = "UPDATE  `".SUPPLIERS_TBL."` SET  
-		// 	`dop_info` =  '".$_POST['dop_info']."' WHERE  `id` ='".$_POST['id']."';";
-
-		// 	$result = $mysqli->query($query) or die($mysqli->error);
-		// 	echo '{
-		//        "response":"1",
-		//        "text":"Данные успешно обновлены"
-		//       }';
-		// 	exit;
-		// }
 		if($_POST['AJAX']=="remove_curator"){
 			$query = "DELETE FROM `".RELATE_SUPPLIERS_ACTIVITIES_TBL."` WHERE `supplier_id` = '".$_GET['suppliers_id']."' AND `activity_id` = '".$_POST['id']."';";
 			$result = $mysqli->query($query) or die($mysqli->error);
 			echo "Delete OK";
 			exit;
 		}
-		// if($_POST['AJAX']=="delete_dop_cont_row"){
-			
-		// 	$id_row = $_POST['id'];
-		// 	$tbl = "CONT_FACES_CONTACT_INFO_TBL";
-		// 	//-- START -- //  логирование
-	 //        $supplier_name_i = Supplier::get_supplier_name($supplier_id); // получаем название клиента
-	 //        $user_n = $user_name.' '.$user_last_name;
-	 //        $text_history = $user_n.' удалил поле с доп. контактной информацией (email,www, VK)  '.$supplier_name_i;
-	 //        Supplier::history_delete_type($supplier_id,$user_id, $text_history ,'delete_supplier_cont_face',$tbl,$_POST,$id_row);
-	 //        //-- END -- //
 
-		// 	$query = "DELETE FROM `".constant($tbl)."` WHERE `id` = '".$id_row."'";
-		// 	$result = $mysqli->query($query) or die($mysqli->error);
-		// 	echo "OK";
-		// 	exit;
-		// }
 
 		if($_POST['AJAX']=="chenge_name_company"){
 			$id = $_POST['id'];
@@ -345,7 +286,6 @@
 			exit;
 		}
 
-		
 
 		if($_POST['AJAX']=="add_new_other_row"){
 			//-- START -- //  логирование
@@ -368,6 +308,7 @@
 			echo $mysqli->insert_id;			
 			exit;
 		}
+
 		if($_POST['AJAX']=="get_suppliers_profile"){
 			$query = "SELECT * FROM  `".SUPPLIERS_ACTIVITIES_TBL."` ORDER BY  `name` ASC ";
 			$result = $mysqli->query($query) or die($mysqli->error);
@@ -380,8 +321,7 @@
 	        $num_rows = floor(count($profile)/3);
 	        // получаем список кураторов
 	        $get_activities_arr = Supplier::get_activities($_GET['suppliers_id']);
-	        //echo '<pre>';print_r($get_activities_arr);echo '</pre>';//exit;
-	        //echo '<pre>';print_r($profile);echo '</pre>';exit;
+
 	        $num = 0;
 	        $html = '';
 	        foreach ($profile as $key => $value) {
@@ -414,52 +354,31 @@
 		}
 
 		if ($_POST['AJAX'] == "update_profile_list_for_supplier") {
-        global $mysqli;
-        $suppliers_id = $_GET['suppliers_id'];
-        $json = $_POST['profile_id'];
-        $activity_id = json_decode($json,true);
-        $str_id = '';
-        $query = "";
-        foreach($activity_id as $k => $v){
+			global $mysqli;
+			$suppliers_id = $_GET['suppliers_id'];
+			$json = $_POST['profile_id'];
+			$activity_id = json_decode($json,true);
+			$str_id = '';
+			$query = "";
+			foreach($activity_id as $k => $v){
 
-            $query .= "INSERT INTO `".RELATE_SUPPLIERS_ACTIVITIES_TBL."` SET 
-            `activity_id` = '".$v."', 
-            `supplier_id` = '".$suppliers_id."';";
+				$query .= "INSERT INTO `".RELATE_SUPPLIERS_ACTIVITIES_TBL."` SET 
+				`activity_id` = '".$v."', 
+				`supplier_id` = '".$suppliers_id."';";
 
-            $str_id .= ($str_id=='')?$v:', '.$v;
-        }
-        // echo $str_id;
-        $query1 = "DELETE FROM `".RELATE_SUPPLIERS_ACTIVITIES_TBL."` WHERE `supplier_id` = '".$suppliers_id."';";
-        // $result = $mysqli->query($query) or die($mysqli->error);
-        // ECHO $query;
-        $result = $mysqli->multi_query($query1.$query) or die($mysqli->error);
-        echo '{
-               "response":"1",
-               "text":"Данные успешно обновлены"
-              }';
-        exit;
-
-
+				$str_id .= ($str_id=='')?$v:', '.$v;
+			}
+			// echo $str_id;
+			$query1 = "DELETE FROM `".RELATE_SUPPLIERS_ACTIVITIES_TBL."` WHERE `supplier_id` = '".$suppliers_id."';";
+			// $result = $mysqli->query($query) or die($mysqli->error);
+			// ECHO $query;
+			$result = $mysqli->multi_query($query1.$query) or die($mysqli->error);
+			echo '{
+				   "response":"1",
+				   "text":"Данные успешно обновлены"
+				  }';
+			exit;
     	}
-		// if($_POST['AJAX']=="delete_adress_row"){
-			
-		// 	$id_row = $_POST['id_row'];
-		// 	$tbl = $_POST['tbl'];
-		// 	//-- START -- //  логирование
-	 //        $supplier_name_i = Supplier::get_supplier_name($supplier_id); // получаем название клиента
-	 //        $user_n = $user_name.' '.$user_last_name;
-	 //        $text_history = $user_n.' удалил поле адрес у поставщика '.$supplier_name_i;
-	 //        Supplier::history_delete_type($supplier_id,$user_id, $text_history ,'delete_adress_row',$tbl,$_POST,$id_row);
-	 //        //-- END -- //
-
-		// 	$query = "DELETE FROM ".constant($tbl)." WHERE `id`= '".$id_row."'";
-		// 	$result = $mysqli->query($query) or die($mysqli->error);
-		// 	echo '{
-		//        "response":"1",
-		//        "text":"Данные успешно удалены"
-		//       }';
-		// 	exit;
-		// }
 
 
 
@@ -546,7 +465,7 @@
 			$cont_company_phone = (isset($contact_face_d_arr['phone']))?$contact_face_d_arr['phone']:''; 
 			$cont_company_other = (isset($contact_face_d_arr['other']))?$contact_face_d_arr['other']:'';
 			
-			//echo $clientClass->$this->get_contact_info("CLIENTS_TBL",$id)($contact_face_d_arr, 'phone',Client::$array_img)
+
 			// шаблон для вывода контактных лиц
 			include('./skins/tpl/suppliers/supplier_data/'.$edit_show.'supplier_cotact_face_table.tpl');
 		}

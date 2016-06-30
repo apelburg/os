@@ -58,3 +58,34 @@ body .quick_bar_tbl td .quick_button_div .button {text-decoration: none; display
   color: red;
   font-size: 10px;
 }
+
+/*
+    модуль реквизитов Coffee
+*/
+#requesites_form {
+    display: block;
+}
+#requesites_form table{
+    width: 100%;
+}
+
+#requesites_form table tr td img{
+    margin: 0 0 0 10px;
+    border: 1px solid #fff;
+    padding: 1px 7px
+}
+#requesites_form table tr td img:hover{
+    border:1px solid #DBDBDB;
+}
+#requesites_form table tr td:nth-last-of-type(1),
+#requesites_form table tr td:nth-last-of-type(2){
+    width: 50px;
+}
+#requesites_form table tr td{
+    padding: 2px 5px;
+}
+#requesites_form table tr td:nth-of-type(1):hover{
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+

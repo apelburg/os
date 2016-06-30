@@ -175,32 +175,7 @@
 	</form>
 </div>
 
-<style type="text/css">
-	#requesites_form{display:none;}
-	#requesites_form table tr td:nth-of-type(2){  min-width: 50px;
-  text-align: right;}
-  #requesites_form table tr td:nth-of-type(2) img{ margin: 0 0 0 10px; border: 1px solid #fff; padding: 1px 7px}
-  #requesites_form table tr td:nth-of-type(2) img:hover{ border:1px solid #DBDBDB;}
-</style>
-<div id="requesites_form">
-	<form>
-		<table>
-			<?php
-				//foreach ($requisites as $key => $value) {
-					// echo "<tr>
-					// 		<td>
-					// 			".++$key.". <a class=\"show_requesit\" href=\"#\" data-id=\"".$value['id']."\" title=\"".$supplier['nickName']."\">".$value['company']."</a>
-					// 		</td>
-					// 		<td>
-					// 			<img title=\"Редактор реквизитов\" class=\"edit_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/edit.png\" >
-					// 			<img title=\"Редактор реквизитов\" class=\"delete_this_req\" data-id=\"".$value['id']."\" src=\"skins/images/img_design/delete.png\" >
-					// 		</td>
-					// 	</tr>";
-				//}
-			?>
-		</table>
-	</form>
-</div>
+
 
 <style type="text/css">
 	#show_requesit,#edit_requesit,#dialog-confirm,#dialog-confirm2,#create_requesit,#create_client,#new_person_type_req,#client_delete_div{display:none;}#create_client input{width: 100%}

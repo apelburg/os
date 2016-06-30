@@ -624,6 +624,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$stmt->close();
 		}
 
+
+
 		/**
 		 * счёт создан
 		 *
@@ -927,7 +929,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 		 */
 		protected function repeal_invoice_AJAX(){
 			# бух и админ
-			if($this->user_access != 1 && $this->user_access != 2){
+			if($this->user_access != 1 && $this->user_access != 2 && $this->user_access != 5){
 				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
 				if ($this->prod__check()){return;}
 			}
