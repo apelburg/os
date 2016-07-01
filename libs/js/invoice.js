@@ -774,7 +774,7 @@
       }
     };
 
-    costsRow.prototype.supplierSearch = function(td) {
+    costsRow.prototype.supplierSearch = function(td, data_row) {
       var _this;
       _this = this;
       return td.click(function() {
@@ -805,71 +805,15 @@
                   return t.replaceWith(_this.options.supplier_name);
                 });
               } else if ((!id) && name !== '' && name !== _this.options.supplier_name) {
+                console.log(data_row);
                 return new modalConfirm({
-                  html: 'Такого имени не было найдено в системе, Вы хотите добавить нового поставщика'
+                  html: 'Данного названия ЮР лица не найдено,<br> Вы хотите запросить добавление ЮР лица?'
                 }, function() {
-                  var buttons, dop_info, fullName, nickName, obj;
-                  obj = $('<div/>', {
-                    'id': 'window--new_supplier'
-                  });
-                  obj.append(nickName = $('<input/>', {
-                    'type': 'text',
-                    'name': 'nick_name',
-                    'val': name,
-                    'placeholder': 'Сокращённое название'
-                  }));
-                  obj.append(fullName = $('<input/>', {
-                    'type': 'text',
-                    'name': 'full_name',
-                    'placeholder': 'Полное название'
-                  }));
-                  obj.append(dop_info = $('<textarea/>', {
-                    'name': 'dop_info',
-                    'placeholder': 'Дополнительная информацияе'
-                  }));
-                  buttons = [
-                    {
-                      text: 'Отмена',
-                      "class": 'button_yes_or_no no',
-                      style: 'float:right;',
-                      click: function() {
-                        t.parent().removeClass('tdInputHere').attr('data-id', _this.options.supplier_id);
-                        t.replaceWith(_this.options.supplier_name);
-                        return $(_this.supplier_window.winDiv).dialog('close').dialog('destroy').remove();
-                      }
-                    }, {
-                      text: 'Создать',
-                      "class": 'button_yes_or_no yes',
-                      style: 'float:right;',
-                      click: function() {
-                        if (nickName.val() !== '') {
-                          return new sendAjax('create_new_supplier', {
-                            nick_name: nickName.val(),
-                            full_name: fullName.val(),
-                            dop_info: dop_info.val()
-                          }, function(response) {
-                            return new sendAjax('save_supplier_name', {
-                              id: _this.options.id,
-                              supplier_name: nickName.val(),
-                              supplier_id: id
-                            }, function() {
-                              t.parent().removeClass('tdInputHere').attr('data-id', response.supplier_id);
-                              _this.options.supplier_name = nickName.val();
-                              t.replaceWith(_this.options.supplier_name);
-                              echo_message_js("создание");
-                              return $(_this.supplier_window.winDiv).dialog('close').dialog('destroy').remove();
-                            });
-                          });
-                        }
-                      }
-                    }
-                  ];
-                  return _this.supplier_window = new modalWindow({
-                    html: obj,
-                    title: 'Создать поставщика',
-                    buttons: buttons
-                  }, {
-                    single: false
+                  console.log(data_row);
+                  return new sendMessage({
+                    "ajax": "query_get_new_requisit",
+                    windowName: "Запрос на заведение реквизитов",
+                    message: "Для учета расходов по счёту №" + data_row.invoice_num + "\nнеобходимо завести реквизиты: " + name + " в раздел \"поставщики\""
                   });
                 }, function() {
                   t.parent().removeClass('tdInputHere');
@@ -890,7 +834,7 @@
                 type: "POST",
                 dataType: "json",
                 data: {
-                  AJAX: 'shearch_supplier_autocomlete',
+                  AJAX: 'shearch_supplier_requsit_autocomlete',
                   search: request.term
                 },
                 success: function(data) {
@@ -946,7 +890,7 @@
           'html': this.options.supplier_name,
           'data-id': this.options.supplier_id
         }));
-        this.supplierSearch(td);
+        this.supplierSearch(td, data_row);
         editClass = '';
         if (rowspan === 1 && this.access !== 5) {
           editClass = 'mayBeEdit';
@@ -4739,7 +4683,10 @@
         }));
         tr.append($('<th/>', {
           'colspan': 3,
-          'html': 'ТТН'
+          'html': 'ТТН',
+          css: {
+            'minWidth': 150
+          }
         }));
         tr.append($('<th/>', {
           'colspan': 2,
@@ -6288,6 +6235,7 @@
           check = '';
         }
         divw = $('<div/>', {
+          html: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
           'class': 'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd' + check,
           'data-id': ttn.id,
           click: function() {

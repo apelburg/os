@@ -373,18 +373,28 @@
    *  costsWindow
    */
 
-  window.errorWindow = (function() {
-    errorWindow.prototype.defaults = {
-      id: 0
+  window.sendMessage = (function() {
+    sendMessage.prototype.defaults = {
+      ajax: 'send_error_message',
+      windowName: 'Отправкить сообщение',
+      message: ''
     };
 
-    errorWindow.prototype.MessageMinLen = 1;
+    sendMessage.prototype.MessageMinLen = 1;
 
-    function errorWindow() {
+    sendMessage.prototype.options = {};
+
+    function sendMessage(options) {
+      if (options == null) {
+        options = {};
+      }
+      this.options = {};
+      this.options = $.extend({}, this.defaults, options);
+      console.log(this.options);
       this.init();
     }
 
-    errorWindow.prototype.init = function(data_row, responseData) {
+    sendMessage.prototype.init = function(data_row, responseData) {
 
       /*
        * создание контейнера
@@ -405,7 +415,7 @@
         html: this.main_div,
         maxHeight: '100%',
         width: '800px',
-        title: 'Описание ошибки',
+        title: this.options.windowName,
         buttons: this.getButtons()
       }, {
         closeOnEscape: true,
@@ -415,8 +425,8 @@
       return $(this.$el).parent().css('padding', '0');
     };
 
-    errorWindow.prototype.getForm = function(data_row) {
-      var cell1, cell2, main, self, textarea, tr;
+    sendMessage.prototype.getForm = function(data_row) {
+      var cell2, main, self, textarea, tr;
       self = this;
       main = $('<div/>', {
         'class': 'comment table'
@@ -424,22 +434,12 @@
       main.append(tr = $('<div/>', {
         'class': 'row'
       }));
-      cell1 = $('<div/>', {
-        'class': 'cell user_name_comments'
-      });
-      cell1.append($('<div/>', {
-        'class': 'user_name',
-        'html': 'Вы...'
-      })).append($('<div/>', {
-        'class': 'create_time_message',
-        'html': getDateNow()
-      }));
-      tr.append(cell1);
       cell2 = $('<div/>', {
         'class': 'cell comment_text'
       });
       cell2.append(textarea = $('<textarea/>', {
         'name': 'comment_text',
+        val: this.options.message,
         keyup: function() {
           if ($(this).val().length > self.MessageMinLen) {
             console.log($(this).val().length);
@@ -456,7 +456,7 @@
       }).append(main);
     };
 
-    errorWindow.prototype.getContent = function(responseData) {
+    sendMessage.prototype.getContent = function(responseData) {
       var i, j, len1, main, row, self;
       main = $('<div/>', {
         'class': 'contaner_sm'
@@ -469,8 +469,8 @@
       return main;
     };
 
-    errorWindow.prototype.getButtons = function(data_row, responseData) {
-      var buttons, self;
+    sendMessage.prototype.getButtons = function(data_row, responseData) {
+      var buttons, dop_class, self;
       self = this;
       this.saveObj = {};
       buttons = [];
@@ -481,9 +481,13 @@
           return self.destroy();
         }
       });
+      dop_class = ' no';
+      if (this.options.message.length > self.MessageMinLen) {
+        dop_class = ' yes';
+      }
       buttons.push({
         text: 'Отправить',
-        "class": 'button_yes_or_no no',
+        "class": 'button_yes_or_no' + dop_class,
         id: 'js--send_comment',
         click: function() {
           var comment;
@@ -491,7 +495,7 @@
           if (comment.length <= self.MessageMinLen) {
             return echo_message_js("Сообщение должно быть не короче " + self.MessageMinLen + " символов");
           } else {
-            return new sendAjax('send_error_message', {
+            return new sendAjax(self.options.ajax, {
               message: comment
             }, function(response) {
               return self.destroy();
@@ -502,11 +506,11 @@
       return buttons;
     };
 
-    errorWindow.prototype.destroy = function() {
+    sendMessage.prototype.destroy = function() {
       return $(this.$el).parent().dialog('close').dialog('destroy').remove();
     };
 
-    return errorWindow;
+    return sendMessage;
 
   })();
 

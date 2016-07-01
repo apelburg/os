@@ -954,6 +954,34 @@ class InvoiceNotify extends aplStdAJAXMethod
 		}
 
 		/**
+		 * запрос буха на создание реквизитов
+		 * отправляет запрос на почту ВСЕМ СНАБАМ
+		 */
+		protected function query_get_new_requisit_AJAX(){
+			$where = [
+				'access' => '8'
+			];
+
+			# опрашиваем базу по наличию учеток СНАБОВ
+			$snab = $this->get_all_tbl_simple(MANAGERS_TBL,$where);
+
+			# если найдены снабы
+			if (count($snab) > 0){
+				$ids = [];
+				foreach ($snab as $user){
+					$ids[] = $user['id'];
+				}
+				$Invoice = new InvoiceNotify();
+				# рассылаем
+				$Invoice->sendMessageToId($ids,'',"Запрос на создание реквизитов поставщика",$_POST['message']);
+
+				$message = "Ваш запрос направлен в отдел снабжения";
+				$this->responseClass->addMessage($message,'successful_message',1000);
+			}
+		}
+
+
+		/**
 		 * полное удаление счёта из базы
 		 */
 		protected function delete_invoice_row_AJAX(){

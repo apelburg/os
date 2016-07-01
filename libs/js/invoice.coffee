@@ -657,7 +657,7 @@ class costsRow
       td2.menuRightClick({'buttons': button2})
       td3.menuRightClick({'buttons': button2})
 # добавляем обработчик для на элементы поиска по счетам
-  supplierSearch: (td)->
+  supplierSearch: (td, data_row)->
     _this = @
 
     td.click(()->
@@ -686,63 +686,14 @@ class costsRow
                 t.parent().removeClass('tdInputHere').attr('data-id', id)
                 t.replaceWith(_this.options.supplier_name)
             else if ( !id ) && name != '' && name != _this.options.supplier_name
-
-              new modalConfirm({html: 'Такого имени не было найдено в системе, Вы хотите добавить нового поставщика'}, ()->
-                obj = $('<div/>', {'id': 'window--new_supplier'})
-                obj.append(nickName = $('<input/>', {
-                  'type': 'text',
-                  'name': 'nick_name',
-                  'val': name,
-                  'placeholder': 'Сокращённое название'
-                }))
-                obj.append(fullName = $('<input/>', {
-                  'type': 'text',
-                  'name': 'full_name',
-                  'placeholder': 'Полное название'
-                }))
-                obj.append(dop_info = $('<textarea/>', {
-                  'name': 'dop_info',
-                  'placeholder': 'Дополнительная информацияе'
-                }))
-
-                buttons = [{
-                  text: 'Отмена',
-                  class: 'button_yes_or_no no',
-                  style: 'float:right;'
-                  click: ()->
-                    t.parent().removeClass('tdInputHere').attr('data-id', _this.options.supplier_id)
-                    t.replaceWith(_this.options.supplier_name)
-                    $(_this.supplier_window.winDiv).dialog('close').dialog('destroy').remove()
-                }, {
-                  text: 'Создать',
-                  class: 'button_yes_or_no yes',
-                  style: 'float:right;',
-                  click: ()->
-                    if nickName.val() != ''
-                      new sendAjax('create_new_supplier', {
-                        nick_name: nickName.val(),
-                        full_name: fullName.val(),
-                        dop_info: dop_info.val()
-                      }, (response)->
-                        new sendAjax 'save_supplier_name', {
-                          id: _this.options.id,
-                          supplier_name: nickName.val(),
-                          supplier_id: id
-                        }, ()->
-                          t.parent().removeClass('tdInputHere').attr('data-id', response.supplier_id)
-                          _this.options.supplier_name = nickName.val()
-                          t.replaceWith(_this.options.supplier_name)
-                          echo_message_js "создание"
-                          $(_this.supplier_window.winDiv).dialog('close').dialog('destroy').remove()
-                      )
-                }]
-
-
-                _this.supplier_window = new modalWindow({
-                  html: obj,
-                  title: 'Создать поставщика',
-                  buttons: buttons
-                }, {single: false})
+              console.log data_row
+              new modalConfirm({html: 'Данного названия ЮР лица не найдено,<br> Вы хотите запросить добавление ЮР лица?'}, ()->
+                console.log data_row
+                new sendMessage({
+                  "ajax": "query_get_new_requisit",
+                  windowName:"Запрос на заведение реквизитов",
+                  message : "Для учета расходов по счёту №"+data_row.invoice_num+"\nнеобходимо завести реквизиты: "+name+" в раздел \"поставщики\""
+                })
               , ()->
                 t.parent().removeClass('tdInputHere')
                 t.replaceWith(_this.options.supplier_name)
@@ -762,7 +713,7 @@ class costsRow
               type: "POST",
               dataType: "json",
               data:
-                AJAX: 'shearch_supplier_autocomlete', # показать
+                AJAX: 'shearch_supplier_requsit_autocomlete', # показать
                 search: request.term # поисковая фраза
               success: (data) ->
                 response(data);
@@ -810,7 +761,7 @@ class costsRow
     if rowspan >= 1
       # поставщик
       tr.append(td = $('<td/>', {'rowspan': rowspan,'class':'mayBeEdit', 'html': @options.supplier_name, 'data-id': @options.supplier_id}))
-      @supplierSearch(td)
+      @supplierSearch(td,data_row)
 
       editClass = ''
       if rowspan == 1 && @access != 5
@@ -4223,7 +4174,10 @@ class invoiceWindow
       }))
       tr.append($('<th/>', {
         'colspan': 3,
-        'html': 'ТТН'
+        'html': 'ТТН',
+        css:{
+          'minWidth':150
+        }
       }))
       tr.append($('<th/>', {
         'colspan': 2,
@@ -5526,6 +5480,7 @@ class invoiceRow
         check = ''
 
       divw = $('<div/>', {
+        html:'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
         'class': 'defttn3 cell invoice-row--ttn--vt invoice-row--checkboxtd' + check,
 # 'html':ttn.id,
         'data-id': ttn.id

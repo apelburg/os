@@ -448,7 +448,7 @@
       if (num == null) {
         num = 1;
       }
-      tr = $('<tr/>');
+      tr = $('<tr/>').data(rowData);
       console.log(rowData);
       tr.append($('<td/>', {
         html: $('<span/>', {
@@ -472,7 +472,44 @@
         td.append($('<img/>', {
           title: 'Редактировать реквизиты',
           "class": 'edit_this_req',
-          src: 'skins/images/img_design/edit.png'
+          src: 'skins/images/img_design/edit.png',
+          click: function() {
+            return new sendAjax("edit_requesit", {
+              id: rowData.id
+            }, function(response) {
+              var buttons, htmlWindow, mod;
+              htmlWindow = Base64.decode(response.data.window);
+              buttons = [
+                {
+                  text: 'Отмена',
+                  "class": 'button_yes_or_no no',
+                  style: 'float:right;',
+                  click: function() {
+                    return $(mod.winDiv).dialog('close').dialog('destroy').remove();
+                  }
+                }, {
+                  text: 'Сохранить',
+                  "class": 'button_yes_or_no yes',
+                  style: 'float:right;',
+                  click: function() {
+                    var serialize;
+                    serialize = $(mod.winDiv[0]).find('#requisits_edit_form').serialize();
+                    return $.post('', serialize, function(data, textStatus, xhr) {
+                      if (data['response'] !== 'false') {
+                        $(mod.winDiv).dialog('close').dialog('destroy').remove();
+                        return standard_response_handler(data);
+                      }
+                    }, 'json');
+                  }
+                }
+              ];
+              return mod = new modalWindow({
+                html: htmlWindow,
+                title: "Редактировать реквизиты",
+                buttons: buttons
+              });
+            });
+          }
         }));
       }
       tr.append(td2 = $('<td/>'));

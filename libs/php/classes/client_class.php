@@ -892,9 +892,8 @@ class Client extends aplStdAJAXMethod{
 		} 
 			    
 		protected function create_new_requisites_AJAX() {
-			$query = "
-				INSERT INTO `" . CLIENT_REQUISITES_TBL . "` SET id = '" . $_POST['requesit_id'] . "',
-				`client_id`='" . $_POST['client_id'] . "', 
+			$query = "INSERT INTO `" . CLIENT_REQUISITES_TBL . "` SET id = '" . $_POST['requesit_id'] . "',";
+			$query .= "`client_id`='" . $_POST['client_id'] . "', 
 				`company`='" . $_POST['company'] . "', 
 				`comp_full_name`='" . $_POST['form_data']['comp_full_name'] . "', 
 				`postal_address`='" . $_POST['form_data']['postal_address'] . "', 
@@ -918,8 +917,8 @@ class Client extends aplStdAJAXMethod{
 			if (isset($_POST['form_data']['managment1'])) {
 			    $query = "";
 			    foreach ($_POST['form_data']['managment1'] as $key => $val) {
-			        $query.= "INSERT INTO  `" . CLIENT_REQUISITES_MANAGMENT_FACES_TBL . "` SET  
-						`requisites_id` =  '" . $req_new_id . "',
+			        $query.= "INSERT INTO  `" . CLIENT_REQUISITES_MANAGMENT_FACES_TBL . "` SET  ";
+					$query.= "`requisites_id` =  '" . $req_new_id . "',
 						`type` =  '" . $val['type'] . "',
 						`post_id` =  '" . $val['post_id'] . "',
 						`basic_doc` =  '" . $val['basic_doc'] . "',
@@ -1956,10 +1955,7 @@ class Client extends aplStdAJAXMethod{
 		return $arr;
 	}
 	static function edit_requsits_show_person_all($arr,$client_id){
-		// echo '<pre>';
-		// print_r($arr);
-		// echo '</pre>';
-			
+
 		foreach ($arr as $key => $contact) {
 			$get__clients_persons_for_requisites = Client::get__clients_persons_for_requisites($contact['post_id']);
 			include('./skins/tpl/clients/client_folder/client_card/edit_requsits_show_person.tpl');

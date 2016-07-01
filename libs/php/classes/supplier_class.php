@@ -83,6 +83,144 @@ class Supplier extends aplStdAJAXMethod{
         return parent::getUserDatabase($id);
     }
 
+	protected function get__suppliers_persons(){
+		global $mysqli;
+		$query = "SELECT * FROM `".SUPPLIER_PERSON_REQ_TBL."`";
+		$arr = array();
+		$result = $mysqli->query($query) or die($mysqli->error);
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$arr[$row['id']] = $row;
+			}
+		}
+		return $arr;
+	}
+	private function edit_requsits_show_person($requisites_id){
+		// array
+		// лица (контрагенты) имеющие право подписи  для реквизитов в массиве
+		global $mysqli;
+		$arr = array();
+		$query = "SELECT * FROM `".SUPPLIER_REQUISITES_MANAGMENT_FACES_TBL."` WHERE `requisites_id` = '".$requisites_id."'";
+		$result = $mysqli->query($query) or die($mysqli->error);
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$arr[] = $row;
+			}
+		}
+		return $arr;
+	}
+
+	private function edit_requsits_show_person_all($arr,$supplier_id){
+		foreach ($arr as $key => $contact) {
+			$get__clients_persons_for_requisites = $this->get__clients_persons_for_requisites($contact['post_id']);
+			include('./skins/tpl/suppliers/edit_requsits_show_person.tpl');
+		}
+	}
+
+	private function get__clients_persons_for_requisites($type){
+		global $mysqli;
+		$query = "SELECT * FROM `".CLIENT_PERSON_REQ_TBL."`";
+		$str = "<option value=\"0\">Выберите должность...</option>".PHP_EOL;
+		$result = $mysqli->query($query) or die($mysqli->error);
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$str .= "<option value=\"".$row['id']."\" ".(($type==$row['id'])?'selected':'').">".$row['position']."</option>".PHP_EOL;
+			}
+		}
+		return $str;
+	}
+
+	protected function update_requisites_AJAX() {
+		$query = "
+				UPDATE  `" . SUPPLIER_REQUISITES_TBL . "` SET
+				`supplier_id`='" . $_POST['client_id'] . "', 
+				`company`='" . $_POST['company'] . "', 
+				`comp_full_name`='" . $_POST['form_data']['comp_full_name'] . "', 
+				`postal_address`='" . $_POST['form_data']['postal_address'] . "', 
+				`legal_address`='" . $_POST['form_data']['legal_address'] . "', 
+				`inn`='" . $_POST['form_data']['inn'] . "', 
+				`kpp`='" . $_POST['form_data']['kpp'] . "', 
+				`bank`='" . $_POST['form_data']['bank'] . "', 
+				`bank_address`='" . $_POST['form_data']['bank_address'] . "', 
+				`r_account`='" . $_POST['form_data']['r_account'] . "', 
+				`cor_account`='" . $_POST['form_data']['cor_account'] . "', 
+				`ogrn`='" . $_POST['form_data']['ogrn'] . "', 
+			    `bik`='" . $_POST['form_data']['bik'] . "', 
+				`okpo`='" . $_POST['form_data']['okpo'] . "', 
+				`dop_info`='" . $_POST['form_data']['dop_info'] . "' WHERE id = '" . $_POST['requesit_id'] . "';";
+
+
+		$get__clients_persons_arr = $this->get__suppliers_persons();
+		foreach ($_POST['form_data']['managment1'] as $key => $val) {
+			if (trim($val['id']) != "") {
+				$query.= "UPDATE  `" . SUPPLIER_REQUISITES_MANAGMENT_FACES_TBL . "` SET  ";
+				$query.= "`requisites_id` =  '" . $val['requisites_id'] . "',";
+				$query.= "`type` =  '" . $val['type'] . "',";
+				$query.= "`post_id` =  '" . $val['post_id'] . "',";
+				if(isset($get__clients_persons_arr[$val['post_id']])){
+					$query.= "`position` =  '" . $get__clients_persons_arr[$val['post_id']]['position'] . "',";
+					$query.= "`position_in_padeg` =  '" . $get__clients_persons_arr[$val['post_id']]['position_in_padeg'] . "',";
+				}
+				$query.= "`basic_doc` =  '" . $val['basic_doc'] . "',";
+				$query.= "`name` =  '" . $val['name'] . "',";
+				$query.= "`name_in_padeg` =  '" . $val['name_in_padeg'] . "',";
+				$query.= "`acting` =  '" . $val['acting'] . "'";
+				$query.= " WHERE  `id` ='" . $val['id'] . "'; ";
+			}else {
+
+				if($val['acting'] == 1){
+					$query.= "UPDATE  `" . SUPPLIER_REQUISITES_MANAGMENT_FACES_TBL . "` SET  ";
+					$query.= "`acting` =  '0'";
+					$query.= " WHERE  `requisites_id` ='" . $val['requisites_id'] . "'; ";
+				}
+
+				$query.= "INSERT INTO  `" . SUPPLIER_REQUISITES_MANAGMENT_FACES_TBL . "` SET ";
+				$query.= "`requisites_id` =  '" . $val['requisites_id'] . "',
+						`type` =  '" . $val['type'] . "',
+						`post_id` =  '" . $val['post_id'] . "',
+						`basic_doc` =  '" . $val['basic_doc'] . "',
+						`name` =  '" . $val['name'] . "',
+						`name_in_padeg` =  '" . $val['name_in_padeg'] . "',
+						`acting` =  '" . $val['acting'] . "';";
+			}
+		}
+		$result = $this->mysqli->multi_query($query) or die($this->mysqli->error);
+
+
+
+		$this->responseClass->addMessage("Реквизиты успешно обновлены",'successful_message',100);
+	}
+	/**
+	 * окно редактирования существующих реквизитов
+	 */
+	protected function edit_requesit_AJAX() {
+		$query = "SELECT * FROM `" . SUPPLIER_REQUISITES_TBL . "` WHERE `id` = '" . $_POST['id'] . "'";
+		$requesit = [];
+
+
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		if ($result->num_rows > 0) {
+			while ($row = $result->fetch_assoc()) {
+				$requesit = $row;
+			}
+		}
+
+		// получаем контактные лица для реквизитов
+		$supplier_id = $_GET['suppliers_id'];
+
+
+		ob_start();
+		include ('./skins/tpl/suppliers/edit_requsits.tpl');
+		$html = ob_get_contents();
+		ob_clean();
+//
+//        $this->insert_empty_row(SUPPLIER_REQUISITES_TBL,['company'=>'НОВАЯ КОМПАНИЯ','supplier_id'=>(int)$_GET['suppliers_id']]);
+//        $html = 'Создание новой пустой строки';
+		$this->responseClass->response['data']['window'] = base64_encode($html);
+	}
+	/**
+	 * запись данных из форрмы создания новых реквизитов
+	 */
     protected function create_new_requisites_AJAX() {
         $query = "INSERT INTO `" . SUPPLIER_REQUISITES_TBL . "` SET id = '" . $_POST['requesit_id'] . "',";
         $query .= "`supplier_id`='" . (int)$_GET['suppliers_id'] . "', 
@@ -167,10 +305,18 @@ class Supplier extends aplStdAJAXMethod{
      * удаление реквизитов
      */
     protected function delete_requsit_row_AJAX(){
+		# 1. удаление строки реквизитов
+		$this->delete_row_from_table(SUPPLIER_REQUISITES_TBL, (int)$_POST['id']);
 
-        $this->delete_row_from_table(SUPPLIER_REQUISITES_TBL, (int)$_POST['id']);
+		# 2. удаление строк контактных лиц по реквизитам
+		$query = "DELETE FROM ".SUPPLIER_REQUISITES_MANAGMENT_FACES_TBL." WHERE `id`= ?";
+		$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+		$stmt->bind_param('i', $_POST['id']) or die($this->mysqli->error);
+		$stmt->execute() or die($this->mysqli->error);
+		$result = $stmt->get_result();
+		$stmt->close();
+
         $this->responseClass->addMessage("Реквизиты успешно удалены",'successful_message',100);
-
         $this->logining('удалил реквизиты у поставщика');
     }
 
