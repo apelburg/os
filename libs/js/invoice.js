@@ -5614,7 +5614,9 @@
           return new modalConfirm({
             html: message
           }, function() {
-            return new getStatisticForm("invoice_repealed", {}, function() {
+            return new getStatisticForm("invoice_repealed", {
+              dialogMessage: 'Пажалуйста, выберите нужный пункт и напишите пару строк для статистики. '
+            }, function() {
               return new sendAjax('repeal_invoice', {
                 id: _this.options.id
               }, function() {
@@ -5636,10 +5638,17 @@
             return new modalConfirm({
               html: message
             }, function() {
-              return new sendAjax('delete_to_basket_invoice', {
-                id: _this.options.id
+              return new getStatisticForm("invoice_basket", {
+                dialogMessage: 'Пажалуйста, выберите нужный пункт и напишите пару строк для статистики. '
               }, function() {
-                return tr.remove();
+                new sendAjax('delete_to_basket_invoice', {
+                  id: _this.options.id
+                }, function() {
+                  return tr.remove();
+                });
+                return function() {
+                  return echo_message_js("Ответы на данные вопросы обязательны");
+                };
               });
             });
           } else {

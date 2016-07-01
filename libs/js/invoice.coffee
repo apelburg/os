@@ -4955,7 +4955,7 @@ class invoiceRow
         message = "Счёт будет аннулирован. <br><br>Продолжить?"
         new modalConfirm({html:message},()->
           new getStatisticForm("invoice_repealed",{
-            
+            dialogMessage:'Пажалуйста, выберите нужный пункт и напишите пару строк для статистики. '
           },()->
             new sendAjax('repeal_invoice',{id:_this.options.id},()->
               tr.remove()
@@ -4973,9 +4973,16 @@ class invoiceRow
         if _this.access == 2
           message = "Счёт будет полностью удален из системы. <br><br>Продолжить?"
           new modalConfirm({html:message},()->
-            new sendAjax('delete_to_basket_invoice',{id:_this.options.id},()->
-              tr.remove()
+            new getStatisticForm("invoice_basket",{
+              dialogMessage:'Пажалуйста, выберите нужный пункт и напишите пару строк для статистики. '
+            },()->
+              new sendAjax('delete_to_basket_invoice',{id:_this.options.id},()->
+                tr.remove()
+              )
+              ()->
+                echo_message_js "Ответы на данные вопросы обязательны"
             )
+
           )
         else
           new sendAjax('delete_to_basket_invoice',{id:_this.options.id},()->

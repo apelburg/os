@@ -591,6 +591,12 @@
           'padding': '15px'
         }
       });
+      this.main_div.append($('<div/>', {
+        html: this.options.dialogMessage,
+        css: {
+          'padding': '5px 5px 10px 5px'
+        }
+      }));
       this.main_div.append(this.getStatisticFrom());
       this.main_div.append(this.main_form = this.getForm());
 
