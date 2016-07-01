@@ -68,8 +68,8 @@ class clientSearch  extends aplStdAJAXMethod{
 		$result = $stmt->get_result();
 		$stmt->close();
 		$response = array();
-
 		$i=0;
+
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
 				// $response[] = $row['company'];

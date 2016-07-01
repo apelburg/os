@@ -695,7 +695,12 @@ class costsRow
                   "ajax": "query_get_new_requisit",
                   windowName:"Запрос на заведение реквизитов",
                   message : mess
-                })
+                },()->
+                  console.log "asd"
+                  t.parent().removeClass('tdInputHere')
+                  t.replaceWith(_this.options.supplier_name)
+                )
+
               , ()->
                 t.parent().removeClass('tdInputHere')
                 t.replaceWith(_this.options.supplier_name)
@@ -4949,9 +4954,16 @@ class invoiceRow
       click: (e)->
         message = "Счёт будет аннулирован. <br><br>Продолжить?"
         new modalConfirm({html:message},()->
-          new sendAjax('repeal_invoice',{id:_this.options.id},()->
-            tr.remove()
+          new getStatisticForm("invoice_repealed",{
+            
+          },()->
+            new sendAjax('repeal_invoice',{id:_this.options.id},()->
+              tr.remove()
+            )
+          ()->
+            echo_message_js "Ответы на данные вопросы обязательны"
           )
+
         )
     }
     btn2 = {

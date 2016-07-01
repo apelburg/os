@@ -817,6 +817,10 @@
                     "ajax": "query_get_new_requisit",
                     windowName: "Запрос на заведение реквизитов",
                     message: mess
+                  }, function() {
+                    console.log("asd");
+                    t.parent().removeClass('tdInputHere');
+                    return t.replaceWith(_this.options.supplier_name);
                   });
                 }, function() {
                   t.parent().removeClass('tdInputHere');
@@ -5610,10 +5614,14 @@
           return new modalConfirm({
             html: message
           }, function() {
-            return new sendAjax('repeal_invoice', {
-              id: _this.options.id
+            return new getStatisticForm("invoice_repealed", {}, function() {
+              return new sendAjax('repeal_invoice', {
+                id: _this.options.id
+              }, function() {
+                return tr.remove();
+              });
             }, function() {
-              return tr.remove();
+              return echo_message_js("Ответы на данные вопросы обязательны");
             });
           });
         }

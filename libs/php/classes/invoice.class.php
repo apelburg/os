@@ -979,9 +979,21 @@ class InvoiceNotify extends aplStdAJAXMethod
 				$Invoice = new InvoiceNotify();
 				# рассылаем
 				ob_start();
-				$message = $_POST['message'];
-				$href = "<div>http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</div>";
+				$message = nl2br($_POST['message']);
+
+				$href = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+				# кнопка перехода в раздел поставщиков
+
+//				$message .= $href;
+				$message .= '<div id="button_div" style="padding: 45px 0 25px 0;"><a style="font-family: Arial;
+                            font-weight: normal;font-size: 16px;color: #ffffff;text-decoration: none;white-space: nowrap;border-radius: 3px;display: inline-block;text-align: center;margin-top: 0px;margin-left: 0px;
+                            padding-top: 11px;
+                            padding-right: 14px;
+                            padding-bottom: 9px;
+                            padding-left: 12px;
+                            background-color: #95B45A;" href="http://'.$_SERVER['HTTP_HOST'].'/os/?page=suppliers&section=suppliers_list">В раздел поставщиков</a></div>';
 				$userName = "";
+
 
 
 				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
@@ -989,7 +1001,11 @@ class InvoiceNotify extends aplStdAJAXMethod
 				ob_get_clean();
 
 				//$Invoice->sendMessageToId($ids,'',"Запрос на создание реквизитов поставщика",$_POST['message']);
-				$Invoice->sendMessageToId([42],'',"Запрос на создание реквизитов поставщика",$_POST['message']);
+				$Invoice->sendMessageToId([62],'',"Запрос на создание реквизитов поставщика",$html);
+
+				# вывод данных в режиме разработчика
+				$this->prod__window($this->printArr($ids).'<br>'.$this->printArr($Invoice->getUsersEmail($ids)));
+
 
 				$message = "Ваш запрос направлен в отдел снабжения";
 				$this->responseClass->addMessage($message,'successful_message',1000);
