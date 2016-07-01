@@ -809,11 +809,14 @@
                 return new modalConfirm({
                   html: 'Данного названия ЮР лица не найдено,<br> Вы хотите запросить добавление ЮР лица?'
                 }, function() {
-                  console.log(data_row);
+                  var mess;
+                  mess = "При регистрации оплаты поставщику ООО \"" + name + "\" (в оплату затрат по счету №" + data_row.invoice_num + " для клиента " + data_row.client_name + "), \n";
+                  mess += "произошел отказ по причине отсутствия данного юр. лицо ООО\"" + name + "\" в системе.\n";
+                  mess += "Пожалуйста, внесите данные юридического лица ООО\"" + name + "\" в карточку необходимого поставщика.";
                   return new sendMessage({
                     "ajax": "query_get_new_requisit",
                     windowName: "Запрос на заведение реквизитов",
-                    message: "Для учета расходов по счёту №" + data_row.invoice_num + "\nнеобходимо завести реквизиты: " + name + " в раздел \"поставщики\""
+                    message: mess
                   });
                 }, function() {
                   t.parent().removeClass('tdInputHere');

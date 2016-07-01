@@ -954,6 +954,11 @@ class InvoiceNotify extends aplStdAJAXMethod
 		}
 
 		/**
+		 При регистрации оплаты поставщику ООО "ХХХ" (в оплату затрат по счету №ХХХ для клиента ХХХ), произошел отказ по причине отсутствия данного юр. лицо ООО"ХХХ" в системе.
+		 Пожалуйста, внесите данные юридического лица ООО"ХХХ" в карточку необходимого поставщика.
+		 */
+
+		/**
 		 * запрос буха на создание реквизитов
 		 * отправляет запрос на почту ВСЕМ СНАБАМ
 		 */
@@ -973,7 +978,18 @@ class InvoiceNotify extends aplStdAJAXMethod
 				}
 				$Invoice = new InvoiceNotify();
 				# рассылаем
-				$Invoice->sendMessageToId($ids,'',"Запрос на создание реквизитов поставщика",$_POST['message']);
+				ob_start();
+				$message = $_POST['message'];
+				$href = "<div>http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]</div>";
+				$userName = "";
+
+
+				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+				$html = ob_get_contents();
+				ob_get_clean();
+
+				//$Invoice->sendMessageToId($ids,'',"Запрос на создание реквизитов поставщика",$_POST['message']);
+				$Invoice->sendMessageToId([42],'',"Запрос на создание реквизитов поставщика",$_POST['message']);
 
 				$message = "Ваш запрос направлен в отдел снабжения";
 				$this->responseClass->addMessage($message,'successful_message',1000);
