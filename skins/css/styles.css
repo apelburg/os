@@ -2951,13 +2951,3 @@ a.someABtn.save_to_doc{
     width: 1px;
 }
 .sgroup_grey_icon{margin-right:3px;}
-
-#window-body-development{
-	padding:10px 8px;
-	border-radius: 5px;
-}
-#window-head-development{
-  padding:10px 8px;
-  background-color: #ff6859;
-  border-radius: 5px;
-}
