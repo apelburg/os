@@ -27,6 +27,16 @@ body{
          -o-user-select: none;
             user-select: none;
 }
+.noselect .select_enabled,
+.noselect.select_enabled{
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  -khtml-user-select: auto;
+  -moz-user-select: all;
+  -ms-user-select: all;
+  -o-user-select: auto;
+  user-select: all;
+}
 .pointer{cursor: pointer}
 .main_container{
   font-family:Arial, Helvetica, sans-serif;

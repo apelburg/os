@@ -28,7 +28,7 @@
         <div <?php echo $phones_click; ?> class="cell"><?php echo $phones; ?></div>
         <?php echo $phones_full_list; ?>
     </td>
-    <td class="<?php echo $emails_class; ?>">
+    <td class="<?php echo $emails_class; ?> select_enabled">
         <div <?php echo $emails_click; ?> class="cell"><?php echo $emails; ?></div>
         <?php echo $emails_full_list; ?>
     </td>
