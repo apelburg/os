@@ -207,7 +207,7 @@ class rtPositionUniversal extends Position_general_Class
 	public function get_query_status($query_num){
 		include_once ('cabinet/cabinet_class.php');
 		$Cabinet = new Cabinet();
-		return $Cabinet->name_cirillic_status[$query_num];
+		return $Cabinet->statusQueryNameArrEn2Ru[$query_num];
 	}
 	// получаем права и id юзера
 	public function user_access($user_access = 0){

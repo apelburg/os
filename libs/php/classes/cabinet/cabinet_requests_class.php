@@ -269,12 +269,12 @@
 					// 	break;					
 
 					default:
-						$this->status_or_button = $this->name_cirillic_status[$this->Query['status']];
+						$this->status_or_button = $this->statusQueryNameArrEn2Ru[$this->Query['status']];
 						// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
 						break;
 				}
 			}else {
-				$this->status_or_button = (isset($this->name_cirillic_status[$this->Query['status']])?$this->name_cirillic_status[$this->Query['status']]:'статус не предусмотрен!!!!'.$this->Query['status']);
+				$this->status_or_button = (isset($this->statusQueryNameArrEn2Ru[$this->Query['status']])?$this->statusQueryNameArrEn2Ru[$this->Query['status']]:'статус не предусмотрен!!!!'.$this->Query['status']);
 			}
 		}
 
@@ -383,7 +383,7 @@
 					// получаем статус 
 					$this->get_button_status_for_request();
 
-					//$this->status_or_button = (isset($this->name_cirillic_status[$this->Query['status']])?$this->name_cirillic_status[$this->Query['status']]:'статус не предусмотрен!!!!'.$this->Query['status']);
+					//$this->status_or_button = (isset($this->statusQueryNameArrEn2Ru[$this->Query['status']])?$this->statusQueryNameArrEn2Ru[$this->Query['status']]:'статус не предусмотрен!!!!'.$this->Query['status']);
 					
 
 					// выделяем красным текстом если менеджер не взял запрос в обработку в течение 5 часов
