@@ -130,6 +130,35 @@ class Supplier extends aplStdAJAXMethod{
 		return $str;
 	}
 
+
+    /**
+     * запрос на создание поставщика
+     */
+    protected function create_supplier_AJAX(){
+
+        $option['href'] = 'http://'.$_SERVER['HTTP_HOST'].'/os/?page=suppliers&section=suppliers_data&suppliers_id=634'.$this->insert_supplier_in_database($_POST['nickName'],$_POST['fullName'],$_POST['dop_info']);
+        $this->responseClass->addResponseFunction('location_href',$option);
+    }
+
+    /**
+     * заведение нового поставщика в базу
+     *
+     * @param $nickName
+     * @param $fullName
+     * @param $dopInfo
+     * @return mixed
+     */
+    private function insert_supplier_in_database($nickName,$fullName,$dopInfo){
+        $query = "INSERT INTO ".SUPPLIERS_TBL." SET ";
+        $query .= " `nickName`=?";
+        $query .= " `fullName`=?";
+        $query .= " `dop_info`=?";
+        $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+        $stmt->bind_param('sss', $nickName,$fullName,$dopInfo) or die($this->mysqli->error);
+
+        return $this->mysqli->insert_id;
+    }
+
 	protected function update_requisites_AJAX() {
 		$query = "
 				UPDATE  `" . SUPPLIER_REQUISITES_TBL . "` SET

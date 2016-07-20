@@ -1,7 +1,7 @@
 <?php 
     ////////////////////////////////////////////////////  AJAX /////////////////////////////////////////////////////////////////
-	if(isset($_POST['ajax_standart_window'])){
-		if($_POST['ajax_standart_window']=='create_supplier'){
+	if(isset($_POST['AJAX'])){
+		if($_POST['AJAX']=='create_supplier'){
 			$nickName = $_POST['nickName'];
 			$dop_info = $_POST['dop_info'];
 			$fullName = $_POST['fullName'];
