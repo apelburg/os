@@ -482,6 +482,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 		protected function create_new_ttn_AJAX(){
 			$message  = '<b>Method:</b> '.__METHOD__.'<br>';
 			$message .= $this->printArr($_POST);
+            $this->prod__message($message);
 			// $this->responseClass->addMessage($message,'system_message');
 			
 			$query = "INSERT INTO `".INVOICE_TTN."` SET ";
@@ -1325,7 +1326,10 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$ttn_arr = $this->get_ttn_row($_POST['invoice_id']);
 			# перебор ттн
 			foreach ($ttn_arr as $val){
-				$count = count(explode(',',$val['positions_num']));
+			    // вырезаем пробелы если они есть
+                $val['positions_num'] = str_replace(" ","",$val['positions_num']);
+
+                $count = count(explode(',',$val['positions_num']));
 //				$count_positions_in_ttn += $count;
 				$ttn_num++;
 
@@ -1774,10 +1778,16 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$query .= ", `lasttouch` = NOW()";
 			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+            $this->prod__window($query);
 		}
+
+
+        /**
+         * удаление строки оплаты
+         */
 		protected function delete_payment_AJAX(){
-			$query = "DELETE FROM `" . INVOICE_PP . "`";
-			$query .= " WHERE `id` = '".(int)$_POST['id']."'";
+		    $this->delete_row_from_table(INVOICE_PP, (int)$_POST['id']);
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			$this->responseClass->response['response'] = "noClose";
 			$this->responseClass->addMessage('Запись была удалена.','successful_message');

@@ -40,10 +40,43 @@ window.getDateTomorrow = () ->
 # округляет и приводит числа к денежному формату
 # строку преобразует в число
 ###
-window.round_money = (num) ->
-  num = Number(num);
-  new_num = Math.ceil((num) * 100) / 100;
-  return num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
+window.round_money = (i_num) ->
+  o_num = Number(i_num);
+#  new_num = Math.round((num) * 100) / 100;
+  return o_num.toFixed(2).replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1");
+
+###
+# возвращает маркер приблизительного значения
+###
+window.markApproximateVal = () ->
+  $('<span/>',{
+    html:'≈',
+    css:{
+      'color':'red',
+      'paddingRight':'5px'
+    }
+  })
+
+###
+# преобразует проценты в соответствии с принятой конвенцией к виду 0.00
+###
+window.round_percent = (i_num) ->
+  o_num = Number(i_num);
+
+  if i_num < 0.01 && i_num > 0
+    o_num = 0.01
+
+  o_num = Math.floor(o_num*100)/100
+  
+  span = $('<span/>',{
+    html:o_num
+  }).data({
+    percent : i_num
+  })
+  if o_num != i_num
+    span.prepend(markApproximateVal())
+  return span
+
 
 ###
 # подсчет скидки
