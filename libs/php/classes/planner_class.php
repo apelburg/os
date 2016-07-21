@@ -2,8 +2,8 @@
 
     //echo date("Y-m-d H:i:s");
     // не менять $_SERVER['DOCUMENT_ROOT'].'/os/ на ROOT потому что к этому файлу обращается скрипт из крона
-	require_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/mysqli.php');
-	require_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/mysql.php');
+	require_once ($_SERVER['DOCUMENT_ROOT'].'/libs/mysqli.php');
+	require_once ($_SERVER['DOCUMENT_ROOT'].'/libs/mysql.php');
 	require_once ($_SERVER['DOCUMENT_ROOT'].'/libs/php/classes/aplStdClass.php');
 	require_once ($_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/client_class.php');
 	class Planner{

@@ -329,7 +329,7 @@
 	include('./skins/tpl/clients/client_list/top_plank.tpl');
 	include('./skins/tpl/clients/client_list/list.tpl');
 
-	echo 'asd65ds1ads3c21dasv3da2s1v32asd1vasd3v24d 12a';
+	// echo 'asd65ds1ads3c21dasv3da2s1v32asd1vasd3v24d 12a';
 	$content = ob_get_contents();
 	ob_get_clean();
 	

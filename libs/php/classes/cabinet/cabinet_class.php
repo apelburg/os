@@ -1,45 +1,68 @@
 <?php
+
+/**
+ * Class Cabinet
+ *
+ * использование AJAX
+ *
+ * вывод системных сообщений сообщений
+ * echo_message - имя функции вывода
+ * $message - текст сообщения
+ * $message_type - тип сообщения
+ * - system_message (orange)
+ * - error_message  (red)
+ * - successful_message (green)
+ */
     class Cabinet extends aplStdAJAXMethod{
-    	///////////////////////////////
-    	// дополнения к запросам в базе
-    	///////////////////////////////
-    		// заказ
-		    	// фильтр
-		    	protected $filtres_order = '';
-		    	// сортировка по умолчанию
-		    	protected $filtres_order_sort = ' ORDER BY `id` DESC';
-		    // документ
-			    // фильтр
-				protected $filtres_specificate = '';
-				// сортировка по умолчанию
-				protected $filtres_specificate_sort = '';
-			// позиция
-				// фильтр
-				protected $filtres_position = '';
-				// сортировка по умолчанию
-				protected $filtres_position_sort = '';
-			// услуги	
-				// фильтр
-				protected $filtres_services = '';
-				// сортировка по умолчанию
-				protected $filtres_services_sort = '';
+        /**
+         * дополнения к запросам в базе
+         * @var string
+         */
+
+        // заказ
+        protected $filtres_order = '';
+        protected $filtres_order_sort = ' ORDER BY `id` DESC';  // сортировка по умолчанию
+        // документ
+        protected $filtres_specificate = '';                    // фильтр
+        protected $filtres_specificate_sort = '';               // сортировка по умолчанию
+        // позиция
+        protected $filtres_position = '';                       // фильтр
+        protected $filtres_position_sort = '';                  // сортировка по умолчанию
+        // услуги
+        protected $filtres_services = '';                       // фильтр
+        protected $filtres_services_sort = '';                  // сортировка по умолчанию
 
 
-    	// содержит html фильтров по кабинету
-    	public $filtres_html; // array();
+        /**
+         * содержит html фильтров по кабинету
+         * @var array
+         */
+    	public $filtres_html;
 
-    	// услуга с которой работает система в данный момент времени, содержит массив строки из 
-    	protected $Service; // array();
+        /**
+         * услуга с которой работает система в данный момент времени, содержит массив строки из
+         * @var array
+         */
+    	protected $Service;
 
-    	// содержит массив всех прикреплённых к позиции услуг
-    	protected $Services_for_position_arr; // array();
+        /**
+         * содержит массив всех прикреплённых к позиции услуг
+         * @var array
+         */
+    	protected $Services_for_position_arr;
 
-    	// содержит массив всех прикреплённых к позиции услуг отсортирована по подразделениям
-    	protected $Services_for_position_arr_sort_by_performer; // array();
+        /**
+         * содержит массив всех прикреплённых к позиции услуг отсортирована по подразделениям
+         * @var array
+         */
+    	protected $Services_for_position_arr_sort_by_performer;
 
 
-    	// содержит массив всех существующих услуг содержащихся в OUR_USLUGI_LIST (все предоставляемые услуги)
-    	protected $Services_list_arr; // array();
+        /**
+         * содержит массив всех существующих услуг содержащихся в OUR_USLUGI_LIST (все предоставляемые услуги)
+         * @var array
+         */
+    	protected $Services_list_arr;
 
     	
     	// список станков
@@ -59,7 +82,10 @@
     		);
 
 
-    	// исполнитель услуг по правам
+        /**
+         * исполнитель услуг по правам
+         * @var array
+         */
     	protected $performer = array(
     		'0' => 'noname', // ответственный не указан
 			'1' => 'Админ',
@@ -72,205 +98,200 @@
 			'9' => 'Дизайнер'
 		);
 
-		/*
-			вывод системных сообщений сообщений
-			echo_message - имя функции вывода
-			$message - текст сообщения (контент кодируем bsae64)
-			$message_type - тип сообщения
-				- system_message (orange)
-				- error_message  (red)
-				- successful_message (green)
-		*/
+		/**
+         * СТАТУСЫ ПОДРАЗДЕЛЕНИЙ ПО ПОЗИЦИЯМ, ЗАКАЗУ И ПРЕДЗАКАЗУ
+         */
 
-    	////////////////////////////////////////////////////////////////////////////////////
-    	// -- START -- СТАТУСЫ ПОДРАЗДЕЛЕНИЙ ПО ПОЗИЦИЯМ, ЗАКАЗУ И ПРЕДЗАКАЗУ -- START -- //
-    	////////////////////////////////////////////////////////////////////////////////////
-	    	// допуски пользователя
-	    	protected $user_access = 0;
+        /**
+         * допуски пользователя
+         * @var int
+         */
+        protected $user_access = 0;
 
-	    	// статусы запроса
-			public $name_cirillic_status = array(
-				'new_query' => 'новый запрос',
-				'not_process' => 'не обработан менеджером',
-				'taken_into_operation' => 'на рассмотрении',
-				'in_work' => 'в работе',
-				'history' => 'история'
+        /**
+         * @var array
+         */
+		public $statusQueryNameArrEn2Ru = array(
+			'new_query' => 'новый запрос',
+			'not_process' => 'не обработан менеджером',
+			'taken_into_operation' => 'на рассмотрении',
+			'in_work' => 'в работе',
+			'history' => 'история'
+		);
+
+		// глобальные статусы ПРЕДЗАКАЗА(заказа)
+    	protected $paperwork_status = array(
+    		// ПРЕДЗАКАЗ
+			'being_prepared'=>'Предзаказ',
+			'in_operation'=>'Запуск в работу',
+        );
+
+    	// глобальные статусы ЗАКАЗА
+    	// содержится в базе в `os__cab_orders_list` в global_status
+    	protected $order_status = array(
+			// ЗАКАЗ
+			'in_operation'=>'Запуск в работу', // нельзя выбрать // вытекает из статусов BUCH
+			'in_work'=>'В работе', // вытекает из кнопки Запуск в работу
+			// 'ready_for_shipment'=>'Готов к отгрузке',
+			'shipped'=>'Отгружен', // вытекает из статусов позиций
 			);
 
-			// глобальные статусы ПРЕДЗАКАЗА(заказа)
-	    	protected $paperwork_status = array(
-	    		// ПРЕДЗАКАЗ
+    	protected $order_service_status = array(
+    		/*
+				при выборе данного статуса
+    		*/
+			'query_in_work' => 'Перевести заказ в работу',
+			'in_operation' => 'Запуск в работу',
+    		'maket_without_payment' =>'Макет без оплаты',
+    		'paused'=>'Заказ приостановлен',
+    		'paperwork_paused' => 'Предзаказ приостановлен',
+    		'cancelled'=>'Аннулирован'
 
-				'being_prepared'=>'Предзаказ',
-				'in_operation'=>'Запуск в работу',
-				);
+        );
 
-	    	// глобальные статусы ЗАКАЗА
-	    	// содержится в базе в `os__cab_orders_list` в global_status
-	    	protected $order_status = array(
-				// ЗАКАЗ
-				'in_operation'=>'Запуск в работу', // нельзя выбрать // вытекает из статусов BUCH
-				'in_work'=>'В работе', // вытекает из кнопки Запуск в работу
-				// 'ready_for_shipment'=>'Готов к отгрузке',
-				'shipped'=>'Отгружен', // вытекает из статусов позиций				
-				);
+		// статусы БУХ - вывод в select
+	    protected $buch_status = array(
+	    	'is_pending' => 'ожидает обработки',
+	    	'score_exhibited' => 'счёт выставлен ',
+	    	'ttn_created' => 'ТТН готова',
+	    	//////////////////////////
+	    	//	статусы разрешающие перевод заказа в работу
+	    	//////////////////////////
+			'payment' => 'оплачен',
+			'partially_paid' => 'частично оплачен',
+			'letter_of_guarantee' => 'гарантийное письмо',
+			'ogruzochnye_accepted' => 'огрузочные приняты (подписанные) ВСЕ',
+			'client_collateral_returns' => 'Залог клиенту возвращен',
+			'refund_in_a_row_ok' => 'Деньги по счёту возвращены'// -> статус предзаказа =  'shipped'
+			// 'return_order_in_paperorder' => 'вернуть заказ в предзаказ'
+	    );
+		// статусы БУХ - сервисные (если уже не выставлены)
+	    protected $buch_status_service = array(
+	    	'request_expense'=>'Запрошен счёт',
+	    	'reget_the_bill' => 'Перевыставить счёт',
+	    	'refund_in_a_row' => 'Возврат денег по счёту',
+			'get_the_pko' => 'Запрошен ПКО',
+			'get_the_bill_oferta' => 'Запрошен счёт-оферта',
+			'returns_client_collateral' => 'Возврат залога клиенту',
+			'cancelled'=>'Аннулирован',
+			'get_ttn' =>'Запрошена ТТН',
+			'uslovno_oplachen' => 'Условно оплачен',
+			// 'get_vaselin' => 'Берите вазелин и дуйте к начальству' //
+			// 'maket_without_payment' =>'Макет без оплаты'
+	    );
 
-	    	protected $order_service_status = array(
+		// комманды менеджера  (при клике на статус буха меню)
+		protected $commands_men_for_buch = array(
+			'reget_the_bill' => 'перевыставить счёт',
+			'returns_client_collateral' => 'вернуть залог клиенту',
+			'refund_in_a_row' => 'вернуть денеги по счёту',
+			'get_ttn' =>'Запросить отгрузочные',
+			'cancelled'=>'статус "Аннулировано"'
+		);
+
+			
+
+	    // типы счетов которые мы можем запросить
+	    protected $type_the_bill =array(
+	    	'the_bill' => array(
+	    		'счёт на оплату',// кто, что
+	    		'счёта на оплату' // кого, чего
+	    		),
+	    	'the_bill_offer' => array(
 	    		/*
-					при выборе данного статуса
+					в будущем должен создаваться минуя алгоритм создания спецификации
+					НА ОБСУЖДЕНИЕ С АНДРЕЕМ !!!!!!
 	    		*/
-				'query_in_work' => 'Перевести заказ в работу',
-				'in_operation' => 'Запуск в работу',
-	    		'maket_without_payment' =>'Макет без оплаты',  
-	    		'paused'=>'Заказ приостановлен', 
-	    		'paperwork_paused' => 'Предзаказ приостановлен',
-	    		'cancelled'=>'Аннулирован'
-
-	    		);
-
-			// статусы БУХ - вывод в select
-	    	protected $buch_status = array(
-	    		'is_pending' => 'ожидает обработки', 
-	    		'score_exhibited' => 'счёт выставлен ',
-	    		'ttn_created' => 'ТТН готова',
-	    		//////////////////////////
-	    		//	статусы разрешающие перевод заказа в работу
-	    		//////////////////////////
-				'payment' => 'оплачен',
-				'partially_paid' => 'частично оплачен',
-				'letter_of_guarantee' => 'гарантийное письмо', 	
-				'ogruzochnye_accepted' => 'огрузочные приняты (подписанные) ВСЕ',
-				'client_collateral_returns' => 'Залог клиенту возвращен',
-				'refund_in_a_row_ok' => 'Деньги по счёту возвращены'// -> статус предзаказа =  'shipped'
-				// 'return_order_in_paperorder' => 'вернуть заказ в предзаказ' 	    		
-	    	);
-			// статусы БУХ - сервисные (если уже не выставлены) 
-	    	protected $buch_status_service = array(
-	    		'request_expense'=>'Запрошен счёт',
-	    		'reget_the_bill' => 'Перевыставить счёт', 
-	    		'refund_in_a_row' => 'Возврат денег по счёту', 
-				'get_the_pko' => 'Запрошен ПКО',
-				'get_the_bill_oferta' => 'Запрошен счёт-оферта',
-				'returns_client_collateral' => 'Возврат залога клиенту',
-				'cancelled'=>'Аннулирован',
-				'get_ttn' =>'Запрошена ТТН',
-				'uslovno_oplachen' => 'Условно оплачен',
-				// 'get_vaselin' => 'Берите вазелин и дуйте к начальству' //
-				// 'maket_without_payment' =>'Макет без оплаты'
-	    	);
-			
-			// комманды менеджера  (при клике на статус буха меню)
-			protected $commands_men_for_buch = array(
-				'reget_the_bill' => 'перевыставить счёт', 
-				'returns_client_collateral' => 'вернуть залог клиенту',
-				'refund_in_a_row' => 'вернуть денеги по счёту', 
-				'get_ttn' =>'Запросить отгрузочные',
-				'cancelled'=>'статус "Аннулировано"'
-			);
-
-			
-
-	    	// типы счетов которые мы можем запросить
-	    	protected $type_the_bill =array(
-	    		'the_bill' => array(
-	    			'счёт на оплату',// кто, что
-	    			'счёта на оплату' // кого, чего
-	    			),
-	    		'the_bill_offer' => array( 
-	    			/*
-						в будущем должен создаваться минуя алгоритм создания спецификации
-						НА ОБСУЖДЕНИЕ С АНДРЕЕМ !!!!!!
-	    			*/
-	    			'счёт - оферта',// кто, что
-	    			'счёта - оферты' // кого, чего
-	    			),
-	    		// 'the_bill_for_simples' => array(
-	    		// 	'счёт на образцы',
-	    		// 	'счёта на образцы'
-	    		// 	),
-	    		// 'prihodnik' => array(
-	    		// 	'приходник',
-	    		// 	'приходника
-	    		// 	'),
-	    		);
+	    		'счёт - оферта',// кто, что
+	    		'счёта - оферты' // кого, чего
+	    		),
+	    	// 'the_bill_for_simples' => array(
+	    	// 	'счёт на образцы',
+	    	// 	'счёта на образцы'
+	    	// 	),
+	    	// 'prihodnik' => array(
+	    	// 	'приходник',
+	    	// 	'приходника
+	    	// 	'),
+        );
 
 
 	    	
-			// статусы склад
-			protected $statuslist_sklad = array(
-				'no_goods' => 'нет в наличии',
-				// 'waiting' => 'ожидаем',
-				'goods_in_stock' => 'принято на склад', // ->
-				'sended_on_outsource' => 'отправлено на аутсорс',
-				'ready_for_shipment'  => 'готов к отгрузке',
-				// 'goods_shipped_for_client_part' => 'позиция частично отгружена',
-				'goods_shipped_for_client' => 'отгружен клиенту'
-			);
-				
-			// статусы СНАБ
-			protected $statuslist_snab = array(
-				// 'adopted' => 'Принят',
-				// 'maquette_adopted' => 'Макет принят',
-				// 'not_adopted' => 'Не принят',
-				'maquette_maket' => 'Ожидает макет',
-				'waits_union' => 'Ожидает объединения',
-				// 'products_capitalized_warehouse' => 'Продукция оприходована складом',// сервисный статус, вытекает из статуса склада - принято на склад
-				'waits_the_bill_of_supplier' => 'Ожидает счет от поставщика',
-				// 'on_outsource' => 'уехало на аутсорсинг',
-				'waits_the_sell_of_supplier' => 'Ожидаем отправку постащика',
-				'products_bought' => 'Продукция выкуплена',
-				'to_bought_products' => 'Выкупить продукцию',
-				'waits_products' => 'Продукция ожидается:',
-				'in_production' => 'В Производстве', // -> запуск всех услуг кроме доставки и дизайна, при этом услуга Диза ставится на "услуга выполнена"
-				'ready_for_shipment' => 'Готов к отгрузке',	
-				// 'goods_shipped_for_client' => 'отгружен клиенту',			
-				'question' => 'Вопрос'
-			);
-			// статусы СНАБ сервисные
-			protected $statuslist_snab_service = array(
-				'in_operation' => 'Ожидает запуска', // статус удалён
-				'is_pending' => 'Ожидает обработки',
-			);
+		// статусы склад
+		protected $statuslist_sklad = array(
+			'no_goods' => 'нет в наличии',
+			// 'waiting' => 'ожидаем',
+			'goods_in_stock' => 'принято на склад', // ->
+			'sended_on_outsource' => 'отправлено на аутсорс',
+			'ready_for_shipment'  => 'готов к отгрузке',
+			// 'goods_shipped_for_client_part' => 'позиция частично отгружена',
+			'goods_shipped_for_client' => 'отгружен клиенту'
+		);
+
+		// статусы СНАБ
+		protected $statuslist_snab = array(
+			// 'adopted' => 'Принят',
+			// 'maquette_adopted' => 'Макет принят',
+			// 'not_adopted' => 'Не принят',
+			'maquette_maket' => 'Ожидает макет',
+			'waits_union' => 'Ожидает объединения',
+			// 'products_capitalized_warehouse' => 'Продукция оприходована складом',// сервисный статус, вытекает из статуса склада - принято на склад
+			'waits_the_bill_of_supplier' => 'Ожидает счет от поставщика',
+			// 'on_outsource' => 'уехало на аутсорсинг',
+			'waits_the_sell_of_supplier' => 'Ожидаем отправку постащика',
+			'products_bought' => 'Продукция выкуплена',
+			'to_bought_products' => 'Выкупить продукцию',
+			'waits_products' => 'Продукция ожидается:',
+			'in_production' => 'В Производстве', // -> запуск всех услуг кроме доставки и дизайна, при этом услуга Диза ставится на "услуга выполнена"
+			'ready_for_shipment' => 'Готов к отгрузке',
+			// 'goods_shipped_for_client' => 'отгружен клиенту',
+			'question' => 'Вопрос'
+		);
+		// статусы СНАБ сервисные
+		protected $statuslist_snab_service = array(
+			'in_operation' => 'Ожидает запуска', // статус удалён
+			'is_pending' => 'Ожидает обработки',
+		);
 			
 
 			
 
-			// статусы плёнок для услуги
-			protected $status_film_photos = array(
-				// админ
-				1 => array(
-					'проверить наличие', // диз не видит
-					'нужно делать',
-					'в наличии',
-					'не требуются', // диз не видит
-					'готовы к отправке',
-					'отправлены',
-					'получены', // диз не видит
-					'клише клиента'
-					),
-				// снабжениец
-				// 8 => array(),
-				// менеджер
-				5 => array(
-					'проверить наличие', // диз не видит
-					'в наличии',
-					'клише клиента',
-					'нужно делать',
-					'не требуются' // диз не видит
-					),
-				// дизайн
-				9 => array(
-					'готовы к отправке',
-					'отправлены на фотовывод',
-					'клише заказано'
-					),
-				// производство 
-				4 => array(
-					'перевывод',
-					'в наличии', // диз не видит
-					'получены' // // диз не видит
-					)
-			); 
+		// статусы плёнок для услуги
+		protected $status_film_photos = array(
+			// админ
+			1 => array(
+				'проверить наличие', // диз не видит
+				'нужно делать',
+				'в наличии',
+				'не требуются', // диз не видит
+				'готовы к отправке',
+				'отправлены',
+				'получены', // диз не видит
+				'клише клиента'
+				),
+			// снабжениец
+			// 8 => array(),
+			// менеджер
+			5 => array(
+				'проверить наличие', // диз не видит
+				'в наличии',
+				'клише клиента',
+				'нужно делать',
+				'не требуются' // диз не видит
+				),
+			// дизайн
+			9 => array(
+				'готовы к отправке',
+				'отправлены на фотовывод',
+				'клише заказано'
+				),
+			// производство
+			4 => array(
+				'перевывод',
+				'в наличии', // диз не видит
+				'получены' // // диз не видит
+				)
+		);
 
 
 
@@ -1528,8 +1549,13 @@
                 $result = $mysqli->query($query) or die($mysqli->error);
                 return true;
 			}
-			// записывает статус запроса
-			protected function chenge_query_status_for_id_row($id,$new_status){
+
+        /**
+         * @param $id
+         * @param $new_status
+         * @return bool
+         */
+			protected function updateQueryStatus($id, $new_status){
 				// устанавливаем статус запроса на history
 				global $mysqli;
                 $query = "UPDATE `".RT_LIST."` SET `status`= '".$new_status."'"; 
@@ -3142,7 +3168,7 @@
 					}
 				}
 
-				if($this->chenge_query_status_for_id_row($_POST['row_id'], $_POST['query_status'])){
+				if($this->updateQueryStatus((int)$_POST['row_id'], $_POST['query_status'])){
 					$section_locate= array(
 						'not_process' => 'no_worcked_men',
 						'taken_into_operation' => 'query_taken_into_operation',
@@ -3167,14 +3193,21 @@
 						$link = '?page=client_folder&client_id='.$_POST['client_id'].'&query_num='.$_POST['query_num'];
 					}
 					
+                    // исключение в бизнеслогике при переводе заказа в архив
+                    if($_POST['query_status'] == 'history'){
+                        $message = 'Статус успешно изменён. Запрос был перемещён в архив.';
+                        $this->responseClass->addMessage($message,'successful_message');
+                        $this->responseClass->addResponseFunction('reload_order_tbl');
+                        return;
+                    }else{
+                        // переадресация на другую вкладку
+                        $option['href'] = 'http://'.$_SERVER['HTTP_HOST'].'/os/'.$link;
+                        $option['timeout'] = '2000';
+                        $this->responseClass->addResponseFunction('location_href',$option);
+                        $message = 'Статус успешно изменён. Вы будете перенаправлены на другую вкладку.';
+                        $this->responseClass->addMessage($message,'successful_message');
+                    }
 
-
-					// переадресация на другую вкладку
-					$option['href'] = 'http://'.$_SERVER['HTTP_HOST'].'/os/'.$link;
-					$option['timeout'] = '2000';
-					$this->responseClass->addResponseFunction('location_href',$option);
-					$message = 'Статус успешно изменён. Вы будете перенаправлены на другую вкладку.';
-					$this->responseClass->addMessage($message,'successful_message');	
 					// $this->responseClass->addResponseFunction('reload_order_tbl');
 				}else{
 					$message = "Что-то пошло не так.";
@@ -3183,116 +3216,7 @@
 				// exit;
 			}
 
-			// // вывод меню комманд по заказу
-			// protected function get_commands_for_order_status_AJAX(){
-			// 	if($this->user_access != 1 and $this->user_access != 5){
-			// 		$message = "У вас не достаточно прав для изменения статуса Заказа / предзаказа.";
-			// 		echo '{"response":"OK","function":"echo_message","message_type":"system_message","message":"'.base64_encode($message).'"}';
-			// 		exit;
-			// 	}
-			// 	global $mysqli;
-			// 	// запрос информации по заказу
-			// 	$query = "SELECT * FROM `".CAB_ORDER_ROWS."` WHERE `id` = '".(int)$_POST['order_id']."';";
-			// 	$this->Order = array();
-			// 	// echo $query;
-			// 	$result = $mysqli->query($query) or die($mysqli->error);
-			// 	if($result->num_rows > 0){
-			// 		while($row = $result->fetch_assoc()){
-			// 			$this->Order = $row;
-			// 		}
-			// 	}
 
-
-			// 	$html = '';
-			// 	$n = 0;
-			// 	$html .= '<ul id="get_commands_men_for_order" class="check_one_li_tag">';
-			// 	$first_val = '';
-			// 	$status_order_enablsed_arr = array();
-
-			// 	if($this->user_access == 5){
-
-			// 		switch ($this->Order['global_status']) {
-			// 			case 'paused': // приостановлен
-			// 				$status_order_enablsed_arr[] = 'in_work';
-			// 				break;
-			// 			case 'in_work': // в работе
-			// 				$status_order_enablsed_arr[] = 'paused';
-			// 				$status_order_enablsed_arr[] = 'cancelled';
-			// 				break;
-			// 			case 'in_operation': // запуск в работу
-			// 				$status_order_enablsed_arr[] = 'in_work';
-			// 				$status_order_enablsed_arr[] = 'cancelled';
-			// 				$status_order_enablsed_arr[] = 'paused';
-							
-			// 				break;					
-			// 			case 'being_prepared': // в оформлении
-
-			// 				$status_order_enablsed_arr[] = 'maket_without_payment';
-			// 				$status_order_enablsed_arr[] = 'query_in_work';
-			// 				$status_order_enablsed_arr[] = 'cancelled';
-			// 				$status_order_enablsed_arr[] = 'paperwork_paused';
-			// 				break;
-			// 			case 'paperwork_paused': // предзаказ приостановлен
-			// 				$status_order_enablsed_arr[] = 'being_prepared';
-			// 				break;
-			// 			default:					
-			// 				break;
-			// 		}
-					
-			// 		// елси комманд для данного статуса не нашлось
-			// 		if(count($status_order_enablsed_arr) == 0){
-			// 			$message = "Для данного статуса Заказа / Предзаказа не предусмотрено ни одной комманды.";
-			// 			echo '{"response":"OK","function":"echo_message","message_type":"system_message","message":"'.base64_encode($message).'"}';
-			// 			exit;
-			// 		}
-					
-			// 		foreach ($status_order_enablsed_arr as $key => $name_en) {
-			// 			if(isset($this->order_service_status[$name_en])){
-			// 				$name_ru = $this->order_service_status[$name_en];
-			// 			}else if(isset($this->order_status[$name_en])){
-			// 				$name_ru = $this->order_status[$name_en];
-			// 			}else{
-			// 				$name_ru = 'Имя <strong>'.$name_en.'</strong> не известно системе';
-			// 			}
-			// 			$html .= '<li data-name_en="'.$name_en.'" '.(($n==0)?'class="checked"':'').'>'.$name_ru.'</li>';
-			// 			if($n==0){$first_val = $name_en;}
-			// 			$n++;
-			// 		}
-						
-			// 	}else{
-			// 		$result = array_merge ($this->order_service_status, $this->order_status);
-			// 		$status_order_enablsed_arr = array_merge($this->paperwork_status, $result);
-
-			// 		foreach ($status_order_enablsed_arr as $name_en => $name_ru) {
-			// 			$html .= '<li data-name_en="'.$name_en.'" '.(($n==0)?'class="checked"':'').'>'.$name_ru.'</li>';
-			// 			if($n==0){$first_val = $name_en;}
-			// 			$n++;
-			// 		}
-			// 	}
-
-
-			// 	$html .= '</ul>';
-
-
-			// 	$html .= '<form>';
-
-			// 	$html .= '<input type="hidden" name="status_order" value="'.$first_val.'">';	
-			// 	$html .= '<input type="hidden" name="AJAX" value="command_for_change_status_order">';	
-
-			// 	// удаляем пеерменную AJAX - она содержит название метода AJAX, оно изменится 
-			// 	unset($_POST['AJAX']);
-			// 	// перебираем остальные значения для передачи их далее
-			// 	foreach ($_POST as $key => $value) {
-			// 		$html .= '<input type="hidden" name="'.$key.'" value="'.$value.'">';
-			// 	}
-
-			// 	$html .= '</form>';
-
-			// 	echo '{"response":"show_new_window", "html":"'.base64_encode($html).'","title":"Выберите действие:"}';
-			// 	// echo '{"response":"OK","html":"'.base64_encode($html).'"}';
-			// 	// echo 'base';
-			// 	exit;
-			// }	
 
 			// статусы заказов
 			protected function command_for_change_status_order_AJAX(){
