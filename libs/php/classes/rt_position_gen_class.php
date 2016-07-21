@@ -32,7 +32,7 @@ class Position_general_Class{
 		
 		$this->user_access = $this->get_user_access_Database_Int($this->user_id);
 
-		$this->id_position = isset($_GET['id'])?$_GET['id']:0;
+		$this->id_position = isset($_GET['id'])?(int)$_GET['id']:0;
 		
 		// экземпляр класса продукции каталог
 		$this->POSITION_CATALOG = new Position_catalog($this->user_access);
@@ -54,8 +54,8 @@ class Position_general_Class{
 	/**
 	 *	для генерации отвта выделен класс responseClass()
 	 *
-	 *	метод имеет область видимости private 
-	 *  НО должен быть protected, для этого необходимо произвести рефакторинг всех 
+	 *	метод имеет область видимости private
+	 *  НО должен быть protected, для этого необходимо произвести рефакторинг всех
 	 *  AJAX методов и преобразовать их ответы в соответствии с новыми правилами
 	 *
 	 *	@param name		method name width prefix _AJAX
@@ -82,7 +82,7 @@ class Position_general_Class{
 		}					
 	}
 
-	/////////////////  AJAX METHODs  ///////////////// 
+	/////////////////  AJAX METHODs  /////////////////
 
 	protected function save_tz_text_AJAX(){
 		global $mysqli;
@@ -115,7 +115,7 @@ class Position_general_Class{
 		// echo '</pre>';
 			
 		$this->responseClass->addResponseFunction($function,$options);
-		// $this->responseClass->addResponseOptions($options);	
+		// $this->responseClass->addResponseOptions($options);
 	}
 
 	// редактирование темы в запросе

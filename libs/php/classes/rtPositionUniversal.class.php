@@ -1,30 +1,33 @@
 <?php
-/** 
- * Правила комментирования можно посмотреть на странице 
- * описания http://www.oracle.com/technetwork/java/javase/documentation/index-137868.html#@since
- * 
- */
 /**
- *	унифицированный класс работы с позицией
  *
- *	@author  	Алексей Капитонов
- *	@version 	12:33 17.12.2015
+ * унифицированный класс работы с позицией
+ *
+ * Class rtPositionUniversal
+ * @author  	Алексей Капитонов
+ * @version 	12:33 17.12.2015
  */
 class rtPositionUniversal extends Position_general_Class
 {	
 	public $user_id;
+	public $edit_enabled = 0;
 	public $user_access;
 	public $position;
+
 	function __construct($user_access = 0){
+
 		$this->user_access($user_access);
 		
 		// подключаемся к базе
 		$this->db();
-		
+
+		$this->user_id = isset($_SESSION['user_id'])?(int)$_SESSION['user_id']:0;
+
 		// получаем позицию
-		
-		
 		$this->getPosition((isset($_GET['id']) && (int)$_GET['id']>0)?$_GET['id']:'0','id');
+
+		$this->checkEditPositionProc();
+
 		$_GET['query_num'] = $this->position['query_num'] ;
 		
 
@@ -34,7 +37,27 @@ class rtPositionUniversal extends Position_general_Class
 		// передававться через ключ AJAX
 		if(isset($_POST['AJAX'])){
 			$this->_AJAX_();
-		}			
+		}
+	}
+
+	/**
+	 * процедура устанавливает разрешение на редактирование позиции
+	 */
+	private function checkEditPositionProc(){
+		echo $this->position['manager_id'] .' -- '.$this->user_id. '*** '.$this->user_access;
+		if ($this->position['status'] == 'in_work' && $this->user_id == $this->position['manager_id'] || $this->user_access == 1){
+			$this->edit_enabled = 1;
+		}
+	}
+
+	/**
+	 * возвращает запрещающий редактирование класс
+	 */
+	public function getEditPositionClass(){
+		if ($this->edit_enabled == 0){
+			return '  not_edit';
+		}
+		return '';
 	}
 
 	protected function getFirstPositionImg_AJAX(){
@@ -197,21 +220,44 @@ class rtPositionUniversal extends Position_general_Class
 		
 		
 	}
+
 	/**
-	 *	возвращает статуы
+	 * получает статус
 	 *
-	 *	@param 		query_num
-	 *	@author  	Алексей Капитонов
-	 *	@version 	12:09 12.01.2016
+	 * @param $query_status
+	 * @return string
 	 */
-	public function get_query_status($query_num){
-		include_once ('cabinet/cabinet_class.php');
-		$Cabinet = new Cabinet();
-		return $Cabinet->statusQueryNameArrEn2Ru[$query_num];
+	public function get_query_status($query_status){
+		$statusRu = "ВНИМАНИЕ!!! неизвестный статус $query_status";
+
+		$this->Cabinet = $this->getCabinetClass();
+
+		if (isset($this->Cabinet->statusQueryNameArrEn2Ru[trim($query_status)])){
+			$statusRu = $this->Cabinet->statusQueryNameArrEn2Ru[trim($query_status)];
+		}
+
+		return $statusRu;
 	}
-	// получаем права и id юзера
+
+	/**
+	 * @return Cabinet Class
+	 */
+	private function getCabinetClass(){
+		if(isset($this->Cabinet)){
+			return $this->Cabinet;
+		}
+		include_once ('cabinet/cabinet_class.php');
+		$this->Cabinet = new Cabinet();
+		return $this->Cabinet;
+	}
+
+	/**
+	 * получаем права и id юзера
+	 * @param int $user_access
+	 */
 	public function user_access($user_access = 0){
 		$this->user_id = $_SESSION['access']['user_id'];
+
 		if(!isset($this->user_access)){
 			if ($user_access != 0) {
 				$this->user_access = $user_access;
