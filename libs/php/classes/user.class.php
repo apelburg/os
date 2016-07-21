@@ -27,6 +27,7 @@ class UserApi  extends aplStdAJAXMethod
 	 */
 	public function __construct()
 	{
+
 		// connectin to database
 		$this->db();
 
