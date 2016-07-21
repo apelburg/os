@@ -733,6 +733,13 @@ div#js-alert_union{
 	color: #999999;
 	font-size:12px;
 }
+#js--payment-window--head_info-table tr td span.span-greenText{
+	color: #119916;
+
+}
+#js--payment-window--head_info-table tr td span.span-redText{
+	color: #ff574c;
+}
 #js--payment-window--head_info-table tr td span.span-boldText{
 	font-weight: bold;
 }

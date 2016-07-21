@@ -2278,6 +2278,7 @@ class paymentWindow
         closeOnEscape: true,
         close: (event, ui) ->
           if _this.flag_edit > 0
+            # отправляем оповещение менеджеру
             new sendAjax('payment_window_is_editable',data_row)
           $('#quick_button_div .button').eq(0).removeClass('checked')
       })

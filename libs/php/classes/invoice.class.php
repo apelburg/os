@@ -406,7 +406,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$message .= 'в приходы по счёту № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') были внесены изменения<br>';
 			$message .= 'Сумма счета: '.$_POST['price_out'].'р.<br>';
 			$message .= 'Cумма оплаты на данный момент составляет: '.$_POST['price_out_payment'].' р.<br>';
-			$message .= 'что составляет '.$_POST['percent_payment'].'% от суммы счёта';
+			$message .= 'что составляет '.round((int)$_POST['percent_payment'], 2).'% от суммы счёта';
 			$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
 			# подгружаем шаблон
 
