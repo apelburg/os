@@ -7,21 +7,49 @@
  * @author  	Алексей Капитонов
  * @version 	12:33 17.12.2015
  */
-class rtPositionUniversal extends Position_general_Class
+class rtPositionUniversal extends aplStdAJAXMethod
 {	
 	public $user_id;
 	public $edit_enabled = 0;
 	public $user_access;
 	public $position;
 
+
+    // форматируем денежный формат + округляем
+    public function round_money($num){
+        return number_format(round($num, 2), 2, '.', '');
+    }
+    // подсчёт процентов наценки
+    public function get_percent_Int($price_in,$price_out){
+        $per = ($price_in!= 0)?$price_in:0.09;
+        $percent = round((($price_out-$price_in)*100/$per),2);
+        return $percent;
+    }
+
 	function __construct($user_access = 0){
+        $this->db();
 
-		$this->user_access($user_access);
-		
-		// подключаемся к базе
-		$this->db();
+        $this->setUserId(isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0);
 
-		$this->user_id = isset($_SESSION['user_id'])?(int)$_SESSION['user_id']:0;
+        if ($this->getUserId() > 0){
+            $id = $this->getUserId();
+            $access = $this->get_user_access_Database_Int( $id );
+            $this->setUserAccess( $access );
+        }
+
+        // calls ajax methods from POST
+        if(isset($_POST['AJAX'])){
+            $this->_AJAX_($_POST['AJAX']);
+            $this->responseClass->response['data']['access'] = $this->user_access;
+            $this->responseClass->response['data']['id'] = $this->user_id;
+        }
+
+        // calls ajax methods from GET
+        ## the data GET --- on debag time !!!
+        if(isset($_GET['AJAX'])){
+            $this->_AJAX_($_GET['AJAX']);
+        }
+
 
 		// получаем позицию
 		$this->getPosition((isset($_GET['id']) && (int)$_GET['id']>0)?$_GET['id']:'0','id');
@@ -34,21 +62,80 @@ class rtPositionUniversal extends Position_general_Class
 		// получаем кириллическое название статуса
 		$this->queryStatus = $this->get_query_status($this->position['status']);
 
-		// передававться через ключ AJAX
-		if(isset($_POST['AJAX'])){
-			$this->_AJAX_();
-		}
+//        echo '<pre>';
+//        print_r($this);
+//        echo '</pre>';
 	}
+    /**
+     * @return int
+     */
+    public function getUserAccess()
+    {
+        return $this->user_access;
+    }
+
+    /**
+     * @param int $user_access
+     */
+    public function setUserAccess($user_access)
+    {
+        $this->user_access = $user_access;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUserId()
+    {
+        return $this->user_id;
+    }
+
+    /**
+     * @param int $user_id
+     */
+    public function setUserId($user_id)
+    {
+        $this->user_id = $user_id;
+    }
 
 	/**
 	 * процедура устанавливает разрешение на редактирование позиции
 	 */
 	private function checkEditPositionProc(){
-		echo $this->position['manager_id'] .' -- '.$this->user_id. '*** '.$this->user_access;
-		if ($this->position['status'] == 'in_work' && $this->user_id == $this->position['manager_id'] || $this->user_access == 1){
-			$this->edit_enabled = 1;
+        // echo $this->position['manager_id'] .' -- '.$this->user_id. '*** '.$this->user_access;
+		if ($this->position['status'] == 'in_work' && $this->getUserId() == $this->position['manager_id'] || $this->getUserAccess() == 1){
+
+		    $this->setEditEnabled(1);
 		}
 	}
+
+    /**
+     * @param int $edit_enabled
+     */
+    public function setEditEnabled($edit_enabled)
+    {
+        $this->edit_enabled = $edit_enabled;
+    }
+
+
+    /**
+     * get user access
+     *
+     * @param $id
+     * @return int
+     */
+    public function get_user_access_Database_Int($id){
+        $query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
+        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+        $int = 0;
+        if($result->num_rows > 0){
+            while($row = $result->fetch_assoc()){
+                $int = (int)$row['access'];
+                $this->user = $row;
+            }
+        }
+        return $int;
+    }
 
 	/**
 	 * возвращает запрещающий редактирование класс
@@ -280,23 +367,23 @@ class rtPositionUniversal extends Position_general_Class
 	 *	@author  		Алексей Капитонов
 	 *	@version 		12:16 17.12.2015
 	 */
-	protected function _AJAX_(){
-		$method_AJAX = $_POST['AJAX'].'_AJAX';
-		//echo $method_AJAX;exit;
-		
-		if(method_exists($this, $method_AJAX)){
-			// подключаем файл с набором стандартных утилит 
-			// AJAX, stdApl
-			include_once __DIR__.'/../../../../libs/php/classes/aplStdClass.php';
-			// создаем экземпляр обработчика
-			$this->responseClass = new responseClass();
-			// обращаемся непосредственно 
-			$this->$method_AJAX();				
-			// вывод ответа
-			echo $this->responseClass->getResponse();					
-			exit;
-		}					
-	}
+//	protected function _AJAX_(){
+//		$method_AJAX = $_POST['AJAX'].'_AJAX';
+//		//echo $method_AJAX;exit;
+//		
+//		if(method_exists($this, $method_AJAX)){
+//			// подключаем файл с набором стандартных утилит 
+//			// AJAX, stdApl
+//			include_once __DIR__.'/../../../../libs/php/classes/aplStdClass.php';
+//			// создаем экземпляр обработчика
+//			$this->responseClass = new responseClass();
+//			// обращаемся непосредственно 
+//			$this->$method_AJAX();				
+//			// вывод ответа
+//			echo $this->responseClass->getResponse();					
+//			exit;
+//		}					
+//	}
 	//////////////////////////
 	//	AJAX
 	//////////////////////////
@@ -1021,14 +1108,7 @@ class rtPositionUniversal extends Position_general_Class
 		$this->images =  new Images();
 		return $this->images->getImageHtml();
 	}
-	// покдключение к базе
-	// в дальнейшем подключим по уму
-	protected function db(){
-		if(!isset($this->mysqli)){
-			global $mysqli;
-			$this->mysqli = $mysqli;	
-		}		
-	}
+
 }
 /**
  *	класс расширение для добавления модуля изображений

@@ -1,6 +1,6 @@
 <?php
 
-class Position_general_Class{
+class Position_general_Class extends aplStdAJAXMethod{
 	// тип продукта
 	protected $type_product;
 
@@ -27,60 +27,57 @@ class Position_general_Class{
 	public $POSITION_NO_CATALOG;
 
 	
-	function __construct(){
-		$this->user_id = $_SESSION['access']['user_id'];
-		
-		$this->user_access = $this->get_user_access_Database_Int($this->user_id);
+	function __construct()
+    {
+        $this->db();
+        $this->user_id = $_SESSION['access']['user_id'];
 
-		$this->id_position = isset($_GET['id'])?(int)$_GET['id']:0;
-		
-		// экземпляр класса продукции каталог
-		$this->POSITION_CATALOG = new Position_catalog($this->user_access);
+        $this->user_access = $this->get_user_access_Database_Int($this->user_id);
 
-		// экземпляр класса продукции НЕ каталог
-		$this->POSITION_NO_CATALOG = new Position_no_catalog($this->user_access);
+        $this->id_position = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-		// экземпляр класса форм
-		$this->FORM = new Forms();
+        // экземпляр класса продукции каталог
+        $this->POSITION_CATALOG = new Position_catalog($this->user_access);
 
-		// обработчик AJAX через ключ AJAX
-		if(isset($_POST['AJAX'])){
-			echo 'testovaya zapis - '.$this->user_id.' - ';
-			$this->_AJAX_();
-		}
-	}
+        // экземпляр класса продукции НЕ каталог
+        $this->POSITION_NO_CATALOG = new Position_no_catalog($this->user_access);
+
+        // экземпляр класса форм
+        $this->FORM = new Forms();
+
+        // calls ajax methods from POST
+        if (isset($_POST['AJAX'])) {
+            $this->_AJAX_($_POST['AJAX']);
+            $this->responseClass->response['data']['access'] = $this->user_access;
+            $this->responseClass->response['data']['id'] = $this->user_id;
+        }
+
+        // calls ajax methods from GET
+        ## the data GET --- on debag time !!!
+        if (isset($_GET['AJAX'])) {
+            $this->_AJAX_($_GET['AJAX']);
+        }
+    }
 
 
-	/**
-	 *	для генерации отвта выделен класс responseClass()
-	 *
-	 *	метод имеет область видимости private
-	 *  НО должен быть protected, для этого необходимо произвести рефакторинг всех
-	 *  AJAX методов и преобразовать их ответы в соответствии с новыми правилами
-	 *
-	 *	@param name		method name width prefix _AJAX
-	 *	@return  		string
-	 *	@see 			{"respons","OK"}
-	 *	@author  		Алексей Капитонов
-	 *	@version 		12:16 17.12.2015
-	 */
-	protected function _AJAX_(){
-		$method_AJAX = $_POST['AJAX'].'_AJAX';
-		//echo $method_AJAX;exit;
-		
-		if(method_exists($this, $method_AJAX)){
-			// подключаем файл с набором стандартных утилит 
-			// AJAX, stdApl
-			include_once __DIR__.'/../../../../libs/php/classes/aplStdClass.php';
-			// создаем экземпляр обработчика
-			$this->responseClass = new responseClass();
-			// обращаемся непосредственно 
-			$this->$method_AJAX();				
-			// вывод ответа
-			echo $this->responseClass->getResponse();					
-			exit;
-		}					
-	}
+    /**
+     * get user access
+     *
+     * @param $id
+     * @return int
+     */
+    public function get_user_access_Database_Int($id){
+        $query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
+        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+        $int = 0;
+        if($result->num_rows > 0){
+            while($row = $result->fetch_assoc()){
+                $int = (int)$row['access'];
+                $this->user = $row;
+            }
+        }
+        return $int;
+    }
 
 	/////////////////  AJAX METHODs  /////////////////
 
@@ -334,49 +331,20 @@ class Position_general_Class{
 		return $apl_services.$supplier_services;
 	}
 
-	// запрашивает из базы допуски пользователя
-	// необходимо до тех пор, пока при входе в чужой аккаунт меняется только id
-	protected function get_user_access_Database_Int($id){
-		global $mysqli;
-		$query = "SELECT `access` FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
-		$result = $mysqli->query($query) or die($mysqli->error);				
-		$int = 0;
-		if($result->num_rows > 0){
-			while($row = $result->fetch_assoc()){
-				$int = (int)$row['access'];
-			}
-		}
-		//echo $query;
-		return $int;
-	}
 
-	// отдаёт $html распечатанного массива
-	public function print_arr($arr){
-		return $this->print_arr($arr);
 
-	}
-	// форматируем денежный формат + округляем
-	public function round_money($num){
-		return number_format(round($num, 2), 2, '.', '');
-	}
-	// подсчёт процентов наценки
-	public function get_percent_Int($price_in,$price_out){
-		$per = ($price_in!= 0)?$price_in:0.09;
-		$percent = round((($price_out-$price_in)*100/$per),2);
-		return $percent;
-	}
+    // форматируем денежный формат + округляем
+    public function round_money($num){
+        return number_format(round($num, 2), 2, '.', '');
+    }
+    // подсчёт процентов наценки
+    public function get_percent_Int($price_in,$price_out){
+        $per = ($price_in!= 0)?$price_in:0.09;
+        $percent = round((($price_out-$price_in)*100/$per),2);
+        return $percent;
+    }
 
-	// отдаёт $html распечатанного массива
-	protected function printArr($arr){
-		ob_start();
-		echo '<pre>';
-		print_r($arr);
-		echo '</pre>';
-		$content = ob_get_contents();
-		ob_get_clean();
-		
-		return $content;
-	}
+
 
 	/////////////////   AJAX  END   ///////////////// 
 
