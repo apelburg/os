@@ -2458,7 +2458,7 @@
           }
         }
       })).append($('<td/>').append(this.percentSpan = $('<span/>', {
-        'html': this.options.percent
+        'html': round_percent(this.options.percent)
       })).append($('<span/>', {
         'html': "%"
       }))).append($('<td/>').append($('<div/>', {
@@ -2482,7 +2482,7 @@
       })).append($('<td/>', {
         'html': this.options.price
       })).append($('<td/>').append($('<span/>', {
-        'html': this.options.percent
+        'html': round_percent(this.options.percent)
       })).append($('<span/>', {
         'html': "%"
       }))).append($('<td/>').append($('<div/>', {

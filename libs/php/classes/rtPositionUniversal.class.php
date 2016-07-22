@@ -103,14 +103,6 @@ class rtPositionUniversal extends Position_general_Class
 			
 		}
 
-
-
-
-
-
-
-
-
 		echo json_encode($response);
 		exit;
 	}
