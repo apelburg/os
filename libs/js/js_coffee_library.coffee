@@ -77,6 +77,16 @@ window.round_percent = (i_num) ->
     span.prepend(markApproximateVal())
   return span
 
+###
+# вырезаем символы недоступные в денежном формате
+###
+window.deleteNotMoneySymbols = ( value ) ->
+  value.replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' )
+###
+# перевод строки в денежном формате в число
+###
+window.moneyString2Number = ( value ) ->
+  value.replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' )
 
 ###
 # подсчет скидки

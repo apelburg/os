@@ -6,6 +6,7 @@
 class InvoiceNotify extends aplStdAJAXMethod
 {
 	public $from_email = 'invoice@apelburg.ru';
+
 	function __construct()
 	{
 		$this->db();
@@ -202,36 +203,45 @@ class InvoiceNotify extends aplStdAJAXMethod
 		$html = "";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		$rows = array();
-		if($result->num_rows > 0){
+
+        if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
 				$rows[]  = $row['id'];
+                $manager_id = (int)$row['manager_id'];
 
 				# сообщение менеджеру
+                if ($manager_id > 0){
 
-				$subject = 'Cчёт № '.$row['invoice_num'].' был переведён во вкладку "закрытые"';
-				$userName = $row['manager_name'];
-				$message = 'Клиент '.$row['client_name'].'<br>';
-				$message .= 'Cчёт № '.$row['invoice_num'].' от '.$row["invoice_create_date"].' был переведён во вкладку "закрытые';
-				$href = 'http://www.apelburg.ru/os/?page=invoice&section=9&client_id='.$row['client_id'];
-				# подгружаем шаблон
-				ob_start();
-				include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
-				// include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
-				$html = ob_get_contents();
-				ob_get_clean();
-				$this->sendMessageToId($row['manager_id'],'',$subject,$html);
+
+                    $subject = 'Cчёт № '.$row['invoice_num'].' был переведён во вкладку "закрытые"';
+                    $userName = $row['manager_name'];
+                    $message = 'Клиент '.$row['client_name'].'<br>';
+                    $message .= 'Cчёт № '.$row['invoice_num'].' от '.$row["invoice_create_date"].' был переведён во вкладку "закрытые';
+                    $href = 'http://www.apelburg.ru/os/?page=invoice&section=9&client_id='.$row['client_id'];
+                    # подгружаем шаблон
+                    ob_start();
+                    // include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+                    include_once __DIR__.'/../../../skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+                    $html = ob_get_contents();
+                    ob_get_clean();
+
+                    $this->sendMessageToId($manager_id, '', $subject, $html);
+                }
+
 			}
 		}
-		$mess = $html.$this->printArr();
+		$mess = $html;
 
 		# если найдены такие счета
 		if (count($rows) > 0){
 			# переводим найденныйе счета в статус закрытые
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `closed` = '1'";
-			$query .= " `closed_date` = '".date('Y-m-d',time())."'";
+			$query .= ", `closed_date` = '".date('Y-m-d',time())."'";
 			$query .= " WHERE `id` IN ('".implode("','",$rows)."')";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+            $mess .= "Было закрыто ".count($rows)." счетов";
 		}
 		return $mess;
 	}
@@ -1580,7 +1590,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 
 		/**
-		 *	save price and percent in costs payment
+		 *	сохраняет проценты оплаты и сумму оплаты по счёту поставщика
 		 */
 		protected function save_costs_payment_row_AJAX()
 		{
@@ -1595,10 +1605,27 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
 			$stmt->close();
-
-
-
 		}
+
+        /**
+         * сохраняем сумму, которая была оплачена поставщику по счёту
+         */
+		protected function save_invoice_costs_payment_AJAX(){
+            $query = "UPDATE `" . INVOICE_TBL . "` SET ";
+            $query .= " `costs`=?";
+            $query .= " WHERE `id`=?";
+
+            $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+
+            $stmt->bind_param('di',$_POST['cost'], $_POST['invoice_id']) or die($this->mysqli->error);
+            $stmt->execute() or die($this->mysqli->error);
+            $result = $stmt->get_result();
+            $stmt->close();
+        }
+
+
+
+
 		protected function edit_ttn_status_AJAX(){
 			$query = "UPDATE `" . INVOICE_TTN . "` SET ";
 			$query .= " `shipment_employee`=?";
@@ -1675,15 +1702,36 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$stmt->close();
 
 			# сохраняем общую сумму выставленных нам поставщиками счётов в строку счёта
-			$query = "UPDATE `" . INVOICE_TBL . "` SET ";
-			$query .= " `costs_supplier_bill`=?";
-			$query .= " WHERE `id`=?";
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('di',$_POST['costs_supplier_bill'],$_POST['invoice_id']) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
+            $this->costs_supplier_bill($_POST['costs_supplier_bill'],$_POST['invoice_id']);
 		}
+
+
+		protected function costs_supplier_bill_AJAX(){
+            # сохраняем общую сумму выставленных нам поставщиками счётов в строку счёта
+            $this->costs_supplier_bill($_POST['costs_supplier_bill'],$_POST['invoice_id']);
+        }
+
+        /**
+         * сохраняем общую сумму выставленных нам поставщиками счётов в строку счёта
+         *
+         * @param float $money
+         * @param int $id
+         */
+        private function costs_supplier_bill($money = 0.0 , $id = 0 ){
+            if ((int)$id > 0){
+                $this->db();
+                $query = "UPDATE `" . INVOICE_TBL . "` SET ";
+                $query .= " `costs_supplier_bill`=?";
+                $query .= " WHERE `id`=?";
+                $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+                $stmt->bind_param('di',$money, $id) or die($this->mysqli->error);
+                $stmt->execute() or die($this->mysqli->error);
+                $result = $stmt->get_result();
+                $stmt->close();
+            }
+        }
+
+
 
 		/**
 		 * edit flag ice cost payment

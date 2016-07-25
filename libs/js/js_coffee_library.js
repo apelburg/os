@@ -102,6 +102,24 @@
 
 
   /*
+   * вырезаем символы недоступные в денежном формате
+   */
+
+  window.deleteNotMoneySymbols = function(value) {
+    return value.replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1');
+  };
+
+
+  /*
+   * перевод строки в денежном формате в число
+   */
+
+  window.moneyString2Number = function(value) {
+    return value.replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1');
+  };
+
+
+  /*
    * подсчет скидки
    * @param      price_out - входящая цена
    * @discount   discount - скидка
