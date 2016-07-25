@@ -1002,7 +1002,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 				ob_get_clean();
 
 				//$Invoice->sendMessageToId($ids,'',"Запрос на создание реквизитов поставщика",$_POST['message']);
-				$Invoice->sendMessageToId([62],'',"Запрос на создание реквизитов поставщика",$html);
+				$Invoice->sendMessageToId([62, 40],'',"Запрос на создание реквизитов поставщика",$html);
 
 				# вывод данных в режиме разработчика
 				$this->prod__window($this->printArr($ids).'<br>'.$this->printArr($Invoice->getUsersEmail($ids)));
