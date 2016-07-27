@@ -1058,7 +1058,9 @@
 								if($sourse && $sourse == 'os') include_once(ROOT."/libs/php/classes/client_class.php");
 								else include_once(ROOT."/os/libs/php/classes/client_class.php");
 							 	
-			    				$Client = Client::get_client_informationDatabase($client_id);
+			    				$ClientClass = new Client();
+                                $Client = $ClientClass->get_client_informationDatabase($client_id);
+
 			    					
 								// получаем информацию по кураторам + пользователю, который добавил запрос
 								$managers = self::get_manager_info_by_id("'".implode("','",$manager_arr)."','".$_SESSION['access']['user_id']."'");
@@ -1091,7 +1093,9 @@
 								// с основного сайта и ROOT содержит адрес типа "apelburg.ru/www/" без указания директории "/os/"
 								if($sourse && $sourse == 'os') include_once(ROOT."/libs/php/classes/client_class.php");
 								else include_once(ROOT."/os/libs/php/classes/client_class.php");
-			    				$Client = Client::get_client_informationDatabase($client_id);
+
+                                $ClientClass = new Client();
+                                $Client = $ClientClass->get_client_informationDatabase($client_id);
 
 			    				// получаем информацию по кураторам + пользователю, который добавил запрос
 								$managers = self::get_manager_info_by_id("'".implode("','",$manager_arr)."','".$_SESSION['access']['user_id']."'");

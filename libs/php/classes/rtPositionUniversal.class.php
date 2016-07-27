@@ -13,20 +13,19 @@
 class rtPositionUniversal extends Position_general_Class
 {	
 	public $user_id;
-	public $user_access;
+    public $user_access;
 	public $position;
-	function __construct($user_access = 0){
+
+    function __construct($user_access = 0){
 		$this->user_access($user_access);
 		
 		// подключаемся к базе
 		$this->db();
 		
 		// получаем позицию
-		
-		
 		$this->getPosition((isset($_GET['id']) && (int)$_GET['id']>0)?$_GET['id']:'0','id');
-		$_GET['query_num'] = $this->position['query_num'] ;
-		
+		$_GET['query_num'] = $this->position['query_num'];
+
 
 		// получаем кириллическое название статуса
 		$this->queryStatus = $this->get_query_status($this->position['status']);
@@ -34,8 +33,42 @@ class rtPositionUniversal extends Position_general_Class
 		// передававться через ключ AJAX
 		if(isset($_POST['AJAX'])){
 			$this->_AJAX_();
-		}			
+		}
+
+
 	}
+
+    /**
+     * @return mixed
+     */
+    public function getUserId()
+    {
+        return $this->user_id;
+    }
+
+    /**
+     * @param mixed $user_id
+     */
+    public function setUserId($user_id)
+    {
+        $this->user_id = $user_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUserAccess()
+    {
+        return $this->user_access;
+    }
+
+    /**
+     * @param mixed $user_access
+     */
+    public function setUserAccess($user_access)
+    {
+        $this->user_access = $user_access;
+    }
 
 	protected function getFirstPositionImg_AJAX(){
 		$Images = new Images();
@@ -48,6 +81,10 @@ class rtPositionUniversal extends Position_general_Class
 
 		$this->responseClass->addSimpleWindow($html,'Примечания к варианту',$options);
 	}
+
+
+
+
 	/**
 	 *  for change article
 	 *	shearch article autocomlete
@@ -60,8 +97,7 @@ class rtPositionUniversal extends Position_general_Class
 		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".$_POST['search']."%'";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
-		// $result = $mysqli->query($query)or die($mysqli->error);
-		
+
 		$articles_rows = array();
 		$response = array(); 
 		$object = array();
@@ -108,14 +144,14 @@ class rtPositionUniversal extends Position_general_Class
 	}
 
 	/**
-	 *	
-	 *
 	 *	@author  	Alexey Kapitonov
 	 *	@version 	17:51 22.03.2016
 	 */
 	protected function search_and_replace_article_AJAX(){
 		//RT_MAIN_ROWS
 		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` = '".$_POST['art']."'";
+
+
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
 		$artArr = array();
@@ -136,8 +172,9 @@ class rtPositionUniversal extends Position_general_Class
 
 		        // смена стоимости
 		        $query = "UPDATE `".RT_DOP_DATA."` SET";
-				$query .= "  `price_out` = '".$this->get_priceArt($art['id'])."'";		
-				$query .= " WHERE `row_id` = '".(int)$_POST['row_id']."'";        
+				$query .= "  `price_out` = '".$this->getPriceArt($art['id'])."'";
+				$query .= " WHERE `row_id` = '".(int)$_POST['row_id']."'";
+
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			}
 			
@@ -152,67 +189,59 @@ class rtPositionUniversal extends Position_general_Class
 	}
 
 	/**
-	 *	return article price
-	 *
-	 *	@param 		art_id row
-	 *	@return  	price money
-	 *	@author  	Alexey Kapitonov
-	 *	@version 	13:10 28.03.2016
-	 */
-	private function get_priceArt($id){
+     * возвращает стоимость артикула
+     *
+     * @param $id
+     * @return int
+     */
+	private function getPriceArt($id){
 		$price = 0;
-		$query = "SELECT * FROM `".BASE_DOP_PARAMS_TBL."` WHERE `art_id` = '".$id."' GROUP BY `price`";
+		$query = "SELECT * FROM `".BASE_DOP_PARAMS_TBL."` WHERE `art_id` = '".(int)$id."' GROUP BY `price`";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 		if($result->num_rows > 0){
 			while($row = $result->fetch_assoc()){
 				$price = $row['price'];
 			}
 		}
-		return $price; 
+		return $price;
 	}
 
 	/**
-	 *	save description name
-	 *
-	 *	@author  	Alexey Kapitonov
-	 *	@version 	13:25 25.03.2016
-	 */
+     * сохранение описания
+     */
 	protected function update_article_description_name_AJAX(){
-		
 		$query = "UPDATE `".RT_MAIN_ROWS."` SET";
 		$query .= " `name` = '".base64_decode($_POST['name'])."'";
 		$query .= " WHERE `id` = '".(int)$_POST['row_id']."'";
-		$result = $this->mysqli->query($query) or die($this->mysqli->error);	
-		
-		// $this->responseClass->addResponseFunction('js_edit_description_replace_back');
-		$this->responseClass->addMessage('Описание сохранено','successful_message');		
-		
-		
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+	    $this->responseClass->addMessage('Описание сохранено','successful_message');
 	}
+
 	/**
-	 *	возвращает статуы
+	 *	возвращает статус запроса
 	 *
 	 *	@param 		query_num
-	 *	@author  	Алексей Капитонов
-	 *	@version 	12:09 12.01.2016
 	 */
 	public function get_query_status($query_num){
 		include_once ('cabinet/cabinet_class.php');
 		$Cabinet = new Cabinet();
 		return $Cabinet->statusQueryNameArrEn2Ru[$query_num];
 	}
+
 	// получаем права и id юзера
 	public function user_access($user_access = 0){
 		$this->user_id = $_SESSION['access']['user_id'];
+
 		if(!isset($this->user_access)){
 			if ($user_access != 0) {
 				$this->user_access = $user_access;
 			}else{
 				$this->user_access = $this->get_user_access_Database_Int($this->user_id);
 			}
-			
 		}
 	}
+
 	/**
 	 *	для генерации отвта выделен класс responseClass()
 	 *

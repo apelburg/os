@@ -6,10 +6,10 @@
 
 
 	// получаем все варианты просчёта по данному артикулу
-	$variants_arr = $POSITION->getVariants($POSITION->position['id']);
+	$variants_arr = $POSITION->getVariants((int)$POSITION->position['id']);
 
 	// получаем дополнительные параметры: размер, цену ...
-	$art_dop_params = $POSITION->getDopParams($POSITION->position['art_id']);
+	$art_dop_params = $POSITION->getDopParams((int)$POSITION->position['art_id']);
 	
 	// тип продукта название
 	$product_type_RU = 'Каталог';

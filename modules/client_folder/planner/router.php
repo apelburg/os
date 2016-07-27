@@ -17,7 +17,8 @@
     include ROOT.'/skins/tpl/common/quick_bar.tpl';
 	// планка клиента
 	include_once './libs/php/classes/client_class.php';
-	Client::get_client__information($_GET['client_id']);
+	$Client = new Client;
+	$Client->get_client__information((int)$_GET['client_id']);
 	// шаблон страницы
 	include ROOT.'/skins/tpl/client_folder/planner/show.tpl';
 

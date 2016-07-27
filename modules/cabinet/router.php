@@ -41,7 +41,8 @@
 	/////////////////////////////////
 		if(isset($_GET['client_id']) && $_GET['client_id']!=""){
 			include_once './libs/php/classes/client_class.php';
-			Client::get_client__information($_GET['client_id']);
+			$Client = new Client();
+            $Client->get_client__information($_GET['client_id']);
 		}
 
 	
