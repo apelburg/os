@@ -4998,6 +4998,7 @@ class invoiceRow
     tr.append(td)
 
     # спф checkbox
+
     div22 = $('<div/>')
     td = $('<td/>', {
       'class': 'invoice-row--ttn--vt invoice-row--checkboxtd',
@@ -5038,7 +5039,12 @@ class invoiceRow
 
 
     td.addClass('checked') if Number @options.flag_spf_return > 0
-    tr.append(td)
+    if @options.spf_num != 'оф'
+      tr.append(td)
+    else
+      tr.append($('<td/>'))
+#        'class': 'invoice-row--ttn--vt invoice-row--checkboxtd'
+#      }))
     # статус
     td = $('<td/>', {'html': @options.status})
 

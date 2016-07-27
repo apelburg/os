@@ -79,14 +79,18 @@ window.round_percent = (i_num) ->
 
 ###
 # вырезаем символы недоступные в денежном формате
+#
+# изначально предназначена как обработчик на keyup
 ###
 window.deleteNotMoneySymbols = ( value ) ->
   value.replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' )
+
 ###
 # перевод строки в денежном формате в число
 ###
 window.moneyString2Number = ( value ) ->
-  value.replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' )
+  Number(value)
+  #  Number(value.replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' ))
 
 ###
 # подсчет скидки
@@ -445,9 +449,8 @@ class window.sendMessage
           echo_message_js "Сообщение должно быть не короче "+self.MessageMinLen+" символов"
         else
           func()
-          new sendAjax(self.options.ajax ,{ message:comment},(response)->
+          new sendAjax(self.options.ajax ,{ message:comment},()->
             self.destroy()
-
           )
     )
     return buttons
@@ -556,8 +559,6 @@ class window.getStatisticForm
     $(@$el).parent().css('padding', '0')
 
   validate:()->
-    
-    self = @
     if @checkCheckbox() && @checkText()
       $(@myObj.buttonDiv).find("#js--send_comment").removeClass('no')
 
@@ -597,7 +598,7 @@ class window.getStatisticForm
 
   getStatistic:()->
     arr = []
-    @tatisticFrom.find('input[type="checkbox"]:checked').each((index)->
+    @tatisticFrom.find('input[type="checkbox"]:checked').each(()->
       arr.push($(@).data().id)
     )
     arr

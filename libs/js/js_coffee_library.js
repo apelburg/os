@@ -103,6 +103,8 @@
 
   /*
    * вырезаем символы недоступные в денежном формате
+   *
+   * изначально предназначена как обработчик на keyup
    */
 
   window.deleteNotMoneySymbols = function(value) {
@@ -115,7 +117,7 @@
    */
 
   window.moneyString2Number = function(value) {
-    return value.replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1');
+    return Number(value);
   };
 
 
@@ -545,7 +547,7 @@
             func();
             return new sendAjax(self.options.ajax, {
               message: comment
-            }, function(response) {
+            }, function() {
               return self.destroy();
             });
           }
@@ -673,8 +675,6 @@
     };
 
     getStatisticForm.prototype.validate = function() {
-      var self;
-      self = this;
       if (this.checkCheckbox() && this.checkText()) {
         return $(this.myObj.buttonDiv).find("#js--send_comment").removeClass('no');
       } else {
@@ -726,7 +726,7 @@
     getStatisticForm.prototype.getStatistic = function() {
       var arr;
       arr = [];
-      this.tatisticFrom.find('input[type="checkbox"]:checked').each(function(index) {
+      this.tatisticFrom.find('input[type="checkbox"]:checked').each(function() {
         return arr.push($(this).data().id);
       });
       return arr;

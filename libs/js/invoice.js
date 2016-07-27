@@ -5665,7 +5665,11 @@
       if (Number(this.options.flag_spf_return > 0)) {
         td.addClass('checked');
       }
-      tr.append(td);
+      if (this.options.spf_num !== 'оф') {
+        tr.append(td);
+      } else {
+        tr.append($('<td/>'));
+      }
       td = $('<td/>', {
         'html': this.options.status
       });

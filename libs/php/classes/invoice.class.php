@@ -199,6 +199,14 @@ class InvoiceNotify extends aplStdAJAXMethod
 		$query .= " AND `status` = 'отгружен' ";
 		# если заказ ещё не закрыт
 		$query .= " AND `closed` = 0 ";
+        # если оферта, или подписанная спецификация возвращена
+        $query .= " AND (`spf_number` = 'оф' OR `flag_spf_return` = 1)";
+
+        # если сданы все ттн
+        $query .= " AND `all_ttn_was_returned` = 1";
+
+
+
 
 		$html = "";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -262,7 +270,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 	class Invoice  extends aplStdAJAXMethod
 	{
 		# установив флаг на FALSE - вы отмените некоторые строгие ограничения и войдете в режим тестирования
-		protected 	$production = true;
+//		protected 	$production = false;
 
 
 		public 		$tabName = 'Счета';		// имя вкладки
@@ -381,6 +389,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `ttn_build` = (ttn_build + 1)";
 			$query .= " WHERE `id` =?";
+
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$stmt->bind_param('i',$_POST['invoice_id']) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
@@ -429,11 +438,13 @@ class InvoiceNotify extends aplStdAJAXMethod
 		}
 
 		/**
-		 * invoice_autocomlete
+		 * автокоплит поиска счёта.
+         * отфильтрован по `closed` <= 1
+         * если `closed` > 1 то счёт аннулирован или удален
 		 */
 		protected function shearch_invoice_autocomlete_AJAX(){
 
-			$query="SELECT * FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?";
+			$query="SELECT * FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?  AND `closed` <= 0 ";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
 			$search = '%'.$_POST['search'].'%';
@@ -539,37 +550,72 @@ class InvoiceNotify extends aplStdAJAXMethod
 			    'invoice_id' => $_POST['invoise_id'],
 				);
 
-			$this->responseClass->response['data'] = $data; 
-
+			$this->responseClass->response['data'] = $data;
 		}
-		/**
-		 * insert ttn number
-		 *
-		 */
+
+        /**
+         * присваиваем номер ТТН
+         */
 		protected function update_ttn_number_AJAX(){
-			$query = "UPDATE `".INVOICE_TTN."` SET ";
-			$query .= "`number` = '".(int)$_POST['val'] ."'";
-			  	
-			$query .= " WHERE `id` = '".$_POST['id']."'";		
-			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+			$this->update_ttn_number((int)$_POST['val'], (int)$_POST['id']);
 		}
 
+        /**
+         * присваиваем номер ТТН
+         *
+         * @param int $number
+         * @param int $id
+         */
+		private function update_ttn_number($number = 0, $id = 0){
+            $query = "UPDATE `".INVOICE_TTN."` SET ";
+            $query .= "`number` = '".$number ."'";
+            $query .= " WHERE `id` = '".$id."'";
+            $result = $this->mysqli->query($query) or die($this->mysqli->error);
+            # отладка в режиме разработчика
+            $this->prod__window($query.'<br>'.$this->printArr($_POST), 'отладка');
+        }
+
 		/**
-		 * return assigned ttn
-		 *
-		 */
+		 * ТТН возвращена в подписанном виде / отмена возврата ттн
+		 **/
 		protected function ttn_was_returned_AJAX(){
-			$query = "UPDATE `".INVOICE_TTN."` SET ";
-			$query .= "`return` = '".(int)$_POST['val'] ."'";
-			$query .= ",`date_return` = NOW()";
-			$query .= ",`buch_id` = '".$this->user_id."'";
-			$query .= ",`buch_name` = '".$this->getAuthUserName()."'";
-			  	
-			$query .= " WHERE `id` = '".$_POST['id']."'";		
-			// $this->responseClass->addSimpleWindow($query.'<br>'.$this->printArr($_POST),'отладка');		
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+            $this->ttn_was_returned((int)$_POST['val'], $this->getUserId(), $this->getAuthUserName(), (int)$_POST['id'] );
 		}
+
+        /**
+         * ТТН возвращена в подписанном виде / отмена возврата ттн
+         *
+         * @param $return
+         * @param $userId
+         * @param $userName
+         * @param $id
+         */
+		private function ttn_was_returned($return, $userId, $userName, $id ){
+            $date = date('Y-m-d',time());
+		    $query = "UPDATE `".INVOICE_TTN."` SET ";
+            $query .= "`return` =?";
+            $query .= ",`date_return` =?";
+            $query .= ",`buch_id` =?";
+            $query .= ",`buch_name` =?";
+            $query .= " WHERE `id` =?";
+
+            $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+            $stmt->bind_param('iissi',$return, $userId, $userName, $date, $id) or die($this->mysqli->error);
+            $stmt->execute() or die($this->mysqli->error);
+            $result = $stmt->get_result();
+            $stmt->close();
+
+            # отладка в режиме разработчика
+            $this->prod__window($query.'<br>'.$this->printArr($_POST), 'отладка');
+        }
+
+        /**
+         * @return int
+         */
+        public function getUserId()
+        {
+            return $this->user_id;
+        }
 		
 
         /**
@@ -597,6 +643,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 		 * сохраняет комментарии
 		 */
 		protected function save_invoice_comment_AJAX(){
+
+
 			# заносим данные в таблицу
 			$userName = $this->getAuthUserName();
 			$query = "INSERT INTO `".INVOICE_COMMENTS."` SET ";
@@ -638,8 +686,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 
 		/**
-		 * счёт создан
-		 *
+         * присваиваем номер счёта
 		 */
 		protected function confirm_create_bill_AJAX(){
 			$i = 0;
@@ -680,12 +727,12 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 			}
 		}
+
+        /**
+         *тест отправки сообщения на почту по id юзера
+         */
 		protected function test_message_template_AJAX(){
 			$Invoice = new InvoiceNotify();
-
-
-
-
 			# подгружаем шаблон
 			ob_start();
 
@@ -715,22 +762,21 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$Invoice->sendMessageToId([42],'','Для клиента Имя клиента был заведён счёт',$html);
 		}
 
-		/**
-		 * save status
-		 *
-		 */
-		protected function save_shipped_status_AJAX(){
-			$query = "UPDATE `".INVOICE_TBL."` SET ";
-			$query .= " `status`=?";
-
-			$query .= " WHERE `id`=?";
-
-			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$stmt->bind_param('si',$_POST['status'],$_POST['id']) or die($this->mysqli->error);
-			$stmt->execute() or die($this->mysqli->error);
-			$result = $stmt->get_result();
-			$stmt->close();
-		}
+//		/**
+//		 * save status
+//		 *
+//		 */
+//		protected function save_shipped_status_AJAX(){
+//			$query = "UPDATE `".INVOICE_TBL."` SET ";
+//			$query .= " `status`=?";
+//			$query .= " WHERE `id`=?";
+//
+//			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+//			$stmt->bind_param('si',$_POST['status'],$_POST['id']) or die($this->mysqli->error);
+//			$stmt->execute() or die($this->mysqli->error);
+//			$result = $stmt->get_result();
+//			$stmt->close();
+//		}
 
 		protected function getInvoceRow_AJAX(){
 			if (isset($_POST['invoice_num'])){
@@ -928,11 +974,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 				$this->responseClass->addMessage('У вас не достаточно прав для совершения данного действия.','error_message',2000);
 				if ($this->prod__check()){return;}
 			}
-
-
 			$this->responseClass->addMessage('Счёт успешно удалён ','successful_message',2000);
-			$this->change_closed_status((int)$_POST['id'],3);
 
+			$this->change_closed_status((int)$_POST['id'],3);
 		}
 
 		/**
@@ -1128,16 +1172,13 @@ class InvoiceNotify extends aplStdAJAXMethod
 		}
 
 
-
-
-
 		/**
 		 * смена статуса корзины
 		 *
 		 * @param $id
 		 * @param $status
 		 */
-		private function change_closed_status($id,$status){
+		private function change_closed_status($id = 0, $status = 0){
 			$query = "UPDATE `".INVOICE_TBL."` SET ";
 			$query .= " `closed`=?";
 			$query .= " WHERE `id` =?";
@@ -1313,6 +1354,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$this->responseClass->addSimpleWindow('test');
 			//$this->responseClass->addSimpleWindow($this->triger_check_and_closed_invoice_CRON());
 		}
+
 		protected function get_manager_name_AJAX(){
 			$Notify = new InvoiceNotify();
 
