@@ -444,10 +444,12 @@ class InvoiceNotify extends aplStdAJAXMethod
 		 */
 		protected function shearch_invoice_autocomlete_AJAX(){
 
-			$query="SELECT * FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?  AND `closed` <= 0 ";
+			$query="SELECT id, RIGHT(CONCAT('0000000', (invoice_num)),8) as `invoice_num` FROM `".INVOICE_TBL."`  WHERE `invoice_num` LIKE ?  AND `closed` <= 0 ";
 
 			$stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-			$search = '%'.$_POST['search'].'%';
+
+            $searchInt = (int)$_POST['search'];
+            $search = '%'.$searchInt.'%';
 			$stmt->bind_param('s', $search) or die($this->mysqli->error);
 			$stmt->execute() or die($this->mysqli->error);
 			$result = $stmt->get_result();
