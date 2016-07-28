@@ -415,7 +415,7 @@ class costsRow
               td1.html(_this.options.pay_date).addClass('redTD')
 
               # расчёт %
-              percent = _this.getPercentRow(_this.options.price, val)
+              percent = calculatePercentPart(_this.options.price, val)
               _this.percentSpan.html(round_percent( percent ))
 
             focus: ()->
@@ -438,7 +438,7 @@ class costsRow
           input.css('textAlign', $(this).css('textAlign')).focus().blur(()->
             input = $(this)
             _this.options.pay_price = round_money($(this).val())
-            percent = _this.getPercentRow(_this.options.price, _this.options.pay_price)
+            percent = calculatePercentPart(_this.options.price, _this.options.pay_price)
 
             new sendAjax 'save_costs_payment_row', {
               id: _this.options.pay_id,
@@ -734,14 +734,7 @@ class costsRow
 #отправка поиска на enter
         )
     )
-    
-  # расчёт % оплаты счёта
-  getPercentRow:(price = 0, paymentPrice = 0)->
 
-    percent = (Number(paymentPrice) * 100 / Number(price))
-    # проверка на деление на ноль ( чтобы не выводилось NaN )
-    percent = 0 if Number(paymentPrice) == 0 || Number(price) == 0
-    return percent
 
   # строка с возможностью редактирования
   createEditingObj: (data, rData, i, windowObj, InvoiceRowData, rowspan)->
@@ -853,7 +846,7 @@ class costsRow
                 # вырезаем лишние символы
                 (this).val( val = deleteNotMoneySymbols($(@).val()) )
                 # расчёт %
-                percent = _this.getPercentRow(val, _this.options.pay_price)
+                percent = calculatePercentPart(val, _this.options.pay_price)
                 _this.percentSpan.html(round_percent( percent ))
 
               focus: ()->

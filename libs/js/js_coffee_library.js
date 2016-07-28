@@ -84,6 +84,7 @@
 
   window.round_percent = function(i_num) {
     var o_num, span;
+    console.log(i_num);
     o_num = Number(i_num);
     if (i_num < 0.01 && i_num > 0) {
       o_num = 0.01;
@@ -98,6 +99,20 @@
       span.prepend(markApproximateVal());
     }
     return span;
+  };
+
+
+  /*
+   * расчёт % оплаты счёта
+   */
+
+  window.calculatePercentPart = function(numberAll, numberPart) {
+    var percent;
+    percent = Number(numberAll) / (Number(numberPart) / 100);
+    if (Number(numberPart) === 0 || Number(numberAll) === 0) {
+      percent = 0;
+    }
+    return percent;
   };
 
 

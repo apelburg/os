@@ -539,7 +539,7 @@
                 $(this).val(val = deleteNotMoneySymbols($(this).val()));
                 _this.options.pay_date = getDateNow();
                 td1.html(_this.options.pay_date).addClass('redTD');
-                percent = _this.getPercentRow(_this.options.price, val);
+                percent = calculatePercentPart(_this.options.price, val);
                 return _this.percentSpan.html(round_percent(percent));
               },
               focus: function() {
@@ -562,7 +562,7 @@
               var percent;
               input = $(this);
               _this.options.pay_price = round_money($(this).val());
-              percent = _this.getPercentRow(_this.options.price, _this.options.pay_price);
+              percent = calculatePercentPart(_this.options.price, _this.options.pay_price);
               return new sendAjax('save_costs_payment_row', {
                 id: _this.options.pay_id,
                 price: _this.options.pay_price,
@@ -850,21 +850,6 @@
       });
     };
 
-    costsRow.prototype.getPercentRow = function(price, paymentPrice) {
-      var percent;
-      if (price == null) {
-        price = 0;
-      }
-      if (paymentPrice == null) {
-        paymentPrice = 0;
-      }
-      percent = Number(paymentPrice) * 100 / Number(price);
-      if (Number(paymentPrice) === 0 || Number(price) === 0) {
-        percent = 0;
-      }
-      return percent;
-    };
-
     costsRow.prototype.createEditingObj = function(data, rData, i, windowObj, InvoiceRowData, rowspan) {
       var _this, delTd, editClass, td, td2, tr;
       _this = this;
@@ -995,7 +980,7 @@
                 keyup: function() {
                   var percent, val;
                   this.val(val = deleteNotMoneySymbols($(this).val()));
-                  percent = _this.getPercentRow(val, _this.options.pay_price);
+                  percent = calculatePercentPart(val, _this.options.pay_price);
                   return _this.percentSpan.html(round_percent(percent));
                 },
                 focus: function() {
