@@ -39,7 +39,7 @@
 		$field_val = str_replace("'",'`',$field_val);
 		//$field_val = nl2br($field_val);
 		
-		include_once(ROOT."/libs/php/classes/agreement_class.php");
+		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
 		Agreement::update_oferta($_POST['id'],$_POST['field_name'],$field_val);
 		exit;
     }
@@ -65,7 +65,7 @@
 	    $field_val = strip_tags($_POST['field_val']);
 		$field_val = str_replace("'",'`',$field_val);
 		
-		include_once(ROOT."/libs/php/classes/agreement_class.php");
+		include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
 		Agreement::update_oferta_common_fields($_POST['id'],$_POST['field_name'],$field_val);
 		exit;
     }

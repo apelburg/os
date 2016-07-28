@@ -17,7 +17,7 @@
 			exit;
 		}
 		if($_GET['agregate_doc_rows']=='oferta'){
-		    include_once(ROOT."/libs/php/classes/agreement_class.php");
+		    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
 		    Agreement::agregate_oferta_rows($_GET['data']);
 			
 			header('Location:?page=agreement&section=specification_editor&client_id='.$client_id.'&oferta_id='.$_GET['oferta_id'].'&dateDataObj={"doc_type":"oferta"}'); 
@@ -63,7 +63,7 @@
     }
     if($dateDataObj->doc_type=='oferta')
 	{
-	    include_once(ROOT."/libs/php/classes/agreement_class.php");
+	    include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
 		$oferta_data_arr =  Agreement::fetch_oferta_data($_GET['oferta_id']);
 
 		if(count($oferta_data_arr)>0)
