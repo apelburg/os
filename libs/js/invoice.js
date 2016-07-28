@@ -2398,7 +2398,7 @@
               keyup: function() {
                 var per;
                 $(this).val($(this).val().replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1'));
-                per = Number($(this).val()) * 100 / Number(InvoiceRowData.price_out);
+                per = calculatePercentPart($(this).val(), InvoiceRowData.price_out);
                 return _this.percentSpan.html(round_percent(per));
               },
               focus: function() {
@@ -2425,7 +2425,7 @@
               } else {
                 _this.options.price = round_money($(this).val());
               }
-              per = Number(_this.options.price) * 100 / Number(InvoiceRowData.price_out);
+              per = calculatePercentPart($(this).val(), InvoiceRowData.price_out);
               paymentWindowObj.flag_edit++;
               return new sendAjax('save_payment_row', {
                 id: _this.options.id,

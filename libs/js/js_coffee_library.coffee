@@ -61,7 +61,7 @@ window.markApproximateVal = () ->
 # преобразует проценты в соответствии с принятой конвенцией к виду 0.00
 ###
 window.round_percent = (i_num) ->
-  console.log i_num
+
   o_num = Number(i_num);
 
   if i_num < 0.01 && i_num > 0
@@ -74,15 +74,20 @@ window.round_percent = (i_num) ->
   }).data({
     percent : i_num
   })
-  if o_num != i_num
+
+
+  console.log " )))))))))))) -> ", i_num, o_num
+  if Number(o_num) != Number(i_num)
     span.prepend(markApproximateVal())
   return span
 ###
 # расчёт % оплаты счёта
 ###
 window.calculatePercentPart = ( numberAll , numberPart) ->
-#    percent = (Number(numberPart) * 100 / Number(numberAll))
-    percent = (Number(numberAll) / (Number(numberPart)/100))
+    percent = (Number(numberPart) * 100 / Number(numberAll))
+    percent = percent.toFixed(7)
+    console.log percent
+#    percent = (Number(numberAll) / (Number(numberPart)/100))
     # проверка на деление на ноль ( чтобы не выводилось NaN )
     percent = 0 if Number(numberPart) == 0 || Number(numberAll) == 0
     return percent

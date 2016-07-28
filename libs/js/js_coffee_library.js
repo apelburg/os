@@ -84,7 +84,6 @@
 
   window.round_percent = function(i_num) {
     var o_num, span;
-    console.log(i_num);
     o_num = Number(i_num);
     if (i_num < 0.01 && i_num > 0) {
       o_num = 0.01;
@@ -95,7 +94,8 @@
     }).data({
       percent: i_num
     });
-    if (o_num !== i_num) {
+    console.log(" )))))))))))) -> ", i_num, o_num);
+    if (Number(o_num) !== Number(i_num)) {
       span.prepend(markApproximateVal());
     }
     return span;
@@ -108,7 +108,9 @@
 
   window.calculatePercentPart = function(numberAll, numberPart) {
     var percent;
-    percent = Number(numberAll) / (Number(numberPart) / 100);
+    percent = Number(numberPart) * 100 / Number(numberAll);
+    percent = percent.toFixed(7);
+    console.log(percent);
     if (Number(numberPart) === 0 || Number(numberAll) === 0) {
       percent = 0;
     }
