@@ -1,6 +1,7 @@
 <?php 
 	// te
     header('Content-type: text/html; charset=utf-8');
+	define(DOCUMENT_ROOT, __DIR__);
 	// ini_set('error_reporting', E_ALL);
 	// при переходе на ановую версию php - вылазят сообщения об устаревших методах mysql
 	// поэтому DEPRECATED пока что отключаем 

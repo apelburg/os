@@ -796,7 +796,7 @@ class PaymentBlock extends Accounting{
 class Accounting  extends aplStdAJAXMethod
 {
     // для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-    protected $production = false;
+//    protected $production = false;
 
     public 	$user_access = 0; 		// user right (int)
     protected 	$user_id = 0;			// user id with base

@@ -1,67 +1,75 @@
-
 /*
 Кнопки всплывалок
- */
+*/
 body .js-alert_union_buttons .button_yes_or_close.lightGreen.no,
 body .js-alert_union_buttons .button_yes_or_no.lightGreen.no,
 body .js-alert_union_buttons .button_yes_or_close.lightGreen,
 body .js-alert_union_buttons .button_yes_or_no.lightGreen{
-	background: rgba(146, 183, 62, 0.25);
-	color:#999999;
+    background: rgba(146, 183, 62, 0.25);
+    color:#999999;
 }
 .js-alert_union_buttons button{
-	border-radius: 9px;
-	height: 36px;
-	border:1px solid #999999;
-	background: #92B73E;
-	color: #fff;
+    border-radius: 9px;
+    height: 36px;
+    border:1px solid #999999;
+    background: #92B73E;
+    color: #fff;
 }
 body .js-alert_union_buttons .button_yes_or_no.lightGreen.showed{
-	background: #92B73E;
-	color:#fff;
+    background: #92B73E;
+    color:#fff;
 }
 body .js-alert_union_buttons .button_yes_or_no,
 body .js-alert_union_buttons .button_yes_or_close{
-	padding: 3px 45px;
+    padding: 3px 45px;
 }
 body .js-alert_union_buttons .button_yes_or_no.no,
 body .js-alert_union_buttons .button_yes_or_close.no{
-	background:#fff;
-	color: #999999;
+    background:#fff;
+    color: #999999;
 }
 
 body .js-alert_union_buttons .save,
 body .js-alert_union_buttons .button_yes_or_close{
-	float: right;
+    float: right;
 }
 body .js-alert_union_buttons table td button.right{
-	float: right;
+    float: right;
 }
 body .js-alert_union_buttons table td button.left{
-	float: left;
+    float: left;
 }
 
 #js-SC_buttons table,
 .js-alert_union_buttons table{
-	width: 100%;
+    width: 100%;
 }
 #js-SC_buttons table td:nth-of-type(1),
 .js-alert_union_buttons table td:nth-of-type(1){
-	text-align: left;
+    text-align: left;
 }
 #js-SC_buttons table td:nth-of-type(2){
-	text-align: center;
+    text-align: center;
 }
 #js-SC_buttons table td:nth-of-type(3),
 .js-alert_union_buttons table td:nth-of-type(2){
-	text-align: right;
+    text-align: right;
 }
 .js-alert_union_buttons table td{
-	min-width: 55px;
+    min-width: 55px;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: left;
+    border-width: 1px 0 0 0;
+    background-image: none;
+    /* margin-top: .5em; */
+    /* padding: .3em 1em .5em .4em; */
+    padding: .3em 1em .5em 1.5em;
 }
 .js-alert_union_buttons {
-	border: none;
-	padding: 3px 0 0 0;
-	border: 0;
-	margin: 0;
+    border: none;
+    padding: 3px 0 0 0;
+    border: 0;
+    margin: 0;
 }

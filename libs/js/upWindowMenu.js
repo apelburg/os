@@ -1217,6 +1217,17 @@
 		a.appendChild(document.createTextNode('Вставить изображение'));
 		innerDiv.appendChild(a);
 		div.appendChild(innerDiv);
+
+		var innerDiv = document.createElement('div');
+		innerDiv.className = "link1";
+		var a = document.createElement('a');
+		a.setAttribute('pos_id',pos_id);
+		a.onclick = function(e){
+			new galleryWindow(Number($(this).attr('pos_id')));
+		};
+		a.appendChild(document.createTextNode('Новая галлерея'));
+		innerDiv.appendChild(a);
+		div.appendChild(innerDiv);
 		
 		
 		target.appendChild(div);
