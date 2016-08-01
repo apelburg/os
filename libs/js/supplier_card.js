@@ -1095,12 +1095,11 @@ $(function(){
                     $('#redaction_requsits_company').text($('#form_data_company').val());
                     $.post('', post, function(data, textStatus, xhr) {
                         standard_response_handler(data);
-                      if(data['response']=='1' || data['response'] == "OK"){ 
-                        // обновляем имя компании
-                                                     
-                      }else{
-                        echo_message_js('Что-то пошло не так, запомните свои действия и опишите их в письме к разработчикам.','error_message');
-                      }
+                        if(data['response']=='1' || data['response'] == "OK"){
+                            // обновляем имя компании
+                        }else{
+                            echo_message_js('Что-то пошло не так, запомните свои действия и опишите их в письме к разработчикам.','error_message');
+                        }
                     },'json');
                     $("#edit_requesit").html('');
                     //удаляем более ненужный id

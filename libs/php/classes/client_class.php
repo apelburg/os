@@ -983,62 +983,139 @@ class Client extends aplStdAJAXMethod{
 				}
 			}
 			return $arr;
-		} 
-			    
-		protected function create_new_requisites_AJAX() {
-			$query = "INSERT INTO `" . CLIENT_REQUISITES_TBL . "` SET id = '" . $_POST['requesit_id'] . "',";
-			$query .= "`client_id`='" . $_POST['client_id'] . "', 
-				`company`='" . $_POST['company'] . "', 
-				`comp_full_name`='" . $_POST['form_data']['comp_full_name'] . "', 
-				`postal_address`='" . $_POST['form_data']['postal_address'] . "', 
-				`legal_address`='" . $_POST['form_data']['legal_address'] . "', 
-				`inn`='" . $_POST['form_data']['inn'] . "', 
-				`kpp`='" . $_POST['form_data']['kpp'] . "', 
-				`bank`='" . $_POST['form_data']['bank'] . "', 
-				`bank_address`='" . $_POST['form_data']['bank_address'] . "', 
-				`r_account`='" . $_POST['form_data']['r_account'] . "', 
-				`cor_account`='" . $_POST['form_data']['cor_account'] . "', 
-				`ogrn`='" . $_POST['form_data']['ogrn'] . "', 
-			    `bik`='" . $_POST['form_data']['bik'] . "', 
-				`okpo`='" . $_POST['form_data']['okpo'] . "', 
-				`dop_info`='" . $_POST['form_data']['dop_info'] . "'
-				";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			
-			// запоминаем id созданной записи
-			$req_new_id = $this->mysqli->insert_id;
-			
-			if (isset($_POST['form_data']['managment1'])) {
-			    $query = "";
-			    foreach ($_POST['form_data']['managment1'] as $key => $val) {
-			        $query.= "INSERT INTO  `" . CLIENT_REQUISITES_MANAGMENT_FACES_TBL . "` SET  ";
-					$query.= "`requisites_id` =  '" . $req_new_id . "',
-						`type` =  '" . $val['type'] . "',
-						`post_id` =  '" . $val['post_id'] . "',
-						`basic_doc` =  '" . $val['basic_doc'] . "',
-						`name` =  '" . $val['name'] . "',
-						`name_in_padeg` =  '" . $val['name_in_padeg'] . "',
-						`acting` =  '" . $val['acting'] . "';";
-			    }
-			    
-			    $result = $this->mysqli->multi_query($query) or die($this->mysqli->error);
-			}
-			echo '{
-				    "response":"1",
-					"id_new_req":"' . $req_new_id . '",
-					"company":"' . $_POST['company'] . '"
-				}';        
-			exit;
 		}
-			    
-		protected function delete_requesit_row_AJAX() {
-			$id_row = $_POST['id'];
-			$query = "DELETE FROM " . CLIENT_REQUISITES_TBL . " WHERE `id`= '" . $id_row . "'";
-			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			
-			$html = 'Данные успешно удалены';
-			$this->responseClass->addMessage($html,'system_message');
-		}			    
+
+    /**
+     * заводит новую строку реквизитов в базу
+     *
+     * @param array $data
+     * @return mixed
+     */
+    private function incertNewRequisitsRowInBase($clientId,$companyName, $data = []){
+        $query = "INSERT INTO `" . CLIENT_REQUISITES_TBL . "` SET ";
+        $query .= "  `client_id`=?";
+        $query .= ",  `company`=?";
+        $query .= ", `comp_full_name`=?";
+        $query .= ", `postal_address`=?";
+        $query .= ", `legal_address`=?";
+        $query .= ", `inn`=?";
+        $query .= ", `kpp`=?";
+        $query .= ", `bank`=?";
+        $query .= ", `bank_address`=?";
+        $query .= ", `r_account`=?";
+        $query .= ", `cor_account`=?";
+        $query .= ", `ogrn`=?";
+        $query .= ", `bik`=?";
+        $query .= ", `okpo`=?";
+        $query .= ", `dop_info`=?";
+
+        $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+        $stmt->bind_param('issssiisssssiis', $clientId, $companyName, $data['comp_full_name'], $data['postal_address'], $data['legal_address'], $data['inn'], $data['kpp'], $data['bank'], $data['bank_address'], $data['r_account'],  $data['cor_account'], $data['ogrn'], $data['bik'], $data['okpo'], $data['dop_info']) or die($this->mysqli->error);
+
+        $stmt->execute() or die($this->mysqli->error);
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        return $this->mysqli->insert_id;
+    }
+
+    /**
+     * заводит в базу стрку с информацие о лице имеющем право подписи
+     *
+     * @param $personsPositionArr - array
+     * @param $data - array
+     */
+    private function insertNewRequisitesPersonRowInBase($requisitesId, $personsPositionArr, $dataArray ){
+        # содержит название должности
+        $position = '';
+        # содержит название должности в падеже
+        $positionInPadeg = '';
+
+        # если найдена должность
+        if(isset($personsPositionArr[$dataArray['post_id']])){
+            # получаем название должности
+            $position = $personsPositionArr[$dataArray['post_id']]['position'];
+            # получаем название должности в падеже
+            $positionInPadeg = $personsPositionArr[$dataArray['post_id']]['position_in_padeg'];
+        }
+
+        $query = "INSERT INTO  `" . CLIENT_REQUISITES_MANAGMENT_FACES_TBL . "` SET  ";
+        $query.= "  `requisites_id` =?";
+        $query.= ", `type` =?";
+        $query.= ", `post_id` =?";
+        $query.= ", `basic_doc` =?";
+        $query.= ", `name` =?";
+        $query.= ", `name_in_padeg` =?";
+        $query.= ", `acting` =?";
+        $query.= ", `position` =?";
+        $query.= ", `position_in_padeg` =?";
+
+
+
+        $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+        $stmt->bind_param('isisssiss',
+            $requisitesId,
+            $dataArray['type'],
+            $dataArray['post_id'],
+            $dataArray['basic_doc'],
+            $dataArray['name'],
+            $dataArray['name_in_padeg'],
+            $dataArray['acting'],
+            $position,
+            $positionInPadeg) or die($this->mysqli->error);
+
+        $stmt->execute() or die($this->mysqli->error);
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        return $this->mysqli->insert_id;
+    }
+
+    /**
+     * запрос на заведение новых реквизитов
+     */
+    protected function create_new_requisites_AJAX() {
+
+        # заводим в базе строку новых реквизитов
+        $requisitesId = $this->incertNewRequisitsRowInBase($_POST['client_id'], $_POST['company'], $_POST['form_data']);
+
+        # если есть информация о лицах имеющих право подписи (контактные лица в реквизитах)
+    	if (isset($_POST['form_data']['managment1'])) {
+            # получаем список должностей
+    	    $personsPositionArr = $this->get__clients_persons();
+            # перебираем все внесённые изером лица имеющие право подписи
+            foreach ($_POST['form_data']['managment1'] as $personData) {
+                $this->insertNewRequisitesPersonRowInBase($requisitesId, $personsPositionArr, $personData);
+    	    }
+    	}
+
+        $this->responseClass->addMessage('Реквизиты успешно внесены.','successful_message', 1000);
+    }
+
+    /**
+     * запрос на удаление строки реквизитов из базы
+     */
+	protected function delete_requesit_row_AJAX() {
+        $requisitesId = (int)$_POST['id'];
+
+        # удаляем строку реквизитов
+        $this->delete_row_from_table(CLIENT_REQUISITES_TBL, $requisitesId);
+
+        # запрашиваем строки
+        $personsArr = $this->get_all_tbl_simple(CLIENT_REQUISITES_MANAGMENT_FACES_TBL,['requisites_id'=>$requisitesId]);
+        # если строки были найдены
+        if (count($personsArr) > 0){
+            $ids = [];
+            foreach ($personsArr as $personsRowData){
+                $ids[] = $personsRowData['id'];
+            }
+
+            # удаляем строки контактных лиц имеющих право подписи для данных реквизитов
+            $this->delete_rows_from_table(CLIENT_REQUISITES_MANAGMENT_FACES_TBL, $ids);
+        }
+
+		$this->responseClass->addMessage('Данные успешно удалены','successful_message', 1000);
+	}
 			    
 		protected function update_curator_list_for_client_AJAX() {
 			$client_id = $_GET['client_id'];
