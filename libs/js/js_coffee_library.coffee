@@ -86,7 +86,6 @@ window.round_percent = (i_num) ->
 window.calculatePercentPart = ( numberAll , numberPart) ->
     percent = (Number(numberPart) * 100 / Number(numberAll))
     percent = percent.toFixed(7)
-    console.log percent
 #    percent = (Number(numberAll) / (Number(numberPart)/100))
     # проверка на деление на ноль ( чтобы не выводилось NaN )
     percent = 0 if Number(numberPart) == 0 || Number(numberAll) == 0

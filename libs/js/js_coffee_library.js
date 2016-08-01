@@ -110,7 +110,6 @@
     var percent;
     percent = Number(numberPart) * 100 / Number(numberAll);
     percent = percent.toFixed(7);
-    console.log(percent);
     if (Number(numberPart) === 0 || Number(numberAll) === 0) {
       percent = 0;
     }

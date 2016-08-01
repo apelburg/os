@@ -177,7 +177,7 @@
 						  shipping_date_time='".$dates_data['shipping_date_time']."',
 						  final_date_time='".$dates_data['final_date_time']."'
 						  ";
-						  
+			
 			// echo $query;	
 			// exit;	  
 			$result = $mysqli->query($query)or die($mysqli->error);
