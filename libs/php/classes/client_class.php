@@ -639,7 +639,7 @@ class Client extends aplStdAJAXMethod{
 		$query = "INSERT INTO `" . CONT_FACES_CONTACT_INFO_TBL . "` SET";
 		$query .= "  `parent_id` =?";
 		$query .= ", `table` =?";
-		$query .= ", `type` =?";
+		$query .= ", `type` ='phone'";
 		$query .= ", `telephone_type` =?";
 		$query .= ", `contact` =?";
         $query .= ", `dop_phone` =?";

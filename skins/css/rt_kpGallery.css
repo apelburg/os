@@ -14,20 +14,21 @@ div.showImgGalleryWindow:after{
     margin-top: -4px;
 }
 div.showImgGalleryWindow:hover{
-  background:  #CECDCD;
-  color: #898787;
-  cursor: pointer;
+    background:  #CECDCD;
+    color: #898787;
+    cursor: pointer;
 }
 div.showImgGalleryWindow:hover:after{
-  color: #898787;
+    color: #898787;
 }
 div#rt-gallery-images {
-   max-height: 355px;
-   overflow-x: hidden;
+    max-height: 355px;
+    overflow-x: hidden;
+    position: relative;
 }
 div#rt-gallery-images img{
-   max-height: 150px;
-   max-width: 150px;
+    max-height: 150px;
+    max-width: 150px;
 }
 div#rt-gallery-images ul li.rt-gallery-cont {
     list-style: none;

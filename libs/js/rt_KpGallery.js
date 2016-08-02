@@ -67,9 +67,7 @@
 
 // возвращает JSON выбранных изображений
 function get_json_checked_img() {
-	
 	var json = '[';
-	
 	$('#rt-gallery-images li.checked').each(function(index, el) {
 		json += ((index > 0)?',':'')+'{"folder":"'+$(this).attr('data-folder')+'","img_name":"'+$(this).attr('data-file')+'"}';		
 	});
@@ -77,46 +75,7 @@ function get_json_checked_img() {
 	return json;
 }
 
-$(document).on('dblclick', '#rt-gallery-images li', function(event) {
-	event.preventDefault();
-	if($(this).hasClass('checked')){
-		$(this).removeClass('checked');
-	}else{
-		if($('#rt-gallery-images li.checked').length >= 3){
-			var message = 'В КП не получиться загрузить более трёх изображений';
 
-			echo_message_js(message, 'system_message' ,25000);
-			return false;
-		}
-		$(this).addClass('checked');
-	}
-
-	var id = $(this).parent().parent().parent().parent().find("input[name*='id']").val();
-
-	// выбор изображения
-	var folder_name = $(this).attr('data-folder');
-	var img = $(this).attr('data-file');
-
-	
-
-	$('#data_JSON').val(get_json_checked_img());
-	// $.parseJSON($('#data_JSON').val());
-
-	// chooseKpPreview(img);
-	// $.post('', {
-		// AJAX 		:'chooseImgGallery',
-		// folder_name :folder_name,
-		// id 			:id,
-		// img 		:img,
-		// type 		:$(this).attr('data-type')
-	// }, function(data, textStatus, xhr) {
-		// standard_response_handler(data);
-	// },'json');
-	$('#data_folder_name').val(folder_name);
-	$('#data_id').val(id);
-	// $('#data_img').val(img);
-	// $('#data_type').val($(this).attr('data-type'));
-});
 
 // выделение изображения избранного в КП в карточке артикула
 function chooseKpPreview(img){
@@ -132,24 +91,21 @@ function chooseKpPreview(img){
 }
 
 
-$(document).on('click', 'li.rt-gallery-cont .delete_upload_img', function(event) {
-	event.preventDefault();
-	$(this).parent().removeClass('checked');
-	$('#data_JSON').val(get_json_checked_img());
-	echo_message_js('удалить', 'system_message' ,25000);
-	// удаляем изображение	
-	
-	var img = $(this).parent().attr('data-file');
-	var folder = $(this).parent().attr('data-folder');
-	// alert(img);
-	if( $('#data_delete_img').val() == ''){
-		$('#data_delete_img').val(img);
-	}else{
-		$('#data_delete_img').val($('#data_delete_img').val()+','+img);
-	}
-	$('#data_delete_img_width_folder').val(folder);
-	$(this).parent().hide('fast');
-
-
-	
-});
+// $(document).on('click', 'li.rt-gallery-cont .delete_upload_img', function(event) {
+// 	event.preventDefault();
+// 	$(this).parent().removeClass('checked');
+// 	$('#data_JSON').val(get_json_checked_img());
+// 	echo_message_js('удалить', 'system_message' ,25000);
+// 	// удаляем изображение
+//
+// 	var img = $(this).parent().attr('data-file');
+// 	var folder = $(this).parent().attr('data-folder');
+// 	// alert(img);
+// 	if( $('#data_delete_img').val() == ''){
+// 		$('#data_delete_img').val(img);
+// 	}else{
+// 		$('#data_delete_img').val($('#data_delete_img').val()+','+img);
+// 	}
+// 	$('#data_delete_img_width_folder').val(folder);
+// 	$(this).parent().hide('fast');
+// });
