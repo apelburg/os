@@ -8,12 +8,19 @@ body .js-alert_union_buttons .button_yes_or_no.lightGreen{
     background: rgba(146, 183, 62, 0.25);
     color:#999999;
 }
-.js-alert_union_buttons button{
+.js-alert_union_buttons button,
+.uploadify-button,
+.uploadify-button:hover{
     border-radius: 9px;
     height: 36px;
     border:1px solid #999999;
     background: #92B73E;
     color: #fff;
+    text-align: center;
+}
+.uploadify-button{
+    margin-top: 7px;
+    padding: 2px;
 }
 body .js-alert_union_buttons .button_yes_or_no.lightGreen.showed{
     background: #92B73E;
@@ -24,7 +31,8 @@ body .js-alert_union_buttons .button_yes_or_close{
     padding: 3px 45px;
 }
 body .js-alert_union_buttons .button_yes_or_no.no,
-body .js-alert_union_buttons .button_yes_or_close.no{
+body .js-alert_union_buttons .button_yes_or_close.no,
+.uploadify-button.no{
     background:#fff;
     color: #999999;
 }

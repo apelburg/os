@@ -1,34 +1,6 @@
 //////////////////////////
 //	uploadify
 //////////////////////////
-	function uploadify(data) {
-		if(!$('#'+data['token']).length){
-			setTimeout(uploadify(data), 1000);
-			return;
-		}
-     // alert(data['timestamp']);
-      $('#'+data['token']).uploadify({
-        'formData'     : {
-        	'AJAX'			: 'add_new_files_in_kp_gallery',
-        	'timestamp' 	: data['timestamp'],
-        	'token'     	: data['token'],
-        	'gnom'      	: 'sdfdsfdsf',
-        	'id'        	: data['id'],
-        	'folder_name'	: data['folder_name']
-        },
-        'buttonText': 'Загрузить новое изображение',
-        'width': 250,
-        'swf'      	: '../libs/php/uploadify.swf',
-        'uploader' 	: '',
-        'multi'     : false,
-        'onUploadSuccess' : function(file, data) {
-            // alert('The file ' + file.name + ' uploaded successfully.');
-            // подключаем стандартный обработчик ответа
-            standard_response_handler(jQuery.parseJSON(data));
-        }
-      });
-    }
-
 
     /**
      *	вызов перемещён в upWindowMenu.js

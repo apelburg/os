@@ -269,10 +269,9 @@ class rtKpGallery extends aplStdAJAXMethod{
                 if (($files[$i] == ".") || ($files[$i] == "..")) { # Текущий каталог и родительский пропускаем
                     continue;
                 }
-
-                # если файл существует
                 if (file_exists( $localLinkGalleryUploadDir . $files[$i] )) {
-                    $returnImgArr[$j]['img_name']           = $files;
+                    # если файл существует
+                    $returnImgArr[$j]['img_name']           = $files[$i];
                     $returnImgArr[$j]['img_folder']         = $folder;
                     $returnImgArr[$j]['img_link_global']    = $globalLinkGalleryUploadDir . $files[$i];
                     $returnImgArr[$j]['img_link_local']     = $localLinkGalleryUploadDir . $files[$i];
@@ -304,10 +303,12 @@ class rtKpGallery extends aplStdAJAXMethod{
         $folder = $rt_main_row['img_folder'];
         $imgArrFromGallery = $this->getImagesFromGallery( $folder,$rt_main_row['id'] );
 
+
+
         # если не было найдено изображений - возвращаем дефолтное no_image
         if (count( $imgArrForArt ) == 0 && count( $imgArrFromGallery ) == 0){
             # получаем дефолное изображение
-            return $this->getImagesForArtDefault();
+            return [];
         }
 
         # на данном этапе мы имеем 2 массива изображений и минимум одно изображение в одном из них
@@ -333,20 +334,52 @@ class rtKpGallery extends aplStdAJAXMethod{
      * @return array
      */
     private function checkChooseImages($imagesArr = [], $checkedArr = []){
-        $returnArr = $imagesArr;
+        $startArr           = [];
+        $chosenNum          = 0;
+        $endArr             = [];
+        $checkedImgNamesArr = [];
 
-        $i = 0;
+//        echo $this->printArr($checkedArr);
+
+        foreach ($checkedArr as $row){
+            $checkedImgNamesArr[] = $row['img_name'];
+        }
+
         # сверяем массив изображений с массивом выбранных изображений
-        foreach ($returnArr as $key => $imgArr){
+        foreach ($imagesArr as $key => $imgArr){
             # помечаем соответствия
-            if ( in_array($imgArr['img_name'], $checkedArr) ){
-                $returnArr[ $key ]['checked'] = 1;
-                $i++;
+            if ( in_array($imgArr['img_name'], $checkedImgNamesArr) ){
+                $startArr[ $chosenNum ] = $imgArr;
+                $startArr[ $chosenNum++ ]['checked'] = 1;
+            }else{
+                $endArr[] = $imgArr;
             }
         }
 
+        # сортируем выбранные изображения
+        $startSortArr = [];
+        foreach ($checkedImgNamesArr as $imgChooseName){
+            foreach ($startArr as $row){
+                if($row['img_name'] == $imgChooseName){
+                    $startSortArr[] = $row;
+                }
+            }
+        }
+
+
+        # объединяем массивы выбранных и невыбранных изображений вместе
+        # так, чтобы выбранные были первыми
+        $i = 0;
+        foreach ($startSortArr as $row){
+            $returnArr[$i++] = $row;
+        }
+        foreach ($endArr as $row){
+            $returnArr[$i++] = $row;
+        }
+//         = array_merge( $startSortArr, $endArr );
+
         # если не выбрано ниодного изображения - выбираем первое одно, оно и будет выдаваться по умолчанию
-        if (count( $returnArr ) > 0 && $i == 0){
+        if (count( $returnArr ) > 0 && $chosenNum == 0){
             $returnArr[ 0 ]['checked'] = 1;
         }
 
@@ -400,7 +433,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      */
     protected function getCheckedImg( $rtMainRowId ){
 
-        $query = "SELECT * FROM `".RT_MAIN_ROWS_GALLERY."` WHERE `parent_id` = '".(int)$rtMainRowId."'";
+        $query = "SELECT * FROM `".RT_MAIN_ROWS_GALLERY."` WHERE `parent_id` = '".(int)$rtMainRowId."' order by sort ASC";
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
 
         $arr = [];
@@ -415,15 +448,22 @@ class rtKpGallery extends aplStdAJAXMethod{
     /**
      * собирает и возвращает нформацию для формирования окна галлереи
      */
-    protected function getGalleryContent_AJAX(){
+    protected function get_gallery_content_AJAX(){
         if(!isset($_POST['id'])){
             $html = 'Отсутствует id.';
             $this->responseClass->addMessage($html,'error_message');
             return;
         }
 
+        $this->getGalleryContent( (int)$_POST['id'] );
+    }
 
-        $rtMainRowId    = (int)$_POST['id'];
+    /**
+     * собирает и возвращает в AJAX ответ иформацию для формирования окна галлереи
+     *
+     * @param $rtMainRowId - int
+     */
+    private function getGalleryContent( $rtMainRowId ){
         # получаем данные по позиции
         $positionArr    = $this->getPosition( $rtMainRowId );
         # определяем переменную содержащую имя папки для последующих загрузок
@@ -442,6 +482,8 @@ class rtKpGallery extends aplStdAJAXMethod{
         $this->responseClass->response['data']['folder_name']   = $folderName;
         $this->responseClass->response['data']['images']        = $this->getImagesForPosition( $positionArr );
 
+        # всегда отправляем данные по картинке с отсутствующим изображением
+        $this->responseClass->response['data']['no_images']     = $this->getImagesForArtDefault();
     }
 
     /**
@@ -467,13 +509,13 @@ class rtKpGallery extends aplStdAJAXMethod{
 
 
     /**
-     * загрузка новых изображений
+     * запрос на загрузку новых изображений
      */
     protected function add_new_files_in_kp_gallery_AJAX(){
         $firstImg = false;
 
         # принимаем данные
-        $folderName     = $_POST['folder_name'];
+        $folderName     = isset($_POST['folder_name'])?$_POST['folder_name']:'';
         $rtMainRowId    = (int)$_POST['id'];
         $timeStump      = (int)$_POST['timestamp'];
         $token      = $_POST['token'];
@@ -483,7 +525,7 @@ class rtKpGallery extends aplStdAJAXMethod{
 
         # если папка ещё не была указана
         # ИЛИ она указана, но её по каким-то причинам не существует - создаём её
-        if($folderName == "" || !is_dir( $localLinkGalleryUploadDir ) ) {
+        if(!isset($folderName) || $folderName == "" || !is_dir( $localLinkGalleryUploadDir ) ) {
             # создание новой папки
             $folderName = $this->createNewDir( $rtMainRowId );
             $localLinkGalleryUploadDir  = $this->getLocalLinkGalleryUploadDir( $folderName );
@@ -568,6 +610,116 @@ class rtKpGallery extends aplStdAJAXMethod{
 
         return $fileNameExtension;
     }
+
+    /**
+     * возвращает строку позиции из базы или []
+     *
+     * @param $id
+     * @return array
+     */
+    private function getPosition($id){
+        // запрос наличия выбранного изображения для данной строки
+        $query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".(int)$id."' ";
+
+        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+        if($result->num_rows > 0){
+            // echo $result->num_rows;
+            while($row = $result->fetch_assoc()){
+                return $row;
+            }
+        }
+        return [];
+    }
+
+    /**
+     * запрос на обновление информации по выбранным изображениям
+     */
+    protected function save_edit_gallery_AJAX(){
+        if (!isset($_POST['mainRowId']) || (int)$_POST['mainRowId'] == 0){
+            $this->prod__message("Не получен ID",'error_message');
+            return;
+        }
+        if (!isset($_POST['chooseData']) || count($_POST['chooseData']) == 0){
+            $this->prod__message("Не получены данные для сохранения",'error_message');
+            return;
+        }
+
+        #обновление информации по выбранным изображениям
+        $this->saveEditGallery((int)$_POST['mainRowId'], $_POST['chooseData']);
+    }
+
+    /**
+     * обновление информации по выбранным изображениям
+     */
+    private function saveEditGallery($id, $newData = [] ){
+        # удаление старых данных
+        $query = "DELETE FROM `".RT_MAIN_ROWS_GALLERY."` WHERE `parent_id` =?";
+
+        $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+        $stmt->bind_param('i', $id) or die($this->mysqli->error);
+        $stmt->execute() or die($this->mysqli->error);
+        $result = $stmt->get_result();
+
+        foreach ($newData as $key => $data){
+            $query = "INSERT INTO `".RT_MAIN_ROWS_GALLERY."` SET ";
+            $query .= "  `sort` =?";
+            $query .= ", `folder` =?";
+            $query .= ", `img_name` =?";
+            $query .= ", `parent_id` =?";
+
+            $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+            $stmt->bind_param('issi', $key, $data['img_folder'], $data['img_name'], $id) or die($this->mysqli->error);
+            $stmt->execute() or die($this->mysqli->error);
+            $result = $stmt->get_result();
+
+
+        }
+        $stmt->close();
+    }
+
+    /**
+     * запрос на удаление изображения
+     */
+    protected function delete_upload_image_AJAX(){
+        if (!isset($_POST['folder_name']) || trim($_POST['folder_name']) == ''){
+            $this->prod__message("Не получено имя папки",'error_message');
+            return;
+        }
+
+        if (!isset($_POST['img_name']) || trim($_POST['img_name']) == ''){
+            $this->prod__message("Не получено название изображения",'error_message');
+            return;
+        }
+        if ($this->deleteUploadImage($_POST['folder_name'], $_POST['img_name'])){
+            $this->responseClass->addMessage("Изображение удалено",'successful_message');
+        }
+    }
+
+    /**
+     * удаление изображения
+     *
+     * @param $folder
+     * @param $file
+     * @return bool
+     */
+    private function deleteUploadImage( $folder, $file ){
+
+        $fileName = $file;
+        $uploadLocalDir = $this->getLocalLinkGalleryUploadDir( $folder );
+
+        $filename = $uploadLocalDir.$fileName;
+
+        // если файл существует
+        if (file_exists($filename)) {
+            // удаляем файл
+            unlink($filename);
+            return true;
+        }
+        return false;
+    }
+
+
 
 
     ///////////////
@@ -679,69 +831,7 @@ class rtKpGallery extends aplStdAJAXMethod{
  			}
 
 
- 			// запрос позиции
- 			private function getPosition($id){
- 				// запрос наличия выбранного изображения для данной строки
- 				$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".$id."' ";
- 				$row = array();
- 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
- 				
- 				if($result->num_rows > 0){
-					// echo $result->num_rows;
-					while($row = $result->fetch_assoc()){
-						return $row;
-					}
-				}					
-				return $row;
- 			}
- 			
- 			// проверка наличия изображений для по RT_id
- 			// при наличии изображения выбранного в галлерее возвращает его имя
- 			// в противном случае false
- 			static function checkTheFolder($RT_id, $name = ''){				
- 				// echo method_get_name();
- 				$global_dir = 'http://'.$_SERVER['HTTP_HOST'].'/admin/order_manager/data/images/'.$RT_id.'/';
- 				$dir = ROOT.'/data/images/'.$RT_id.'/';
-				// если папка не нейдена возвращаем false
-				if (!is_dir($dir)) {
-					return flase;
-				}
-				// если папка пуста возвращаем false
-				$files = scandir($dir);
-				if(count($files) <= 2){
-					return flase;	
-				}
-				
-				$query = "SELECT * FROM `".KP_GALLERY."` WHERE dir = '".$RT_id."' ";
-				// echo $query;
-				$result = $this->mysqli->query($query) or die($this->mysqli->error);
-				$img = '';
- 				
-				if($result->num_rows > 0){
-					while($row = $result->fetch_assoc()){
-						$img = $row['img'];
-					}
-				}
-				// если изображение не указано возвращаем false
-				if($img == ''){
-					return flase;
-				}
-				// по умолчанию возвращаем название выбранного изображения
-				switch ($name) {
-					case 'dir':
-						$dir = ROOT.'/data/images/'.$RT_id.'/'.$img;
-						return $dir;
-						break;
-					case 'global_dir':
-					$global_dir = 'http://'.$_SERVER['HTTP_HOST'].'/os/data/images/'.$RT_id.'/'.$img;	
-						return $global_dir;
-						break;
-					
-					default:
-						return $img;
-						break;
-				}							
- 			}
+
 
 
 
@@ -749,36 +839,18 @@ class rtKpGallery extends aplStdAJAXMethod{
              * собирает json выбранных изображений
              *
              */
- 			protected function getJsonCheckedImg($rt_main_row_id){
- 				if (!isset($this->checked_IMG)) {
- 					$this->checked_IMG = $this->getCheckedImg($rt_main_row_id);
- 				}
-
+ 			private function getJsonCheckedImg( $chooseImages ){
  				$json = '[';
 
  				$json = "[";
- 				foreach ($this->checked_IMG as $key => $value) {
+ 				foreach ($chooseImages as $key => $value) {
  					$json .= (($key > 0)?',':'').'{"folder":"'.$value['folder'].'","img_name":"'.$value['img_name'].'"}';
  				}
  				$json .= "]";
  				return $json;
-
  			}
 
- 			// определяет по имени файлпа выбран он или нет
- 			protected function copare_and_calculate_checked_files($rt_main_row_id, $file_name){
- 				if (!isset($this->checked_IMG)) {
- 					$this->checked_IMG = $this->getCheckedImg($rt_main_row_id);
- 				}
 
-
- 				foreach ($this->checked_IMG as $key => $value) {
- 					if($file_name == $value['img_name']){
- 						return "checked";
- 					}
- 				}
- 				return "";
- 			}
 
 
 
@@ -822,7 +894,7 @@ class rtKpGallery extends aplStdAJAXMethod{
 			    }
 
 			// получаем изображение для артикула
-			protected function getArtImg($item){
+			private function getArtImg($item){
 				$img_path = '../img/'.$this->get_big_img_name($item['art']);	
 			    $img_src = $this->checkImgExists($img_path);
 				// меняем размер изображения
@@ -833,7 +905,7 @@ class rtKpGallery extends aplStdAJAXMethod{
 			}
 
 			// получаем html изображения
-			protected function getImgLiHtml($path, $file = '',$li_class = '', $folder = '', $type){
+			private function getImgLiHtml($path, $file = '',$li_class = '', $folder = '', $type){
 				$html = '<li class="rt-gallery-cont '. $li_class .'" data-type="'.$type.'" data-folder="'.$folder.'" data-file="'.$file.'" >';
 				if($folder != 'img'){
 					$html .= '<div class="delete_upload_img">x</div>';	

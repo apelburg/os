@@ -21,15 +21,31 @@ div.showImgGalleryWindow:hover{
 div.showImgGalleryWindow:hover:after{
     color: #898787;
 }
+
 div#rt-gallery-images {
     max-height: 355px;
     overflow-x: hidden;
     position: relative;
 }
+div#galleryPreviewDiv{
+    position: absolute;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 102;
+    background: #fff;
+    padding: 0px 15px;
+    width: 175px;
+}
+div#galleryPreviewDiv img,
 div#rt-gallery-images img{
     max-height: 150px;
     max-width: 150px;
 }
+div#galleryPreviewDiv ul{
+    padding: 0;
+}
+div#galleryPreviewDiv ul li.rt-gallery-cont,
 div#rt-gallery-images ul li.rt-gallery-cont {
     list-style: none;
     display: inline-block;
@@ -40,8 +56,9 @@ div#rt-gallery-images ul li.rt-gallery-cont {
     border: 1px solid #f1f1f1;
     text-align: center;
     vertical-align: text-bottom;
+    background-color: #fff;
 }
-
+div#galleryPreviewDiv ul li.rt-gallery-cont.checked,
 div#rt-gallery-images ul li.rt-gallery-cont.checked{
    border: 1px solid #77AC78;
    border-radius: 4px;
@@ -49,6 +66,7 @@ div#rt-gallery-images ul li.rt-gallery-cont.checked{
 div#apl-notification_center li .dop_text{    
     text-transform: none;
 }
+
 
 li.rt-gallery-cont .delete_upload_img {
     background: rgba(255, 255, 255, 0.79);
@@ -91,4 +109,95 @@ div#image_add {
 }
 div#image_add:hover {
     background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#537753),color-stop(1,#87B572));
+}
+
+/*
+    Uploudify
+*/
+
+
+.uploadify {
+    position: relative;
+    margin-bottom: 1em;
+}
+/*.uploadify-button {*/
+/*background-color: #505050;*/
+/*background-image: linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -o-linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -moz-linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*!* background-image: -webkit-linear-gradient(bottom,#74A574 0,#707070 100%); *!*/
+/*background-image: -ms-linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#639363),color-stop(1,#9DBE8E));*/
+/*background-position: center top;*/
+/*background-repeat: no-repeat;*/
+/*-webkit-border-radius: 0px;*/
+/*-moz-border-radius: 0px;*/
+/*border-radius: 0px;*/
+/*border: 2px solid #8DA483;*/
+/*color: #DFF8DD;*/
+/*font: 700 12px Arial,Helvetica,sans-serif;*/
+/*text-align: center;*/
+/*text-shadow: 0 -1px 0 rgba(0,0,0,.25);*/
+/*width: 100%;*/
+
+/*}*/
+/*.uploadify:hover .uploadify-button {*/
+/*!* background-color: #505050; *!*/
+/*background-image: linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -o-linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -moz-linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -webkit-linear-gradient(bottom,#4F7B4F 0,#9DBE8E 100%);*/
+/*background-image: -ms-linear-gradient(bottom,#505050 0,#707070 100%);*/
+/*background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#4F7B4F),color-stop(1,#9DBE8E));*/
+/*background-position: center top;*/
+/*background-repeat: no-repeat;*/
+/*-webkit-border-radius: 0px;*/
+/*-moz-border-radius: 0px;*/
+/*border-radius: 0px;*/
+/*border: 2px solid #74A574;*/
+/*color: #C4E4B6;*/
+/*font: 700 12px Arial,Helvetica,sans-serif;*/
+/*text-align: center;*/
+/*text-shadow: 0 -1px 0 rgba(0,0,0,.25);*/
+/*width: 100%;*/
+/*}*/
+.uploadify-button.disabled {
+    background-color: #D0D0D0;
+    color: #808080;
+}
+.uploadify-queue {
+    margin-bottom: 1em;
+}
+.uploadify-queue-item {
+    background-color: #F5F5F5;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    font: 11px Verdana, Geneva, sans-serif;
+    margin-top: 5px;
+    max-width: 350px;
+    padding: 10px;
+}
+.uploadify-error {
+    background-color: #FDE5DD !important;
+}
+.uploadify-queue-item .cancel a {
+    background: url('http://www.apelburg.ru/skins/images/general/cancel.png') 0 0 no-repeat;
+    float: right;
+    height:	16px;
+    text-indent: -9999px;
+    width: 16px;
+}
+.uploadify-queue-item.completed {
+    background-color: #E5E5E5;
+}
+.uploadify-progress {
+    background-color: #E5E5E5;
+    margin-top: 10px;
+    width: 100%;
+}
+.uploadify-progress-bar {
+    background-color: #0099FF;
+    height: 3px;
+    width: 1px;
 }
