@@ -17,10 +17,12 @@
  */
 class rtKpGallery extends aplStdAJAXMethod{
     // для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-//    protected $production       = false;
+    // protected $production       = false;
 
-    private $user_access        = 0;
-    private $user_id            = 0;
+    private $user_access            = 0;
+    private $user_id                = 0;
+    private $TBL_MAIN_ROWS          = RT_MAIN_ROWS;
+    private $TBL_MAIN_ROWS_GALLERY  = RT_MAIN_ROWS_GALLERY;
 
     # разрешённые к загрузке типы файлов
     private $fileTypesEnabled   = ['jpg', 'jpeg', 'gif', 'png'];
@@ -35,15 +37,22 @@ class rtKpGallery extends aplStdAJAXMethod{
 
 
     function __construct(){
+
+        if (isset($_GET['section']) && $_GET['section'] == 'business_offers'){
+            $this->TBL_MAIN_ROWS = KP_MAIN_ROWS;
+            $this->TBL_MAIN_ROWS_GALLERY = KP_MAIN_ROWS_GALLERY;
+        }
+
+
         # подключаемся к базе
         $this->db();
 
-        $this->setUserId(isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0);
-
-        # получаем права
-        if ($this->getUserId() > 0){
-            $this->setUserAccess( $this->get_user_access_Database_Int( $this->getUserId() ) );
-        }
+//        $this->setUserId(isset($_SESSION['access']['user_id'])?$_SESSION['access']['user_id']:0);
+//
+//        # получаем права
+//        if ($this->getUserId() > 0){
+//            $this->setUserAccess( $this->get_user_access_Database_Int( $this->getUserId() ) );
+//        }
 
         // calls ajax methods from POST
         if(isset($_POST['AJAX'])){
@@ -246,7 +255,10 @@ class rtKpGallery extends aplStdAJAXMethod{
             return [];
         }
 
+
+
         if($folder != '' ){
+
             # определяем локальный путь
             $localLinkGalleryUploadDir = $this->getLocalLinkGalleryUploadDir( $folder );
 
@@ -255,6 +267,8 @@ class rtKpGallery extends aplStdAJAXMethod{
                 $this->prod__window( "Произошла непредвиденная ошибка,<br> папка <b>" . $localLinkGalleryUploadDir . "</b> не найдена в фаловой системе" );
                 return [];
             }
+
+
 
             # сканируем директории.
             $files = scandir( $localLinkGalleryUploadDir );
@@ -273,6 +287,7 @@ class rtKpGallery extends aplStdAJAXMethod{
                 if (($files[$i] == ".") || ($files[$i] == "..")) { # Текущий каталог и родительский пропускаем
                     continue;
                 }
+
                 if (file_exists( $localLinkGalleryUploadDir . $files[$i] )) {
                     # если файл существует
                     $returnImgArr[$j]['img_name']           = $files[$i];
@@ -283,6 +298,7 @@ class rtKpGallery extends aplStdAJAXMethod{
                 }
             }
         }
+
         return $returnImgArr;
     }
 
@@ -305,7 +321,8 @@ class rtKpGallery extends aplStdAJAXMethod{
 
         # получаем изображения загруженные к нам локальн, через окно галлереи
         $folder = $rt_main_row['img_folder'];
-        $imgArrFromGallery = $this->getImagesFromGallery( $folder,$rt_main_row['id'] );
+
+        $imgArrFromGallery = $this->getImagesFromGallery( $folder );
 
 
 
@@ -411,7 +428,7 @@ class rtKpGallery extends aplStdAJAXMethod{
             mkdir($dirName, 0777, true);
 
             # пишем её название в базу
-            $query = "UPDATE `".RT_MAIN_ROWS."` SET";
+            $query = "UPDATE `".$this->TBL_MAIN_ROWS."` SET";
             $query .=" img_folder = '".$folderName."'";
             $query .=" WHERE `id` = ".(int)$rtMainRowId.";";
             $result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -439,7 +456,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      */
     protected function getCheckedImg( $rtMainRowId ){
 
-        $query = "SELECT * FROM `".RT_MAIN_ROWS_GALLERY."` WHERE `parent_id` = '".(int)$rtMainRowId."' order by sort ASC";
+        $query = "SELECT * FROM `".$this->TBL_MAIN_ROWS_GALLERY."` WHERE `parent_id` = '".(int)$rtMainRowId."' order by sort ASC";
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
 
         $arr = [];
@@ -482,6 +499,8 @@ class rtKpGallery extends aplStdAJAXMethod{
             $positionArr['img_folder'] = $folderName;
         }
 
+
+
         $this->responseClass->response['data']['id']            = $rtMainRowId;
         $this->responseClass->response['data']['timestamp']     = $this->getTimestamp();
         $this->responseClass->response['data']['token']         = $this->getToken( $this->getTimestamp() );
@@ -490,6 +509,8 @@ class rtKpGallery extends aplStdAJAXMethod{
 
         # всегда отправляем данные по картинке с отсутствующим изображением
         $this->responseClass->response['data']['no_images']     = $this->getImagesForArtDefault();
+
+        return $this->responseClass->response['data'];
     }
 
     /**
@@ -631,7 +652,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      */
     private function getPosition($id){
         // запрос наличия выбранного изображения для данной строки
-        $query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".(int)$id."' ";
+        $query = "SELECT * FROM `".$this->TBL_MAIN_ROWS."` WHERE `id` = '".(int)$id."' ";
 
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
 
@@ -666,7 +687,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      */
     private function saveEditGallery($id, $newData = [] ){
         # удаление старых данных
-        $query = "DELETE FROM `".RT_MAIN_ROWS_GALLERY."` WHERE `parent_id` =?";
+        $query = "DELETE FROM `".$this->TBL_MAIN_ROWS_GALLERY."` WHERE `parent_id` =?";
 
         $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
         $stmt->bind_param('i', $id) or die($this->mysqli->error);
@@ -674,7 +695,7 @@ class rtKpGallery extends aplStdAJAXMethod{
         $result = $stmt->get_result();
 
         foreach ($newData as $key => $data){
-            $query = "INSERT INTO `".RT_MAIN_ROWS_GALLERY."` SET ";
+            $query = "INSERT INTO `".$this->TBL_MAIN_ROWS_GALLERY."` SET ";
             $query .= "  `sort` =?";
             $query .= ", `folder` =?";
             $query .= ", `img_name` =?";
@@ -731,6 +752,63 @@ class rtKpGallery extends aplStdAJAXMethod{
         }
         return false;
     }
+
+    /**
+     * возвращает список изображений для КП
+     *
+     * @param   $kpMainRowId - kp_main_rows_id
+     * @version 04.08.2016
+     */
+    public function getImagesForKp( $kpMainRowId ){
+
+        $allImagesArr = $this->getGalleryContent( (int)$kpMainRowId );
+
+        $returnImages = [];
+
+        $isChooseImgFile = false;
+
+        foreach ( $allImagesArr['images'] as $imageData ){
+            if ($imageData['checked'] == 1){
+                $returnImages[] = $imageData;
+
+                $isChooseImgFile = true;
+            }
+        }
+
+        if (!$isChooseImgFile){
+            $returnImages[] =  $allImagesArr['no_image'];
+        }
+        return $returnImages;
+    }
+
+
+    /**
+     * возвращает контент
+     *
+     * @param $imgData
+     * @param int $rtMainRowId
+     * @return string
+     */
+    public function getHtmlContentImagesForKp( $imgData, $main_row_id = 0 ){
+
+        $html = '';
+        $onclick = '';
+
+        if ($main_row_id > 0){
+            $onclick = ' onclick="new galleryWindow('.$main_row_id.')"';
+        }
+
+        foreach ($imgData as $key => $imgArr) {
+            $img_src = $imgArr['img_link_global'];
+            $size_arr = transform_img_size($img_src,230,300);
+            // $size_arr = array(230,300);
+            $html .= '<img '.$onclick.'  data-folder="'.$imgArr['img_folder'].'" src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
+        }
+
+        return $html;
+    }
+
+
 
 
 

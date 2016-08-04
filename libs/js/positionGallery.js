@@ -26,7 +26,7 @@
       self = this;
       this.windowGallery = new modalWindow({
         html: this.getContent(),
-        width: 1100,
+        width: 1000,
         maxHeight: '100%',
         maxWidth: '90%',
         title: 'Галерея изображений (выбор изображений для позиции)',
@@ -399,9 +399,7 @@
     };
 
     galleryWindow.prototype.updateContentInPage = function() {
-      if ($.urlVar('section') === 'rt_position') {
-        return this.updateRtPositionsGallery();
-      }
+      return window.location.href = window.location.href;
     };
 
     galleryWindow.prototype.destroy = function() {

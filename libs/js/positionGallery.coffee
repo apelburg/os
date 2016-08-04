@@ -20,7 +20,7 @@ class window.galleryWindow
     # окна создания записи компенсации
     @windowGallery = new modalWindow({
       html      : @getContent(),
-      width     : 1100,
+      width     : 1000,
       maxHeight : '100%',
       maxWidth  : '90%',
       title     : 'Галерея изображений (выбор изображений для позиции)',
@@ -431,8 +431,7 @@ class window.galleryWindow
     window.location.href = window.location.href
 
   updateContentInPage:()->
-    if $.urlVar('section') == 'rt_position'
-      @updateRtPositionsGallery()
+    window.location.href = window.location.href
 
   # уничтожить окно
   destroy:()->

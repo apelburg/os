@@ -131,7 +131,7 @@
 							   `name` = '".$row['name']."',
 							   `description` = '".$row['description']."',
 							   `characteristics` = '".mysql_real_escape_string($characteristics)."',
-							   `img_folder` = '".(($row['img_type'] == 'g_std')?'img':$row['img_folder'])."'							   
+							   `img_folder` = '".$row['img_folder']."'							   
 							  ";
 
 
@@ -388,6 +388,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 			       $multi_dim_arr[$row['main_id']]['row_type'] = $row['main_row_type'];
 				   $multi_dim_arr[$row['main_id']]['art_id'] = $row['art_id'];
 				   $multi_dim_arr[$row['main_id']]['art'] = $row['art'];
+				   $multi_dim_arr[$row['main_id']]['main_id'] = $row['main_id'];
 				   $multi_dim_arr[$row['main_id']]['name'] = $row['item_name'];
 				   $multi_dim_arr[$row['main_id']]['characteristics'] = $row['characteristics'];
 				   $multi_dim_arr[$row['main_id']]['description'] = $row['description'];
@@ -851,6 +852,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 			// print_r($multi_dim_arr);
 			// echo '</pre>';
 			// Разворачиваем массив 
+			include_once 'rt_KpGallery.class.php';
 			foreach($multi_dim_arr as $pos_key => $pos_level){
 			   
 				// РАБОТАЕМ С ПЕРВОЙ ЯЧЕЙКОЙ РЯДА ТАБЛИЦЫ КП
@@ -858,41 +860,21 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 				// соответсвенное если есть что показывать, то добавляем тег img, если нет то  добавляем пустую строку
 				$img_src = 'http://www.apelburg.ru/img/no_image.jpg';
 				$img_cell = '<img src="'.$img_src.'" height="180" width="180">';
-				
-				$art_img = new  Art_Img_development($pos_key,$pos_level['img_folder'],$pos_level['img'], $pos_level['art']);
-				
-				// $img_src = $art_img->big;
-				// echo '<pre>';
-				// print_r($art_img);
-				// echo '</pre>';
-				// меняем размер изображения
-				$img_cell = '';
-				foreach ($art_img->big as $key => $img_src) {
-					$size_arr = transform_img_size($img_src,230,300);
-					// $size_arr = array(230,300);
-					$img_cell .= '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
+
+				if ($pos_level['img_folder'] != 'img'){
+					// новый алгоритм
+					$KpGalleryClass = new rtKpGallery();
+					$imagesArrForKp = $KpGalleryClass->getImagesForKp( $pos_level['main_id'] );
+					$img_cell = $KpGalleryClass->getHtmlContentImagesForKp( $imagesArrForKp , $pos_level['main_id']);
+				}else{
+					// старый алгоритм получения изображений в КП --- скоро можно удалить 08,04,2016
+					$art_img = new  Art_Img_development($pos_key ,$pos_level['img_folder'],$pos_level['img'], $pos_level['art']);
+					foreach ($art_img as $key => $img_src) {
+						$size_arr = transform_img_size($img_src,230,300);
+						$img_cell .= '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
+					}
 				}
-				
-				// $img_cell .= '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
 
-				// $img_cell .= '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
-				
-
-				
-				// if($pos_level['row_type']=='cat'){ // если позиция из каталога получаем картинку из базы данных каталога
-				// 	$art_img = new  Art_Img($pos_level['art']);
-				// 	// проверяем наличие изображения
-				// 	$img_path = 'http://www.apelburg.ru/img/'.$art_img->big;
-				// 	if($img_src = checkImgExists($img_path)){	
-				// 		// меняем размер изображения
-				// 		$size_arr = transform_img_size($img_src,230,300);
-				// 		// $size_arr = array(230,300);
-				// 		$img_cell = '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
-				// 	}
-    //             }	
-                
-
-							
 				
 				// РАБОТАЕМ СО ВТОРОЙ ЯЧЕЙКОЙ РЯДА ТАБЛИЦЫ КП
 				

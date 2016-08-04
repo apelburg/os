@@ -61,7 +61,6 @@ if (isset($_GET['query_num']) && (int)$_GET['query_num']) {
         $comments = $COMMENTS;
     }
 
-
     // класс работы с формами
     // include './libs/php/classes/os_form_class.php';
 
