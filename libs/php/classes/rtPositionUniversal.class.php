@@ -1380,7 +1380,7 @@ class Images extends rtPositionUniversal
 		$html .= '</div>'.PHP_EOL;
 		$html .= count($previews_block)>=3?'<a href="" class="articulusImagesArrow2 carousel-button-right" style="background-image:url('.APELBURG_HOST.'/skins/images/general/artkart/s22.png); float:right; margin-top:-70px"></a>'.PHP_EOL:'';
 		$html .= '</div>'.PHP_EOL;
-		$html .= '<div id="image_add">Загрузить ещё</div>'.PHP_EOL;
+		$html .= '<div id="image_add" onclick="new galleryWindow('.$rt_main_row_id.')">Загрузить ещё</div>'.PHP_EOL;
 		$previews_block = $html;
 		
 		return array('main_img_src' => $main_img_src,

@@ -90,7 +90,8 @@ class window.galleryWindow
     @appendImgToGallery( @data )
 
     # сохраняем первичные ( изначальные ) данные о выбранных изображениях в главный блок
-    @contentDiv.data( @getChooseObj() )
+    @contentDiv.data( chooseObj = @getChooseObj() )
+    @savedData = chooseObj
 
     @contentDiv
 
@@ -277,29 +278,32 @@ class window.galleryWindow
 
   # удаление изображений загруженных ранее
   deleteImg:(obj)->
-    self = @
-    if obj.parent().hasClass('checked') 
+    # исключения для выбранных изображений
+    if obj.parent().hasClass('checked')
       if @contentDiv.find('ul li.checked').length == 1
         echo_message_js('Удалить единственное выбранное изображение нельзя.')
         return
       else
-        @contentDiv.data( @getChooseObj() )
-        @checkEdit()
+        @contentDiv.data( chooseObj = @getChooseObj() )
+        @savedData = chooseObj
 
+    self = @
+    # получаем данные по изображению
     data = obj.parent().data()
-
     obj.parent().hide(300,()->
+      # удаляем html объект
       $(@).remove()
 
-
-
-      console.log data
+      # отправка запроса на удаление
       new sendAjax('delete_upload_image',{
         img_name: data.img_name,
         folder_name: self.data.folder_name
       })
+      # если были удалены все изображения - подставляем no_image
       if self.contentDiv.find('ul li').length == 0
         self.addNoImage()
+
+      # обновляем
       self.updateChoseObjToPreviewDiv()
     )
 
@@ -392,14 +396,16 @@ class window.galleryWindow
       # если ДА - подкрашиваем кнопку сохранить и при клике на неё отправляем обновленные данные из JSON
       button.removeClass('no').addClass('yes').html('Сохранить').unbind('click').click(()->
 
+        # сохраняем данные на клиенте
+        self.contentDiv.data( chooseObj )
+        self.savedData = chooseObj
+
         # отправляем запрос на сохранение изменённых данных
         new sendAjax('save_edit_gallery',{
           chooseData: chooseObj,
           mainRowId: self.data.id
         },(response)->
           if response.response == "OK"
-            self.contentDiv.data( self.getChooseObj() )
-
             button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(()->
               self.destroy()
             )
@@ -418,11 +424,23 @@ class window.galleryWindow
   scrollBottom:()->
     @contentDiv.stop().animate({"scrollTop":99999 },"slow");
 
+  updateRtPositionsGallery:()->
+    window.location.href = window.location.href
+
+  updateKpGallery:()->
+    window.location.href = window.location.href
+
+  updateContentInPage:()->
+    if $.urlVar('section') == 'rt_position'
+      @updateRtPositionsGallery()
+
   # уничтожить окно
   destroy:()->
+    @updateContentInPage()
 #    console.log @windowGallery
     @previewDiv.remove()
     $(@windowGallery.winDiv[0]).dialog('close').dialog('destroy').remove()
+
     
 
 

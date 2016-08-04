@@ -1,14 +1,5 @@
 <?php
-/**
- *	библиотека универсальных классов	
- * 		
- */
 
-if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] == 42) {
-	ini_set('error_reporting', E_ALL);
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-}
 	/**
 	 *	галлерея изображений для некаталожной продукции
 	 *  для КП
@@ -16,9 +7,17 @@ if ( isset($_SESSION['access']['user_id'])  && $_SESSION['access']['user_id'] ==
 	 *	@author  	Алексей Капитонов
 	 *	@version 	07.12.2015 13:45
 	 */
+
+/**
+ * Class rtKpGallery *
+ * галлерея изображений
+ *
+ * @author      Alexe Kapitonov
+ * @version     04.08.2016
+ */
 class rtKpGallery extends aplStdAJAXMethod{
     // для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-    protected $production       = false;
+//    protected $production       = false;
 
     private $user_access        = 0;
     private $user_id            = 0;
@@ -99,7 +98,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      * @return int
      */
     public function get_user_access_Database_Int($id){
-        $query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
+        $query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".(int)$id."'";
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
         $int = 0;
         if($result->num_rows > 0){
@@ -170,8 +169,13 @@ class rtKpGallery extends aplStdAJAXMethod{
 
         # запрашиваем изображения
         if(trim($art) != ''){
-            $query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'big' AND art='".$art."' ORDER BY id";
-            $result = $this->mysqli->query($query) or die($this->mysqli->error);
+            $query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'big' AND art=? ORDER BY id";
+
+            $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+            $stmt->bind_param('i', $art) or die($this->mysqli->error);
+            $stmt->execute() or die($this->mysqli->error);
+            $result = $stmt->get_result();
+
             if($result->num_rows > 0){
                 while($row = $result->fetch_assoc()){
                     $imgArr[] = $row['name'];
@@ -328,9 +332,11 @@ class rtKpGallery extends aplStdAJAXMethod{
 
     /**
      * помечает выбранные изображения как отмеченные
+     * производится сортировка данных:
+     * Первыми в списке возвращаются выбранные ранее изображения отсортированные по клонке sort, потом всё остальное
      *
-     * @param $imagesArr
-     * @param $checkedArr
+     * @param $imagesArr    - массив всех найденых изображений
+     * @param $checkedArr   - массив названий выбранных изображений
      * @return array
      */
     private function checkChooseImages($imagesArr = [], $checkedArr = []){
@@ -651,7 +657,7 @@ class rtKpGallery extends aplStdAJAXMethod{
             return;
         }
 
-        #обновление информации по выбранным изображениям
+        # обновление информации по выбранным изображениям
         $this->saveEditGallery((int)$_POST['mainRowId'], $_POST['chooseData']);
     }
 
@@ -678,9 +684,8 @@ class rtKpGallery extends aplStdAJAXMethod{
             $stmt->bind_param('issi', $key, $data['img_folder'], $data['img_name'], $id) or die($this->mysqli->error);
             $stmt->execute() or die($this->mysqli->error);
             $result = $stmt->get_result();
-
-
         }
+
         $stmt->close();
     }
 
@@ -697,7 +702,9 @@ class rtKpGallery extends aplStdAJAXMethod{
             $this->prod__message("Не получено название изображения",'error_message');
             return;
         }
-        if ($this->deleteUploadImage($_POST['folder_name'], $_POST['img_name'])){
+        # удаление изображения
+        if ( $this->deleteUploadImage($_POST['folder_name'], $_POST['img_name']) ){
+            # оповещаем юзера при успешном удалении
             $this->responseClass->addMessage("Изображение удалено",'successful_message');
         }
     }
@@ -729,205 +736,94 @@ class rtKpGallery extends aplStdAJAXMethod{
 
 
     ///////////////
-    # СТАРЬЁ
+    #
+    #   СТАРЬЁ из common.php
+    #
+    #   выше в классе не используется, по сути является мусором
+    #   методы - кандидаты на удаление из класса
+    #
     ////////////////
 
+    /**
+     * НУЖНО РАЗБИРАТЬСЯ !!!!
+     *
+     * @param $img
+     * @param $limit_height
+     * @param $limit_width
+     * @return array
+     */
+    protected function transform_img_size($img,$limit_height,$limit_width){
+     	list($img_width, $img_height, $type, $attr) = (file_exists($img))? getimagesize($img): array($limit_width,$limit_height,'','');
+    	$limit_relate = $limit_height/$limit_width;
+    	$img_relate = $img_height/$img_width;
+    	if($limit_relate < $img_relate) $limit_width = $limit_height/$img_relate;
+    	else $limit_height = $limit_width*$img_relate;
+    	return array($limit_height,$limit_width);
+    }
 
+    /**
+     * возвращает большое изображение ИЛИ
+     * если изображение для артикула не найдено в базе - no_image
+     *
+     * @param $art
+     * @return string
+     */
+    protected function get_big_img_name($art){
 
+        $query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'big' AND art='".$art."' ORDER BY id";
 
+        $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+        $stmt->bind_param('s', $art) or die($this->mysqli->error);
+        $stmt->execute() or die($this->mysqli->error);
+        $result = $stmt->get_result();
+        $stmt->close();
 
- 		//////////////////////////
-		//	KP
-		//////////////////////////
- 			// сохранение главного изображения
- 			protected function chooseImgGallery_AJAX(){
-	 			//////////////////////////
-	 			//	предупреждения для юзера
-	 			//////////////////////////
-	 				// если не получено название папки
-	 				if(!isset($_POST['data']['id'])){
-	 					$html = 'ID не указан';	
-						$this->responseClass->addMessage($html,'error_message');
-	 					return;
-	 				}
-	 				// если не получено название изоюбражения
-	 				if(!isset($_POST['data']['img'])){
-	 					$html = 'Image не указана';	
-						$this->responseClass->addMessage($html,'error_message');
-	 					return;
-	 				}
-	 				if(!isset($_POST['data']['type'])){
-	 					$html = '<br>Не указан тип изображения';	
-						$this->responseClass->addMessage($html,'error_message');
-	 					return;
-	 				}
+        # присваиваем значение по умолчанию
+        $imageName = 'no_image.jpg';
 
-	 			// удаление загруженных файлов
-	 			if(isset($_POST['data']['delete_img']) && trim($_POST['data']['delete_img']) != ''){
-	 				// 	$html = 'Присутствуют изображения на удаление';	
-					// $this->responseClass->addMessage($html,'error_message');
-	 				$img_arr = explode(",", $_POST['data']['delete_img']);
-	 				foreach ($img_arr as $key => $value) {
-	 					$dir = ROOT.'/data/images/'.$_POST['data']['delete_img_width_folder'].'/';
-	 					// полный путь к файлу 
-	 					$filename = $dir.''.$value;
-	 					
-	 					// если файл существует
-						if (file_exists($filename)) {
-							// удаляем файл
-							   unlink($filename);
-						}	 					
-	 				}
-					
-					// если папка пуста - удаляем её
-					// if(rmdir($dir)){
-					// 	if($this->user_access){
-					// 		$html = 'Т.к. изображений во временной папке не осталось, папка была удалена.';	
-					// 		$this->responseClass->addMessage($html,'error_message');	
-					// 	}	
-						// // на всякий случай сохраняем папку
-						// if($_POST['data']['folder_name'] != 'img' && trim($_POST['data']['folder_name']) != ''){
-						// 	$_POST['data']['folder_name'] = 'img';					
-						// }	
-						// $_POST['data']['folder_name'] = 'img';					
-					// }
-	 			} 				
+        if($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                if ($row['name'] != ''){
+                    $imageName = $row['name'];
+                }
+            }
+        }
 
-	 			// вычищаем предыдущие данные из базы
-	 			if(trim($_POST['data']['json']) != trim($_POST['data']['json_old'])){
-		 			$query = "DELETE FROM `".RT_MAIN_ROWS_GALLERY."` WHERE parent_id = ".(int)$_POST['data']['id'].";";
-		 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
+        return $imageName;
+    }
 
-		 			$json = json_decode($_POST['data']['json'], true);	 			
-		 							
-		 			
-		 			foreach ($json as $key => $IMG) {
-		 				$query = "INSERT INTO `".RT_MAIN_ROWS_GALLERY."` SET ";
-		 				$query .= "`sort` = '".$key."'";
-		 				$query .= ", `folder` = '".$IMG['folder']."'";
-		 				$query .= ", `img_name` = '".$IMG['img_name']."'";
-		 				$query .= ", `parent_id` = '".$_POST['data']['id']."'";
-		 				$result = $this->mysqli->query($query) or die($this->mysqli->error);
-		 			}
-		 		}
-	 			
-				// $query .=" img_folder = '".$dir."'";
-				// $query .=", img_folder_choosen_img = '".$img."'";
-				// $result = $mysqli->query($query) or die($mysqli->error);
+    /**
+     * проверяет изображение на наличие в файловой системе
+     * ЕСЛИ файл был найден
+     * возвращает локальный путь к файлу
+     * ЕСЛИ файл не найден
+     * возвращает локальный путь к файлу no_image
+     *
+     * @param $path
+     * @param null $no_image_name
+     * @return string
+     */
+    protected function checkImgExists($path,$no_image_name = NULL ){
+        $mime = $this->getExtension($path);
+    	if(@fopen($path, 'r')){//file_exists
+    		$img_src = $path;
+    	}else{
+    	    $no_image_name =!empty($no_image_name)? $no_image_name :'no_image';
+    		$img_src= substr($path,0,strrpos($path,'/') + 1).$no_image_name.'.'.$mime;
+    	}
+    	return $img_src;
+    }
 
-
- 				// сохраняем значение в базе
- 				if( $_POST['data']['folder_name'] != 'img' ){
-					$query = "UPDATE `".RT_MAIN_ROWS."` SET";
-					// $query .=" img_folder_choosen_img = '".$_POST['data']['img']."'";
-				
-				
-					$query .=" img_folder = '".$_POST['data']['folder_name']."'";	
-					
-
-					// $query .=", img_type = '".$_POST['data']['type']."'";	
-					$query .=" WHERE `id` = ".(int)$_POST['data']['id'].";";
-					
-					$result = $this->mysqli->query($query) or die($this->mysqli->error);
-				}	
-				$html = 'OK';	
-				$this->responseClass->addMessage($html,'successful_message','25000');
-				// $this->responseClass->addResponseFunction('window_reload');
-				return;
- 			}
-
-
-
-
-
-
-            /**
-             * собирает json выбранных изображений
-             *
-             */
- 			private function getJsonCheckedImg( $chooseImages ){
- 				$json = '[';
-
- 				$json = "[";
- 				foreach ($chooseImages as $key => $value) {
- 					$json .= (($key > 0)?',':'').'{"folder":"'.$value['folder'].'","img_name":"'.$value['img_name'].'"}';
- 				}
- 				$json .= "]";
- 				return $json;
- 			}
-
-
-
-
-
-
-			//////////////////////////
-			//	из common.php
-			//////////////////////////
-				protected function transform_img_size($img,$limit_height,$limit_width){
-			     	list($img_width, $img_height, $type, $attr) = (file_exists($img))? getimagesize($img): array($limit_width,$limit_height,'',''); 
-					$limit_relate = $limit_height/$limit_width;
-					$img_relate = $img_height/$img_width;
-					if($limit_relate < $img_relate) $limit_width = $limit_height/$img_relate; 
-					else $limit_height = $limit_width*$img_relate;
-					return array($limit_height,$limit_width); 
-				}
-				protected function get_big_img_name($art){
-			        global $db;				   
-			        $query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'big' AND art='".$art."' ORDER BY id";
-				    $result = mysql_query($query,$db);
-				    if($result && mysql_num_rows($result)>0){
-					   $row = mysql_fetch_assoc($result);
-				       $img = ($row['name'] !='')? $row['name']:'no_image.jpg';
-				    }
-				    else $img = 'no_image.jpg';
-				    return $img;	
-			    }
-			    protected function checkImgExists($path,$no_image_name = NULL ){
-				    $mime = $this->getExtension($path);
-					if(@fopen($path, 'r')){//file_exists
-						$img_src = $path;	
-					}
-					else{
-					    $no_image_name =!empty($no_image_name)? $no_image_name :'no_image';
-						$img_src= substr($path,0,strrpos($path,'/') + 1).$no_image_name.'.'.$mime;
-					} 
-					return $img_src;
-				}
-				protected function getExtension($filename){
-			        $path_info = pathinfo($filename);
-			        return $path_info['extension'];
-			    }
-
-			// получаем изображение для артикула
-			private function getArtImg($item){
-				$img_path = '../img/'.$this->get_big_img_name($item['art']);	
-			    $img_src = $this->checkImgExists($img_path);
-				// меняем размер изображения
-			    $size_arr = $this->transform_img_size($img_src,226,300); // установленое здесь значение для высоты является оптимальным 
-				                                                   // при выводе КП на печать (не съезжают ячейки таблицы)
-				// вставляем изображение
-				return '<img src="'.$img_src.'" height="'.$size_arr[0].'" width='.$img_src[1].'">';
-			}
-
-			// получаем html изображения
-			private function getImgLiHtml($path, $file = '',$li_class = '', $folder = '', $type){
-				$html = '<li class="rt-gallery-cont '. $li_class .'" data-type="'.$type.'" data-folder="'.$folder.'" data-file="'.$file.'" >';
-				if($folder != 'img'){
-					$html .= '<div class="delete_upload_img">x</div>';	
-				}
-				$html .= '<img src="'.$path.'" alt="" />'; // Вывод превью картинки
-				$html .= '</li>';
-				return $html;
-			}
-
-
-
-
-
-
-
-			
+    /**
+     * возвращает расширение изображение
+     *
+     * @param $filename
+     * @return mixed
+     */
+    protected function getExtension($filename){
+        $path_info = pathinfo($filename);
+        return $path_info['extension'];
+    }
 
 }
 		

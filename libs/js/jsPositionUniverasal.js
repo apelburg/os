@@ -442,15 +442,20 @@ $(document).ready(function($) {
 });
 
 
-$(document).on('click', "#articulusImagesPrevBigImg #image_add",function(){ 
-  // echo_message_js('открыть галлерею','system_message');
-  $.post('', {
-        AJAX: 'getStdKpGalleryWindow',
-        id: $('#ja--image-gallety-togle').attr('data-id')
-      }, function(data, textStatus, xhr) {
-        standard_response_handler(data);
-      },'json');
-});
+/**
+ * вызов окна галлереи
+ * скрипт галлереи полность переписан, вызов боллее не требуется
+ * на удаление
+ */
+// $(document).on('click', "#articulusImagesPrevBigImg #image_add",function(){
+//   // echo_message_js('открыть галлерею','system_message');
+//   $.post('', {
+//         AJAX: 'getStdKpGalleryWindow',
+//         id: $('#ja--image-gallety-togle').attr('data-id')
+//       }, function(data, textStatus, xhr) {
+//         standard_response_handler(data);
+//       },'json');
+// });
 
 //Обработка клика на превью картинки
 $(document).on('click', "#articulusImagesPrevBigImg .carousel-block",function(){ 

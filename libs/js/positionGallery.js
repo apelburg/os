@@ -76,12 +76,14 @@
     };
 
     galleryWindow.prototype.getContent = function() {
+      var chooseObj;
       this.contentDiv = $('<div/>', {
         id: "rt-gallery-images"
       });
       this.contentDiv.append($('<ul/>'));
       this.appendImgToGallery(this.data);
-      this.contentDiv.data(this.getChooseObj());
+      this.contentDiv.data(chooseObj = this.getChooseObj());
+      this.savedData = chooseObj;
       return this.contentDiv;
     };
 
@@ -262,21 +264,20 @@
     };
 
     galleryWindow.prototype.deleteImg = function(obj) {
-      var data, self;
-      self = this;
+      var chooseObj, data, self;
       if (obj.parent().hasClass('checked')) {
         if (this.contentDiv.find('ul li.checked').length === 1) {
           echo_message_js('Удалить единственное выбранное изображение нельзя.');
           return;
         } else {
-          this.contentDiv.data(this.getChooseObj());
-          this.checkEdit();
+          this.contentDiv.data(chooseObj = this.getChooseObj());
+          this.savedData = chooseObj;
         }
       }
+      self = this;
       data = obj.parent().data();
       return obj.parent().hide(300, function() {
         $(this).remove();
-        console.log(data);
         new sendAjax('delete_upload_image', {
           img_name: data.img_name,
           folder_name: self.data.folder_name
@@ -360,12 +361,13 @@
       self = this;
       if (chooseObjJson !== chooseOldObjJson) {
         button.removeClass('no').addClass('yes').html('Сохранить').unbind('click').click(function() {
+          self.contentDiv.data(chooseObj);
+          self.savedData = chooseObj;
           return new sendAjax('save_edit_gallery', {
             chooseData: chooseObj,
             mainRowId: self.data.id
           }, function(response) {
             if (response.response === "OK") {
-              self.contentDiv.data(self.getChooseObj());
               return button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(function() {
                 return self.destroy();
               });
@@ -388,7 +390,22 @@
       }, "slow");
     };
 
+    galleryWindow.prototype.updateRtPositionsGallery = function() {
+      return window.location.href = window.location.href;
+    };
+
+    galleryWindow.prototype.updateKpGallery = function() {
+      return window.location.href = window.location.href;
+    };
+
+    galleryWindow.prototype.updateContentInPage = function() {
+      if ($.urlVar('section') === 'rt_position') {
+        return this.updateRtPositionsGallery();
+      }
+    };
+
     galleryWindow.prototype.destroy = function() {
+      this.updateContentInPage();
       this.previewDiv.remove();
       return $(this.windowGallery.winDiv[0]).dialog('close').dialog('destroy').remove();
     };

@@ -1204,32 +1204,17 @@
 		var a = document.createElement('a');
 		a.setAttribute('pos_id',pos_id);
 		a.onclick = function(e){
-			// event.preventDefault();
-			$.post('', {
-				AJAX: 'getStdKpGalleryWindow',
-				id: $(this).attr('pos_id')
-			}, function(data, textStatus, xhr) {
-				standard_response_handler(data);
-			},'json');
-			openCloseRtMenu(e);
-			// echo_message_js($(this).attr('pos_id'),'system_message')
+			// снимаем выделение строки
+			target.style.backgroundColor = '';
+			// скрываем меню
+			div.style.display = 'none';
+			// вызываем галлерею
+			new galleryWindow(Number($(this).attr('pos_id')));
 		};
-		a.appendChild(document.createTextNode('Вставить изображение'));
+		a.appendChild(document.createTextNode('Галерея изображений'));
 		innerDiv.appendChild(a);
 		div.appendChild(innerDiv);
 
-		var innerDiv = document.createElement('div');
-		innerDiv.className = "link1";
-		var a = document.createElement('a');
-		a.setAttribute('pos_id',pos_id);
-		a.onclick = function(e){
-			new galleryWindow(Number($(this).attr('pos_id')));
-		};
-		a.appendChild(document.createTextNode('Новая галлерея'));
-		innerDiv.appendChild(a);
-		div.appendChild(innerDiv);
-		
-		
 		target.appendChild(div);
 		
 		openCloseMenu.lastWindow = div;

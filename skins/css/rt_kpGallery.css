@@ -28,7 +28,7 @@ div#rt-gallery-images {
     position: relative;
 }
 div#galleryPreviewDiv{
-    position: absolute;
+    position: fixed;
     height: 100%;
     top: 0px;
     left: 0px;
@@ -36,6 +36,7 @@ div#galleryPreviewDiv{
     background: #fff;
     padding: 0px 15px;
     width: 175px;
+    overflow-y:auto;
 }
 div#galleryPreviewDiv img,
 div#rt-gallery-images img{
@@ -90,25 +91,32 @@ li.rt-gallery-cont .delete_upload_img:hover{
 
 div#image_add {
     float: left;
-    background-color: #505050;
-    background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#639363),color-stop(1,#9DBE8E));
-    background-position: center top;
-    background-repeat: no-repeat;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-    border: 2px solid #8DA483;
-    color: #DFF8DD;
-    font: 700 12px Arial,Helvetica,sans-serif;
+    /* background-color: #505050; */
+    /* background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#639363),color-stop(1,#9DBE8E)); */
+    /* background-position: center top; */
+    /* background-repeat: no-repeat; */
+    /* -webkit-border-radius: 0px; */
+    /* -moz-border-radius: 0px; */
+    /* border-radius: 0px; */
+    /* border: 2px solid #8DA483; */
+    /* color: #DFF8DD; */
+    /* font: 700 12px Arial,Helvetica,sans-serif; */
     text-align: center;
-    text-shadow: 0 -1px 0 rgba(0,0,0,.25);
+    /* text-shadow: 0 -1px 0 rgba(0,0,0,.25); */
     width: 96%;
     margin-top: 15px;
-    padding: 7px 0;
+    padding: 10px 0;
     cursor: pointer;
+    border-radius: 9px;
+    /* height: 36px; */
+    border: 1px solid #999999;
+    background: #92B73E;
+    color: #fff;
+    padding: 9px 0;
+    height: auto;
 }
 div#image_add:hover {
-    background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#537753),color-stop(1,#87B572));
+    /*background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#537753),color-stop(1,#87B572));*/
 }
 
 /*

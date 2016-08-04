@@ -62,22 +62,3 @@ function chooseKpPreview(img){
 	}
 }
 
-
-// $(document).on('click', 'li.rt-gallery-cont .delete_upload_img', function(event) {
-// 	event.preventDefault();
-// 	$(this).parent().removeClass('checked');
-// 	$('#data_JSON').val(get_json_checked_img());
-// 	echo_message_js('удалить', 'system_message' ,25000);
-// 	// удаляем изображение
-//
-// 	var img = $(this).parent().attr('data-file');
-// 	var folder = $(this).parent().attr('data-folder');
-// 	// alert(img);
-// 	if( $('#data_delete_img').val() == ''){
-// 		$('#data_delete_img').val(img);
-// 	}else{
-// 		$('#data_delete_img').val($('#data_delete_img').val()+','+img);
-// 	}
-// 	$('#data_delete_img_width_folder').val(folder);
-// 	$(this).parent().hide('fast');
-// });
