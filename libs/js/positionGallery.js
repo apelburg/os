@@ -10,11 +10,13 @@
       if (positionId == null) {
         positionId = 0;
       }
+      window_preload_add();
       this.positionId = positionId;
       self = this;
       new sendAjax('get_gallery_content', {
         id: this.positionId
       }, function(response) {
+        window_preload_del();
         self.setData(response.data);
         self.init();
         return self.initUploadify();
@@ -388,14 +390,6 @@
       return this.contentDiv.stop().animate({
         "scrollTop": 99999
       }, "slow");
-    };
-
-    galleryWindow.prototype.updateRtPositionsGallery = function() {
-      return window.location.href = window.location.href;
-    };
-
-    galleryWindow.prototype.updateKpGallery = function() {
-      return window.location.href = window.location.href;
     };
 
     galleryWindow.prototype.updateContentInPage = function() {

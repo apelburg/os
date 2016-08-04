@@ -6,10 +6,13 @@ class window.galleryWindow
   maxChooseImg: 3
 
   constructor:(positionId = 0)->
+    window_preload_add()
+
     @positionId = positionId
 
     self = @
     new sendAjax('get_gallery_content',{ id:@positionId }, ( response )->
+      window_preload_del()
       self.setData( response.data )
       self.init()
       self.initUploadify()
@@ -423,12 +426,6 @@ class window.galleryWindow
   # скролл окна вниз
   scrollBottom:()->
     @contentDiv.stop().animate({"scrollTop":99999 },"slow");
-
-  updateRtPositionsGallery:()->
-    window.location.href = window.location.href
-
-  updateKpGallery:()->
-    window.location.href = window.location.href
 
   updateContentInPage:()->
     window.location.href = window.location.href
