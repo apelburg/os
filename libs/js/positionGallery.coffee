@@ -109,7 +109,7 @@ class window.galleryWindow
 
   # добавляем все выбранные изображения в окно preview
   appendImgToGalleryPreview:(data) ->
-    console.log data
+#    console.log data
 
     ul = @previewDiv.find('ul')
 
@@ -193,7 +193,7 @@ class window.galleryWindow
 
 
   getImage:(imgData)->
-    console.log "imgData = %O",imgData
+#    console.log "imgData = %O",imgData
     img = $('<img/>',{
       src:imgData.img_link_global
     })
@@ -210,7 +210,7 @@ class window.galleryWindow
     self = @
 
     # добавляем возможность удаления ранее загруженного изображения
-    console.log "imgData = %O",imgData
+#    console.log "imgData = %O",imgData
     if imgData.img_folder != 'img'
 
       li.append( $('<div/>',{
@@ -309,11 +309,34 @@ class window.galleryWindow
     ul.sortable({
       items:'li',
       helper: "clone",
-      containment: "parent",
-      sort:( event, ui )->
+#      containment: "parent",
+      deactivate:( event, ui )->
+
         # проверка на изменения
-        self.checkEdit()
+        isCheckEdit = self.checkEdit()
+
+        # если была произведена сортировка - изменяем положение изображений в окне
+        self.resortChooseImageInGalleryWindow() if ( isCheckEdit == true )
+
+
     })
+
+  # изменяем положение изображений в окне в соответствии сортировкой в preview
+  resortChooseImageInGalleryWindow: ()->
+    # в данном случае мы уверены, что остальная часть программы уже проследила за тем,
+    # что набор выбранных изображений в обоих окнах одинаков и различается толко их порядок
+    self = @
+
+    console.log self.previewDiv.find('ul li').length
+    @contentDiv.find('ul li.checked').each((index)->
+
+      console.log self.previewDiv.find('ul li').eq(index).data()
+      data = self.previewDiv.find('ul li').eq(index).data()
+
+      $(@).replaceWith( self.getImage( data ) )
+    )
+
+
 
   # обновление данных в методе сортирвки
   # применить после изменений с контентом внутри галереи
@@ -328,7 +351,7 @@ class window.galleryWindow
   getChooseObj:()->
     chooseArr = {}
     i = 0
-    @contentDiv.find('ul li').each((e,index)->
+    @contentDiv.find('ul li.checked').each((e,index)->
       data = $(@).data()
       chooseArr[i] = {}
       chooseArr[i]['img_name']    = data.img_name
@@ -351,11 +374,14 @@ class window.galleryWindow
   # изменение кнопки закрыть/сохранить
   checkEdit:()->
     # получаем изначальный выбор
-    chooseOldObjJson = JSON.stringify( @contentDiv.data() )
+    chooseOldObj     = @contentDiv.data()
+    chooseOldObjJson = JSON.stringify( chooseOldObj )
 
     # собираем в объект выбранные изображения
     chooseObj     = @getChoosePreviewObj()
     chooseObjJson = JSON.stringify( chooseObj )
+
+    console.info "chooseOldObj = %O , chooseObj = %O", chooseOldObj, chooseObj
 
     # получаем кнопку закрыть / сохранить
     button = @windowGallery.buttonDiv.find('#updateAndSaveGalleryData')
@@ -379,13 +405,14 @@ class window.galleryWindow
             )
         )
       )
-
+      return true
     else
       self = @
       # если нет - кнопка сохранить должна быть кнопкой закрыть !!!!
       button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(()->
         self.destroy()
       )
+      return false
 
   # скролл окна вниз
   scrollBottom:()->
@@ -393,7 +420,7 @@ class window.galleryWindow
 
   # уничтожить окно
   destroy:()->
-    console.log @windowGallery
+#    console.log @windowGallery
     @previewDiv.remove()
     $(@windowGallery.winDiv[0]).dialog('close').dialog('destroy').remove()
     

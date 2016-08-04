@@ -553,7 +553,7 @@ class rtKpGallery extends aplStdAJAXMethod{
                 if ( in_array($extension, $this->getFileTypesEnabled()) ) {
 
                     # получаем уникальное имя файла
-                    $fileNameExtension = $this->createNewFileName( $extension, $verifyToken );
+                    $fileNameExtension = $this->createNewFileName( $extension, $verifyToken, $localLinkGalleryUploadDir );
 
                     # локальный путь к файлу
                     $targetFile = $localLinkGalleryUploadDir . $fileNameExtension;
@@ -567,8 +567,8 @@ class rtKpGallery extends aplStdAJAXMethod{
                     $globalLinkGalleryUploadDir = $this->getGlobalLinkGalleryUploadDir( $folderName );
 
                     # собираем данные по загруженному изображению
-                    $returnImgArr[0]['img_name']           = $folderName;
-                    $returnImgArr[0]['img_folder']         = $localLinkGalleryUploadDir;
+                    $returnImgArr[0]['img_name']           = $fileNameExtension;
+                    $returnImgArr[0]['img_folder']         = $folderName;
                     $returnImgArr[0]['img_link_global']    = $globalLinkGalleryUploadDir . $fileNameExtension;
                     $returnImgArr[0]['img_link_local']     = $localLinkGalleryUploadDir . $fileNameExtension;
                     $returnImgArr[0]['checked']          = 0;
@@ -600,13 +600,19 @@ class rtKpGallery extends aplStdAJAXMethod{
      * @param $verifyToken  string  -  метка обращения
      * @return string
      */
-    private function createNewFileName( $extension, $verifyToken ){
+    private function createNewFileName( $extension, $verifyToken, $path ){
         # $randomPart - добавлен для того, чтобы файлы не перетирали друг друга при мультизагрузке
         $randomPart = rand(5, 15);
 
+        # сборка имени файла
         $fileName = md5(mktime(date("H"), date("i"), date("s"), date("n"), date("j"), date("Y")).$randomPart)."_".$verifyToken;
-
+        # добавляем расширение файла
         $fileNameExtension = $fileName . ".$extension";
+
+        # если файл существует - генерируем имя по новой
+        if (file_exists( $path . $fileNameExtension )){
+            $fileNameExtension = createNewFileName( $extension, $verifyToken, $path );
+        }
 
         return $fileNameExtension;
     }

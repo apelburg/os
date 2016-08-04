@@ -101,7 +101,6 @@
 
     galleryWindow.prototype.appendImgToGalleryPreview = function(data) {
       var i, index, j, k, len, len1, li, n, ref, ref1, ul;
-      console.log(data);
       ul = this.previewDiv.find('ul');
       ref = data.images;
       for (index = j = 0, len = ref.length; j < len; index = ++j) {
@@ -194,7 +193,6 @@
 
     galleryWindow.prototype.getImage = function(imgData) {
       var img, li, self;
-      console.log("imgData = %O", imgData);
       img = $('<img/>', {
         src: imgData.img_link_global
       });
@@ -206,7 +204,6 @@
       });
       li.data(imgData);
       self = this;
-      console.log("imgData = %O", imgData);
       if (imgData.img_folder !== 'img') {
         li.append($('<div/>', {
           "class": 'delete_upload_img',
@@ -297,10 +294,25 @@
       return ul.sortable({
         items: 'li',
         helper: "clone",
-        containment: "parent",
-        sort: function(event, ui) {
-          return self.checkEdit();
+        deactivate: function(event, ui) {
+          var isCheckEdit;
+          isCheckEdit = self.checkEdit();
+          if (isCheckEdit === true) {
+            return self.resortChooseImageInGalleryWindow();
+          }
         }
+      });
+    };
+
+    galleryWindow.prototype.resortChooseImageInGalleryWindow = function() {
+      var self;
+      self = this;
+      console.log(self.previewDiv.find('ul li').length);
+      return this.contentDiv.find('ul li.checked').each(function(index) {
+        var data;
+        console.log(self.previewDiv.find('ul li').eq(index).data());
+        data = self.previewDiv.find('ul li').eq(index).data();
+        return $(this).replaceWith(self.getImage(data));
       });
     };
 
@@ -313,7 +325,7 @@
       var chooseArr, i;
       chooseArr = {};
       i = 0;
-      this.contentDiv.find('ul li').each(function(e, index) {
+      this.contentDiv.find('ul li.checked').each(function(e, index) {
         var data;
         data = $(this).data();
         chooseArr[i] = {};
@@ -338,14 +350,16 @@
     };
 
     galleryWindow.prototype.checkEdit = function() {
-      var button, chooseObj, chooseObjJson, chooseOldObjJson, self;
-      chooseOldObjJson = JSON.stringify(this.contentDiv.data());
+      var button, chooseObj, chooseObjJson, chooseOldObj, chooseOldObjJson, self;
+      chooseOldObj = this.contentDiv.data();
+      chooseOldObjJson = JSON.stringify(chooseOldObj);
       chooseObj = this.getChoosePreviewObj();
       chooseObjJson = JSON.stringify(chooseObj);
+      console.info("chooseOldObj = %O , chooseObj = %O", chooseOldObj, chooseObj);
       button = this.windowGallery.buttonDiv.find('#updateAndSaveGalleryData');
       self = this;
       if (chooseObjJson !== chooseOldObjJson) {
-        return button.removeClass('no').addClass('yes').html('Сохранить').unbind('click').click(function() {
+        button.removeClass('no').addClass('yes').html('Сохранить').unbind('click').click(function() {
           return new sendAjax('save_edit_gallery', {
             chooseData: chooseObj,
             mainRowId: self.data.id
@@ -358,11 +372,13 @@
             }
           });
         });
+        return true;
       } else {
         self = this;
-        return button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(function() {
+        button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(function() {
           return self.destroy();
         });
+        return false;
       }
     };
 
@@ -373,7 +389,6 @@
     };
 
     galleryWindow.prototype.destroy = function() {
-      console.log(this.windowGallery);
       this.previewDiv.remove();
       return $(this.windowGallery.winDiv[0]).dialog('close').dialog('destroy').remove();
     };
