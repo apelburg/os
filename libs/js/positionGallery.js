@@ -153,7 +153,7 @@
           'AJAX': 'add_new_files_in_kp_gallery',
           'timestamp': this.data.timestamp,
           'token': this.data.token,
-          'gnom': 'sdfdsfdsf',
+          'section': $.urlVar('section'),
           'id': this.data.id,
           'folder_name': this.data.folder_name
         },

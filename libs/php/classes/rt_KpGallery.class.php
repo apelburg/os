@@ -37,8 +37,9 @@ class rtKpGallery extends aplStdAJAXMethod{
 
 
     function __construct(){
+//        echo $this->printArr($_GET);
 
-        if (isset($_GET['section']) && $_GET['section'] == 'business_offers'){
+        if (isset($_GET['section']) && $_GET['section'] == 'business_offers' || isset($_POST['section']) && $_POST['section'] == 'business_offers'){
             $this->TBL_MAIN_ROWS = KP_MAIN_ROWS;
             $this->TBL_MAIN_ROWS_GALLERY = KP_MAIN_ROWS_GALLERY;
         }
@@ -190,7 +191,7 @@ class rtKpGallery extends aplStdAJAXMethod{
                     $imgArr[] = $row['name'];
                 }
             }
-            # вывод информации в режиме разработчика
+            # вывод информации в режим разработчика
             $this->prod__message( '<b>'.$query.'</b>'.'<br>'.$this->printArr($imgArr) );
         }
 
@@ -429,11 +430,17 @@ class rtKpGallery extends aplStdAJAXMethod{
             # создание директории
             mkdir($dirName, 0777, true);
 
+
             # пишем её название в базу
             $query = "UPDATE `".$this->TBL_MAIN_ROWS."` SET";
             $query .=" img_folder = '".$folderName."'";
             $query .=" WHERE `id` = ".(int)$rtMainRowId.";";
             $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+//            echo $query;
+//            echo $this->printArr($_GET);
+        }else{
+//            echo 'папкс '.$dirName;
         }
 
         return $folderName;
@@ -547,6 +554,15 @@ class rtKpGallery extends aplStdAJAXMethod{
         $folderName     = isset($_POST['folder_name'])?$_POST['folder_name']:'';
         $rtMainRowId    = (int)$_POST['id'];
         $timeStump      = (int)$_POST['timestamp'];
+
+
+        if (isset($_POST['section']) && $_POST['section'] == 'business_offers'){
+            $this->TBL_MAIN_ROWS = KP_MAIN_ROWS;
+            $this->TBL_MAIN_ROWS_GALLERY = KP_MAIN_ROWS_GALLERY;
+        }
+
+
+
         $token      = $_POST['token'];
 
         # получаем локальный путь к папке
@@ -557,6 +573,10 @@ class rtKpGallery extends aplStdAJAXMethod{
         if(!isset($folderName) || $folderName == "" || !is_dir( $localLinkGalleryUploadDir ) ) {
             # создание новой папки
             $folderName = $this->createNewDir( $rtMainRowId );
+            # запись
+
+
+
             $localLinkGalleryUploadDir  = $this->getLocalLinkGalleryUploadDir( $folderName );
         }
 
@@ -707,6 +727,8 @@ class rtKpGallery extends aplStdAJAXMethod{
             $stmt->bind_param('issi', $key, $data['img_folder'], $data['img_name'], $id) or die($this->mysqli->error);
             $stmt->execute() or die($this->mysqli->error);
             $result = $stmt->get_result();
+
+
         }
 
         $stmt->close();

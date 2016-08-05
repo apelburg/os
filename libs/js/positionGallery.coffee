@@ -157,7 +157,7 @@ class window.galleryWindow
         'AJAX'			: 'add_new_files_in_kp_gallery',
         'timestamp' 	: @data.timestamp,
         'token'     	: @data.token,
-        'gnom'      	: 'sdfdsfdsf',
+        'section'      	: $.urlVar('section'),
         'id'        	: @data.id,
         'folder_name'	: @data.folder_name
       },

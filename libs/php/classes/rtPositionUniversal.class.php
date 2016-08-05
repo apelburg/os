@@ -56,8 +56,15 @@ class rtPositionUniversal extends Position_general_Class
 	 *	@version 	12:29 23.03.2016
 	 */
 	protected function shearch_article_autocomlete_AJAX(){
-		//RT_MAIN_ROWS
-		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".$_POST['search']."%'";
+        # ограничиваем минимално возможное количество символов при поиске артикула
+        $artStrLen = 4;
+        if(strlen($_POST['search']) < $artStrLen){
+            exit('{}');
+        }
+
+
+
+		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '".$_POST['search']."%'";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
 		// $result = $mysqli->query($query)or die($mysqli->error);
@@ -71,7 +78,6 @@ class rtPositionUniversal extends Position_general_Class
 			while($row = $result->fetch_assoc()){
 				$object[$row['art']]['label'] = $row['art'].' '.$row['name'];
 				$object[$row['art']]['value'] = $row['art'];
-
 				$articles_rows[] = $row['art'];
 				// $response[$i]['label'] = $row['art'].' '.$row['name'];
 				// $response[$i++]['value'] = $row['art'];
@@ -102,15 +108,6 @@ class rtPositionUniversal extends Position_general_Class
 			}
 			
 		}
-
-
-
-
-
-
-
-
-
 		echo json_encode($response);
 		exit;
 	}
