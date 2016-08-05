@@ -52,7 +52,7 @@
       }, {
         closeOnEscape: true,
         single: true,
-        close: function(event, ui) {
+        close: function() {
           return self.destroy();
         }
       });
@@ -252,13 +252,13 @@
     };
 
     galleryWindow.prototype.updateChoseObjToPreviewDiv = function() {
-      var data, self;
-      self = this;
+      var data, i;
       data = [];
       data = this.data;
       data.images = [];
-      this.contentDiv.find('ul li').each(function(e, i) {
-        return data.images[e] = $(this).data();
+      i = 0;
+      this.contentDiv.find('ul li').each(function() {
+        return data.images[i++] = $(this).data();
       });
       this.previewDiv.find('ul').html('');
       this.appendImgToGalleryPreview(data);
@@ -297,7 +297,7 @@
       return ul.sortable({
         items: 'li',
         helper: "clone",
-        deactivate: function(event, ui) {
+        deactivate: function() {
           var isCheckEdit;
           isCheckEdit = self.checkEdit();
           if (isCheckEdit === true) {
@@ -328,7 +328,7 @@
       var chooseArr, i;
       chooseArr = {};
       i = 0;
-      this.contentDiv.find('ul li.checked').each(function(e, index) {
+      this.contentDiv.find('ul li.checked').each(function() {
         var data;
         data = $(this).data();
         chooseArr[i] = {};
@@ -342,7 +342,7 @@
       var chooseArr, i;
       chooseArr = {};
       i = 0;
-      this.previewDiv.find('ul li').each(function(e, index) {
+      this.previewDiv.find('ul li').each(function() {
         var data;
         data = $(this).data();
         chooseArr[i] = {};

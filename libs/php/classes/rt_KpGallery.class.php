@@ -17,7 +17,7 @@
  */
 class rtKpGallery extends aplStdAJAXMethod{
     // для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-    // protected $production       = false;
+//     protected $production       = false;
 
     private $user_access            = 0;
     private $user_id                = 0;
@@ -181,7 +181,7 @@ class rtKpGallery extends aplStdAJAXMethod{
             $query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'big' AND art=? ORDER BY id";
 
             $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-            $stmt->bind_param('i', $art) or die($this->mysqli->error);
+            $stmt->bind_param('s', $art) or die($this->mysqli->error);
             $stmt->execute() or die($this->mysqli->error);
             $result = $stmt->get_result();
 
@@ -190,6 +190,8 @@ class rtKpGallery extends aplStdAJAXMethod{
                     $imgArr[] = $row['name'];
                 }
             }
+            # вывод информации в режиме разработчика
+            $this->prod__message( '<b>'.$query.'</b>'.'<br>'.$this->printArr($imgArr) );
         }
 
         # создаем массив, который будем возвращать
@@ -202,13 +204,13 @@ class rtKpGallery extends aplStdAJAXMethod{
             $i = 0;
             foreach ($imgArr as $imgName) {
                 # если файл существует
-                if ( file_exists( $this->getLocalLinkCatalogImg( $imgName ) ) ){
+//                if ( file_exists( $this->getLocalLinkCatalogImg( $imgName ) ) ){
                     $returnImgArr[$i]['img_name']           = $imgName;
                     $returnImgArr[$i]['img_folder']         = 'img';
                     $returnImgArr[$i]['img_link_global']    = $this->getGlobalLinkCatalogImg( $imgName );
                     $returnImgArr[$i]['img_link_local']     = $this->getLocalLinkCatalogImg( $imgName );
                     $returnImgArr[$i++]['checked']          = 0;
-                }
+//                }
             }
         }
         # возвращаем массив изображений для артикула

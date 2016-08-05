@@ -1,5 +1,3 @@
-
-
 class window.galleryWindow
   positionId:   0
   # максимальное количество изображений, котрое можно выбрать
@@ -45,7 +43,7 @@ class window.galleryWindow
     }, {
       closeOnEscape: true,
       single: true,
-      close: (event, ui) ->
+      close: () ->
         self.destroy()
     })
 
@@ -124,6 +122,7 @@ class window.galleryWindow
         @replacePreviewDelete( li, index )
 
     # если изображений нет - подстваляем no_images
+    #noinspection JSUnresolvedVariable
     if data.images.length == 0
       for n,i in @data.no_images
         @previewDiv.find('ul').append(@getImage(n))
@@ -262,17 +261,17 @@ class window.galleryWindow
     # проверка на изменения
     @checkEdit()
 
-  # перенос выбраннога изображения в начало списка
+  # обновляем данные в левом столбце
   updateChoseObjToPreviewDiv:(  )->
-    self = @
+
     data = []
     data = @data
     data.images = []
-
-
-    @contentDiv.find('ul li').each((e, i)->
-      data.images[e] = $(@).data()
+    i = 0
+    @contentDiv.find('ul li').each(()->
+      data.images[i++] = $(@).data()
     )
+    # очищаем preview
     @previewDiv.find('ul').html('')
     # добавляем изображения
     @appendImgToGalleryPreview( data )
@@ -317,7 +316,7 @@ class window.galleryWindow
       items:'li',
       helper: "clone",
 #      containment: "parent",
-      deactivate:( event, ui )->
+      deactivate:(  )->
 
         # проверка на изменения
         isCheckEdit = self.checkEdit()
@@ -358,7 +357,7 @@ class window.galleryWindow
   getChooseObj:()->
     chooseArr = {}
     i = 0
-    @contentDiv.find('ul li.checked').each((e,index)->
+    @contentDiv.find('ul li.checked').each(()->
       data = $(@).data()
       chooseArr[i] = {}
       chooseArr[i]['img_name']    = data.img_name
@@ -368,7 +367,7 @@ class window.galleryWindow
   getChoosePreviewObj:()->
     chooseArr = {}
     i = 0
-    @previewDiv.find('ul li').each((e,index)->
+    @previewDiv.find('ul li').each(()->
       data = $(@).data()
       chooseArr[i] = {}
       chooseArr[i]['img_name']    = data.img_name
