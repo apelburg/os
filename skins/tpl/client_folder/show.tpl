@@ -2,6 +2,9 @@
 
 
 <!-- комментарии к запросу START -->
+<!-- работа с Url -->
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>
+
 <script type="text/javascript" src="./libs/js/classes/Base64Class.js"></script>
 <link href="./skins/css/comments.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="./libs/js/rt_KpGallery.js"></script>
