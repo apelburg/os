@@ -869,10 +869,12 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 				}else{
 					// старый алгоритм получения изображений в КП --- скоро можно удалить 08,04,2016
 					$art_img = new  Art_Img_development($pos_key ,$pos_level['img_folder'],$pos_level['img'], $pos_level['art']);
-					foreach ($art_img as $key => $img_src) {
-						$size_arr = transform_img_size($img_src,230,300);
-						$img_cell .= '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
-					}
+
+                    foreach ($art_img->big as $key => $img_src) {
+                        $size_arr = transform_img_size($img_src,230,300);
+                        // $size_arr = array(230,300);
+                        $img_cell .= '<img src="'.$img_src.'" height="'.$size_arr[0].'" width="'.$size_arr[1].'">';
+                    }
 				}
 				// РАБОТАЕМ СО ВТОРОЙ ЯЧЕЙКОЙ РЯДА ТАБЛИЦЫ КП
 				
