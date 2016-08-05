@@ -51,16 +51,20 @@ class window.galleryWindow
 
     $('body').append(@getPreviewContainer())
 
+    
   setData: (data) ->
     @data = data
+  
+  # возвращает zIndex главного окна галлереи
+  getZIndexWindowGallery:()->
+    @windowGallery.winDiv.zIndex()
 
   getPreviewContainer:()->
-
     # добавляем блок отображения выбранных изображений
     @contentDiv.append( @previewDiv = $('<div/>',{
       id:'galleryPreviewDiv',
       css:{
-        'zIndex':(@windowGallery.winDiv.zIndex() + 1)
+        'zIndex':(@getZIndexWindowGallery() + 1)
       }
     }) )
 
@@ -350,6 +354,21 @@ class window.galleryWindow
     @previewDiv.find('ul').sortable("destroy")
     @sortableStart( @previewDiv.find('ul') )
 
+  # добавление удаление индикатора загрузки страницы
+  preloadWindow:( type = 'add' ) ->
+    if type == 'add'
+      preloadDiv = window_preload_add()
+      preloadDiv.css({
+        'zIndex': (@getZIndexWindowGallery() + 1)
+      })
+      return preloadDiv
+    else if type == 'del'
+      window_preload_del()
+
+    return true
+
+
+
 
 
 
@@ -398,16 +417,24 @@ class window.galleryWindow
       # если ДА - подкрашиваем кнопку сохранить и при клике на неё отправляем обновленные данные из JSON
       button.removeClass('no').addClass('yes').html('Сохранить').unbind('click').click(()->
 
+
         # сохраняем данные на клиенте
         self.contentDiv.data( chooseObj )
         self.savedData = chooseObj
+
+        # добавляем индикатор загрузки
+        self.preloadWindow('add')
 
         # отправляем запрос на сохранение изменённых данных
         new sendAjax('save_edit_gallery',{
           chooseData: chooseObj,
           mainRowId: self.data.id
         },(response)->
+          # запрос прошёл, снимаем индикатор
+          self.preloadWindow('del')
+
           if response.response == "OK"
+            # изменяем кнопку на закрыть
             button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(()->
               self.destroy()
             )
@@ -426,8 +453,16 @@ class window.galleryWindow
   scrollBottom:()->
     @contentDiv.stop().animate({"scrollTop":99999 },"slow");
 
-  updateContentInPage:()->
+  updateWindow:()->
     window.location.href = window.location.href
+  
+
+  updateContentInPage:()->
+    switch $.urlVar('section')
+      when "rt_position"      then @updateWindow()
+      when "business_offers"  then @updateWindow()
+      else true
+
 
   # уничтожить окно
   destroy:()->

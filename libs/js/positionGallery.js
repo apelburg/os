@@ -63,12 +63,16 @@
       return this.data = data;
     };
 
+    galleryWindow.prototype.getZIndexWindowGallery = function() {
+      return this.windowGallery.winDiv.zIndex();
+    };
+
     galleryWindow.prototype.getPreviewContainer = function() {
       var ul;
       this.contentDiv.append(this.previewDiv = $('<div/>', {
         id: 'galleryPreviewDiv',
         css: {
-          'zIndex': this.windowGallery.winDiv.zIndex() + 1
+          'zIndex': this.getZIndexWindowGallery() + 1
         }
       }));
       this.previewDiv.append(ul = $('<ul/>'));
@@ -324,6 +328,23 @@
       return this.sortableStart(this.previewDiv.find('ul'));
     };
 
+    galleryWindow.prototype.preloadWindow = function(type) {
+      var preloadDiv;
+      if (type == null) {
+        type = 'add';
+      }
+      if (type === 'add') {
+        preloadDiv = window_preload_add();
+        preloadDiv.css({
+          'zIndex': this.getZIndexWindowGallery() + 1
+        });
+        return preloadDiv;
+      } else if (type === 'del') {
+        window_preload_del();
+      }
+      return true;
+    };
+
     galleryWindow.prototype.getChooseObj = function() {
       var chooseArr, i;
       chooseArr = {};
@@ -365,10 +386,12 @@
         button.removeClass('no').addClass('yes').html('Сохранить').unbind('click').click(function() {
           self.contentDiv.data(chooseObj);
           self.savedData = chooseObj;
+          self.preloadWindow('add');
           return new sendAjax('save_edit_gallery', {
             chooseData: chooseObj,
             mainRowId: self.data.id
           }, function(response) {
+            self.preloadWindow('del');
             if (response.response === "OK") {
               return button.removeClass('yes').addClass('no').html('Закрыть').unbind('click').click(function() {
                 return self.destroy();
@@ -392,8 +415,19 @@
       }, "slow");
     };
 
-    galleryWindow.prototype.updateContentInPage = function() {
+    galleryWindow.prototype.updateWindow = function() {
       return window.location.href = window.location.href;
+    };
+
+    galleryWindow.prototype.updateContentInPage = function() {
+      switch ($.urlVar('section')) {
+        case "rt_position":
+          return this.updateWindow();
+        case "business_offers":
+          return this.updateWindow();
+        default:
+          return true;
+      }
     };
 
     galleryWindow.prototype.destroy = function() {
