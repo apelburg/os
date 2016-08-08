@@ -16,7 +16,6 @@ class clientSearch  extends aplStdAJAXMethod{
 		## данные GET --- НА ВРЕМЯ ОТЛАДКИ !!!
 		if(isset($_GET['AJAX'])){
 			$this->_AJAX_($_GET['AJAX']);
-
 		}
 	}
 

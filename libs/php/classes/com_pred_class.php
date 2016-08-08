@@ -846,13 +846,11 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 			$itogo_extra_uslugi1 = $itogo_extra_uslugi2= $itogo_extra_uslugi3=0;
 
 
-
-
 			// echo '<pre>';
 			// print_r($multi_dim_arr);
 			// echo '</pre>';
 			// Разворачиваем массив 
-			include_once 'rt_KpGallery.class.php';
+//			include_once 'rt_KpGallery.class.php';
 			foreach($multi_dim_arr as $pos_key => $pos_level){
 			   
 				// РАБОТАЕМ С ПЕРВОЙ ЯЧЕЙКОЙ РЯДА ТАБЛИЦЫ КП

@@ -8,7 +8,9 @@
 <script type="text/javascript" src="./libs/js/classes/Base64Class.js"></script>
 <link href="./skins/css/comments.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="./libs/js/rt_KpGallery.js"></script>
-<script type="text/javascript" src="../libs/js/jquery.uploadify.js"></script>
+
+ <script type="text/javascript" src="../libs/js/jquery.uploadify.js"></script>
+
 
 
 <script type="text/javascript" src="./libs/js/js_coffee_library.js"></script>

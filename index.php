@@ -1,6 +1,5 @@
 <?php 
-	// te
-    header('Content-type: text/html; charset=utf-8');
+	header('Content-type: text/html; charset=utf-8');
 	define(DOCUMENT_ROOT, __DIR__);
 	// ini_set('error_reporting', E_ALL);
 	// при переходе на ановую версию php - вылазят сообщения об устаревших методах mysql
@@ -18,8 +17,14 @@
 
 	// aplStdClass
 	include_once ROOT.'/../libs/php/classes/aplStdClass.php';
+
+	// галлерея
+	include_once ROOT.'/libs/php/classes/rt_KpGallery.class.php';
+	new rtKpGallery;
+	//
 	include_once('libs/php/classes/clientSearchClass.php');
-	new clientSearch;
+	new clientSearch();
+
 	include_once('libs/access_installer.php');
 
 
@@ -30,9 +35,7 @@
 	
 
 
-	// галлерея
-	include_once ROOT.'/libs/php/classes/rt_KpGallery.class.php';
-	new rtKpGallery;
+
 
     // ** БЕЗОПАСНОСТЬ **
 	// если нет массива $ACCESS (права доступа) прерываем работу скирпта 
@@ -109,4 +112,18 @@
 
 	include_once'./skins/tpl/index.tpl';
 
+
+global $mysqli;
+if (isset($mysql)){
+	mysqli_close($mysql);
+}
+
+global $mysql;
+if (isset($mysql)){
+	mysql_close($mysql);
+}
+
+
+
 ?>
+

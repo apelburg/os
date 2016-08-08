@@ -67,7 +67,11 @@ class rtKpGallery extends aplStdAJAXMethod{
             $this->_AJAX_($_GET['AJAX']);
             $this->responseClass->response['data']['access'] = $this->getUserAccess();
             $this->responseClass->response['data']['id'] = $this->getUserId();
+
+
         }
+
+
     }
 
     /**
@@ -118,6 +122,25 @@ class rtKpGallery extends aplStdAJAXMethod{
             }
         }
         return $int;
+    }
+
+    protected function get_images_AJAX(){
+        $this->echoWindowSimple($this->getGalleryContent(39299));
+    }
+    private function echoWindowSimple($data){
+        function get_body($html){
+            return '<div id="window-body-development">'.$html.'</div>';
+        }
+
+        $head = '<div id="window-head-development">Режим разработчика</div>';
+
+
+
+        if(is_array($data) or is_object($data)){
+            $this->responseClass->addSimpleWindow($head . get_body($this->printArr($data)), 'system_message',1500);
+        }else{
+            $this->responseClass->addSimpleWindow($head . get_body($data), 'Окно отладки');
+        }
     }
 
     /**
@@ -715,6 +738,8 @@ class rtKpGallery extends aplStdAJAXMethod{
         $stmt->bind_param('i', $id) or die($this->mysqli->error);
         $stmt->execute() or die($this->mysqli->error);
         $result = $stmt->get_result();
+        $stmt->close();
+
 
         foreach ($newData as $key => $data){
             $query = "INSERT INTO `".$this->TBL_MAIN_ROWS_GALLERY."` SET ";
@@ -728,10 +753,10 @@ class rtKpGallery extends aplStdAJAXMethod{
             $stmt->execute() or die($this->mysqli->error);
             $result = $stmt->get_result();
 
-
+            $stmt->close();
         }
 
-        $stmt->close();
+
     }
 
     /**
@@ -800,7 +825,7 @@ class rtKpGallery extends aplStdAJAXMethod{
         }
 
         if (!$isChooseImgFile){
-            $returnImages[] =  $allImagesArr['no_image'];
+            $returnImages =  $this->getImagesForArtDefault();
         }
         return $returnImages;
     }
@@ -926,6 +951,8 @@ class rtKpGallery extends aplStdAJAXMethod{
         $path_info = pathinfo($filename);
         return $path_info['extension'];
     }
+
+
 
 }
 		

@@ -165,8 +165,8 @@ class window.galleryWindow
       'buttonText': 'Загрузить',
 
       'width'     : 250,
-      'swf'      	: '../libs/php/uploadify.swf',
-      'uploader' 	: '',
+      'swf'      	: 'http://' + window.location.hostname + '/libs/php/uploadify.swf',
+      'uploader' 	: window.location,
       'multi'     : true,
       'queueID'   : 'galleryWindowQueue',
 
