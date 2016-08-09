@@ -56,8 +56,15 @@ class rtPositionUniversal extends Position_general_Class
 	 *	@version 	12:29 23.03.2016
 	 */
 	protected function shearch_article_autocomlete_AJAX(){
-		//RT_MAIN_ROWS
-		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".$_POST['search']."%'";
+        # ограничиваем минимално возможное количество символов при поиске артикула
+        $artStrLen = 4;
+        if(strlen($_POST['search']) < $artStrLen){
+            exit('{}');
+        }
+
+
+
+		$query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '".$_POST['search']."%'";
 		$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			
 		// $result = $mysqli->query($query)or die($mysqli->error);
@@ -71,7 +78,6 @@ class rtPositionUniversal extends Position_general_Class
 			while($row = $result->fetch_assoc()){
 				$object[$row['art']]['label'] = $row['art'].' '.$row['name'];
 				$object[$row['art']]['value'] = $row['art'];
-
 				$articles_rows[] = $row['art'];
 				// $response[$i]['label'] = $row['art'].' '.$row['name'];
 				// $response[$i++]['value'] = $row['art'];
@@ -102,15 +108,6 @@ class rtPositionUniversal extends Position_general_Class
 			}
 			
 		}
-
-
-
-
-
-
-
-
-
 		echo json_encode($response);
 		exit;
 	}
@@ -207,7 +204,7 @@ class rtPositionUniversal extends Position_general_Class
 	public function get_query_status($query_num){
 		include_once ('cabinet/cabinet_class.php');
 		$Cabinet = new Cabinet();
-		return $Cabinet->name_cirillic_status[$query_num];
+		return $Cabinet->statusQueryNameArrEn2Ru[$query_num];
 	}
 	// получаем права и id юзера
 	public function user_access($user_access = 0){
@@ -1380,7 +1377,7 @@ class Images extends rtPositionUniversal
 		$html .= '</div>'.PHP_EOL;
 		$html .= count($previews_block)>=3?'<a href="" class="articulusImagesArrow2 carousel-button-right" style="background-image:url('.APELBURG_HOST.'/skins/images/general/artkart/s22.png); float:right; margin-top:-70px"></a>'.PHP_EOL:'';
 		$html .= '</div>'.PHP_EOL;
-		$html .= '<div id="image_add">Загрузить ещё</div>'.PHP_EOL;
+		$html .= '<div id="image_add" onclick="new galleryWindow('.$rt_main_row_id.')">Загрузить ещё</div>'.PHP_EOL;
 		$previews_block = $html;
 		
 		return array('main_img_src' => $main_img_src,

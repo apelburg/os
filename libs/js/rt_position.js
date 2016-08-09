@@ -35,18 +35,7 @@
 	}
 
 
-	// показать анимацию загрузки траницы
-	function window_preload_add(){
-		if(!$('#preloader_window_block').length){
-			var object = $('<div/>').attr('id','preloader_window_block'); object.appendTo('body')
-		}	
-	}
-	// скрыть анимацию загрузки траницы
-	function window_preload_del(){
-		if($('#preloader_window_block').length){
-			$('#preloader_window_block').remove();
-		}	
-	}
+
 
 	//////////////////////////
 	// ОКНА

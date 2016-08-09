@@ -1,0 +1,639 @@
+/*
+    общие
+*/
+
+html{
+    background-color: #f1f1f1;
+}
+.main_container{
+    background-color: #fff;
+}
+/*
+    меню
+*/
+ul.central_menu li span {
+    font-size: 12px;
+    color: #fff;
+    padding: 3px 10px 3px 10px;
+    float: left;
+    text-decoration: none;
+    margin: 0;
+    cursor: pointer;
+}
+/*
+    таблицы настроек
+*/
+#js-options-tbl{
+    width: 100%;
+    border-collapse:collapse;
+}
+#js-options-tbl tr td,
+#js-options-tbl tr th{
+    padding: 5px 14px;
+    height: 34px;
+    border: 1px solid #ccc;
+    font-weight: normal;
+    text-align: right;
+}
+
+#js-options-tbl tr.head th{
+    padding: 5px 14px;
+    color: #888888;
+    font-size: 12px;
+    height: auto;
+    text-align: right;
+
+}
+#js-options-tbl tr td{
+    text-align: right;
+    padding: 5px 12px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+    background-color: #fff;
+    color: #A5A5A5;
+}
+#js-options-tbl tr td.tdInputHere{
+    padding: 0;
+}
+#js-options-tbl tr td:nth-of-type(1),
+#js-options-tbl tr th:nth-of-type(1){
+    padding: 0;
+    width: 10px;
+}
+#js-options-tbl tr td:nth-of-type(2),
+#js-options-tbl tr th:nth-of-type(2){
+    width: 25px;
+}
+#js-options-tbl tr td input{
+    border: 0px;
+    height: calc(100% + 2px);
+    width: calc(100% - 24px);
+    padding: 3px 12px 5px 12px;
+    margin-left: -1px;
+    margin-top: -1px;
+    background-color: #EBEBEB;
+}
+
+#js-options-tbl tr td.tdInputHere input{
+    border: 1px solid #acc494;
+    outline: none;
+}
+tr td.mayBeEdit:hover{
+    cursor: pointer;
+    background-color: #f1f1f1;
+}
+#js-main-accounting-div{
+    background: #f1f1f1;
+}
+#js-options-tbl tr td.mayBeEdit:hover{
+    background-color: #fafafa;
+}
+#js-options-tbl tr td.date,
+#js-options-tbl tr td.date input {
+    background-image: url("../images/img_design/icon_calendar.png");
+    background-position: calc(100% - 9px);
+    background-repeat: no-repeat;
+    padding-right: 30px;
+}
+#js-options-tbl tr td.date input{
+    width: calc(100% - 12px);
+    padding: 3px 30px 5px 12px;
+}
+
+#js-options-tbl tr td.delete_row{
+    width: 44px;
+    background-image: url("../images/img_design/tc_del_service_all2.png");
+    background-repeat: no-repeat;
+    background-position: 50%;
+    opacity: 1;
+    padding: 0;
+    height: 44px;
+    background-color: #fafafa;
+    cursor: pointer;
+}
+#js-options-tbl tr.checked td{
+    color: #000;
+}
+#js-options-tbl tr.checked td:nth-of-type(2){
+    background-image: url(../images/img_design/galka_pensions.png);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    padding: 0;
+    background-color: #c4e2a4;
+    cursor: pointer;
+}
+/*
+    таблица настроек рекламщики и конечники
+*/
+#js-options-tbl tr td.zp_men_rek,
+#js-options-tbl tr td.zp_men_kon{
+
+}
+
+
+#js-options-tbl.zp_men_rek tr td:nth-of-type(1),
+#js-options-tbl.zp_men_kon tr td:nth-of-type(1),
+#js-options-tbl.zp_men_rek tr th:nth-of-type(1),
+#js-options-tbl.zp_men_kon tr th:nth-of-type(1){
+    padding: 4px 12px;
+}
+
+#js-options-tbl.zp_men_rek tr td.tdInputHere:nth-of-type(1),
+#js-options-tbl.zp_men_kon tr td.tdInputHere:nth-of-type(1){
+    padding: 0;
+}
+
+/*
+    меню месяца
+*/
+#js-accounting-month-menu{
+    height: auto;
+    background-color: #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu{
+    background-color: #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu li span{
+    color: #636769;
+}
+#js-accounting-month-menu ul.central_menu li select{
+    margin: auto;
+    margin-top: 3px;
+    background: none;
+    padding: 0 3px 0 15px;
+    color: #fff;
+    border: 1px solid #fff;
+    background: #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu li select option{
+    border:1px solid #c6c8c8;
+}
+#js-accounting-month-menu ul.central_menu li select option:hover{
+    background: #c6c8c8;
+    border:1px solid #fff;
+}
+#js-accounting-month-menu.first_line ul.central_menu li.selected{
+    background:none;
+}
+#js-accounting-month-menu ul.central_menu li.selected .border{
+    border: 1px solid #fff;
+    color: #fff;
+}
+/*
+    меню менеджеры
+*/
+#js-accounting-menu-managers{
+    background: #92b73e;
+    height: auto;
+}
+#js-accounting-menu-managers ul.central_menu{
+    background-color: #92b73e;
+}
+#js-accounting-menu-managers ul.central_menu li.selected .border{
+    border: 1px solid #fff;
+    color: #fff;
+}
+/*
+    таблица закрытых счетов
+*/
+#js-bill-tbl{
+    border-collapse: collapse;
+}
+#js-bill-tbl th{
+    padding: 2px 14px;
+    color: #888888;
+    font-size: 11px;
+    height: auto;
+    text-align: right;
+    font-weight: normal;
+}
+#js-bill-tbl tr:hover td{
+    background-color: #f1f1f1;
+    cursor: default;
+}
+#js-bill-tbl tr.itog td{
+    background-color: #fff;
+    cursor: default;
+}
+
+#js-bill-tbl th:nth-of-type(2),
+#js-bill-tbl th:nth-of-type(3),
+#js-bill-tbl th:nth-of-type(4),
+#js-bill-tbl td:nth-of-type(2),
+#js-bill-tbl td:nth-of-type(3),
+#js-bill-tbl td:nth-of-type(4){
+    border-right: 1px solid #ccc;
+}
+#js-bill-tbl tr:nth-last-of-type(1) td{
+    border-bottom: 1px solid #ccc;
+}
+#js-bill-tbl th:nth-of-type(1),
+#js-bill-tbl td:nth-of-type(1){
+    border-left: 1px solid #ccc;
+}
+#js-bill-tbl td:nth-of-type(4),
+#js-bill-tbl th:nth-of-type(4),
+#js-bill-tbl td:nth-of-type(3),
+#js-bill-tbl th:nth-of-type(3),
+#js-bill-tbl td:nth-of-type(2),
+#js-bill-tbl th:nth-of-type(2){
+    text-align: right;
+}
+
+#js-bill-tbl tr.itog td{
+    border-bottom: 2px solid grey;
+}
+
+#js-bill-tbl td{
+    background: #fff;
+    padding: 5px 14px;
+    color: #000;
+    font-size: 12px;
+}
+#js-bill-tbl td .row_invoice_date{
+    font-size: 11px;
+    padding-left: 13px;
+    color: grey;
+}
+/*
+    таблица начислений
+*/
+#js-accruals-tbl th{
+    background-color: #fff;
+}
+#js-accruals-tbl tr.head th:nth-of-type(1){
+    background-color: #0062a3;
+}
+#js-accruals-tbl tr.head th:nth-of-type(3) button{
+    background-image: url(../images/img_design/ref.png);
+    background-size: 80%;
+    background-repeat: no-repeat;
+    width: 42px;
+    padding: 0px;
+    height: 40px;
+    border: 1px;
+    background-position: 50%;
+    background-color: transparent;
+    outline:none;
+    /* Firefox */
+    -moz-transition: all 0.3s ease;
+        /* WebKit */
+    -webkit-transition: all 0.3s ease;
+        /* Opera */
+    -o-transition: all 0.3s ease;
+        /* Standard */
+    transition: all 0.3s ease;
+}
+
+#js-accruals-tbl tr td div.link_add{
+    font-style: italic;
+    font-size: 11px;
+    text-decoration: underline;
+    color:grey;
+    background-color: #fff;
+    padding: 20px;
+    cursor: pointer;
+}
+#js-accruals-tbl tr td div.link_add:hover{
+    background-color: #f1f1f1;
+}
+#js-accruals-tbl tr.head th:nth-of-type(3) button:active{
+    /*background-position: 50% 65% ;*/
+    transform: rotate(15deg)
+}
+#js-accruals-tbl.accounting-tbl tr.body.str:last td{
+    border-bottom: 1px solid grey;
+}
+#js-accruals-tbl.accounting-tbl tr.body.compRow:nth-last-of-type(1) td{
+    border-bottom: 1px solid grey;
+}
+
+/*
+    таблица выплат
+*/
+#js-payments-tbl th{
+    background-color: #fff;
+}
+#js-payments-tbl tr.head th:nth-of-type(1){
+    background-color: #007036;
+}
+#js-payments-tbl tr.head th:nth-of-type(3) button.reload{
+    background-image: url(../images/img_design/ref.png);
+    background-size: 80%;
+    background-repeat: no-repeat;
+    width: 42px;
+    padding: 0px;
+    height: 40px;
+    border: 1px;
+    background-position: 50%;
+    background-color: transparent;
+    outline:none;
+    /* Firefox */
+    -moz-transition: all 0.3s ease;
+    /* WebKit */
+    -webkit-transition: all 0.3s ease;
+    /* Opera */
+    -o-transition: all 0.3s ease;
+    /* Standard */
+    transition: all 0.3s ease;
+}
+#js-payments-tbl tr.head th:nth-of-type(4) button.to_right{
+    background-image: url(../images/img_design/to_right.png);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    width: 42px;
+    padding: 0px;
+    height: 40px;
+    border: 1px solid red;
+    background-position: 50%;
+    background-color: transparent;
+    outline:none;
+    /* Firefox */
+    -moz-transition: all 0.3s ease;
+    /* WebKit */
+    -webkit-transition: all 0.3s ease;
+    /* Opera */
+    -o-transition: all 0.3s ease;
+    /* Standard */
+    transition: all 0.3s ease;
+}
+#js-payments-tbl tr.head th:nth-of-type(3) button.reload:active{
+    /*background-position: 50% 65% ;*/
+    transform: rotate(15deg)
+}
+#js-payments-tbl tr.footer td,
+#js-payments-tbl tr.footer2 td{
+    font-style: italic;
+    font-size: 12px;
+    color: grey;
+    background: #fff;
+}
+#js-payments-tbl tr.footer td:nth-of-type(1),
+#js-payments-tbl tr.footer2 td:nth-of-type(1){
+    padding: 5px 5px 5px 20px;
+}
+#js-payments-tbl tr.footer{
+ display: none;
+}
+/*
+    таблица кредит
+*/
+#js-credit-tbl th{
+    background-color: #fff;
+}
+#js-credit-tbl tr.head th:nth-of-type(1){
+    background-color: #ee1c25;
+}
+#js-credit-tbl tr.head.noCredit th:nth-of-type(1){
+    background-color: #f1f1f1;
+}
+#js-credit-tbl tr td div.link_add {
+    font-style: italic;
+    font-size: 11px;
+    text-decoration: underline;
+    color: grey;
+    background-color: #fff;
+    padding: 20px;
+    cursor: pointer;
+}
+#js-credit-tbl tr td div.link_add:hover{
+    background-color: #f1f1f1;
+}
+#js-credit-tbl tr td .credit_money_pl_min,
+#user_window_credit_form .credit_money_pl_min{
+    padding: 1px 8px 2px 8px;
+    font-size: 17px;
+    border:1px solid #dcdde1;
+    border-right: none;
+}
+#js-credit-tbl tr td .credit_money_pl_min.minus,
+#user_window_credit_form .minus{
+    background: #f1949c;
+}
+#user_window_credit_form .radio_m_p span{
+    cursor: pointer;
+}
+#user_window_credit_form .radio_m_p{
+    padding-bottom: 15px;
+}
+#user_window_credit_form .radio_m_p span.checked,
+#user_window_credit_form .radio_m_p span.checked,
+#user_window_credit_form .radio_m_p span.checked{
+    border: 1px solid grey;
+}
+#js-credit-tbl tr td .credit_money_pl_min.plus,
+#user_window_credit_form .plus{
+    background: #deedcc;
+    background: #deedcc;
+    padding: 1px 6px 2px 5px;
+}
+#js-credit-tbl tr td:nth-of-type(3){
+    padding-left: 0px;
+    padding-right: 15px;
+}
+#js-credit-tbl tr td input,
+#js-credit-tbl tr td:nth-of-type(3) span{
+    text-align: right;
+    border: 1px solid #e4e4e4;
+    color: #b3b3b3;
+    width: calc(100% - 6px);
+    padding: 3px 5px;
+    outline: none;
+    font-size: 14px;
+    width: 80px;
+}
+#js-credit-tbl tr.body td input:focus{
+    color: #000;
+    border: 1px solid #989898;
+}
+#js-credit-tbl tr td:nth-of-type(2){
+    padding-right: 0;
+}
+#js-credit-tbl tr td .credit_money_div{
+    border:1px solid #dcdde1;
+
+    padding: 3px 5px;
+    text-align: right;
+
+}
+
+/*
+ таблицы учёта, общие стили
+*/
+.accounting-tbl tr.head th:nth-of-type(1){
+    background-color: #0062a3;
+    color: #fff;
+}
+.accounting-tbl tr.head th:nth-of-type(1),
+.accounting-tbl .body td:nth-of-type(1){
+    padding: 12px 50px 12px 20px;
+    font-weight: normal;
+    font-size: 14px;
+}
+
+
+.accounting-tbl{
+    width: 100%;
+    padding: 0;
+    border-collapse: collapse;
+}
+.accounting-tbl tr.head th:nth-of-type(3){
+    text-align: left;
+}
+.accounting-tbl tr.head th:nth-of-type(2){
+    padding: 5px 15px;
+    color: #000;
+    font-weight: bold;
+    text-align: right;
+    width: 100px;
+}
+
+.accounting-tbl tr:nth-of-type(1) th {
+    border-bottom: 2px solid grey;
+}
+.accounting-tbl tr:nth-last-of-type(1) td{
+    border-bottom: 1px solid #ccc;
+}
+.accounting-tbl tr th:nth-of-type(1),
+.accounting-tbl tr td:nth-of-type(1){
+    border-left: 1px solid #ccc;
+}
+.accounting-tbl tr th:nth-last-of-type(1),
+.accounting-tbl tr td:nth-last-of-type(1){
+    border-right: 1px solid #ccc;
+}
+.accounting-tbl .body td{
+    font-size: 14px;
+    background-color: #fff;
+}
+.accounting-tbl tr.body td:nth-of-type(2) input{
+    text-align: right;
+    border: 1px solid #e4e4e4;
+    color: #b3b3b3;
+    width: calc(100% - 6px);
+    padding: 3px 5px;
+    outline: none;
+    font-size: 14px;
+}
+.accounting-tbl tr.body td input:focus{
+    color: #000;
+    border: 1px solid #989898;
+}
+.accounting-tbl tr.body td:nth-of-type(2){
+    text-align: right;
+    padding: 5px 15px;
+}
+
+.accounting-tbl .body td:nth-of-type(3) button,
+.accounting-tbl .body td:nth-of-type(4) button,
+.accounting-tbl .body td:nth-of-type(5) button{
+    float: left;
+    padding: 11px 16px;
+    border: 1px solid #deedcc;
+    background-color: #deedcc;
+    cursor: pointer;
+    outline:none;
+}
+.accounting-tbl .body td:nth-of-type(3) button.hand{
+    background-color: #d1fdfe;
+    border: 1px solid #dcdde1;
+}
+.accounting-tbl .body td button.alert{
+    background-color: #f1949c;
+    border: 1px solid #dcdde1;
+}
+.accounting-tbl .body td button.checked{
+    /*background-color: #dcdde1;*/
+    background-color: #deedcc;
+    border: 1px solid #dcdde1;
+}
+
+.accounting-tbl .body td:nth-of-type(3) button.delete{
+    background-color: #fff;
+    color: grey;
+}
+.accounting-tbl .body td:nth-of-type(3) button.delete:hover{
+    background-color: #f1f1f1;
+}
+
+/*
+Кнопки всплывалок
+ */
+body .js-alert_union_buttons .button_yes_or_close.lightGreen.no,
+body .js-alert_union_buttons .button_yes_or_no.lightGreen.no,
+body .js-alert_union_buttons .button_yes_or_close.lightGreen,
+body .js-alert_union_buttons .button_yes_or_no.lightGreen{
+    background: rgba(146, 183, 62, 0.25);
+    color:#999999;
+}
+.js-alert_union_buttons button{
+    border-radius: 9px;
+    height: 36px;
+    border:1px solid #999999;
+    background: #92B73E;
+    color: #fff;
+}
+body .js-alert_union_buttons .button_yes_or_no.lightGreen.showed{
+    background: #92B73E;
+    color:#fff;
+}
+body .js-alert_union_buttons .button_yes_or_no,
+body .js-alert_union_buttons .button_yes_or_close{
+    padding: 3px 45px;
+}
+body .js-alert_union_buttons .button_yes_or_no.no,
+body .js-alert_union_buttons .button_yes_or_close.no{
+    background:#fff;
+    color: #999999;
+}
+
+body .js-alert_union_buttons .save,
+body .js-alert_union_buttons .button_yes_or_close{
+    float: right;
+}
+body .js-alert_union_buttons table td button.right{
+    float: right;
+}
+body .js-alert_union_buttons table td button.left{
+    float: left;
+}
+
+#js-SC_buttons table,
+.js-alert_union_buttons table{
+    width: 100%;
+}
+#js-SC_buttons table td:nth-of-type(1),
+.js-alert_union_buttons table td:nth-of-type(1){
+    text-align: left;
+}
+#js-SC_buttons table td:nth-of-type(2){
+    text-align: center;
+}
+#js-SC_buttons table td:nth-of-type(3),
+.js-alert_union_buttons table td:nth-of-type(2){
+    text-align: right;
+}
+.js-alert_union_buttons table td{
+    min-width: 55px;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: left;
+    border-width: 1px 0 0 0;
+    background-image: none;
+    /* margin-top: .5em; */
+    /* padding: .3em 1em .5em .4em; */
+    padding: .3em 1em .5em 1.5em;
+}
+.js-alert_union_buttons {
+    border: none;
+    padding: 3px 0 0 0;
+    border: 0;
+    margin: 0;
+}
+#user_window_compensations_form div input {
+    width: calc(100% - 20px);
+}
+#user_window_compensations_form div {
+    padding: 10px;
+}

@@ -14,6 +14,9 @@
 	   include('./skins/tpl/calculators/calculators.tpl');
 	   exit;
 	}
+	if(!isset($_GET) || count($_GET) == 0){
+	    exit('Данной страницы не существует.');
+    }
 	
 	// временное перенаправление, НЕ ПОДНИМАТЬ ВЫШЕ ВПЕРЕДИ СТОЯЩИХ ИНСТРУКЦИЙ
 	header('Location:?'.addOrReplaceGetOnURL('page=cabinet&section=requests&subsection=no_worcked_men',''));

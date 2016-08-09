@@ -74,6 +74,10 @@ echo '<link href="./skins/css/main.css" rel="stylesheet" type="text/css">' . PHP
                     <a href="?page=planner" class="<?php if($page=='planner')echo'selected'; ?>">Планы</a>
                     <?php } ?>
 
+                    <?php if(@$ACCESS['accounting']['access']){ ?>
+                    <a href="?page=accounting" class="<?php if($page=='accounting')echo'selected'; ?>">Учёт</a>
+                    <?php } ?>
+
                     <?php if(@$ACCESS['admin']['access']){ ?>
                         <a href="?page=admin" class="<?php if($page=='admin')echo'selected'; ?>">Админка</a>
                     <?php } ?>

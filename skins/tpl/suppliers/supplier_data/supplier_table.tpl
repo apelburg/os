@@ -1,13 +1,21 @@
 <!-- <?php echo __FILE__; ?> -- START-->
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>
 <script type="text/javascript" src="libs/js/rate_script.js"></script>
 <link href="skins/css/supplier.css" rel="stylesheet" type="text/css">
+<link href="skins/css/js_coffee_library.css" rel="stylesheet" type="text/css">
 <link href="skins/css/main.css" rel="stylesheet" type="text/css">
 
 <div class="client_table">
 	<table class="client_table_gen">
     	<tr>            
         	<td>
-<!-- <div id="requisits_button">Реквизиты</div> -->
+                <script language="JavaScript">
+                    $(document).ready(function(){
+                        $('#requisits_button').supplierRequisits();
+                    })
+
+                </script>
+                <div id="requisits_button">Реквизиты</div>
             	<table>
                   <tr>
                       <td>Сокращенное название</td>

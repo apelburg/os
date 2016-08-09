@@ -8,7 +8,7 @@
 <!--//пригодится тут в будущем <script type="text/javascript" src="libs/js/forms__js.js"></script> -->
 <!-- 
 <script type="text/javascript" src="libs/js/order_art_edit.js"></script>
-<script type="text/javascript" src="../libs/js/jquery.uploadify.min.js"></script>
+
 
 <script type="text/javascript" src="../libs/js/jsArticulus.js"></script> -->
 

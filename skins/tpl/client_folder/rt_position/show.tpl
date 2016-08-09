@@ -10,7 +10,7 @@
 <!-- библиотеки -->
 <script type="text/javascript" src="libs/js/jquery_ui/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="./libs/js/classes/Base64Class.js"></script>
-<script type="text/javascript" src="../libs/js/jquery.uploadify.min.js"></script>
+
 <!-- сервисцентр -->
 <script type="text/javascript" src="./libs/js/jquery.serviceCenter.js"></script>
 

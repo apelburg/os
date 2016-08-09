@@ -228,15 +228,17 @@ $(function() {
 	
 	
 	
-	$(document).on('click touchstart touch','.rt_tbl_body .basket-check', function(index){
-		if($(this).hasClass('checked')){
-			$(this).removeClass('checked');
-			$(this).parent().parent().removeClass('checked-row');
-		}else{
-			$(this).addClass('checked');
-			$(this).parent().parent().addClass('checked-row');
-		}
-	});	      
+
+});
+
+$(document).on('click touchstart touch','.rt_tbl_body .basket-check', function(){
+	if($(this).hasClass('checked')){
+		$(this).removeClass('checked');
+		$(this).parent().parent().removeClass('checked-row');
+	}else{
+		$(this).addClass('checked');
+		$(this).parent().parent().addClass('checked-row');
+	}
 });
 
 

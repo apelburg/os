@@ -1237,17 +1237,7 @@ $(document).on('click', '.get_in_work', function(event) {
 //	МЕНЕДЖЕР end
 //////////////////////////
 // показать загрузку траницы
-function window_preload_add(){
-	if(!$('#preloader_window_block').length){
-		var object = $('<div/>').attr('id','preloader_window_block'); object.appendTo('body')
-	}	
-}
-// скрыть загрузку страницы
-function window_preload_del(){
-	if($('#preloader_window_block').length){
-		$('#preloader_window_block').remove();
-	}	
-}
+
 
 // запрос на обновление строки
 // с отредактированными данными.... 

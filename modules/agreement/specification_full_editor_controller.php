@@ -1,7 +1,7 @@
 <?php 
 
     
-	include_once(ROOT."/libs/php/classes/agreement_class.php");
+	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
     $agreement = Agreement::fetch_agreement_content($agreement_id);
    
     $date_arr = explode('-',$agreement['date']);

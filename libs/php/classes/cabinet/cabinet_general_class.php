@@ -309,10 +309,7 @@
 				// echo '</pre>';
 
 				$html .= '<form  id="chose_many_curators_tbl">';
-				
-				
 						$html .='<table>';
-
 						$count = count($managers_arr);
 						for ($i=0; $i <= $count; $i) {
 							$html .= '<tr>';
@@ -351,9 +348,7 @@
 				foreach ($_POST as $key => $value) {
 					$html .= '<input type="hidden" name="'.$key.'" value="'.$value.'">';
 				}
-
 				$html .= '</form>';
-
 				return $html;
 			}
 

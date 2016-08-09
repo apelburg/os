@@ -36,6 +36,7 @@ $( document ).ready(function() {
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.liTranslit.js"></script>
 <!-- формы -->
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/forms__js.js"></script>
+
 <!-- выбор услуги в диалоговом окне -->
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/attach_dop_serv.js"></script>
 

@@ -300,6 +300,9 @@
 	/*background-color: red;*/
 	width: 100%;
 	height: 20px;
+	padding: 8px 0;
+	float: left;
+	cursor: pointer;
 }
 #js-main-invoice-table tbody tr td .invoice-row-icon.invoice-row--din-din{
 	background-image:url(../images/img_design/icon_invoce_dindin.png);
@@ -495,12 +498,14 @@ body .js-alert_union_buttons table td button.left{
 	padding: 5px;
 }
 #js-invoice--window--ttn-table.adminStyle tr td{
-	opacity: 0.7;
-	background: rgb(226, 226, 226);
+	/*opacity: 0.7;*/
+	background: #b7b7b7;
+	color: #8a8a8a;
 }
 #js-invoice--window--ttn-table.adminStyle tr.buh_style td{
-	opacity: 1;
+	/*opacity: 1;*/
 	background: #fff;
+	color: #000;
 }
 #js-invoice--window--ttn-table tr th{
 	text-align: left;
@@ -669,18 +674,18 @@ div#js-alert_union{
 	color: #000;
 }
 .ui-dialog .ui-dialog-buttonpane {
-    text-align: left;
-    border-width: 1px 0 0 0;
-    background-image: none;
-    /* margin-top: .5em; */
-    /* padding: .3em 1em .5em .4em; */
-    padding: .3em 1em .5em 1.5em;
+	text-align: left;
+	border-width: 1px 0 0 0;
+	background-image: none;
+	/* margin-top: .5em; */
+	/* padding: .3em 1em .5em .4em; */
+	padding: .3em 1em .5em 1.5em;
 }
 .js-alert_union_buttons {
-    border: none;
-    padding: 3px 0 0 0;
-    border: 0;
-    margin: 0;
+	border: none;
+	padding: 3px 0 0 0;
+	border: 0;
+	margin: 0;
 }
 
 
@@ -730,6 +735,13 @@ div#js-alert_union{
 #js--payment-window--head_info-table tr td span.span-greyText{
 	color: #999999;
 	font-size:12px;
+}
+#js--payment-window--head_info-table tr td span.span-greenText{
+	color: #119916;
+
+}
+#js--payment-window--head_info-table tr td span.span-redText{
+	color: #ff574c;
 }
 #js--payment-window--head_info-table tr td span.span-boldText{
 	font-weight: bold;
@@ -939,7 +951,9 @@ div#js-alert_union{
 #js-main-invoice-table tr td.invoice-row--checkboxtd.red1c,
 #js-main-invoice-table tr td.redTD,
 #js-main-invoice-table tr td .redTD,
-#js--payment-window--body_info-table tr td.redTD{
+#js-main-invoice-table tbody tr td div.redTD:hover,
+#js--payment-window--body_info-table tr td.redTD,
+#js-main-invoice-table tbody tr td.red1c:hover{
 	background-color: rgba(255,195,181,1);
 }
 

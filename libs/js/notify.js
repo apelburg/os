@@ -189,10 +189,13 @@
 		globalPosition: "top right",
 		style: "bootstrap",
 		className: "error",
-		showAnimation: "slideDown",
-		showDuration: 400,
-		hideAnimation: "slideUp",
-		hideDuration: 200,
+		showAnimation: "fadeIn",
+		showDuration: 500,
+		hideAnimation: "fadeOut",
+		// showAnimation: "slideDown",
+		// showDuration: 400,
+		// hideAnimation: "slideUp",
+		// hideDuration: 200,
 		gap: 5
 	};
 

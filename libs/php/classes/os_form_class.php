@@ -247,12 +247,18 @@ PS было бы неплохо взять взять это за правило
                }
                // проверяем наличие артикула на сайте, выводим его описание при нахождении
                protected function check_exists_articul_AJAX(){
+
                     $html = '';
-                    if(strlen($_POST['art']) < 2){
-                         $html .= '<div class="inform_message red">Количество символов в артикуле должно быть не менее 2 (четырёх) символов.</div>';
+
+                    # ограничиваем минимално возможное количество символов при поиске артикула
+                    $artStrLen = 3;
+
+                    if(strlen($_POST['art']) < $artStrLen){
+                         $html .= '<div class="inform_message red">Количество символов в артикуле должно быть не менее ' . $artStrLen . ' символов.</div>';
                          echo '{"response":"OK","html":"'.base64_encode($html).'"}';
                          exit;
                     }
+
                     $html .= '<form>';
                     // делаем запрос в базу по артикулу
                     $art_arr = $this->search_articule_Database($_POST['art']);
@@ -1015,7 +1021,7 @@ PS было бы неплохо взять взять это за правило
                // поиск артикула
                private function search_articule_Database($art){
                     global $mysqli;
-                    $query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '%".trim($art)."%' AND `deleted` <> 1;";
+                    $query = "SELECT * FROM `".BASE_TBL."` WHERE `art` LIKE '".trim($art)."%' AND `deleted` <> 1;";
                     $arr = array();
                     $result = $mysqli->query($query) or die($mysqli->error);
                     if($result->num_rows > 0){

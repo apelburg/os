@@ -11,7 +11,7 @@
 <script type="text/javascript" src="libs/js/rt_position.js"></script>
 <script type="text/javascript" src="./libs/js/rt_position_gen.js"></script>
 <!-- <script type="text/javascript" src="../libs/js/jqGeneralScript.js"></script> -->
-<script type="text/javascript" src="../libs/js/jquery.uploadify.min.js"></script>
+
 
 <script type="text/javascript" src="../libs/js/jsArticulus.js"></script>
 <!--<span displayManaged="true" name="art" style="display:'.(isset($dispSetObj->art)?'none':'inline-block').'">арт.: <a href="/index.php?page=description&id='.@$id.'" target="_blank">'.@$pos_level['art'].'</a></span>-->
@@ -98,7 +98,7 @@ $(document).ready(function() {
 		                        <input id="uploadify" name="file_upload" type="file" multiple>
 		                    </form>
 		                    
-		                    <!--<a href="javascript:$('#uploadify').uploadifyUpload();">Загрузить файлы.</a>-->
+
 		    			</div> 
 		    			<!--// загрузка изображения на сервер -->               
 		            </div>

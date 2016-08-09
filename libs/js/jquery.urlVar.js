@@ -1,6 +1,6 @@
 /**
-  * jQuery дополнение
-  *	операции над строкой URL
+  * jQuery plugin
+  *	operations with URL
   * @simple $.urlVar('get_myvar','valuue');
   * @author Alexey Kapitonov
   * @version 10.05.2016
@@ -41,7 +41,6 @@ $.extend({
 
 		var urlString = '';
 		hashes.forEach(function(element, index){
-			console.log(element);
 			urlString += ((index==0)?'?':'&') + element + '=' + hashes[element];
 		});
 		window.history.pushState("object or string", "Портфолио", "/os/" + urlString);

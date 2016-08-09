@@ -1,4 +1,4 @@
-<!-- begin skins/tpl/clients/client_details_field_general.tpl -->  
+<!-- <?php echo __FILE__; ?> -- START-->
 <script type="text/javascript">
 $(document).on('keyup', '.query_theme', function(event) {
     // первым параметром перелаём название функции отвечающей за отправку запроса AJAX
@@ -115,7 +115,7 @@ function timing_save_input(fancName,obj){
 
 <div id="order_art_edit">
 <div id="info_string_on_query">
-		<ul>
+  <ul>
 			<li id="back_to_string_of_claim"></li>
 			<li id="claim_number">Запрос №<?php  echo $query_num; ?></li>
 			<li id="claim_date"><span>от <?php echo $create_time; ?></span></li>
@@ -141,5 +141,5 @@ function timing_save_input(fancName,obj){
 		<!--</ul>
 	</div> -->
  </div>    
-<!-- end skins/tpl/clients/client_details_field_general.tpl -->
+<!-- <?php echo __FILE__; ?> -- END-->
  

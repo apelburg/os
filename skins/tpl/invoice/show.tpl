@@ -1,10 +1,17 @@
 <!-- <?php echo __FILE__; ?> -- START-->
-	<script src="<?php  echo HOST; ?>/libs/js/invoice.js" rel="stylesheet" type="application/javascript"></script>
+
 <link href="skins/css/invoice.css" rel="stylesheet" type="text/css">
 <link href="skins/css/comments.css" rel="stylesheet" type="text/css">
 <link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
+
+
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>
+
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/js_coffee_library.js"></script>
+<script src="<?php  echo HOST; ?>/libs/js/invoice.js" rel="stylesheet" type="application/javascript"></script>
+
+
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/menuClick.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/ZeroClipboard.js"></script>
 <div id="invoice-button-top"></div>

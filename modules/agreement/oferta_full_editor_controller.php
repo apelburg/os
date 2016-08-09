@@ -1,7 +1,7 @@
 <?php 
    
     
-	include_once(ROOT."/libs/php/classes/agreement_class.php");
+	include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/agreement_class.php");
     $oferta_data = Agreement::fetch_oferta_common_data($oferta_id);
     /*echo '<pre>'; print_r($oferta_data); echo '</pre>';*/
 

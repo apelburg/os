@@ -25,10 +25,7 @@
             <!-- загрузка изображения на сервер -->
             <div id="status_r2" style="width:90%; display:none; margin-bottom:10px; margin-top:15px; background-color:#FF9091; color:#fff; text-align:center"></div>  
             <div id="upload_more_images" style="width:100%; margin:15px 0; display:none">
-                <!-- <form>
-                    <div id="queue"></div>
-                    <input id="uploadify" name="file_upload" type="file" multiple>
-                </form>         -->      
+
    		</div> 
    		<!--// загрузка изображения на сервер -->               
         </div>

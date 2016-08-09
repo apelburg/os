@@ -44,6 +44,9 @@
 		'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
+		'accounting'=> array('access'=> true),
+
+		'user_api'=> array('access'=> true),
 		'option'=> array('access'=> true),
 		'clients'=> array(
 			'access'=> true,
@@ -85,9 +88,8 @@
 						'no_worcked_men' =>  array('access'=>true),
 						'query_taken_into_operation' =>  array('access'=>true),
 						'query_worcked_men' =>  array('access'=>true),
-						// 'query_worcked_snab' =>  array('access'=>true),
-						'query_history' =>  array('access'=>true),
 						'query_all' =>  array('access'=>true),
+						'query_history' =>  array('access'=>true),
 
 						)
 					),
@@ -154,9 +156,11 @@
 		);
 	// БУХГАЛТЕР						  
 	$ACCESS_SHABLON[2] = array(
-						'agreement'=> array('access'=> true),
-						'invoice'=> array('access'=> true),
-						'cabinet'=> array('access'=> false),
+		'agreement'=> array('access'=> true),
+		'sklad'=> array('access'=> true),
+		'invoice'=> array('access'=> true),
+		'accounting'=> array('access'=> true),
+		'cabinet'=> array('access'=> false),
 		'clients'=> array(
 			'access'=> true,
 			'full_clients_delete'=> true,
@@ -195,6 +199,7 @@
 		'default'=> array('access'=> true),
 		'agreement'=> array('access'=> true),
 		'invoice'=> array('access'=> true),
+		'accounting'=> array('access'=> true),
 		'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
 		'suppliers'=> array(
@@ -210,15 +215,8 @@
 						'no_worcked_men' => array('access'=>true),
 						'query_taken_into_operation' => array('access'=>true),
 						'query_worcked_men' => array('access'=>true),
-						//'send_to_snab' => array('access'=>true),
-						//'query_worcked_snab' => array('access'=>true),
-						//'calk_snab' => array('access'=>true),
-						//'denied' => array('access'=>true),
-						//'query_variant_in_pause' => array('access'=>true),
-						//'query_denided_variants' => array('access'=>true),
-						//'query_history' => array('access'=>true),
-						'query_history' =>  array('access'=>true),
 						'query_all' => array('access'=>true),
+						'query_history' =>  array('access'=>true),
 						)
 					),
 				)
@@ -275,6 +273,8 @@
 	// СНАБЖЕНИЕ
 	$ACCESS_SHABLON[8] = array(
 						'default'=>array('access'=>true),
+						'sklad'=> array('access'=> true),
+						'invoice'=> array('access'=> true),
 						'suppliers'=> array(
 							'access'=> true,
 							'full_suppliers_delete'=> true
