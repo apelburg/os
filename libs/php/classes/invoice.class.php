@@ -596,9 +596,9 @@ class InvoiceNotify extends aplStdAJAXMethod
             $date = date('Y-m-d',time());
 		    $query = "UPDATE `".INVOICE_TTN."` SET ";
             $query .= "`return` =?";
-            $query .= ",`date_return` =?";
             $query .= ",`buch_id` =?";
             $query .= ",`buch_name` =?";
+            $query .= ",`date_return` =?";
             $query .= " WHERE `id` =?";
 
             $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
@@ -851,7 +851,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 				// правила выборки счетов по вкладкам
 				if (isset($_GET['section'])){
 
-					if($_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
+					if($_GET['section'] != 0 && $_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
 						$query .= ($w>0?' AND ':' WHERE ');
 						$query .= " `closed` = '0'";
 						$w++;
@@ -859,6 +859,13 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 
 					switch ((int)$_GET['section']){
+                        // все
+					    case 0:
+                            $query .= ($w>0?' AND ':' WHERE ');
+                            $query .= " `closed` <= 1";
+                            $w++;
+
+                            break;
 						// Запрос
 						case 1:
 							$query .= ($w>0?' AND ':' WHERE ');
@@ -936,12 +943,12 @@ class InvoiceNotify extends aplStdAJAXMethod
 				}
 
 				# сортировка по номеру счёта
-				if($_GET['section'] != 1 && $_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
+				if($_GET['section'] != 1 /*&& $_GET['section'] != 9 */&& $_GET['section'] != 14 && $_GET['section'] != 15){
 					$query.= " ORDER BY `invoice_num_old` DESC";
 				}
 			}
 
-
+//            echo $query;
 
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
