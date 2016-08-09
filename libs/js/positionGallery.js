@@ -28,9 +28,9 @@
       self = this;
       this.windowGallery = new modalWindow({
         html: this.getContent(),
-        width: 1000,
+        width: 900,
         maxHeight: '100%',
-        maxWidth: '90%',
+        maxWidth: '80%',
         title: 'Галерея изображений (выбор изображений для позиции)',
         buttons: [
           {
