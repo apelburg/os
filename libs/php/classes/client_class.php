@@ -991,7 +991,7 @@ class Client extends aplStdAJAXMethod{
      * @param array $data
      * @return mixed
      */
-    private function incertNewRequisitsRowInBase($clientId,$companyName/*, $data = []*/){
+    private function incertNewRequisitsRowInBase($clientId,$companyName, $data = []){
         $query = "INSERT INTO `" . CLIENT_REQUISITES_TBL . "` SET ";
         $query .= "  `client_id`=?";
         $query .= ",  `company`=?";
@@ -1010,7 +1010,18 @@ class Client extends aplStdAJAXMethod{
         $query .= ", `dop_info`=?";
 
         $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-        $stmt->bind_param('issssiisssssiis', $clientId, $companyName, $data['comp_full_name'], $data['postal_address'], $data['legal_address'], $data['inn'], $data['kpp'], $data['bank'], $data['bank_address'], $data['r_account'],  $data['cor_account'], $data['ogrn'], $data['bik'], $data['okpo'], $data['dop_info']) or die($this->mysqli->error);
+        $stmt->bind_param('issssiisssssiis',
+            $clientId,
+            $companyName,
+            $data['comp_full_name'],
+            $data['postal_address'],
+            $data['legal_address'],
+            $data['inn'],
+            $data['kpp'],
+            $data['bank'],
+            $data['bank_address'],
+            $data['r_account'],
+            $data['cor_account'], $data['ogrn'], $data['bik'], $data['okpo'], $data['dop_info']) or die($this->mysqli->error);
 
         $stmt->execute() or die($this->mysqli->error);
         $result = $stmt->get_result();
