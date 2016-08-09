@@ -52,7 +52,7 @@
                 <?php } ?>                
             </td>
             <!-- <td class="agreement--block-link-center">
-                <?php if($dateDataObj->doc_type=='spec') echo 'Договор №'.$agreement['agreement_num'].' от '.$agreement_date.' ('.fetchOneValFromAgreementTbl(array('retrieve' => 'type_ru','coll' => 'type' ,'val' => $_GET['agreement_type'])).')'; ?>
+                <?php /*if($dateDataObj->doc_type=='spec') echo 'Договор №'.$agreement['agreement_num'].' от '.$agreement_date.' ('.fetchOneValFromAgreementTbl(array('retrieve' => 'type_ru','coll' => 'type' ,'val' => $_GET['agreement_type'])).')';*/ ?>
             </td> -->
             <td>  
              
