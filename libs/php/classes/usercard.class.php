@@ -13,7 +13,7 @@
 		public 		$user = array(); 		// authorised user info
 		
 		public function __construct()
-		{	
+		{
 			// calls ajax methods from POST
 			if(isset($_POST['AJAX'])){
 				$this->init();
