@@ -900,7 +900,7 @@ if(isset($_SESSION['access']['user_id'])){ // && ($_SESSION['access']['access']=
 	
 	function get_managers_list(){
 	    global $db;
-	    $query = "SELECT*FROM `".MANAGERS_TBL."` WHERE `access` = '5' ORDER BY `name`";
+		$query = "SELECT*FROM `".MANAGERS_TBL."` WHERE `access` = '5' ORDER BY `name`";
 	    if($_SESSION['access']['access'] == 1){
 	    	$query = "SELECT*FROM `".MANAGERS_TBL."`  ORDER BY `name`";
 	    }
@@ -2815,7 +2815,6 @@ WHERE `requisites_id` = '".$id."' AND `acting` =  '1'
 			
 		$user_id = get_real_user_access($_SESSION['access']['user_id']);
 
-		echo $user_id;
 		// echo $user_access;
 
 		if( !isset($ACCESS_SHABLON[ $user_id ]['cabinet']['section'] ) ){
