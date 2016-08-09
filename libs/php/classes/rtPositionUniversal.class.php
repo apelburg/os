@@ -251,6 +251,23 @@ class rtPositionUniversal extends Position_general_Class
 	//////////////////////////
 	//	AJAX
 	//////////////////////////
+    /**
+     * защита строк от кавычек
+     * меняет парные " на ёлочки
+     * остальное вырезает
+     *
+     * @param $i_str
+     * @return mixed
+     */
+    private function protectionFromQuotesInString($i_str){
+        # меняем парные двойные кавычки на елочки
+        $str = preg_replace('/(?:"([^>]*)")(?!>)/', '«$1»', $i_str);
+
+        # режем одиночные кавычки
+        $o_str = str_replace(array("'",'"'),'', $str);
+
+        return $o_str;
+    }
 
 		/**
 		 *	save dop info from not catalogue products
@@ -264,38 +281,44 @@ class rtPositionUniversal extends Position_general_Class
                 product_dop_text
                 quantity
             */
-			$this->jsonArr = json_decode(base64_decode($_POST['json']),true);
-			// if($this->user_id == 42){
-			// 	$message = $this->printArr($jsonArr);
-			// 	$this->responseClass->addMessage($message,'system_message');	
-			// 	// return;
-			// }
+
+//			$jsonArr = json_decode(base64_decode($_POST['json']),true);
+            $jsonArr = $_POST['jsonData'];
+            $mainRowId = (int)$_POST['main_row_id'];
+
+            # защищаемся от кавычек
+            foreach ($jsonArr as $keyName => $strVal){
+                $this->jsonArr[$keyName] = $this->protectionFromQuotesInString( $strVal );
+            }
 
 
 			
 			// запрашиваем данные из RT_MAIN_ROWS
-			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".(int)$_POST['main_row_id']."';";
+			$query = "SELECT * FROM `".RT_MAIN_ROWS."` WHERE `id` = '".$mainRowId."';";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 			$this->position = array();
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
-					$this->position[] = $row;
+					$this->mainRows[] = $row;
 				}
 			}
 
-			foreach ($this->position as $position) {
+			foreach ($this->mainRows as $position) {
 				
 				// переписываем название позиции
-				if(isset($this->jsonArr['naimenovanie']) && $this->jsonArr['naimenovanie'] != $position['name']){
-					// пишем вариант
-					$query  = "UPDATE `".RT_MAIN_ROWS."` SET "; 
-					$query .= "`name` = '".$this->jsonArr['naimenovanie']."' ";
-					$query .= " WHERE  `id` = '".(int)$_POST['main_row_id']."';";
-					$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				if(isset($this->jsonArr['naimenovanie']) ){
+
+				    if($this->jsonArr['naimenovanie'] != $position['name']) {
+                        // пишем вариант
+                        $query = "UPDATE `" . RT_MAIN_ROWS . "` SET ";
+                        $query .= "`name` = '" . $this->jsonArr['naimenovanie'] . "' ";
+                        $query .= " WHERE  `id` = '" . $mainRowId . "';";
+                        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+                    }
 				}
 
 				// считываем варианты для всех позиций
-				$query = "SELECT * FROM `".RT_DOP_DATA."` WHERE `row_id` = '".(int)$_POST['main_row_id']."';";
+				$query = "SELECT * FROM `".RT_DOP_DATA."` WHERE `row_id` = '".$mainRowId."';";
 				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 				$this->position['variants'] = array();
 				if($result->num_rows > 0){
@@ -304,8 +327,6 @@ class rtPositionUniversal extends Position_general_Class
 					}
 				}
 
-				// $message = $this->printArr($position);
-				// $this->responseClass->addMessage($message);	
 				$i = 0;
 				foreach ($this->position['variants'] as $key => $variant) {
 					$json = json_decode($variant['no_cat_json'],true);
@@ -315,17 +336,17 @@ class rtPositionUniversal extends Position_general_Class
 
 					if($json['naimenovanie'] != $this->jsonArr['naimenovanie'] || isset($json['product_dop_text']) && $json['product_dop_text'] != $this->jsonArr['product_dop_text']){
 						if($_POST['row_id'] != $variant['id']){
-							if($json['naimenovanie'] != $this->jsonArr['naimenovanie']){
-								$json['naimenovanie'] = $this->jsonArr['naimenovanie'];
-							}else{
-								$json['product_dop_text'] = $this->jsonArr['product_dop_text'];
-							}
-							$this->position['variants'][$key]['json_new'] = json_encode($json,JSON_UNESCAPED_UNICODE);							
+
+							$json['naimenovanie']       = $this->jsonArr['naimenovanie'];
+                            $json['product_dop_text']   = $this->jsonArr['product_dop_text'];
+
+							$this->position['variants'][$key]['json_new'] = json_encode($json, JSON_UNESCAPED_UNICODE);
 						}
 						$i++;
 					}
+
 					if($_POST['row_id'] == $key){
-						$this->position['variants'][$key]['json_new'] = base64_decode($_POST['json']);
+						$this->position['variants'][$key]['json_new'] = json_encode( $this->jsonArr );
 						$i++;	
 					}
 				}
@@ -338,7 +359,8 @@ class rtPositionUniversal extends Position_general_Class
 												if(isset($this->position['variants'][$key]['json_new'])){
 							$query  = "UPDATE `".RT_DOP_DATA."` SET "; 
 							$query .= "`no_cat_json` = '".$this->position['variants'][$key]['json_new'] ."' ";
-							$query .= " WHERE  `id` = '".$key."';";
+//                            $this->responseClass->addMessage($this->position['variants'][$key]['json_new'],'successful_message',5000);
+                            $query .= " WHERE  `id` = '".$key."';";
 							// echo $query;
 							$result = $this->mysqli->query($query) or die($this->mysqli->error);	
 						}
@@ -1485,7 +1507,7 @@ class Variants extends rtPositionUniversal
 						if(isset($tab[$i])){
 							foreach ($tab[$i] as $key => $value) {
 								$html .= '<th  style="text-align:left">'.(isset($type_product_arr_from_form[$key]['name_ru'])?$type_product_arr_from_form[$key]['name_ru'].':':'<span style="color:red">имя не найдено</span>').'</th>';
-								$html .= '<td  style="text-align:left" data-type="'.$key.'" class="js--edit_true">'.strip_tags($value).'</td>';$i++;
+								$html .= '<td  style="text-align:left" data-type="'.$key.'" class="js--edit_true">'.strip_tags($this->returnCuotes($value)).'</td>';$i++;
 							}	
 						}else{
 							$html .= '<th></th>';
@@ -1502,6 +1524,14 @@ class Variants extends rtPositionUniversal
 			echo '</pre>';
 		}
 	}
+	private function returnCuotes($i_str){
+	    $str = $i_str;
+        $o_str = str_replace('\00bb','&raquo;', $str);
+        $o_str = str_replace('\00ab','&laquo;', $o_str);
+        $o_str = str_replace('u00bb','&raquo;', $o_str);
+        $o_str = str_replace('u00ab','&laquo;', $o_str);
+        return $o_str;
+    }
 	// сортируем варианты по светофору
 	public function get_variants_arr_sort_for_type($variants_arr){
 		if(!isset($variants_arr_sort)){
