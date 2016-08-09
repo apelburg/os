@@ -1279,9 +1279,9 @@ class Images extends rtPositionUniversal
 		$big_images = $this->getBigImagesForArt($art);
 		$small_images = $this->getSmallImagesForArt($art);
 		
-		$first_img= '';
-		$main_img_src = '';
-		// echo '<br><br><br><br><br><br><br><br><br><br><br><br> ';
+
+		$main_img_src = false;
+//		 echo '<br><br><br><br><br><br><br><br><br><br><br><br> ';
 		// изображения с сайта
 		foreach ($small_images as $key => $img) {
 			// удаление изображений для админов
@@ -1299,9 +1299,11 @@ class Images extends rtPositionUniversal
 			
 			if ($this->copare_and_calculate_checked_files($rt_main_row_id,$big_images[$key]) == "checked"){
 				
-				if(!isset($main_img_src)) {
+				if( !$main_img_src ) {
 					$main_img_src = $this->checkImgExists( APELBURG_HOST.'/img/'.$big_images[$key]);
+                    $main_img_src = APELBURG_HOST.'/img/'.$big_images[$key];
 				}
+
 				$previews_block[$c]  = '<div  class="carousel-block kp_checked">';
 				$previews_block[$c] .= '<img class="articulusImagesMiniImg imagePr" alt="" src="'.checkImgExists(APELBURG_HOST.'/img/'.$img).'" data-file="'.$big_images[$key].'" data-src_IMG_link="'.APELBURG_HOST.'/img/'.$big_images[$key].'">';
 				$previews_block[$c] .= $deleting_img;
@@ -1309,8 +1311,13 @@ class Images extends rtPositionUniversal
 			}else{
 				if($b == 1) {
 					// echo 'test';
-					$main_img_src = $this->checkImgExists( APELBURG_HOST.'/img/'.$big_images[$key]);
+                    $main_img_src = $this->checkImgExists( APELBURG_HOST.'/img/'.$big_images[$key]);
+                    $main_img_src = APELBURG_HOST.'/img/'.$big_images[$key];
 				}
+                if( !$main_img_src ) {
+                    $main_img_src = $this->checkImgExists( APELBURG_HOST.'/img/'.$big_images[$key]);
+                    $main_img_src = APELBURG_HOST.'/img/'.$big_images[$key];
+                }
 				// echo 'test'.$b.'654';
 				$previews_block[$b]  = '<div  class="carousel-block">';
 				$previews_block[$b] .= '<img class="articulusImagesMiniImg imagePr" alt="" src="'.checkImgExists(APELBURG_HOST.'/img/'.$img).'" data-file="'.$big_images[$key].'" data-src_IMG_link="'.APELBURG_HOST.'/img/'.$big_images[$key].'">';
@@ -1338,6 +1345,7 @@ class Images extends rtPositionUniversal
 					if($this->copare_and_calculate_checked_files($rt_main_row_id,$files[$i]) == "checked"){
 						if(!isset($main_img_src)) {
 							$main_img_src = $this->checkImgExists( $global_link_dir.''.$files[$i] );
+                            $main_img_src = $global_link_dir.''.$files[$i];
 						}
 						$main_img_src = $this->checkImgExists( $global_link_dir.''.$files[$i] );
 						$previews_block[$c] = '<div  class="carousel-block kp_checked">';
@@ -1346,6 +1354,7 @@ class Images extends rtPositionUniversal
 					}else{
 						if($b == 1) {
 							$main_img_src = $this->checkImgExists( $global_link_dir.''.$files[$i] );
+                            $main_img_src = $global_link_dir.''.$files[$i];
 						}
 						$previews_block[$b]  = '<div  class="carousel-block">';
 						$previews_block[$b] .= '<img class="articulusImagesMiniImg imagePr" alt="" data-file="'.$files[$i].'"  src="'.checkImgExists($global_link_dir.''.$files[$i]).'" data-src_IMG_link="'.$global_link_dir.''.$files[$i].'">';
@@ -1357,9 +1366,8 @@ class Images extends rtPositionUniversal
 		// echo '<pre>';
 		// print_r($previews_block);
 		// echo '</pre>';
-			// echo '*** '.$main_img_src.'***';
+//			 echo '*** '.$main_img_src.'***';
 		if (isset($previews_block)) {
-			
 			ksort($previews_block);
 			$string	= implode('',$previews_block);
 		}else{
@@ -1372,7 +1380,7 @@ class Images extends rtPositionUniversal
 		$html .= count($previews_block)>=3?'<a href="" class="articulusImagesArrow2 carousel-button-left" style="background-image:url('.APELBURG_HOST.'/skins/images/general/artkart/s2.png)"></a>'.PHP_EOL:'';
 		$html .= '<div class="carousel-wrapper">'.PHP_EOL;
 		$html .= '<div class="carousel-items">'.PHP_EOL;	
-		$html .= $first_img.$string;
+		$html .= $string;
 		$html .= '</div>'.PHP_EOL;
 		$html .= '</div>'.PHP_EOL;
 		$html .= count($previews_block)>=3?'<a href="" class="articulusImagesArrow2 carousel-button-right" style="background-image:url('.APELBURG_HOST.'/skins/images/general/artkart/s22.png); float:right; margin-top:-70px"></a>'.PHP_EOL:'';
@@ -1398,14 +1406,14 @@ class Images extends rtPositionUniversal
 		
 		ob_start();
 		$images_data = $this->fetchImagesForArt($this->position['art_id'],$this->position['id']);
-		// echo '*********6546546546545 432132165456**********';
-		// echo '<pre>';
-		// print_r($images_data);
-		// echo '</pre>';
-		// echo '<pre>';
-		// print_r($this->checked_IMG);
-		// echo '</pre>';
-		// echo '*********6546546546545 432132165456**********';
+//		 echo '*********6546546546545 432132165456**********';
+//		 echo '<pre>';
+//		 print_r($images_data['main_img_src']);
+//		 echo '</pre>';
+//		 echo '<pre>';
+////		 print_r($this->checked_IMG);
+//		 echo '</pre>';
+//		 echo '*********6546546546545 432132165456**********';
 		include_once __DIR__.'/../../../skins/tpl/client_folder/rt_position/images_block.tpl';
 		$content = ob_get_contents();
 		ob_get_clean();

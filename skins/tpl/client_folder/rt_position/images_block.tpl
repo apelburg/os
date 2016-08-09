@@ -16,7 +16,7 @@
 	    ?>
 	    <div id="articulusImagesBigImg">
 	        <div class="showImagegallery"></div>
-	            <img id='img_for_item_<?php echo '$id'; ?>' src='<?php echo $images_data['main_img_src']; ?>' itemprop="image"  alt='
+	            <img id='img_for_item_<?=$this->position['id'];?>' src='<?=$images_data['main_img_src'];?>' itemprop="image"  alt='
 		        <?php echo $alt; ?>' title="<?php echo $h1; ?>" style='max-width: 277px;
 		max-height: 300px;'>
 		    </div>
