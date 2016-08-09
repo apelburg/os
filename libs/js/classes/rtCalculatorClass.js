@@ -2049,6 +2049,659 @@ var rtCalculator = {
 		e = e || window.event;
 		var element = e.target;
         
+		
+		var tbl = document.getElementById('rt_tbl_body');
+		var client_id = tbl.getAttribute('client_id');
+		var query_num = tbl.getAttribute('query_num');
+		var doc_type = element.getAttribute('doc_type');
+		if(client_id==''){ alert('не удалось определить клиента'); return;}
+		if(query_num==''){ alert('не удалось номер заявки'); return; }
+		
+		// обходим РТ чтобы 
+		// 1. определить какие Мастер Кнопки были нажаты 
+		// 2. если Мастер Кнопка нажата проверяем светофор - должна быть нажата только одна зеленая кнопка (если больше или ни одна прерываемся)
+		
+		var tbl = document.getElementById('rt_tbl_body');
+		var trsArr = ($(tbl).children('tbody').length>0)? $(tbl).children('tbody').children('tr'):$(tbl).children('tr');
+
+		
+		var pos_id = false;
+		var idsObj = {};
+		var dopIdsArr = [];
+		var unitedCalculationsIds = {};
+		var unitedCalculationsFlag = false;
+		var idsArr = [];
+		var dopInfObj = {};
+		var indexCounter = 0;
+		// console.log('--СПФ-1-',unitedCalculationsIds);
+		// обходим ряды таблицы
+		var ln = trsArr.length;
+		for( var i= 0 ; i < ln; i++){
+			var flag ;
+			
+			// если это ряд позиции проверяем не нажата ли Мастер Кнопка
+			if(trsArr[i].getAttribute('pos_id')){
+				pos_id = trsArr[i].getAttribute('pos_id');
+				
+				// работаем с рядом - ищем мастер кнопку
+				var tdsArr = $(trsArr[i]).children('td');
+				//console.log(tdsArr);
+				var ln2 = tdsArr.length;
+				for(var j =0; j < ln2; j++){
+					if(tdsArr[j].getAttribute('type')){
+						var type = tdsArr[j].getAttribute('type');
+						
+						if(type == 'master_btn'){ 
+						   var input = tdsArr[j].getElementsByTagName('input')[0];
+						   if(input.type == 'checkbox' && input.name == 'masterBtn' && input.checked == true){
+						  // if(inputs[j].getAttribute('rowIdNum') && inputs[j].getAttribute('rowIdNum') !=''){inputs[j].getAttribute('rowIdNum')
+							   idsObj[pos_id] = []; 
+										 
+							}
+							else pos_id = false;
+						}
+						if(type == 'name'){ 
+						   // если ячейка содержит более одного елемента значит это каталожный товар и в первом елементе 
+						   // размещен артикул, для остальных товаров в этом(единственном и последнем) элементе размешено имя
+						   var article = (tdsArr[j].getElementsByTagName('DIV').length>1)? tdsArr[j].getElementsByTagName('DIV')[0].getElementsByTagName('A')[0].innerHTML:'';
+						   var name = $(tdsArr[j].getElementsByTagName('DIV')[tdsArr[j].getElementsByTagName('DIV').length-1]).text();
+						   if(typeof dopInfObj[pos_id] ==='undefined') dopInfObj[pos_id]= {};
+						   dopInfObj[pos_id]['name'] = article+' '+name;
+						}
+						if(type == 'glob_counter'){ 
+						   var glob_counter = tdsArr[j].innerHTML;
+						   if(typeof dopInfObj[pos_id] ==='undefined') dopInfObj[pos_id]= {};
+						   dopInfObj[pos_id]['glob_counter'] = glob_counter;
+						}/**/
+					}
+				}
+			}
+			// если в ряду позиции была нажата Мастер Кнопка проверяем этот и последующие, до нового ряда, 
+			// позици на нажатие супер зеленой кнопки светофора (позиции для отправки в КП)
+			if(pos_id!==false){
+				//console.log(pos_id+' '+trsArr[i].getAttribute('row_id'));
+				// работаем с рядом - ищем светофор 
+				var tdsArr = $(trsArr[i]).children('td');  
+				var ln3 = tdsArr.length;
+				for( var j= 0 ; j < ln3; j++){
+					if(tdsArr[j].getAttribute('svetofor') && tdsArr[j].getAttribute('svetofor')=='sgreen'){
+
+						idsObj[pos_id].push(trsArr[i].getAttribute('row_id'));
+						dopIdsArr.push(trsArr[i].getAttribute('row_id'));
+						idsArr[indexCounter] = {pos_id:pos_id,row_id:trsArr[i].getAttribute('row_id')};
+						indexCounter++;
+					}
+					if(tdsArr[j].getAttribute('type') && tdsArr[j].getAttribute('type')=='dop_details'){
+						var dop_details = tdsArr[j].innerHTML;
+						//alert();
+						if(dop_details!=''){
+						    var dop_details_obj = JSON.parse(dop_details);
+							if(dop_details_obj.united_calculations){
+								unitedCalculationsFlag = true;
+						        unitedCalculationsIds[trsArr[i].getAttribute('row_id')] = dop_details_obj.united_calculations;
+							}
+						}
+					}
+	
+				}
+			}
+			
+		}
+		
+		// console.log('--СПФ--',idsObj);
+		// console.log('--СПФ--',dopIdsArr);
+		// console.log('--СПФ--',unitedCalculationsIds);
+		
+		// проверяем сколько зеленых кнопок светофора были нажаты и в итоге были учтены
+		var nothing = true; // если вообще ни однин светофор не был суперзеленым
+		var more_then_one = false; // если больше одной в ряду
+		var less_then_one = false; // если вообще ни однин светофор не был суперзеленым
+		var counter1 = 0;
+		for(var index in idsObj){
+            var counter2 = 0;
+			nothing = false;
+			for(var index2 in idsObj[index]){
+				counter1++;
+				counter2++;
+			}
+			if(counter2>1) more_then_one = true;
+		}
+		if(counter1==0) less_then_one = true;
+		//var conrtol_num = getControlNum();
+        //console.log(JSON.stringify(idsObj));
+		//console.log(JSON.stringify(dopInfObj));
+	    //return;
+		
+		if(nothing || more_then_one || less_then_one){
+			if(nothing){ 
+			    //alert('не возможно создать спецификацию,\rвы не выбрали ни одной товарной позиции\r\rнеобходимо:\r1). отметить нужный товар галочкой в мастер-кнопке\r2). выделить один расчет для данного товара, выставив суперзеную кнопку в светофоре');
+			    var text = 'не возможно создать спецификацию, вы не выбрали ни одной товарной позиции<br>необходимо:<br>1). отметить нужный товар галочкой в мастер-кнопке<br>2). выделить один расчет для данного товара, выставив суперзеную кнопку в светофоре';
+			    echo_message_js(text,'system_message',20000);
+			}
+			else if(more_then_one){
+				var alertStrObj ={};
+				var alertStrArr =[];
+				for(var pos in idsObj){
+					if(idsObj[pos].length >1) alertStrObj[dopInfObj[pos]['glob_counter']] = dopInfObj[pos]['glob_counter']+'). '+dopInfObj[pos]['name']+'\r';
+				}
+				for(var i in alertStrObj){
+					alertStrArr.push(alertStrObj[i]);
+				}
+				var text = 'не возможно создать спецификацию,<br>выбрано более одного варианта расчета в рядах:<br>'+alertStrArr.join('');
+			    echo_message_js(text,'system_message',20000);
+			}
+			else if(less_then_one){
+				var text = 'не возможно создать спецификацию,<br>для выбранных товаров не выбрано ни одного варианта расчета<br>необходимо:<br>выделить один расчет для каждого выбранного товара выставив суперзеную кнопку в светофоре';
+			    echo_message_js(text,'system_message',20000);
+			}
+			return;
+		}
+		
+		// проверяем все ли расчеты связанные объединенными тиражами выбраны
+		if(unitedCalculationsFlag){
+			var break2 = false;
+			for( var id in dopIdsArr){
+				//alert(dopIdsArr[id]);
+				if(unitedCalculationsIds[dopIdsArr[id]]){
+					var ln2 = unitedCalculationsIds[dopIdsArr[id]].length;
+					for( var j= 0 ; j < ln2; j++ ){
+						
+						if(dopIdsArr.join(',').indexOf(unitedCalculationsIds[dopIdsArr[id]][j])==-1){
+							//alert('-'+unitedCalculationsIds[dopIdsArr[id]][j]);
+							break2 = true;
+							var dialog = $('<div>Вы создаете документ, в котором находятся тиражи из объединенной группы печати, при этом в документ вошла только часть такого тиража. Проверьте актуальный данные стоимости и тиражей.</div>');
+							$(dialog).dialog({autoOpen: false ,title: 'Внимание!',modal:true,width: 600,buttons: [{text: "Да",click: function(){$(this).dialog("close");}}],close: function() {this.remove(); step1(doc_type);}});
+							$(dialog).dialog("open");
+							
+							break;
+						}
+					}
+					
+				}
+				if(break2) break;
+			}
+			if(!break2) step1(doc_type);
+		}
+		else{
+			step1(doc_type);
+		}
+		
+		//////////////////////////////////////////////////////////////////////////////////
+		// Работа с окном
+		//////////////////////////////////////////////////////////////////////////////////
+		function step1(doc_type){
+			// получаем данные которые понадобятся при отображении окна
+			$.ajax({
+				   method: "POST",
+				   url: location,
+				   data: { AJAX: "getDataForSpecWindow", document_type: doc_type }
+				})
+				.done(function( response ) {
+				    console.log(response);
+					try {  var response_obj = JSON.parse(response); }
+					catch (e) { 
+						alert('неправильный формат данных in calculatorClass.deleting() ошибка JSON.parse(response)');
+						return;
+					}
+					console.log(response_obj);
+					step2(doc_type,response_obj);
+					
+				});
+
+		}
+
+		function step2(doc_type,optionalData){
+	//alert(1);
+			function launch_set_window(doc_type,id,content){
+				// alert(doc_type);
+				var title = (doc_type=='spec')?"Создание спецификации":"Создание счета-оферты";
+				var box = document.createElement('DIV');
+				box.id = id;
+				box.style.display = "none";
+				box.appendChild(content);
+				document.body.appendChild(box);
+				$("#"+id).dialog({autoOpen: false ,title: title,modal:true,width: 600,close: function() {this.remove();$("#"+id).remove();}});
+				$("#"+id).dialog("open");
+				$("#date_type").change(function() {
+					if ($('#date_type').val() == 'days') {
+						$('td#thselectchild').html('<div><div class="fieldCap">кол-во дней</div><input type="text" id="daysNumSetingForm" placeholder="введите цифры" name="form_data[datetime]"></div>');
+					} else if ($('#date_type').val() == 'date') {
+						$('td#thselectchild').html('<div class="dateBlock"><div class="fieldCap">дата сдачи</div><input type="text" id="datepicker1" placeholder="календарь"  style="width:140px" name="form_data[datetime]"></div>');	
+										//$("#datepicker1").on('focus',"#datepicker1", function(){
+					    $("#datepicker1").datetimepicker({
+							format:'d.m.Y H:00',
+							dayOfWeekStart: 1,
+							startTime: new Date(0,0,0,15,0,0),
+							minDate: new Date(optionalData['min_allowed_date']),
+							closeOnDateSelect:true,
+							onGenerate:function( ct ){
+								$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');
+								$(this).find('.xdsoft_date');
+							},
+							allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']
+							,
+							onChangeDateTime: function (date) {
+					           console.log(date);
+					           rtCalculator.setSecondDateWindow(date);
+				            }
+				        });
+					}
+				});
+				
+
+				$("#datepicker3").datepicker({ 
+						dateFormat:'dd.mm.yy',
+						dayOfWeekStart: 1,
+						minDate:0
+				});
+				 
+			
+				$('.tags_select a').click(function() {
+					$('#text_tag_input').val($(this).text());
+					return false;
+				});
+			}
+			
+			var content = document.createElement('DIV');
+			var winId ="specificationsPreWin222";
+			var button = document.createElement('BUTTON');
+			button.className="CommonRightBtn";
+
+			var addresses = optionalData['addresses'];
+			var ln = addresses.length
+            var addresses_selects = [];
+            addresses_selects.push('<option value="samo_vivoz">Самовывоз покупателем со склада: Санкт-Петербург, ул. Чугунная, д. 14, корп.1</option>');
+			for (var i = 0; i < ln; i++) {
+			 	addresses_selects.push('<option value="'+addresses[i]['str']+'">'+addresses[i]['str']+'</option>');
+			}
+
+			// параметры URL
+			var params = {};
+			if (location.search) {
+			    var parts = location.search.substring(1).split('&');
+
+			    for (var i = 0; i < parts.length; i++) {
+			        var nv = parts[i].split('=');
+			        if (!nv[0]) continue;
+			        params[nv[0]] = nv[1] || true;
+			    }
+			}
+			
+            /*
+            name="form_data[requisit_id]"
+            doc_type: doc_type
+			,client_id: client_id 						// id клента
+			,query_num: query_num 						// id заявки
+			//,agreement_id: value 						// id договора. (для спецификации)
+			@@@,requisit_id: 'requisit_id' 				// id клиентских реквизитов.  (для оферты)
+			@@@,our_firm_id: 'our_firm_id' 				// id наших реквизитов. (для оферты)
+			@@@,signator_id: 'signator_id' 				// id подписанта
+			@@@,data_type: data_type 						// тип даты
+			@@@,datetime: datetime 						// дата отгрузки. если data_type==date то 0000-00-00 00:00:00, @@@если data_type==days то number
+			@@@,final_date: "0000-00-00 00:00:00" 			// дата подписания
+			@@@,prepayment: prepayment 					// предоплата
+			@@@,short_description: short_description 		// краткое описание
+			//,address: ['samo_vivoz'|value] 			// адрес доставки. если выбран самовывоз - 'samo_vivoz', иначе строка из базы и
+			addOrReplaceGetOnURL('sendToSnab='+JSON.stringify(idsObj));
+			
+                
+			*/
+	       
+
+			var our_firms = optionalData['our_firms'];
+			rtCalculator.makeSpecAndPreorder_optionalData = optionalData;
+
+            if(doc_type=='spec'){
+
+                var existing_agreements = optionalData['existing_agreements'];
+				var ln = existing_agreements.length
+	            var existing_agreements_selects = [];
+				for (var i = 0; i < ln; i++) {
+					if(i==0) var ourFirstFirmId = existing_agreements[i]['our_requisit_id'];
+				 	existing_agreements_selects.push('<option value="'+existing_agreements[i]['agreement_id']+'" our_requisit_id="'+existing_agreements[i]['our_requisit_id']+'">№ '+existing_agreements[i]['agreement_num']+' от '+existing_agreements[i]['date']+'('+existing_agreements[i]['our_comp']+' - '+existing_agreements[i]['client_comp']+')</option>');
+				}
+
+				existing_agreements_selects.push('<option value="new_agreement" our_requisit_id="new_agreement">Создать новый договор</option>');
+  
+            	var sub_part = '<tr bgcolor="#ccc">'
+							+ '<td colspan="2" class="tdCap">Спецификация к договору номер</td>'
+						+ '</tr>'
+						+ '<tr>'
+							+ '<td colspan="2" class="paddingTop">'
+								+ '<select id="existing_agreements" style="width:400px" name="form_data[agreement_id]" onchange="rtCalculator.setOurFaximileFaces(this.options[this.selectedIndex].getAttribute(\'our_requisit_id\'))">'
+									+ existing_agreements_selects.join('')
+								+ '</select>'
+							+ '</td>'
+						+ '</tr>'
+						+ '<tr>'
+							+ '<td>'
+							    + '<div>'
+							    + '<div class="fieldCap">дата создания</div>' 
+								+ '<input type="text" id="datepicker3" placeholder="календарь" name="form_data[date]" value="'+(((((new Date()).toJSON()).slice(0,10)).split("-")).reverse()).join('.')+'">'
+								+ '</div>'
+								+ ''
+							+ '</td>'
+							+ '<td>'
+								+ '<div>'
+							    + '<div class="fieldCap" class="tdCap">Лицо подписывающее договор:</div>' 
+								+ '<select id="ourFaximileFace" style="width:230px" name="form_data[signator_id]"></select>'
+								+ '</div>'
+							+ '</td>'
+						+ '</tr>';
+            }
+			if(doc_type=='oferta'){
+	            
+				var ln = our_firms.length
+	            var our_firms_selects = [];
+				for (var i = 0; i < ln; i++) {
+					if(i==0) var ourFirstFirmId = our_firms[i]['id'];
+				 	our_firms_selects.push('<option value="'+our_firms[i]['id']+'">'+our_firms[i]['name']+'</option>');
+				}
+
+	            var client_requisites = optionalData['client_requisites'];
+				var ln = client_requisites.length
+	            var client_requisites_selects = [];
+				for (var i = 0; i < ln; i++) {
+				 	client_requisites_selects.push('<option value="'+client_requisites[i]['id']+'">'+client_requisites[i]['name']+'</option>');
+				}
+
+
+				var sub_part = '<tr bgcolor="#ccc">'
+							+ '<td class="tdCap">Юридическое лицо клиента</td>'
+							+ '<td class="tdCap">Юридическое лицо Апельбург</td>'
+						+ '</tr>'
+						+ '<tr>'
+							+ '<td class="paddingTop">'
+								+ '<select id="clientjudface" style="width:230px" name="form_data[requisit_id]">'
+									+ client_requisites_selects.join('')
+								+ '</select>'
+							+ '</td>'
+							+ '<td class="paddingTop">'
+								+ '<select id="apeljudface" style="width:230px" onchange="rtCalculator.setOurFaximileFaces(this.options[this.selectedIndex].value)" name="form_data[our_firm_id]">'
+									+ our_firms_selects.join('')
+								+ '</select>'
+							+ '</td>'
+						+ '</tr>'
+						+ '<tr>'
+							+ '<td>'
+							+ '</td>'
+							+ '<td>'
+								+ '<div>'
+							    + '<div class="fieldCap">Лицо подписывающее договор:</div>' 
+								+ '<select id="ourFaximileFace" style="width:230px" name="form_data[signator_id]"></select>'
+								+ '</div>'
+							+ '</td>'
+						+ '</tr>';
+			}
+//alert(3);
+			content.innerHTML = '<form id="bizPapersSetingForm" method="POST" action="'+ OS_HOST+'?page=agreement&section=agreement_editor">'
+			    + '<input type="hidden" id="" name="form_data[ids]" value="'+ encodeURIComponent(JSON.stringify(idsObj))+'">'
+			    + '<input type="hidden" id="" name="form_data[doc_type]" value="'+doc_type+'">'
+			    + '<input type="hidden" id="" name="form_data[query_num]" value="'+ params.query_num+'">'
+                + '<input type="hidden" id="" name="form_data[client_id]" value="'+ params.client_id+'">'
+			    + '<table class="makeSpecAndPreorderTbl">'
+				+ '<tr bgcolor="#ccc">'
+					+ '<td colspan="2" class="tdCap">Указать в оферте условия сдачи заказа</td>'
+				+ '</tr>'
+				+ '<tr>'
+					+ '<td class="paddingTop">'
+						+ '<select id="date_type" name="form_data[date_type]">'
+							+ '<option selected="selected" value="days">По количеству рабочих дней</option>'
+							+ '<option value="date">По конкретной дате</option>'
+						+ '</select>'
+					+ '</td>'
+					+ '<td id="thselectchild">'
+					    + '<div>'
+					    + '<div class="fieldCap">кол-во дней</div>' 
+						+ '<input type="text" id="daysNumSetingForm" placeholder="введите цифры" name="form_data[datetime]">'
+						+ '</div>'
+					+ '</td>'
+				+ '</tr>'
+				+  sub_part
+				+ '<tr bgcolor="#ccc">'
+					+ '<td class="tdCap">Указать условия предоплаты</td>'
+					+ '<td class="tdCap">Указать условия доставки</td>'
+				+ '</tr>'
+				+ '<tr>'
+					+ '<td class="paddingTop">'
+						+ '<select id="prepay" name="form_data[prepayment]">'
+							+ '<option value="30">30 %</option>'
+							+ '<option value="50">50 %</option>'
+							+ '<option value="70">70 %</option>'
+							+ '<option selected="selected" value="100">100 %</option>'
+						+ '</select>'
+					+ '</td>'
+					+ '<td class="paddingTop">'
+						+ '<select id="delivery" style="width:230px" name="form_data[address]">'
+							+ addresses_selects.join('')
+						+ '</select>'
+					+ '</td>'
+				+ '</tr>'
+				+ '<tr bgcolor="#ccc">'
+					+ '<td colspan="2" class="tdCap">Описание темы документа</td>'
+				+ '</tr>'
+				+ '<tr>'
+					+ '<td colspan="2">'
+						+ '<input id="text_tag_input" type="text" style="width: 100%; box-sizing : border-box;" name="form_data[short_description]">'
+						+ '<div class="tags_select">'
+							+ '<a href="#" style="padding-right: 10px;">Сборные сувениры</a>'
+							+ '<a href="#" style="padding-right: 10px;">Ежедневники</a>'
+							+ '<a href="#" style="padding-right: 10px;">Ручки</a>'
+							+ '<a href="#" style="padding-right: 10px;">Календари</a>'
+							+ '<a href="#" style="padding-right: 10px;">Текстиль</a>'
+						+ '</div>'
+					+ '</td>'
+				+ '</tr>'
+			+ '</table></form>';
+
+			var button1 = button.cloneNode();
+			button1.onclick = function() {
+				//alert(11);
+                if($('#existing_agreements').length>0 && $('#existing_agreements').val =='new_agreement') return;
+
+                // проверка обязательных окон
+                var warnings = [];
+                var pattern = /^\d{2}\.\d{2}\.\d{4} \d{2}\:\d{2}$/;
+                var date_type = $('#date_type').val();
+
+                if(date_type == 'date'){
+                    var val_1 = $('#datepicker1').val();
+                    if(val_1.trim() == '') warnings.push('поле "дата сдачи" не заполнено!!!');
+                    else if(!pattern.test(val_1)) warnings.push('формат данных в поле "дата сдачи" не корректный, должен быть ДД.ММ.ГГГГ ЧЧ:ММ!!!');
+
+                    var str = 'поле "лимит оплаты" не заполнено!!!';
+                    if($('#datepicker2').length == 0){
+                        // warnings.push(str);
+                    }
+                    else{
+                        val_2 = $('#datepicker2').val();
+                        if(val_2.trim() == '') warnings.push(str);
+                        else if(!pattern.test(val_2)) warnings.push('формат данных в поле "лимит оплаты" не корректный, должен быть ДД.ММ.ГГГГ  ЧЧ:ММ!!!');
+                    }
+                }
+                if(date_type == 'days'){
+                	var pattern = /^\d+$/;
+                	var val = $('#daysNumSetingForm').val();
+                	if(val.trim() == '') warnings.push('поле "кол-во дней" не заполнено!!!');
+                    else if(!pattern.test(val)) warnings.push('формат данных в поле "кол-во дней" не корректный, должен быть только цифры !!!');
+                }
+
+                if($('#datepicker3').length>0){
+                	var val = $('#datepicker3').val();
+                	var pattern = /^\d{2}\.\d{2}\.\d{4}$/;
+                	if(val.trim() == '') alert('поле "дата создания" не заполнено!!!');
+                	else if(!pattern.test(val)) warnings.push('формат данных в поле "дата создания" не корректный, должен быть ДД.ММ.ГГГГ !!!');             
+                }/**/
+                // alert(warnings.join("\r\n"));
+                if(warnings.length > 0){
+                    echo_message_js(warnings.join("<br>"),'system_message',5000);
+                    return;
+                } 
+                $('#bizPapersSetingForm').submit();
+				$("#"+winId).remove();
+				return;
+				
+			}
+			button1.innerHTML ="Создать";
+			var button2 = button.cloneNode();
+			button2.onclick= function(){ $("#"+winId).remove(); }
+			button2.innerHTML ="Отмена";
+			
+			content.appendChild(button1);
+			content.appendChild(button2);
+			
+			launch_set_window(doc_type,winId,content);
+			rtCalculator.setOurFaximileFaces(ourFirstFirmId);
+		}
+
+
+	}
+	,
+	launchNewAgreementWindow:function(){
+		//alert(1);
+        var our_firms = rtCalculator.makeSpecAndPreorder_optionalData['our_firms'];
+        var client_requisites = rtCalculator.makeSpecAndPreorder_optionalData['client_requisites'];
+
+        var ln = our_firms.length
+        var our_firms_list = [];
+		for (var i = 0; i < ln; i++) {
+			if(i==0) var ourFirstFirmId = our_firms[i]['id'];
+		 	our_firms_list.push('<label><input type="radio" name="our_firms_list" value="'+our_firms[i]['id']+'" onclick="rtCalculator.checkExistingAgreements('+our_firms[i]['id']+')">'+our_firms[i]['name']+'</label>');
+		}
+
+		var ln = client_requisites.length
+        var client_requisites_list = [];
+		for (var i = 0; i < ln; i++) {
+		 	client_requisites_list.push('<label><input type="radio" name="client_requisites_list" value="'+client_requisites[i]['id']+'">'+client_requisites[i]['name']+'</label>');
+		}
+
+    	var dialog = $("<div id='newAgreementWindow'></div>");
+    	var content = $('<table id="newAgreementTbl" width="100%" class="newAgreementTbl" style="">'
+				+ '<tr>'
+					+ '<td>'+our_firms_list.join('<br>')+'</td>'
+					+ '<td>'+client_requisites_list.join('<br>')+'</td>'
+				+ '</tr>'
+				+ '<tr>'
+					+ '<td>Дата договора: <span id="newAgreementDate">'+(((((new Date()).toJSON()).slice(0,10)).split("-")).reverse()).join('.')+'</span></td>'
+					+ '<td></td>'
+				+ '</tr>'
+				+ '</table>');
+
+
+		var button = document.createElement('BUTTON');		
+		button.className="CommonRightBtn";
+		button.setAttribute('doc_type','spec');
+		button.innerHTML ="Создать";
+		button.onclick= function(){ 
+
+			var our_requisites_id = $("#newAgreementTbl input[name=our_firms_list]:checked").val();
+			var client_requisites_id = $("#newAgreementTbl input[name=client_requisites_list]:checked").val();
+			var date = $("#newAgreementDate").text();
+			//alert(date + ' - '+our_requisites_id+' - '+client_requisites_id);
+			if(typeof our_requisites_id == 'undefined') echo_message_js('вы не выбрали реквизиты продавца','system_message',5000);
+			if(typeof client_requisites_id == 'undefined') echo_message_js('вы не выбрали реквизиты клиента','system_message',5000);
+            if(typeof our_requisites_id == 'undefined' || typeof client_requisites_id == 'undefined') return;
+
+
+			$.ajax({
+			   method: "POST",
+			   url: location,
+			   data: { AJAX: "save_new_agreement", our_requisites_id: our_requisites_id , client_requisites_id: client_requisites_id,date:date}
+			})
+			.done(function( response ) {
+			    console.log(response);
+			    location.reload();
+			    $(dialog).remove();
+			    rtCalculator.makeSpecAndPreorder()
+				
+			});
+		}/**/
+
+    	$(dialog).append(content);
+    	$(dialog).append(button);
+    	$('body').append(dialog);
+		$(dialog).dialog({autoOpen: false ,title: 'Создание нового договора',modal:true,width: 600,close: function() {this.remove();}});
+		$(dialog).dialog("open");
+	
+    }
+    ,
+	checkExistingAgreements:function(firm_id){
+        // alert(firm_id);
+        var existing_agreements = rtCalculator.makeSpecAndPreorder_optionalData['existing_agreements'];
+	    var ln = existing_agreements.length
+	    // проверяем на существование договоров между фирмами, если они существуют делаем выбор не возможным
+	    $("#newAgreementTbl input[name=client_requisites_list]").prop( "disabled", false );
+	    $("#newAgreementTbl input[name=client_requisites_list]").parent().css( "color", "black" );
+        for (var i = 0; i < ln; i++) {
+        	//alert((existing_agreements[i]['date']).slice(0,4) +'=='+(new Date()).getFullYear());
+		 	if(existing_agreements[i]['our_requisit_id']==firm_id && (existing_agreements[i]['date']).slice(0,4) == (new Date()).getFullYear()){
+		 		$("#newAgreementTbl input[name=client_requisites_list]").each(function(index){
+		 			if(this.value == existing_agreements[i]['client_requisit_id']){
+		 				this.disabled = true;
+		 				$(this).parent().css( "color", "#DDD" );
+		 				//$(this).click(function() { alert(1);/* echo_message_js("Договор нп "+(new Date()).getFullYear()+" год между этими фирмами уже создан",'system_message',5000);*/ });
+		 			} 
+		 		});
+		 	}
+		}
+    }
+	,
+	setOurFaximileFaces:function(firm_id){
+    	// alert(firm_id);
+    	if(firm_id  =='new_agreement'){
+    		rtCalculator.launchNewAgreementWindow();
+    		return;
+    	}
+        var our_firms = rtCalculator.makeSpecAndPreorder_optionalData['our_firms'];
+	    var ln = our_firms.length
+        var our_firms_selects = [];
+        for (var i = 0; i < ln; i++) {
+		 	if(our_firms[i]['id']==firm_id){
+		 		
+		 		var managment = our_firms[i]['managment'];
+			    var ln2 = managment.length
+                var managment_selects = [];
+		 		for (var j = 0; j < ln2; j++) {
+				 	managment_selects.push('<option value="'+managment[j]['id']+'">'+managment[j]['name']+'</option>');
+				}
+		 	}
+		}
+		$("#ourFaximileFace").html(managment_selects.join(''));
+    }
+    ,
+	setSecondDateWindow: function(date){
+    	 //console.log($('#datepicker2'));
+
+        if($('#datepicker2').length) return;
+        
+        $('td#thselectchild').append($('<div class="dateBlock"><div class="fieldCap">лимит оплат/подписи м-та</div><input type="text" id="datepicker2" placeholder="календарь" style="width:140px"  name="form_data[final_date]"></div>'));
+        var dateObj = new Date(date);
+        var dateStr = dateObj.toJSON();
+        //console.log('--',dateStr);
+
+        var date = dateStr.slice(0,10);
+		var time = dateStr.slice(11,16);
+		time = (time!='')?time:'22:00';
+		datetime =date+' '+time+':00'
+		//console.log('----',datetime);
+		var pickerMaxDate = ((goOnNumWorkingDays(datetime,3,'-')).slice(0,10)).replace(/\-/g,'/');
+        //console.log('--//--',pickerMaxDate);
+	    
+		$("#datepicker2").datetimepicker({ 
+			format:'d.m.Y H:00',
+			dayOfWeekStart: 1,
+			minDate:0,
+			maxDate:pickerMaxDate,
+			closeOnDateSelect:true,
+			allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']
+		});
+    }
+	,
+	makeSpecAndPreorderOld:function(e){
+
+		e = e || window.event;
+		var element = e.target;
+        
 		// обходим РТ чтобы 
 		// 1. определить какие Мастер Кнопки были нажаты 
 		// 2. если Мастер Кнопка нажата проверяем светофор - должна быть нажата только одна зеленая кнопка (если больше или ни одна прерываемся)
@@ -2224,384 +2877,6 @@ var rtCalculator = {
 		    /*console.log(response);*/ 
 			close_processing_timer(); closeAllMenuWindows();
 		}	  
-	}
-	,
-	makeSpecAndPreorder2:function(e){
-
-		e = e || window.event;
-		var element = e.target;
-        
-		
-		var tbl = document.getElementById('rt_tbl_body');
-		var client_id = tbl.getAttribute('client_id');
-		var query_num = tbl.getAttribute('query_num');
-		if(client_id==''){ alert('не удалось определить клиента'); return;}
-		if(query_num==''){ alert('не удалось номер заявки'); return; }
-		
-		// обходим РТ чтобы 
-		// 1. определить какие Мастер Кнопки были нажаты 
-		// 2. если Мастер Кнопка нажата проверяем светофор - должна быть нажата только одна зеленая кнопка (если больше или ни одна прерываемся)
-		
-		var tbl = document.getElementById('rt_tbl_body');
-		var trsArr = ($(tbl).children('tbody').length>0)? $(tbl).children('tbody').children('tr'):$(tbl).children('tr');
-
-		
-		var pos_id = false;
-		var idsObj = {};
-		var dopIdsArr = [];
-		var unitedCalculationsIds = {};
-		var unitedCalculationsFlag = false;
-		var idsArr = [];
-		var dopInfObj = {};
-		var indexCounter = 0;
-		console.log('--СПФ-1-',unitedCalculationsIds);
-		// обходим ряды таблицы
-		var ln = trsArr.length;
-		for( var i= 0 ; i < ln; i++){
-			var flag ;
-			
-			// если это ряд позиции проверяем не нажата ли Мастер Кнопка
-			if(trsArr[i].getAttribute('pos_id')){
-				pos_id = trsArr[i].getAttribute('pos_id');
-				
-				// работаем с рядом - ищем мастер кнопку
-				var tdsArr = $(trsArr[i]).children('td');
-				//console.log(tdsArr);
-				var ln2 = tdsArr.length;
-				for(var j =0; j < ln2; j++){
-					if(tdsArr[j].getAttribute('type')){
-						var type = tdsArr[j].getAttribute('type');
-						
-						if(type == 'master_btn'){ 
-						   var input = tdsArr[j].getElementsByTagName('input')[0];
-						   if(input.type == 'checkbox' && input.name == 'masterBtn' && input.checked == true){
-						  // if(inputs[j].getAttribute('rowIdNum') && inputs[j].getAttribute('rowIdNum') !=''){inputs[j].getAttribute('rowIdNum')
-							   idsObj[pos_id] = []; 
-										 
-							}
-							else pos_id = false;
-						}
-						if(type == 'name'){ 
-						   // если ячейка содержит более одного елемента значит это каталожный товар и в первом елементе 
-						   // размещен артикул, для остальных товаров в этом(единственном и последнем) элементе размешено имя
-						   var article = (tdsArr[j].getElementsByTagName('DIV').length>1)? tdsArr[j].getElementsByTagName('DIV')[0].getElementsByTagName('A')[0].innerHTML:'';
-						   var name = $(tdsArr[j].getElementsByTagName('DIV')[tdsArr[j].getElementsByTagName('DIV').length-1]).text();
-						   if(typeof dopInfObj[pos_id] ==='undefined') dopInfObj[pos_id]= {};
-						   dopInfObj[pos_id]['name'] = article+' '+name;
-						}
-						if(type == 'glob_counter'){ 
-						   var glob_counter = tdsArr[j].innerHTML;
-						   if(typeof dopInfObj[pos_id] ==='undefined') dopInfObj[pos_id]= {};
-						   dopInfObj[pos_id]['glob_counter'] = glob_counter;
-						}/**/
-					}
-				}
-			}
-			// если в ряду позиции была нажата Мастер Кнопка проверяем этот и последующие, до нового ряда, 
-			// позици на нажатие супер зеленой кнопки светофора (позиции для отправки в КП)
-			if(pos_id!==false){
-				//console.log(pos_id+' '+trsArr[i].getAttribute('row_id'));
-				// работаем с рядом - ищем светофор 
-				var tdsArr = $(trsArr[i]).children('td');  
-				var ln3 = tdsArr.length;
-				for( var j= 0 ; j < ln3; j++){
-					if(tdsArr[j].getAttribute('svetofor') && tdsArr[j].getAttribute('svetofor')=='sgreen'){
-
-						idsObj[pos_id].push(trsArr[i].getAttribute('row_id'));
-						dopIdsArr.push(trsArr[i].getAttribute('row_id'));
-						idsArr[indexCounter] = {pos_id:pos_id,row_id:trsArr[i].getAttribute('row_id')};
-						indexCounter++;
-					}
-					if(tdsArr[j].getAttribute('type') && tdsArr[j].getAttribute('type')=='dop_details'){
-						var dop_details = tdsArr[j].innerHTML;
-						//alert();
-						if(dop_details!=''){
-						    var dop_details_obj = JSON.parse(dop_details);
-							if(dop_details_obj.united_calculations){
-								unitedCalculationsFlag = true;
-						        unitedCalculationsIds[trsArr[i].getAttribute('row_id')] = dop_details_obj.united_calculations;
-							}
-						}
-					}
-	
-				}
-			}
-			
-		}
-		
-		console.log('--СПФ--',idsObj);
-		console.log('--СПФ--',dopIdsArr);
-		console.log('--СПФ--',unitedCalculationsIds);
-		
-		// проверяем сколько зеленых кнопок светофора были нажаты и в итоге были учтены
-		var nothing = true; // если вообще ни однин светофор не был суперзеленым
-		var more_then_one = false; // если больше одной в ряду
-		var less_then_one = false; // если вообще ни однин светофор не был суперзеленым
-		var counter1 = 0;
-		for(var index in idsObj){
-            var counter2 = 0;
-			nothing = false;
-			for(var index2 in idsObj[index]){
-				counter1++;
-				counter2++;
-			}
-			if(counter2>1) more_then_one = true;
-		}
-		if(counter1==0) less_then_one = true;
-		//var conrtol_num = getControlNum();
-        //console.log(JSON.stringify(idsObj));
-		//console.log(JSON.stringify(dopInfObj));
-	    //return;
-		
-		if(nothing || more_then_one || less_then_one){
-			if(nothing){ 
-			    //alert('не возможно создать спецификацию,\rвы не выбрали ни одной товарной позиции\r\rнеобходимо:\r1). отметить нужный товар галочкой в мастер-кнопке\r2). выделить один расчет для данного товара, выставив суперзеную кнопку в светофоре');
-			    var text = 'не возможно создать спецификацию, вы не выбрали ни одной товарной позиции<br>необходимо:<br>1). отметить нужный товар галочкой в мастер-кнопке<br>2). выделить один расчет для данного товара, выставив суперзеную кнопку в светофоре';
-			    echo_message_js(text,'system_message',20000);
-			}
-			else if(more_then_one){
-				var alertStrObj ={};
-				var alertStrArr =[];
-				for(var pos in idsObj){
-					if(idsObj[pos].length >1) alertStrObj[dopInfObj[pos]['glob_counter']] = dopInfObj[pos]['glob_counter']+'). '+dopInfObj[pos]['name']+'\r';
-				}
-				for(var i in alertStrObj){
-					alertStrArr.push(alertStrObj[i]);
-				}
-				var text = 'не возможно создать спецификацию,<br>выбрано более одного варианта расчета в рядах:<br>'+alertStrArr.join('');
-			    echo_message_js(text,'system_message',20000);
-			}
-			else if(less_then_one){
-				var text = 'не возможно создать спецификацию,<br>для выбранных товаров не выбрано ни одного варианта расчета<br>необходимо:<br>выделить один расчет для каждого выбранного товара выставив суперзеную кнопку в светофоре';
-			    echo_message_js(text,'system_message',20000);
-			}
-			return;
-		}
-		
-		// проверяем все ли расчеты связанные объединенными тиражами выбраны
-		if(unitedCalculationsFlag){
-			var break2 = false;
-			for( var id in dopIdsArr){
-				//alert(dopIdsArr[id]);
-				if(unitedCalculationsIds[dopIdsArr[id]]){
-					var ln2 = unitedCalculationsIds[dopIdsArr[id]].length;
-					for( var j= 0 ; j < ln2; j++ ){
-						
-						if(dopIdsArr.join(',').indexOf(unitedCalculationsIds[dopIdsArr[id]][j])==-1){
-							//alert('-'+unitedCalculationsIds[dopIdsArr[id]][j]);
-							break2 = true;
-							var dialog = $('<div>Вы создаете документ, в котором находятся тиражи из объединенной группы печати, при этом в документ вошла только часть такого тиража. Проверьте актуальный данные стоимости и тиражей.</div>');
-							$(dialog).dialog({autoOpen: false ,title: 'Внимание!',modal:true,width: 600,buttons: [{text: "Да",click: function(){$(this).dialog("close");}}],close: function() {this.remove(); step1(1);}});
-							$(dialog).dialog("open");
-							
-							break;
-						}
-					}
-					
-				}
-				if(break2) break;
-			}
-			if(!break2) step1(2);
-		}
-		else{
-			step1(2);
-		}
-		
-		////////////
-		// Промежуточный интерфейс настройки типа спецификации, дат и сроков изготовления
-		//////////////////////////////////////////////////////////////////////////////////
-		function step1(test_marker){
-			
-			//alert(test_marker);
-			
-			function launch_set_window(id,title,content){
-				var box = document.createElement('DIV');
-				box.id = id;
-				box.style.display = "none";
-				box.appendChild(content);
-				document.body.appendChild(box);
-				$("#"+id).dialog({autoOpen: false ,title: title,modal:true,width: 600,close: function() {this.remove();$("#"+id).remove();}});
-				$("#"+id).dialog("open");
-			}
-			
-			// 1. Выбор типа спецификации
-			//var content = document.createDocumentFragment();
-			var content = document.createElement('DIV');
-			var winId ="specificationsPreWin1";
-			content.innerHTML = '<div><label><input type="radio" name="radio" value="spec" checked>Спецификация</label><br><label><input type="radio" name="radio" value="oferta">Оферта</label></div>';
-			var button = document.createElement('BUTTON');
-			button.className="CommonRightBtn";
-	
-			var button1 = button.cloneNode();
-			button1.onclick=function(){ $("#"+winId).remove(); step2();}
-			button1.innerHTML ="Далее";
-			var button2 = button.cloneNode();
-			button2.onclick= function(){ $("#"+winId).remove(); }
-			button2.innerHTML ="Отмена";
-			
-			content.appendChild(button1);
-			content.appendChild(button2);
-			
-			launch_set_window(winId,"Выбор типа документа",content);
-			
-			function step2(e){
-				e = e || window.event;
-				var container = e.target.parentNode;
-				var doc_type = '';
-				$(container).find('input').each(function(key,val){ if(val.checked == true){  doc_type = val.value; }}); //alert(type);
-				if(type != ''){
-					// alert(doc_type);
-					var url = OS_HOST+'?' + addOrReplaceGetOnURL('getSpecificationsDates={"ids":'+JSON.stringify(idsArr)+'}');
-					make_ajax_request(url,callback);
-					function callback(response){ 
-						// alert(response);
-						try {  var dataObj = JSON.parse(response); }
-						catch (e) { 
-							alert('неправильный формат данных in calculatorClass.makeSpecAndPreorder2() ошибка JSON.parse(response)');
-							return;
-						}
-						console.log(dataObj);/*console.log(idsObj);console.log(dopInfObj);*/
-						
-						var content = document.createElement('DIV');
-						content.className = "specificationsPreWin";
-						var winId ="specificationsPreWin2";
-						
-						content.innerHTML += '<div class="cap">Укажите, либо конкретную дату сдачи заказа, либо срок изготовления заказа в рабочих днях. <!--Для создаваемой '+((doc_type=='spec')?'спецификации':'оферты')+' должно быть установленно единное значение.--> Выберите из имеющихся вариантов или укажите новое значение. Выбранное вами значение будет указано в тексте '+((doc_type=='spec')?'спецификации':'оферты')+'.<div>'; 
-						if(dataObj['defined_positions']!=0) content.innerHTML += '<div class="info">На данный момент в расчетах уставноленны следующие даты или р/д:<br>(всего расчетов -'+dataObj['all_positions']+', установленно дат -'+dataObj['defined_positions']+'). Если расчет неактивный, это значит что дата в нем просрочена.<div>';
-						else content.innerHTML += '<div class="info">На данный момент в расчетах не установлены даты или р/д, установите значение<div>';
-						
-					   
-						if(dataObj['defined_positions']!=0){ 
-							var tbl = '<table id="preWindataTbl" class="dataTbl"><tr class="cap"><th>№ позиции</th><th>тип даты</th><th width="150"></th><th>кто установил</th><th width="150"></th></tr>';
-							for(var key =0;key < dataObj.data.length;key++){
-							//$(dataObj.data).
-								 var value = (dataObj.data[key]['shablon_en']=='date')?((dataObj.data[key]['value'].split('-')).reverse()).join('.'):dataObj.data[key]['value'];
-								 
-								 
-								 tbl += '<tr><td class="first">'+dopInfObj[dataObj.data[key]['row_id']]['glob_counter']+'</td>';
-								 tbl += '<td>'+dataObj.data[key]['shablon']+'</td><td>'+value+'</td>';
-								 tbl += '<td>'+dataObj.data[key]['who']+'</td>';
-								 tbl += '<td>';
-								 if(!(dataObj.data[key]['shablon_en']=='date' && dataObj.data[key]['value']<dataObj['min_allowed_date'])) tbl += '<input type="radio" name="radio" data_type="'+dataObj.data[key]['shablon_en']+'" value="'+value+'">';
-								 tbl += '</td></tr>';
-							}
-							tbl += '<tr><td colspan="5" class="dopCap">Установть другое значение:</td></tr>';
-						}
-						else var tbl = '<table id="preWindataTbl" class="dataTbl"><tr class="cap"><th></th><th></th><th width="150"></th><th></th><th></th></tr>';
-						
-						tbl += '<tr><td class="first"></td>';
-						tbl += '<td>';
-						tbl +='<select onchange="$(this).parent().parent().find(\'span\').hide(); $(\'#\'+this.options[this.selectedIndex].value).show(); $(\'#alternate_date\')[0].checked=true; " ><option value="" selected="selected"></option><option value="date_block">по дате</option><option value="rd_block">по рд</option></select></td>';					
-						tbl +='<td><span id="date_block" style="display:none"><input type="text" class="datepicker" id="datepicker"><!--<input type="text" class="timepicker" id="timepicker">--></span>';
-						tbl +='<span id="rd_block" class="rd" style="display:none"><input type="text" onkeyup="$(\'#alternate_date\')[0].checked=true; $(\'#alternate_date\')[0].setAttribute(\'data_type\',\'days\'); $(\'#alternate_date\')[0].value=this.value;" class="time_rd" id="rd" value=""> р/д</span></td>';
-						tbl += '<td></td>';
-						tbl += '<td><input id="alternate_date" type="radio" name="radio" data_type="" value=""></td></tr>';
-						tbl += '</table>';
-						content.innerHTML += tbl;
-	
-						content.innerHTML+= '<BR>';
-						var button1 = button.cloneNode();
-						button1.onclick=function(){
-							 var data_type='';
-							 var value='';
-							 $(content).find('input').each(function(key,val){ if(val.checked == true){ data_type= val.getAttribute("data_type"); value = val.value; }}); 
-							 if(value==''){
-								 alert('Вы не выбрали значение');
-								 return;
-							 }
-							 $("#"+winId).remove(); 
-							 step3(doc_type,data_type,value);/**/
-						}
-						button1.innerHTML ="ОК";
-						var button2 = button.cloneNode();
-						button2.onclick= function(){ $("#"+winId).remove(); }
-						button2.innerHTML ="Отмена";
-						content.appendChild(button1);
-						content.appendChild(button2);
-						launch_set_window(winId,"Выбор сроков сдачи заказа",content);
-						
-						$('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,startTime: new Date(0,0,0,15,0,0),minDate: new Date(dataObj['min_allowed_date']), onChangeDateTime: function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val();},closeOnDateSelect:true,
-						   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
-						/*$('#timepicker').datetimepicker({datepicker:false,format:'H:i',closeOnDateSelect:true,
-							  onChangeDateTime:function(dp,$input){$('#alternate_date')[0].checked=true;$('#alternate_date')[0].setAttribute('data_type','date');$('#alternate_date')[0].value=$input.val()+':00';},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});*/
-				
-					}
-				}
-				else{ alert('не удалось определить тип документа in calculatorClass.makeSpecAndPreorder2() '); return;}
-				
-				function step3(doc_type,data_type,datetime){
-					
-					// alert(doc_type+value+data_type);
-					 
-					 var content = document.createElement('DIV');
-					 content.className = "specificationsPreWin";
-					 var winId ="specificationsPreWin3";
-					 // от той даты которая была выбрана на предыдушем шаге надо вычесть 3 рабочих дня
-					 // они нужны на время для подписания макета и оплаты
-					 var date = datetime.slice(0,10);
-					 var time = datetime.slice(11,16);
-					 time = (time!='')?time:'22:00';
-						
-					 if(data_type=='date'){
-						 content.innerHTML += '<div class="cap"> укажите до какой даты клиент обязуется оплатить заказ и подписать макет ( дата будет установлена в тексте '+((doc_type=='spec')?'спецификации':'оферты')+' )<div>';
-						 //content.innerHTML +='doc_type-'+ doc_type+' date-'+date+' time-'+time+' data_type-'+data_type+'<br>';
-						 content.innerHTML += '<div class="limitInput"><input  id="datepicker" type="text"><input id="final_date" style="display:none" type="text"><div>';
-						 
-					 }
-					 if(data_type=='days'){
-						step4({'doc_type':doc_type,'data_type':data_type,'datetime':datetime});
-						return;
-					 }
-					 var button1 = button.cloneNode();
-					 button1.onclick=function(){
-						 if($('#final_date')[0].value==''){echo_message_js('Установите дату','system_message',2000);return;} 
-						 step4({'doc_type':doc_type,'data_type':data_type,'datetime':datetime,'final_date':$('#final_date')[0].value,'winId':winId});
-					 }
-					 button1.innerHTML ="Далее";
-					 var button2 = button.cloneNode();
-					 button2.onclick= function(){ $("#"+winId).remove(); }
-					 button2.innerHTML ="Отмена";
-					 content.appendChild(button1);
-					 content.appendChild(button2);
-					 //alert(datetime);
-					 datetime =(((date.split('.')).reverse()).join('-'))+' '+time+':00'
-					 //alert(datetime);
-					 var pickerMaxDate = ((goOnNumWorkingDays(datetime,3,'-')).slice(0,10)).replace(/\-/g,'/');
-					 //alert(pickerMaxDate);
-					 launch_set_window(winId,"Установка лимита",content);
-					 
-					 $('#datepicker').datetimepicker({format:'d.m.Y H:00',dayOfWeekStart: 1,minDate:0,maxDate:pickerMaxDate,maxTime:time,
-						   onChangeDateTime: function(dp,$input){$('#final_date')[0].value=$input.val();},closeOnDateSelect:true,
-						   onGenerate:function( ct ){$(this).find('.xdsoft_date.xdsoft_weekend').addClass('xdsoft_disabled');$(this).find('.xdsoft_date');},allowTimes:['00:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00','15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']});
-				}
-				
-				function step4(dataObj){
-					 if(dataObj.winId) $("#"+dataObj.winId).remove();
-					 //console.log(dataObj);
-					 location = "?page=agreement&section=presetting&client_id=" + client_id + "&ids=" +JSON.stringify(idsArr)+'&query_num='+query_num+'&dateDataObj='+JSON.stringify(dataObj);
-				}
-			}
-		}
-		
-		return;
-		// Всего 4 ситуации
-		// промежуточное диалоговое окно 
-		// Выводит информацию по типу создаваемой спецификации, и срокам выполнения заказа указываемым в спецификации
-		// 1. Получение дат отгрузки товара или количества рабочих дней необходимых на изготовление исходя из установленных
-		// в карточках товара
-		// 2. формирование диалога на основании полученных данных
-		//   2.1 - если хотя бы в одном товаре не указан срок изготовления в рабочих днях спецификация не может быть создана вообще
-		//       2.1.1 если указаны разные значения используется большее значение
-		//   2.2 если хотя бы в одном товаре указана точная календарная дата изготовления заказа оповещаем что будет создана 
-		//       спецификация тип 2
-		//     2.2.1 - если все даты истекли то останавливаем формирование спецификации и оповещаем 
-		//     2.2.2 - если указаны разные даты то берем самую максимальную, при этом предлагаем выбрать другие установленные даты 
-		//           при этом учитывая смогут ли они удовлетворить диапазону установленных рабочих дней   
-		//     2.2.2 проверяем установленную дату и срок изготовления так чтобы они были валидными(чтобы дата минус срок 
-		//           изготовления и другие доп дни  в итоге не были раньше текущего числа)
-		//   3. В случае наличия точной даты определить и предложить оптимальную дату исходя из максимального значения срока 
-		//      в рабочих днях
-
 	}
 	,
 	show_discount_window:function(e){

@@ -321,6 +321,141 @@
 			$result = $mysqli->query($query) or die($mysqli->error);
 		}
 
+		if($_POST['AJAX']=='save_new_agreement'){
+            
+            print_r($_POST);
+
+            require_once(ROOT."/libs/php/classes/client_class.php");
+            require_once(ROOT."/libs/php/classes/agreement_class.php");
+            $agreement_num = false;
+            $short_description = '';
+
+	        $our_firm = fetch_our_certain_firm_data($_POST['our_requisites_id']);
+			$our_firm_acting_manegement_face = our_firm_acting_manegement_face($_POST['our_requisites_id']);
+			
+			$client_firm =  Client::fetch_requisites($_POST['client_requisites_id']);
+			$client_firm_acting_manegement_face = Client::requisites_acting_manegement_face_details($_POST['client_requisites_id']);
+			// echo '<pre>'; print_r($client_firm_acting_manegement_face); echo '</pre>';
+
+	        $date_arr = explode('.',$_POST['date']);
+		    $date = $date_arr[2].'-'.$date_arr[1].'-'.$date_arr[0];
+            
+            // параметры применявшиеся раньше для ветвления в add_new_agreement() обозначавшие что договор уже существует и его тип
+		    $standart = true;
+		    $existent = false;
+
+			$agreement_id = Agreement::add_new_agreement(
+				$_GET['client_id'],
+				$agreement_num,
+				'long_term',
+				$existent,
+				$standart,
+				$_POST['our_requisites_id'],
+				$_POST['client_requisites_id'],
+				$our_firm['comp_full_name'],
+				$our_firm_acting_manegement_face,
+				$client_firm['comp_full_name'],
+				$client_firm_acting_manegement_face,
+				$date,
+				date('Y-12-31'),
+				$short_description);
+			
+			exit;
+		}
+
+
+		if($_POST['AJAX']=='getDataForSpecWindow'){
+			global $mysqli;
+			
+			$out_put = array();
+
+			if($_POST['document_type'] == "spec"){
+				// заключенные договоры
+				$out_put['existing_agreements'] = array();
+
+			    $long_term_agreements = fetch_client_agreements_by_type('long_term',$_GET['client_id']);
+ 
+				$spec_num = 0;
+			    if($long_term_agreements['results_num'] > 0){
+					
+					while($row =mysql_fetch_assoc($long_term_agreements['result'])){
+						$out_put['existing_agreements'][] = array(
+							                                'agreement_id' => $row['id'],
+							                                'our_comp' => $row['our_comp_full_name'],
+							                                'our_requisit_id' => $row['our_requisit_id'],
+							                                'client_comp' => $row['client_comp_full_name'],
+							                                'client_requisit_id' => $row['client_requisit_id'],
+							                                'date' => $row['date'],
+							                                'agreement_num' => $row['agreement_num'],
+							                                'basic' => $row['basic']);
+					}							 
+			    }				
+			}
+			/*if($_POST['document_type'] == "oferta"){
+				
+			}*/
+            // клиентские реквизиты
+			require_once(ROOT."/libs/php/classes/client_class.php");
+            $data_arr = Client::requisites($_GET['client_id']);
+            $out_put['client_requisites'] = array();
+            if(count($data_arr) > 0){
+		        foreach($data_arr as $requisites){
+
+					$out_put['client_requisites'][] = array('id'=>$requisites['id'],'name'=>$requisites['company']);
+					
+				}
+			}
+			else{
+			
+			    $out_put['client_requisites'][] = array('id'=>0,'name'=>'реквизиты не найдены');
+			}
+			
+            // наша фирма ответственные лица
+			$alldata = fetch_our_firms_data();
+
+			if($alldata['results_num']>0){
+
+				$out_put['our_firms'] = array();
+				while($item = mysql_fetch_assoc($alldata['result'])){
+					//print_r($item);
+		            $managment = array();
+					$query = "SELECT*FROM `".OUR_FIRMS_MANAGEMENT_TBL."` WHERE `requisites_id` = '".$item['id']."'";
+				    $result = $mysqli->query($query) or die($mysqli->error);
+					while($row = $result->fetch_assoc()){
+					    //print_r($row);
+					    if(trim($row['name'])!='') $managment[] = array('id'=>$row['id'],'name'=>$row['name']);
+					}
+
+					$out_put['our_firms'][] = array('id'=>$item['id'],'name'=>$item['company'],'managment'=>$managment);
+				}
+			}	    
+
+            // клиентский адрес доставки 
+// os__clients_requisites
+        
+			$addresses_arr = Client::get_addres($_GET['client_id']);
+			$out_put['addresses'] = array();
+
+			foreach($addresses_arr as $data){
+			    $address  = ($data['city']!='')? $data['city']:'';
+				$address .= ($data['street']!='')? ', '.$data['street']:'';
+				$address .= ($data['house_number']!=0)? ', дом.'.$data['house_number']:'';
+				$address .= ($data['korpus']!=0)? ', корп.'.$data['korpus']:'';
+				$address .= ($data['office']!=0)? ', оф.'.$data['office']:'';
+				$address .= ($data['office']!=0)? ', литер'.$data['liter']:'';
+				$address .= ($data['office']!=0)? ', строение'.$data['bilding']:'';
+				 
+				if($address=='') continue;
+			    $out_put['addresses'][] = array('id'=>$data['id'],'str'=>$address);
+			}
+
+            // минимальная дата для календаря
+			$out_put['min_allowed_date'] = substr(goOnSomeWorkingDays(date("Y-m-d H:i:s"),3,'+'),0,10);
+			// print_r($out_put);
+				echo json_encode($out_put);
+				exit;
+		}
+
 	}
 	/////////////////////  END  AJAX  ////////////////////// 
 	
@@ -343,11 +478,12 @@
 
 	// шаблон поиска
 	include ROOT.'/skins/tpl/common/quick_bar.tpl';
-	
+
 	// планка клиента
 	include_once './libs/php/classes/client_class.php';
-	Client::get_client__information($_GET['client_id']);
-	
+	$Client = new Client();
+    $Client->get_client__information($_GET['client_id']);
+
 	include ROOT.'/skins/tpl/client_folder/rt/options_bar.tpl';
 
   	include 'controller.php';

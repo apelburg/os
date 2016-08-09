@@ -187,8 +187,19 @@
 		innerDiv.className = "link2";
 		var a = document.createElement('a');
 		a.href = '#';
-		a.onclick = rtCalculator.makeSpecAndPreorder2;
-		a.appendChild(document.createTextNode('Спецификацию / оферту'));
+		a.onclick = rtCalculator.makeSpecAndPreorder;
+		a.appendChild(document.createTextNode('Спецификацию к договору'));
+		a.setAttribute('doc_type','spec');
+		innerDiv.appendChild(a);
+		div.appendChild(innerDiv);
+		
+		var innerDiv = document.createElement('div');
+		innerDiv.className = "link2";
+		var a = document.createElement('a');
+		a.href = '#';
+		a.onclick = rtCalculator.makeSpecAndPreorder;
+		a.appendChild(document.createTextNode('Счет оферту'));
+		a.setAttribute('doc_type','oferta');
 		innerDiv.appendChild(a);
 		div.appendChild(innerDiv);
 		

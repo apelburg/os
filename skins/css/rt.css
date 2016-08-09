@@ -510,3 +510,15 @@ input.getSizesBtn {
   cursor: move;
 }
 .rtSaveQuantityBtn{ position:absolute; top:8px; left:-5px; font-family: Arial, Helvetica, sans-serif; font-size:10px; border: 1px solid #CCC; padding:3px 3px 5px 3px; cursor:pointer; color:#FFFFFF;  background-color:#86AE1F;border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px;}
+.makeSpecAndPreorderTbl {width: 100%; border-collapse: collapse;}
+/*.makeSpecAndPreorderTbl td{padding: 0px 20px 10px 20px;}*/
+.makeSpecAndPreorderTbl td{padding-bottom: 20px;}
+.makeSpecAndPreorderTbl td.paddingTop{padding-top: 11px;}
+.makeSpecAndPreorderTbl td.tdCap{font-size: 12px; padding: 2px 4px;}
+.makeSpecAndPreorderTbl .dateBlock{float: left; margin-right: 4px;}
+.makeSpecAndPreorderTbl .fieldCap{font-size: 10px;}
+.makeSpecAndPreorderTbl .tags_select a{ text-decoration: none}
+.makeSpecAndPreorderTbl .tags_select a:hover{ text-decoration: underline; color: #ccc}
+/*#specificationsPreWin222{padding: 0;}*/
+.newAgreementTbl {width: 100%; border-collapse: collapse;}
+.newAgreementTbl td{ vertical-align: top}
