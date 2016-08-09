@@ -25,7 +25,7 @@ class rtKpGallery extends aplStdAJAXMethod{
     private $TBL_MAIN_ROWS_GALLERY  = RT_MAIN_ROWS_GALLERY;
 
     # разрешённые к загрузке типы файлов
-    private $fileTypesEnabled   = ['jpg', 'jpeg', 'gif', 'png'];
+    private $fileTypesEnabled   = array('jpg', 'jpeg', 'gif', 'png');
 
     /**
      * @return array
@@ -150,7 +150,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      * @return array
      */
     private function getImagesForArtDefault(){
-        $returnImgArr = [];
+        $returnImgArr = array();
 
         # глобальный путь к изображению в сети WWW
         $globalLinkDir = 'http://'.$_SERVER['HTTP_HOST'].'/img/';
@@ -198,8 +198,7 @@ class rtKpGallery extends aplStdAJAXMethod{
      */
     private function getImagesForArt($art){
         # объявляем массив изображений
-        $imgArr = [];
-
+        $imgArr = array();
         # запрашиваем изображения
         if(trim($art) != ''){
             $query = "SELECT*FROM `".IMAGES_TBL."` WHERE `size` = 'big' AND art=? ORDER BY id";
@@ -219,8 +218,7 @@ class rtKpGallery extends aplStdAJAXMethod{
         }
 
         # создаем массив, который будем возвращать
-        $returnImgArr = [];
-
+        $returnImgArr =  array();
         # если в базе найдены изображения для артикула
         if(count($imgArr) > 0){
 
@@ -278,7 +276,7 @@ class rtKpGallery extends aplStdAJAXMethod{
     private function getImagesFromGallery($i_folder = ''){
         $folder = $i_folder;
         if (trim($folder) == ''){
-            return [];
+            return  array();
         }
 
 
@@ -291,7 +289,7 @@ class rtKpGallery extends aplStdAJAXMethod{
             # показываем ошибки в режиме разработки
             if (!is_dir( $localLinkGalleryUploadDir )){
                 $this->prod__window( "Произошла непредвиденная ошибка,<br> папка <b>" . $localLinkGalleryUploadDir . "</b> не найдена в фаловой системе" );
-                return [];
+                return  array();
             }
 
 
@@ -306,7 +304,7 @@ class rtKpGallery extends aplStdAJAXMethod{
             $globalLinkGalleryUploadDir = $this->getGlobalLinkGalleryUploadDir( $folder );
 
             # создаём массив, который будем возвращаать
-            $returnImgArr = [];
+            $returnImgArr =  array();
 
             # перебираем содержимое директории
             for ($i = 0; $i < count($files); $i++) { # Перебираем все файлы
@@ -355,7 +353,7 @@ class rtKpGallery extends aplStdAJAXMethod{
         # если не было найдено изображений - возвращаем дефолтное no_image
         if (count( $imgArrForArt ) == 0 && count( $imgArrFromGallery ) == 0){
             # получаем дефолное изображение
-            return [];
+            return  array();
         }
 
         # на данном этапе мы имеем 2 массива изображений и минимум одно изображение в одном из них
@@ -382,11 +380,11 @@ class rtKpGallery extends aplStdAJAXMethod{
      * @param $checkedArr   - массив названий выбранных изображений
      * @return array
      */
-    private function checkChooseImages($imagesArr = [], $checkedArr = []){
-        $startArr           = [];
+    private function checkChooseImages($imagesArr =  array(), $checkedArr =  array()){
+        $startArr           =  array();
         $chosenNum          = 0;
-        $endArr             = [];
-        $checkedImgNamesArr = [];
+        $endArr             =  array();
+        $checkedImgNamesArr =  array();
 
 //        echo $this->printArr($checkedArr);
 
@@ -406,7 +404,7 @@ class rtKpGallery extends aplStdAJAXMethod{
         }
 
         # сортируем выбранные изображения
-        $startSortArr = [];
+        $startSortArr =  array();
         foreach ($checkedImgNamesArr as $imgChooseName){
             foreach ($startArr as $row){
                 if($row['img_name'] == $imgChooseName){
@@ -491,7 +489,7 @@ class rtKpGallery extends aplStdAJAXMethod{
         $query = "SELECT * FROM `".$this->TBL_MAIN_ROWS_GALLERY."` WHERE `parent_id` = '".(int)$rtMainRowId."' order by sort ASC";
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
 
-        $arr = [];
+        $arr =  array();
         if($result->num_rows > 0){
             while($row = $result->fetch_assoc()){
                 $arr[] = $row;
@@ -707,7 +705,7 @@ class rtKpGallery extends aplStdAJAXMethod{
                 return $row;
             }
         }
-        return [];
+        return  array();
     }
 
     /**
@@ -730,7 +728,7 @@ class rtKpGallery extends aplStdAJAXMethod{
     /**
      * обновление информации по выбранным изображениям
      */
-    private function saveEditGallery($id, $newData = [] ){
+    private function saveEditGallery($id, $newData =  array() ){
         # удаление старых данных
         $query = "DELETE FROM `".$this->TBL_MAIN_ROWS_GALLERY."` WHERE `parent_id` =?";
 
@@ -812,7 +810,7 @@ class rtKpGallery extends aplStdAJAXMethod{
 
         $allImagesArr = $this->getGalleryContent( (int)$kpMainRowId );
 
-        $returnImages = [];
+        $returnImages =  array();
 
         $isChooseImgFile = false;
 
