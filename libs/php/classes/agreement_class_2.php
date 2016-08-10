@@ -72,7 +72,7 @@
 							     if($uslugi_data['glob_type']=='print' && ($uslugi_data['quantity']!=$dop_data['quantity'])){
 									 $reload['flag'] = true;
 									 //echo $dop_data['quantity'];
-									 include_once(ROOT."/libs/php/classes/rt_calculators_class.php");
+									 include_once($_SERVER['DOCUMENT_ROOT']."/os/libs/php/classes/rt_calculators_class.php");
 									 $json_out =  rtCalculators::change_quantity_and_calculators($dop_data['quantity'],$dop_data['id']);
 									 $json_out_obj =  json_decode($json_out);
 									 
@@ -203,7 +203,7 @@
 				exit;
 			}
 	
-			$origin_file_name = ROOT.'/modules/agreement/agreements_templates/specification.tpl';
+			$origin_file_name = $_SERVER['DOCUMENT_ROOT'].'/os/modules/agreement/agreements_templates/specification.tpl';
 			$fd_origin = fopen($origin_file_name,'r');
 			$file_content = fread($fd_origin,filesize($origin_file_name));
 			fclose($fd_origin);
