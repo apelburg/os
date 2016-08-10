@@ -1918,7 +1918,7 @@ WHERE `requisites_id` = '".$id."' AND `acting` =  '1'
 	}
 	function fetch_client_agreements_by_type($type,$client_id){
 	    global $db;
-	    $query = "SELECT*FROM `".GENERATED_AGREEMENTS_TBL."` WHERE client_id='$client_id' AND type='$type'";
+	    $query = "SELECT*FROM `".GENERATED_AGREEMENTS_TBL."` WHERE client_id='$client_id' AND type='$type' ORDER BY basic DESC, type ASC,our_requisit_id ASC,client_requisit_id  ASC";
 		$result = mysql_query($query,$db);
 		if($result) return array('results_num' => mysql_num_rows($result),'result' => $result);
 		else  return array('results_num' => FALSE ,'result' => mysql_error());
