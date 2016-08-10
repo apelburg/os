@@ -97,7 +97,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 	}
 
 	/**
-	 * возвращает email id юзера
+	 * возвращает email по id юзера
 	 * @param $id
 	 * @param $mysqli
 	 * @return array
@@ -125,9 +125,10 @@ class InvoiceNotify extends aplStdAJAXMethod
 				}
 			}
 		}
-
 		return $emails;
 	}
+
+
 
 	/**
 	 * метод отправки сообщений по id пользователей
@@ -142,7 +143,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 		if ($from == ''){
 			$from = $this->from_email;
 		}
-		include_once 'mail_class.php';
+//		include_once 'mail_class.php';
 //		$mail = new Mail();
 
 		if (is_array($to)){
@@ -172,7 +173,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 	}
 
 	public function sendMessageToId($id,$from,$subject,$message ){
-		$this->sendMessage($this->getUsersEmail($id),$from,$subject,$message );
+	    // !!!!
+		return $this->sendMessage($this->getUsersEmail($id),$from,$subject,$message );
 	}
 	/**
 	 * тригер для крон
@@ -413,6 +415,18 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
 		}
 
+
+//		protected function test_send_message_AJAX(){
+//            $Invoice = new InvoiceNotify();
+//            $userName = "мое";
+//            if ($Invoice->sendMessageToId([42],'',$subject="тема",$html = "письмо тестера array")){
+//                $this->responseClass->addMessage('Менеджеру '.$userName.' было отправлено уведомление на почту.array');
+//            }
+//            if ($Invoice->sendMessageToId(42,'',$subject="тема",$html = "письмо тестера id")){
+//                $this->responseClass->addMessage('Менеджеру '.$userName.' было отправлено уведомление на почту.id');
+//            }
+//        }
+
 		/**
 		 * оповещаем менеджера обизменениях в приходах по счёту
 		 */
@@ -426,15 +440,19 @@ class InvoiceNotify extends aplStdAJAXMethod
 			$message .= 'Сумма счета: '.$_POST['price_out'].'р.<br>';
 			$message .= 'Cумма оплаты на данный момент составляет: '.$_POST['price_out_payment'].' р.<br>';
 			$message .= 'что составляет '.round((int)$_POST['percent_payment'], 2).'% от суммы счёта';
-			$href = 'http://www.apelburg.ru/os/?page=invoice&section=2&client_id='.$_POST['client_id'];
+			$href = 'http://www.apelburg.ru/os/?page=invoice&section=0&client_id='.$_POST['client_id'];
 			# подгружаем шаблон
 
 			ob_start();
-			// include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
-			include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
-			$html = ob_get_contents();
+                // include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+                include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+                $html = ob_get_contents();
 			ob_get_clean();
-			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
+
+            if ($Invoice->sendMessageToId([(int)$_POST['manager_id'],42],'',$subject,$html)){
+                $this->responseClass->addMessage('Менеджеру '.$userName.' было отправлено уведомление на почту.');
+            }
+
 		}
 
 		/**
@@ -596,9 +614,9 @@ class InvoiceNotify extends aplStdAJAXMethod
             $date = date('Y-m-d',time());
 		    $query = "UPDATE `".INVOICE_TTN."` SET ";
             $query .= "`return` =?";
-            $query .= ",`date_return` =?";
             $query .= ",`buch_id` =?";
             $query .= ",`buch_name` =?";
+            $query .= ",`date_return` =?";
             $query .= " WHERE `id` =?";
 
             $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
@@ -851,7 +869,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 				// правила выборки счетов по вкладкам
 				if (isset($_GET['section'])){
 
-					if($_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
+					if($_GET['section'] != 0 && $_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
 						$query .= ($w>0?' AND ':' WHERE ');
 						$query .= " `closed` = '0'";
 						$w++;
@@ -859,6 +877,13 @@ class InvoiceNotify extends aplStdAJAXMethod
 
 
 					switch ((int)$_GET['section']){
+                        // все
+					    case 0:
+                            $query .= ($w>0?' AND ':' WHERE ');
+                            $query .= " `closed` <= 1";
+                            $w++;
+
+                            break;
 						// Запрос
 						case 1:
 							$query .= ($w>0?' AND ':' WHERE ');
@@ -936,12 +961,12 @@ class InvoiceNotify extends aplStdAJAXMethod
 				}
 
 				# сортировка по номеру счёта
-				if($_GET['section'] != 1 && $_GET['section'] != 9 && $_GET['section'] != 14 && $_GET['section'] != 15){
+				if($_GET['section'] != 1 /*&& $_GET['section'] != 9 */&& $_GET['section'] != 14 && $_GET['section'] != 15){
 					$query.= " ORDER BY `invoice_num_old` DESC";
 				}
 			}
 
-
+//            echo $query;
 
 
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);

@@ -1394,6 +1394,7 @@ PS было бы неплохо взять взять это за правило
                     
                     // объявляем массив
                     $array_for_table = array();
+
                     // перебираем входящие данные и пишем в массив
                     foreach ($data_array_with_form as $header_name_en => $value) {
                          
@@ -1484,6 +1485,7 @@ PS было бы неплохо взять взять это за правило
                private function greate_table_variants_Html($arr,$product_options){
                     // удаляем дубли
                     $arr = $this->delete_identical_variants_Array($arr);
+
                     // поучаем массив вариантов
                     $array = $this->greate_array_variants_Array($arr);
                     
@@ -1562,25 +1564,68 @@ PS было бы неплохо взять взять это за правило
                     }
                     return $variants;
                }
-               //вычищаем дубли вариантов появившиеся из-за неверного заполнения формы
-               private function delete_identical_variants_Array($arr){
-                    $new_arr = array();
-                    foreach ($arr as $key => $value) {
-                         $new_arr[$key][0] = $value[0];
-                         foreach ($value as $key2 => $value2) {
-                              $identical = 0;
-                              foreach ($new_arr[$key] as $key3 => $value3) {
-                                   if($value3==$value2){// если такой уже есть 
-                                        $identical = 1;
-                                   }
-                              }
-                              if($identical==0){// если это не повтор
-                                   $new_arr[$key][] = $value2;
-                              }
-                         }
+
+             /**
+               * вычищаем дубли вариантов появившиеся из-за неверного заполнения формы
+               *
+               * на данном этапе мы имеем дело с двумерным массивом
+               *
+               * @param $dataArr
+               * @return array
+               */
+               private function delete_identical_variants_Array($dataArr){
+
+                    $returnArr = [];
+
+                    foreach ($dataArr as $i => $variantsArr) {
+
+                        # режем кавычки и запоминаем значение первого варианта
+                        $returnArr[ $i ][0] = $this->protectionFromQuotesInString( $variantsArr[0] );
+
+                        # перебираем значения всех вариантов
+                        foreach ($variantsArr as $key2 => $compareVariant) {
+                            # получаем значения с вырезанными кавычками
+                            $protectionCompareVariant = $this->protectionFromQuotesInString( $compareVariant );
+
+                            # инициируем флаг повтора
+                            $isIdentical = false;
+
+                            # сравниваем текущее значение
+                            foreach ($returnArr[ $i ] as $returnVariant) {
+
+                                # если данное значение уже встречается, то выходим из перебора и ничего не запоминаем
+                                if($returnVariant == $protectionCompareVariant){
+                                    $isIdentical = true; break;
+                                }
+                            }
+
+                            # если соответствий небыло найдено
+                            if(!$isIdentical){
+                                # режем кавычки и выводим
+                                $returnArr[ $i ][] = $protectionCompareVariant;
+                            }
+                        }
                     }
-                    return $new_arr;
+                    return $returnArr;
                }
+
+                /**
+                 * защита строк от кавычек
+                 * меняет парные " на ёлочки
+                 * остальное вырезает
+                 *
+                 * @param $i_str
+                 * @return mixed
+                 */
+                private function protectionFromQuotesInString($i_str){
+                    # меняем парные двойные кавычки на елочки
+                    $str = preg_replace('/(?:"([^>]*)")(?!>)/', '«$1»', $i_str);
+
+                    # режем одиночные кавычки
+                    $o_str = str_replace(array("'",'"'),'', $str);
+
+                    return $o_str;
+                }
                
                
                

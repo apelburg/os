@@ -362,7 +362,7 @@ function append_click(){
                 $.post('', {
                   AJAX:'save_dop_info_json',
                   main_row_id:$('#js--characteristics-info').attr('data-main_row_id'),
-                  json:Base64.encode(json),
+                  jsonData:jsonObj,
                   row_id:variant_id
                 }, function(data, textStatus, xhr) {
                   standard_response_handler(data);

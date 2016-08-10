@@ -156,16 +156,20 @@
 		);
 	// БУХГАЛТЕР						  
 	$ACCESS_SHABLON[2] = array(
-		'agreement'=> array('access'=> true),
+						'agreement'=> array('access'=> true),
 		'sklad'=> array('access'=> true),
-		'invoice'=> array('access'=> true),
+						'invoice'=> array('access'=> true),
 		'accounting'=> array('access'=> true),
-		'cabinet'=> array('access'=> false),
-		'clients'=> array(
-			'access'=> true,
-			'full_clients_delete'=> true,
-			'show___foo___'=> false
+						'cabinet'=> array('access'=> false),
+				        'clients'=> array(
+							'access'=> true,
+							'full_clients_delete'=> true,
+							'show___foo___'=> false
 		),
+        'suppliers'=> array(
+            'access'=> true,
+            'full_suppliers_delete'=> true
+        )
 				       );
 	// ПРО-ВО
 	$ACCESS_SHABLON[4] = array(
@@ -198,7 +202,7 @@
 
 		'default'=> array('access'=> true),
 		'agreement'=> array('access'=> true),
-		'invoice'=> array('access'=> true),
+                'invoice'=> array('access'=> true),
 		'accounting'=> array('access'=> true),
 		'sklad'=> array('access'=> true),
 		'planner'=> array('access'=> true),
