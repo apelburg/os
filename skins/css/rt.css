@@ -522,3 +522,5 @@ input.getSizesBtn {
 /*#specificationsPreWin222{padding: 0;}*/
 .newAgreementTbl {width: 100%; border-collapse: collapse;}
 .newAgreementTbl td{ vertical-align: top}
+input.for_new_address{ margin: 5px 0 -15px 0; width: 226px}
+

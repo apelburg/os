@@ -1,7 +1,6 @@
 <?php
 
-    //print_r($_POST); 
-    //exit;
+    // print_r($_POST); 
 	
 	/*if(@$_SESSION['access']['user_id']==18){ 
 		echo  '111'; 
@@ -20,10 +19,52 @@
     if(isset($_POST['form_data'])){
     	$form_data = $_POST['form_data'];
     	$form_data['ids'] = urldecode($form_data['ids']);
-    	if(isset($_POST['form_data']['agreement_id'])) $agreement_id = $_POST['form_data']['agreement_id'];
+    	$form_data['address'] = (isset($form_data['new_address']))? $form_data['new_address'] : $form_data['address'];
+    	
+
+    	// создание договора
+    	if(isset($form_data['agreement_id']) && $form_data['agreement_id'] == 'new_agreement' && isset($form_data['for_new_agreement'])){
+            require_once(ROOT."/libs/php/classes/client_class.php");
+            require_once(ROOT."/libs/php/classes/agreement_class.php");
+            $agreement_num = false;
+            $short_description = '';
+
+	        $our_firm = fetch_our_certain_firm_data($form_data['for_new_agreement']['our_requisites_id']);
+			$our_firm_acting_manegement_face = our_firm_acting_manegement_face($form_data['for_new_agreement']['our_requisites_id']);
+			
+			$client_firm =  Client::fetch_requisites($form_data['for_new_agreement']['client_requisites_id']);
+			$client_firm_acting_manegement_face = Client::requisites_acting_manegement_face_details($form_data['for_new_agreement']['client_requisites_id']);
+			// echo '<pre>'; print_r($client_firm_acting_manegement_face); echo '</pre>';
+
+	        $date_arr = explode('.',$form_data['for_new_agreement']['date']);
+		    $date = $date_arr[2].'-'.$date_arr[1].'-'.$date_arr[0];
+            
+            // параметры применявшиеся раньше для ветвления в add_new_agreement() обозначавшие что договор уже существует и его тип
+		    $standart = true;
+		    $existent = false;
+
+			$form_data['agreement_id'] = Agreement::add_new_agreement(
+				$form_data['client_id'],
+				$agreement_num,
+				'long_term',
+				$existent,
+				$standart,
+				$form_data['for_new_agreement']['our_requisites_id'],
+				$form_data['for_new_agreement']['client_requisites_id'],
+				$our_firm['comp_full_name'],
+				$our_firm_acting_manegement_face,
+				$client_firm['comp_full_name'],
+				$client_firm_acting_manegement_face,
+				$date,
+				date('Y-12-31'),
+				$short_description);
+			
+    	}
+    	if(isset($form_data['agreement_id'])) $agreement_id = $form_data['agreement_id'];
         //print_r($form_data);
     }
-    
+    //echo '<pre/>';print_r($form_data); exit;
+
     include_once(ROOT."/libs/php/classes/agreement_class.php");
 	include_once(ROOT."/libs/php/classes/client_class.php");
 	
@@ -157,11 +198,17 @@
 		    if($_GET['open'] == 'all')
 			{
 				$specifications =  Agreement::fetch_specifications($client_id,$agreement_id);
-				while($row = $specifications->fetch_assoc())
+				if($specifications){
+					while($row = $specifications->fetch_assoc())
+					{
+						if(!isset($specifications_arr[$row['specification_num']])) $specifications_arr[$row['specification_num']]= array();
+						array_push($specifications_arr[$row['specification_num']],$row);
+					
+					}
+				}
+				else
 				{
-					if(!isset($specifications_arr[$row['specification_num']])) $specifications_arr[$row['specification_num']]= array();
-					array_push($specifications_arr[$row['specification_num']],$row);
-				
+					$specifications_arr = array();
 				}
 			}
 			else if($_GET['open'] == 'empty')

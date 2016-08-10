@@ -2328,23 +2328,19 @@ var rtCalculator = {
 			}
 			
             /*
-            name="form_data[requisit_id]"
             doc_type: doc_type
 			,client_id: client_id 						// id клента
 			,query_num: query_num 						// id заявки
 			//,agreement_id: value 						// id договора. (для спецификации)
-			@@@,requisit_id: 'requisit_id' 				// id клиентских реквизитов.  (для оферты)
-			@@@,our_firm_id: 'our_firm_id' 				// id наших реквизитов. (для оферты)
-			@@@,signator_id: 'signator_id' 				// id подписанта
-			@@@,data_type: data_type 						// тип даты
-			@@@,datetime: datetime 						// дата отгрузки. если data_type==date то 0000-00-00 00:00:00, @@@если data_type==days то number
-			@@@,final_date: "0000-00-00 00:00:00" 			// дата подписания
-			@@@,prepayment: prepayment 					// предоплата
-			@@@,short_description: short_description 		// краткое описание
-			//,address: ['samo_vivoz'|value] 			// адрес доставки. если выбран самовывоз - 'samo_vivoz', иначе строка из базы и
-			addOrReplaceGetOnURL('sendToSnab='+JSON.stringify(idsObj));
-			
-                
+		    ,requisit_id: 'requisit_id' 				// id клиентских реквизитов.  (для оферты)
+			,our_firm_id: 'our_firm_id' 				// id наших реквизитов. (для оферты)
+			,signator_id: 'signator_id' 				// id подписанта
+			,data_type: data_type 						// тип даты
+			,datetime: datetime 						// дата отгрузки. если data_type==date то 0000-00-00 00:00:00, если data_type==days то number
+			,final_date: "0000-00-00 00:00:00" 			// дата подписания
+			,prepayment: prepayment 					// предоплата
+			,short_description: short_description 		// краткое описание
+			,address: ['samo_vivoz'|value] 			// адрес доставки. если выбран самовывоз - 'samo_vivoz', иначе 
 			*/
 	       
 
@@ -2358,10 +2354,10 @@ var rtCalculator = {
 	            var existing_agreements_selects = [];
 				for (var i = 0; i < ln; i++) {
 					if(i==0) var ourFirstFirmId = existing_agreements[i]['our_requisit_id'];
-				 	existing_agreements_selects.push('<option value="'+existing_agreements[i]['agreement_id']+'" our_requisit_id="'+existing_agreements[i]['our_requisit_id']+'">№ '+existing_agreements[i]['agreement_num']+' от '+existing_agreements[i]['date']+'('+existing_agreements[i]['our_comp']+' - '+existing_agreements[i]['client_comp']+')</option>');
+				 	existing_agreements_selects.push('<option value="'+existing_agreements[i]['agreement_id']+'" our_requisit_id="'+existing_agreements[i]['our_requisit_id']+'">№ '+existing_agreements[i]['agreement_num']+' от '+existing_agreements[i]['date']+'( '+existing_agreements[i]['our_comp']+' - '+existing_agreements[i]['client_comp']+')</option>');
 				}
 
-				existing_agreements_selects.push('<option value="new_agreement" our_requisit_id="new_agreement">Создать новый договор</option>');
+				existing_agreements_selects.push('<option value="new_agreement_marker" our_requisit_id="new_agreement_marker">Создать новый договор</option>');
   
             	var sub_part = '<tr bgcolor="#ccc">'
 							+ '<td colspan="2" class="tdCap">Спецификация к договору номер</td>'
@@ -2371,6 +2367,7 @@ var rtCalculator = {
 								+ '<select id="existing_agreements" style="width:400px" name="form_data[agreement_id]" onchange="rtCalculator.setOurFaximileFaces(this.options[this.selectedIndex].getAttribute(\'our_requisit_id\'))">'
 									+ existing_agreements_selects.join('')
 								+ '</select>'
+								+ '<div id="for_new_agreement" style="display:none"></div>'
 							+ '</td>'
 						+ '</tr>'
 						+ '<tr>'
@@ -2441,7 +2438,7 @@ var rtCalculator = {
                 + '<input type="hidden" id="" name="form_data[client_id]" value="'+ params.client_id+'">'
 			    + '<table class="makeSpecAndPreorderTbl">'
 				+ '<tr bgcolor="#ccc">'
-					+ '<td colspan="2" class="tdCap">Указать в оферте условия сдачи заказа</td>'
+					+ '<td colspan="2" class="tdCap">Указать в документе условия сдачи заказа</td>'
 				+ '</tr>'
 				+ '<tr>'
 					+ '<td class="paddingTop">'
@@ -2472,9 +2469,12 @@ var rtCalculator = {
 						+ '</select>'
 					+ '</td>'
 					+ '<td class="paddingTop">'
-						+ '<select id="delivery" style="width:230px" name="form_data[address]">'
+						+ '<select id="delivery" style="width:230px" name="form_data[address]" onchange="rtCalculator.checkDeliveryAddress(this.options[this.selectedIndex].value,'+ params.client_id+')">'
 							+ addresses_selects.join('')
+							+ '<option value="add_to_card">Добавить адрес в карточку клиента</option>'
+							+ '<option value="add_once">Добавить адрес (разовый)</option>'
 						+ '</select>'
+						+ '<div id="for_new_address"></div>'
 					+ '</td>'
 				+ '</tr>'
 				+ '<tr bgcolor="#ccc">'
@@ -2495,15 +2495,19 @@ var rtCalculator = {
 			+ '</table></form>';
 
 			var button1 = button.cloneNode();
+			button1.innerHTML ="Создать";
 			button1.onclick = function() {
-				//alert(11);
-                if($('#existing_agreements').length>0 && $('#existing_agreements').val =='new_agreement') return;
+				// alert(1);
 
                 // проверка обязательных окон
                 var warnings = [];
                 var pattern = /^\d{2}\.\d{2}\.\d{4} \d{2}\:\d{2}$/;
                 var date_type = $('#date_type').val();
 
+                if($('#existing_agreements').length>0 && $('#existing_agreements').val() =='new_agreement_marker'){
+                	warnings.push('вы не выбрали договор');
+                } 
+                
                 if(date_type == 'date'){
                     var val_1 = $('#datepicker1').val();
                     if(val_1.trim() == '') warnings.push('поле "дата сдачи" не заполнено!!!');
@@ -2529,9 +2533,14 @@ var rtCalculator = {
                 if($('#datepicker3').length>0){
                 	var val = $('#datepicker3').val();
                 	var pattern = /^\d{2}\.\d{2}\.\d{4}$/;
-                	if(val.trim() == '') alert('поле "дата создания" не заполнено!!!');
+                	if(val.trim() == '') warnings.push('поле "дата создания" не заполнено!!!');
                 	else if(!pattern.test(val)) warnings.push('формат данных в поле "дата создания" не корректный, должен быть ДД.ММ.ГГГГ !!!');             
-                }/**/
+                }
+                if($('#for_new_address .for_new_address').length>0){
+                	if(($('#for_new_address .for_new_address').val()).trim() == '') warnings.push('заполните поле "разовый адрес доставки"!!!');
+                }
+
+                /**/
                 // alert(warnings.join("\r\n"));
                 if(warnings.length > 0){
                     echo_message_js(warnings.join("<br>"),'system_message',5000);
@@ -2542,7 +2551,7 @@ var rtCalculator = {
 				return;
 				
 			}
-			button1.innerHTML ="Создать";
+			
 			var button2 = button.cloneNode();
 			button2.onclick= function(){ $("#"+winId).remove(); }
 			button2.innerHTML ="Отмена";
@@ -2603,19 +2612,25 @@ var rtCalculator = {
             if(typeof our_requisites_id == 'undefined' || typeof client_requisites_id == 'undefined') return;
 
 
-			$.ajax({
-			   method: "POST",
-			   url: location,
-			   data: { AJAX: "save_new_agreement", our_requisites_id: our_requisites_id , client_requisites_id: client_requisites_id,date:date}
-			})
-			.done(function( response ) {
-			    console.log(response);
-			    location.reload();
-			    $(dialog).remove();
-			    rtCalculator.makeSpecAndPreorder()
-				
-			});
-		}/**/
+            // теперь надо вставить в селект созданных договоров строчку с выбранными реквизитами и сделать её выбранной
+            // а в селекте выбора подписантов подставить подписантов соответсвующих нашей выбраной фирме
+            var data = rtCalculator.makeSpecAndPreorder_optionalData;
+
+	        var ln = data['our_firms'].length
+			for (var i = 0; i < ln; i++) {
+				if(data['our_firms'][i]['id']==our_requisites_id) var our_firm_name = data['our_firms'][i]['name'];
+			}
+			var ln = data['client_requisites'].length
+			for (var i = 0; i < ln; i++) {
+				if(data['client_requisites'][i]['id']==client_requisites_id) var client_firm_name = data['client_requisites'][i]['name'];
+			}
+
+            $("#existing_agreements").append('<option value="new_agreement" selected>НОВЫЙ ДОГОВОР от '+date+' ('+our_firm_name+' - '+client_firm_name+')</option>');
+
+            $("#for_new_agreement").html('<input value="'+our_requisites_id+'" name="form_data[for_new_agreement][our_requisites_id]"><input value="'+client_requisites_id+'" name="form_data[for_new_agreement][client_requisites_id]"><input value="'+date+'" name="form_data[for_new_agreement][date]">');
+            rtCalculator.setOurFaximileFaces(our_requisites_id);
+            $("#newAgreementWindow").dialog("close");			
+		}
 
     	$(dialog).append(content);
     	$(dialog).append(button);
@@ -2645,10 +2660,27 @@ var rtCalculator = {
 		 	}
 		}
     }
+    ,
+	checkDeliveryAddress:function(val,client_id){
+		//alert(val);
+
+		
+		if(val=='add_to_card'){
+            var url = OS_HOST+'/?page=clients&section=client_folder&subsection=client_card_table&client_id='+client_id+'&client_edit';
+           // var newWin = window.open(url,"","width=420,height=230,resizable=yes,scrollbars=yes,status=yes");
+            var newWin = window.open(url);
+
+			newWin.focus();
+
+		}
+		if(val=='add_once'){
+			$("#for_new_address").html("<input class='for_new_address' placeholder='введите адрес' name='form_data[new_address]'>");
+		}
+		else $("#for_new_address").html("");    }
 	,
 	setOurFaximileFaces:function(firm_id){
     	// alert(firm_id);
-    	if(firm_id  =='new_agreement'){
+    	if(firm_id  == 'new_agreement_marker'){
     		rtCalculator.launchNewAgreementWindow();
     		return;
     	}
@@ -2837,19 +2869,6 @@ var rtCalculator = {
 		
 
 		location = "?page=agreement&section=presetting&client_id=" + client_id + "&ids=" +JSON.stringify(idsObj)+'&query_num='+query_num;
-		
-		
-	    // формируем url для AJAX запроса
-		/*var url = OS_HOST+'?' + addOrReplaceGetOnURL('makeSpecAndPreorder={"ids":'+JSON.stringify(idsObj)+',"client_id":"'+client_id+'","query_num":"'+query_num+'"}');
-		// AJAX запрос
-		make_ajax_request(url,callback);
-		//alert(last_val);
-		function callback(response){ 
-		   
-		    / *if(response == '1') location = OS_HOST+'?page=client_folder&section=business_offers&query_num='+query_num+'&client_id='+client_id;* /
-		    console.log(response); 
-			close_processing_timer(); closeAllMenuWindows();
-		}	*/  
 
 	}
 	,
