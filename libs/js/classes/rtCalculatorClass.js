@@ -2254,6 +2254,8 @@ var rtCalculator = {
 	//alert(1);
 			function launch_set_window(doc_type,id,content){
 				// alert(doc_type);
+                if($("#"+id).length >0 ) return;
+
 				var title = (doc_type=='spec')?"Создание спецификации":"Создание счета-оферты";
 				var box = document.createElement('DIV');
 				box.id = id;
@@ -2591,7 +2593,7 @@ var rtCalculator = {
 					+ '<td>'+client_requisites_list.join('<br>')+'</td>'
 				+ '</tr>'
 				+ '<tr>'
-					+ '<td>Дата договора: <span id="newAgreementDate">'+(((((new Date()).toJSON()).slice(0,10)).split("-")).reverse()).join('.')+'</span></td>'
+					+ '<td style="padding-top:10px">Дата договора: <span id="newAgreementDate">'+(((((new Date()).toJSON()).slice(0,10)).split("-")).reverse()).join('.')+'</span></td>'
 					+ '<td></td>'
 				+ '</tr>'
 				+ '</table>');
