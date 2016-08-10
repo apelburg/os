@@ -127,7 +127,7 @@ class InvoiceNotify extends aplStdAJAXMethod
 		}
 		return $emails;
 	}
-    
+
 
 
 	/**
