@@ -346,7 +346,7 @@ class rtPositionUniversal extends Position_general_Class
 					}
 
 					if($_POST['row_id'] == $key){
-						$this->position['variants'][$key]['json_new'] = json_encode( $this->jsonArr );
+						$this->position['variants'][$key]['json_new'] = json_encode( $this->jsonArr, JSON_UNESCAPED_UNICODE );
 						$i++;	
 					}
 				}
