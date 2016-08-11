@@ -2354,11 +2354,15 @@ var rtCalculator = {
                 var existing_agreements = optionalData['existing_agreements'];
 				var ln = existing_agreements.length
 	            var existing_agreements_selects = [];
-				for (var i = 0; i < ln; i++) {
-					if(i==0) var ourFirstFirmId = existing_agreements[i]['our_requisit_id'];
-				 	existing_agreements_selects.push('<option value="'+existing_agreements[i]['agreement_id']+'" our_requisit_id="'+existing_agreements[i]['our_requisit_id']+'">№ '+existing_agreements[i]['agreement_num']+' от '+existing_agreements[i]['date']+'( '+existing_agreements[i]['our_comp']+' - '+existing_agreements[i]['client_comp']+')</option>');
-				}
-
+	            if(ln>0){
+					for (var i = 0; i < ln; i++) {
+						if(i==0) var ourFirstFirmId = existing_agreements[i]['our_requisit_id'];
+					 	existing_agreements_selects.push('<option value="'+existing_agreements[i]['agreement_id']+'" our_requisit_id="'+existing_agreements[i]['our_requisit_id']+'">№ '+existing_agreements[i]['agreement_num']+' от '+existing_agreements[i]['date']+'( '+existing_agreements[i]['our_comp']+' - '+existing_agreements[i]['client_comp']+')</option>');
+					}
+                }
+                else existing_agreements_selects.push('<option value="no_agreements" our_requisit_id="no_agreements"></option>');
+  
+                
 				existing_agreements_selects.push('<option value="new_agreement_marker" our_requisit_id="new_agreement_marker">Создать новый договор</option>');
   
             	var sub_part = '<tr bgcolor="#ccc">'
@@ -2506,7 +2510,7 @@ var rtCalculator = {
                 var pattern = /^\d{2}\.\d{2}\.\d{4} \d{2}\:\d{2}$/;
                 var date_type = $('#date_type').val();
 
-                if($('#existing_agreements').length>0 && $('#existing_agreements').val() =='new_agreement_marker'){
+                if($('#existing_agreements').length>0 && ($('#existing_agreements').val() =='new_agreement_marker' || $('#existing_agreements').val() =='no_agreements')){
                 	warnings.push('вы не выбрали договор');
                 } 
                 
@@ -2592,10 +2596,6 @@ var rtCalculator = {
 					+ '<td>'+our_firms_list.join('<br>')+'</td>'
 					+ '<td>'+client_requisites_list.join('<br>')+'</td>'
 				+ '</tr>'
-				+ '<tr>'
-					+ '<td style="padding-top:10px">Дата договора: <span id="newAgreementDate">'+(((((new Date()).toJSON()).slice(0,10)).split("-")).reverse()).join('.')+'</span></td>'
-					+ '<td></td>'
-				+ '</tr>'
 				+ '</table>');
 
 
@@ -2627,9 +2627,9 @@ var rtCalculator = {
 				if(data['client_requisites'][i]['id']==client_requisites_id) var client_firm_name = data['client_requisites'][i]['name'];
 			}
 
-            $("#existing_agreements").append('<option value="new_agreement" selected>НОВЫЙ ДОГОВОР от '+date+' ('+our_firm_name+' - '+client_firm_name+')</option>');
+            $("#existing_agreements").append('<option value="new_agreement" selected>НОВЫЙ ДОГОВОР ('+our_firm_name+' - '+client_firm_name+')</option>');
 
-            $("#for_new_agreement").html('<input value="'+our_requisites_id+'" name="form_data[for_new_agreement][our_requisites_id]"><input value="'+client_requisites_id+'" name="form_data[for_new_agreement][client_requisites_id]"><input value="'+date+'" name="form_data[for_new_agreement][date]">');
+            $("#for_new_agreement").html('<input value="'+our_requisites_id+'" name="form_data[for_new_agreement][our_requisites_id]"><input value="'+client_requisites_id+'" name="form_data[for_new_agreement][client_requisites_id]">');
             rtCalculator.setOurFaximileFaces(our_requisites_id);
             $("#newAgreementWindow").dialog("close");			
 		}

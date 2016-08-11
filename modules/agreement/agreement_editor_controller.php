@@ -1,6 +1,6 @@
 <?php
 
-    // print_r($_POST); 
+    // echo '<pre/>'; print_r($_POST); exit;
 	
 	/*if(@$_SESSION['access']['user_id']==18){ 
 		echo  '111'; 
@@ -36,7 +36,7 @@
 			$client_firm_acting_manegement_face = Client::requisites_acting_manegement_face_details($form_data['for_new_agreement']['client_requisites_id']);
 			// echo '<pre>'; print_r($client_firm_acting_manegement_face); echo '</pre>';
 
-	        $date_arr = explode('.',$form_data['for_new_agreement']['date']);
+	        $date_arr = explode('.',$form_data['date']);
 		    $date = $date_arr[2].'-'.$date_arr[1].'-'.$date_arr[0];
             
             // параметры применявшиеся раньше для ветвления в add_new_agreement() обозначавшие что договор уже существует и его тип
