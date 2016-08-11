@@ -341,7 +341,7 @@ class rtPositionUniversal extends Position_general_Class
                             $json['product_dop_text']   = $this->jsonArr['product_dop_text'];
 
 							$this->position['variants'][$key]['json_new'] = json_encode($json, JSON_UNESCAPED_UNICODE);
-						}
+
 						$i++;
 					}
 
