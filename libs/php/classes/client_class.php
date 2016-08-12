@@ -8,6 +8,9 @@
  */
 class Client extends aplStdAJAXMethod{
 
+    // для входа в режим отладки раскоментировать строку или установить в значение FALSE
+//    protected $production = false;
+
 	/**
 	 * типы контактных данных
 	 *
@@ -1113,14 +1116,15 @@ class Client extends aplStdAJAXMethod{
         $this->delete_row_from_table(CLIENT_REQUISITES_TBL, $requisitesId);
 
         # запрашиваем строки
-        $personsArr = $this->get_all_tbl_simple(CLIENT_REQUISITES_MANAGMENT_FACES_TBL/*,['requisites_id'=>$requisitesId]*/);
+        $personsArr = $this->get_all_tbl_simple(CLIENT_REQUISITES_MANAGMENT_FACES_TBL,['requisites_id'=>$requisitesId]);
+
         # если строки были найдены
         if (count($personsArr) > 0){
-            //$ids = [];
+            $ids = [];
             foreach ($personsArr as $personsRowData){
                 $ids[] = $personsRowData['id'];
             }
-
+            $this->prod__window($this->printArr($ids));
             # удаляем строки контактных лиц имеющих право подписи для данных реквизитов
             $this->delete_rows_from_table(CLIENT_REQUISITES_MANAGMENT_FACES_TBL, $ids);
         }
@@ -1139,13 +1143,14 @@ class Client extends aplStdAJAXMethod{
 			Client::history($this->user_id, $text_history ,'update_curator_list',$_GET['client_id']);
 			//-- END -- //  логирование
 			
-			$str_id = '';
+			$str_id = "";
 			$query = "";
+
 			foreach($manager_id as $k => $v){
 
-			    $query .= "INSERT INTO `".RELATE_CLIENT_MANAGER_TBL."` SET 
-			    `client_id` = '".$client_id."', 
-			    `manager_id` = '".$v."';";
+			    $query .= "INSERT INTO `".RELATE_CLIENT_MANAGER_TBL."` SET";
+			    $query .= "  `client_id` = '" . $client_id . "'";
+			    $query .= ", `manager_id` = '".$v."';";
 
 			    $str_id .= ($str_id=='')?$v:', '.$v;
 			}
