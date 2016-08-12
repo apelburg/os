@@ -96,9 +96,9 @@
 		public function __subsection_router__(){
 			$method_template = $_GET['section'].'_Template';
 			// $method_template = $_GET['section'].'_Template';
-			// echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
+			echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
 			// скрываем левое меню за ненадобностью
-			// echo '<style type="text/css" media="screen">#cabinet_left_coll_menu{display:none;}</style>';
+			echo '<style type="text/css" media="screen">#cabinet_left_coll_menu{display:none;}</style>';
 			// если в этом классе существует такой метод - выполняем его
 			if(method_exists($this, $method_template)){
 				$this->$method_template();				

@@ -332,7 +332,6 @@ class rtPositionUniversal extends Position_general_Class
 					$json = json_decode($variant['no_cat_json'],true);
 
 					$this->position['variants'][$key]['json_encode'] = json_decode($variant['no_cat_json'],true);
-					
 
 					if($json['naimenovanie'] != $this->jsonArr['naimenovanie'] || isset($json['product_dop_text']) && $json['product_dop_text'] != $this->jsonArr['product_dop_text']){
 						if($_POST['row_id'] != $variant['id']){
@@ -340,16 +339,17 @@ class rtPositionUniversal extends Position_general_Class
 							$json['naimenovanie']       = $this->jsonArr['naimenovanie'];
                             $json['product_dop_text']   = $this->jsonArr['product_dop_text'];
 
-							$this->position['variants'][$key]['json_new'] = json_encode($json, JSON_UNESCAPED_UNICODE);
-						}
-						$i++;
-					}
+                            $this->position['variants'][$key]['json_new'] = json_encode($json, JSON_UNESCAPED_UNICODE);
 
-					if($_POST['row_id'] == $key){
-						$this->position['variants'][$key]['json_new'] = json_encode( $this->jsonArr );
-						$i++;	
-					}
-				}
+                            $i++;
+                        }
+
+                        if ($_POST['row_id'] == $key) {
+                            $this->position['variants'][$key]['json_new'] = json_encode($this->jsonArr, JSON_UNESCAPED_UNICODE);
+                            $i++;
+                        }
+                    }
+                }
 
 
 
@@ -371,14 +371,8 @@ class rtPositionUniversal extends Position_general_Class
 
 
 			}
-
-			
-
-			
-				
-			// if($this->user_id != 42){
-				$option['timeout'] = '1000';
-				$this->responseClass->addResponseFunction('window_reload',$option);
+			$option['timeout'] = '1000';
+			$this->responseClass->addResponseFunction('window_reload',$option);
 			// }
 
 			$this->responseClass->addMessage('Характеристики изделия успешно сохранены','successful_message');	

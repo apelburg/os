@@ -87,9 +87,7 @@
 			// если происходит ошибка выводим отчет
 			
 			// проверяем есть папка данного клента, если её нет то создаем её
-
-			$client_dir_name = $_SERVER['DOCUMENT_ROOT'].'/admin/order_manager/data/agreements/'.strval(intval($client_id));
-			
+			$client_dir_name = $_SERVER['DOCUMENT_ROOT'].'/admin/order_manager/data/agreements/'.strval(intval($client_id));			
 			//chmod("data/com_offers/", 0775);
 			
 			if(!file_exists($client_dir_name)){
