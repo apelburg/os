@@ -14,8 +14,6 @@
 <html>
     <head>
         <title>Форма авторизации</title>
-
-
         <meta http-equiv="Content-Type" content="text/html; charset=utf8" >
         <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0" >
 
@@ -31,9 +29,6 @@
 
         <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
-
-
-
         <style type="text/css" media="screen">
             #autorisationWindow {
                 position: fixed;
@@ -47,8 +42,8 @@
                 left: 50%;
             }
         </style>
-        <script type="text/javascript">
 
+        <script type="text/javascript">
             $(document).ready(function(e) {
                 //ловим нажатие на enter при фокусе на полях ввода
                 $("#autorisationWindow input").keypress(function(e){
