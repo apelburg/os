@@ -30,8 +30,6 @@ class Client extends aplStdAJAXMethod{
 	###          МЕТОДЫ           ###
 	#################################
 	/*
-
-
 		get_contact_info_arr($tbl,$type,$parent_id)
 		(имя константы с названием таблицы, фильтр по типу (если не указан выводит все),
 		id строки родителя из той таблицы по которой выполняется поиск)
@@ -241,7 +239,7 @@ class Client extends aplStdAJAXMethod{
 				return $row;
 			}
 		}
-		//return [];
+		return [];
 	}
 
 	/**
