@@ -123,6 +123,10 @@
 	define("CAB_PYMENT_PKO", "os__cab_PKO"); 												// таблица ПКО
 	define("CAB_TTN", "os__cab_TTN"); 														// товарно-транспортные накладные
 
+    # карта курьера
+    define('DOSTAVKA_BIG_ROW_TBL','karta_kurijera');
+    define('DOSTAVKA_SMALL_ROW_TBL','karta_kurijera_task');
+    define('DOSTAVKA_PARTNERS','karta_kurijera_partners_list');
 
 	// новая РТ
 	define("RT_LIST", "os__rt_list"); // таблица запросов	
@@ -156,11 +160,6 @@
 	
 	define("COM_PRED_LIST_OLD","os__com_pred_list_old"); // КП
 	define("LAST_COM_PRED_NUM","os__last_com_pred_num"); // последний номер КП
-
-    # карта курьера
-    define('DOSTAVKA_BIG_ROW_TBL','karta_kurijera');
-    define('DOSTAVKA_SMALL_ROW_TBL','karta_kurijera_task');
-    define('DOSTAVKA_PARTNERS','karta_kurijera_partners_list');
     
 	
 	$client_id = (isset($_GET['client_id']))? $_GET['client_id'] : false ;

@@ -7,17 +7,13 @@
 // ----------------------------------------------------------------------------
 (function($){
 	$.fn.shifty = function(o){
-		var o = $.extend({
-			className:'shifty-select',
+		var o = $.extend({			className:'shifty-select',
 			select:function(){},
 			unselect:function(){}
 		}, o);
-
 		elems = $(this);
 		last = null;
-
 		var className = o.className;
-
 		return $(this).each(function(){
         	var block = $(this);
           	$(document).keydown(function(e){
@@ -29,16 +25,13 @@
 		        		block.toggleClass(className);
 		        		last = elems.index(block);
 		        		o.unselect(elems);
-		        		o.select(elems.filter('.' + className));
-					});
+		        		o.select(elems.filter('.' + className));					});
 				}
 				if (e.shiftKey) {
 		        	block.click(function(){
 		        		first = elems.index(block);
-		        		if (first < last) {
-		        			elems.filter(':gt(' + (first - 1) + ')').addClass(className);
-		        			elems.filter(':lt(' + first + '),:gt(' + last + ')').removeClass(className);
-		        		}  else {
+		        		if (first < last) {		        			elems.filter(':gt(' + (first - 1) + ')').addClass(className);
+		        			elems.filter(':lt(' + first + '),:gt(' + last + ')').removeClass(className);		        		}  else {
 			        		elems.filter(':gt(' + last + ')').addClass(className);
 			        		elems.filter(':lt(' + last + '),:gt(' + first + ')').removeClass(className);
 		        		}
@@ -53,9 +46,7 @@
         	});
         	block.click(blockClick);
 		});
-
-		function blockClick(){
-			elems.removeClass(className);
+		function blockClick(){			elems.removeClass(className);
 		    $(this).addClass(className);
 		    o.unselect(elems);
 		    o.select($(this));
