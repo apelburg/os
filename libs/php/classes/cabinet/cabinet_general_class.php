@@ -71,11 +71,8 @@
 			global $ACCESS_SHABLON;
 			$this->ACCESS = $ACCESS_SHABLON[$this->user_access];
 			
-			// поиск по клиенту
-			// if(isset($_GET['search']) && trim($_GET['search'])!=''){
-			// 	$this->replace_search_query_on_client_id();
-			// }
-			
+
+
 			// обработчик AJAX через ключ AJAX
 			# если существует метод с названием из запроса AJAX - обращаемся к нему
 
@@ -113,7 +110,6 @@
 			switch ($this->user_access) {
 				case '1':					
 					$text = 'администратор <br>';
-					//echo $this->wrap_text_in_warning_message($text);
 					
 					include_once 'cabinet_admin_class.php';
 					// создаём экземпляр класса
@@ -125,84 +121,11 @@
 					
 					break;
 
-				case '2':				
-					$text = 'бухгалтер<br>';
-					//echo $this->wrap_text_in_warning_message($text);
-					include_once 'cabinet_buch_class.php';
-					// создаём экземпляр класса
-					$this->CLASS = new Cabinet_buch_class($this->user_access);//echo $this->wrap_text_in_warning_message($this->print_arr($_SESSION));
-					// запускаем роутер шаблонов
-					$this->CLASS->__subsection_router__();
-					// получаем из класса формулировки для меню
-					$this->menu_name_arr = $this->CLASS->menu_name_arr;
-					break;
-
-				case '4':					
-					$text = 'производство';// УСЛУГИ
-					//echo $this->wrap_text_in_warning_message($text);
-					
-					include_once 'cabinet_production_class.php';
-					// создаём экземпляр класса
-					$this->CLASS = new Cabinet_production_class($this->user_access);
-					// запускаем роутер шаблонов
-					$this->CLASS->__subsection_router__();
-					// получаем из класса формулировки для меню
-					$this->menu_name_arr = $this->CLASS->menu_name_arr;
-					break;
 				case '5':
 					$text = 'менеджер';
-					//echo $this->wrap_text_in_warning_message($text);
 					include_once 'cabinet_men_class.php';
 					// создаём экземпляр класса
 					$this->CLASS = new Cabinet_men_class($this->user_access);
-					// запускаем роутер шаблонов
-					$this->CLASS->__subsection_router__();
-					// получаем из класса формулировки для меню
-					$this->menu_name_arr = $this->CLASS->menu_name_arr;
-					break;
-
-				case '6':
-					$text = 'водитель';// УСЛУГИ
-					//echo $this->wrap_text_in_warning_message($text);
-					break;
-
-				case '7':
-					$text = 'склад';
-					//echo $this->wrap_text_in_warning_message($text);
-
-					//echo '';
-
-
-					include_once 'cabinet_sklad_class.php';
-					// создаём экземпляр класса
-					$this->CLASS = new Cabinet_sklad_class($this->user_access);
-					// запускаем роутер шаблонов
-					$this->CLASS->__subsection_router__();
-					// получаем из класса снабжения формулировки для меню, понятные для снаба
-					$this->menu_name_arr = $this->CLASS->menu_name_arr;
-
-
-					break;
-
-				case '8':
-					$text = 'снабжение';
-					//echo $this->wrap_text_in_warning_message($text);
-					include_once 'cabinet_snab_class.php';
-					// создаём экземпляр класса
-					$this->CLASS = new Cabinet_snab_class($this->user_access);
-					// запускаем роутер шаблонов
-					$this->CLASS->__subsection_router__();
-					// получаем из класса снабжения формулировки для меню, понятные для снаба
-					$this->menu_name_arr = $this->CLASS->menu_name_arr;
-					break;
-
-				case '9':
-					$text = 'дизайнер';// УСЛУГИ
-				//	echo $this->wrap_text_in_warning_message($text);
-
-					include_once 'cabinet_designers_class.php';
-					// создаём экземпляр класса
-					$this->CLASS = new Cabinet_designer_class($this->user_access);
 					// запускаем роутер шаблонов
 					$this->CLASS->__subsection_router__();
 					// получаем из класса формулировки для меню
@@ -215,41 +138,14 @@
 					break;
 			}
 
-			$this->CLASS->check_the_filtres(); // обсчитываем включённые фильтры
+			// включение фильтров
+			$this->CLASS->check_the_filtres();
 		}
 
-		############################################
-		###				AJAX START               ###
-		############################################
-			// private function _AJAX_($name){
-			// 	$method_AJAX = $name.'_AJAX';
 
-			// 	// если в этом классе существует такой метод - выполняем его и выходим
-			// 	if(method_exists($this, $method_AJAX)){
-			// 		$this->$method_AJAX();
-			// 		exit;
-			// 	}		
-			// }
-			
 			//////////////////////////
 			//	paperwork START
 			//////////////////////////
-				private function replace_search_query_on_client_id(){
-					global $mysqli;
-					$query="SELECT * FROM `".CLIENTS_TBL."`  WHERE `company` = '".$_GET['search']."'";
-					$result = $mysqli->query($query)or die($mysqli->error);
-					
-					if($result->num_rows > 0){
-						while($row = $result->fetch_assoc()){
-							unset($_GET['search']);
-							$_GET['client_id'] = $row['id'];
-						}
-					}
-					// exit;
-				}
-				
-				
-
 
 				protected function change_payment_date_AJAX(){
 					global $mysqli;
@@ -261,11 +157,6 @@
 					$query = "UPDATE  `".CAB_ORDER_ROWS."`  SET  `payment_status` =  '".$_POST['value']."' WHERE  `id` ='".$_POST['row_id']."';";
 					$result = $mysqli->query($query) or die($mysqli->error);
 				}
-				// private function change_invoce_num_AJAX(){
-				// 	global $mysqli;
-				// 	$query = "UPDATE  `".CAB_ORDER_ROWS."`  SET  `invoice_num` =  '".$_POST['value']."' WHERE  `id` ='".$_POST['row_id']."';";
-				// 	$result = $mysqli->query($query) or die($mysqli->error);
-				// }
 				protected function number_payment_list_AJAX(){
 					global $mysqli;
 					$query = "UPDATE  `".CAB_ORDER_ROWS."`  SET  `number_pyament_list` =  '".$_POST['value']."' WHERE  `id` ='".$_POST['row_id']."';";
@@ -291,10 +182,6 @@
 				
 			// получаем форму выбора кураторов для нового клиента
 			protected function get_choose_curators_form($managers_arr_all){
-				// получаем список менеджеров
-				// echo '<pre>';
-				// print_r($managers_arr);
-				// echo '</pre>';
 
 				foreach ($managers_arr_all as $key => $manager) {
 					if($manager['id'] != 24){
@@ -304,9 +191,6 @@
 				
 				$menegers_checked_arr = array();
 				$html = '';
-				// echo '<pre>';
-				// print_r($managers_arr);
-				// echo '</pre>';
 
 				$html .= '<form  id="chose_many_curators_tbl">';
 				
@@ -509,17 +393,6 @@
 
 			// выводит форму со списоком клиентов для прикрепления к запросу 
 			protected function get_a_list_of_clients_to_be_attached_to_the_request_AJAX(){
-				// if( !isset($_POST['client_name_search']) || strlen($_POST['client_name_search']) < 3 ){
-				// 	get_client_sherch_form();
-				// }
-
-				// if(isset($_GET['query_status']) && $_GET['query_status']!= ''){
-				// 	include_once ('cabinet_class.php');
-				// 	$cabinet = new Cabinet;
-				// 	$cabinet->command_for_change_status_query_AJAX();
-				// }
-
-
 				$html = $this->get_form_attach_the_client('attach_client_to_request');
 				//echo '{"response":"show_new_window","function":"scroll_width_checked_client","html":"'.base64_encode($html).'","title":"Выберите клиента",'.(($this->i>30)?'"height":"600",':'').'"width":"1000"}';
 				echo '{"response":"OK","html":"'.base64_encode($html).'"}';
@@ -588,9 +461,6 @@
 				    	}else{
 				    		$html .= "<td></td>";
 				    	}
-						// $html .= (isset($clients[]))?$clients[($col>0)?$td + $num_rows*$col+$col:$td + $num_rows*$col]['company']:'';
-						// $html .= ($col>0)?$td + $num_rows*$col+$col:$td + $num_rows*$col;
-						// $html .= '</td>';
 						$html .= ($col == $column)?'</tr>':'';
 					}
 				}
@@ -615,28 +485,28 @@
 
 
 			// перенаправляем запрос в client_class.php
-				protected function insert_new_client_AJAX(){
-					include_once ('./libs/php/classes/client_class.php');
-					new Client;
-					exit;
-				}
+			protected function insert_new_client_AJAX(){
+				include_once ('./libs/php/classes/client_class.php');
+				new Client;
+				exit;
+			}
 
-				protected function create_new_client_and_insert_curators_AJAX(){
-					include_once ('./libs/php/classes/client_class.php');
-					new Client;
-					exit;
-				}
-				protected function get_form_the_create_client_AJAX(){
-					include_once ('./libs/php/classes/client_class.php');
-					new Client;
-					exit;
-				}
+			protected function create_new_client_and_insert_curators_AJAX(){
+				include_once ('./libs/php/classes/client_class.php');
+				new Client;
+				exit;
+			}
+			protected function get_form_the_create_client_AJAX(){
+				include_once ('./libs/php/classes/client_class.php');
+				new Client;
+				exit;
+			}
 
-				protected function insert_new_client_for_new_qury_AJAX(){
-					include_once ('./libs/php/classes/client_class.php');
-					new Client;
-					exit;
-				}
+			protected function insert_new_client_for_new_qury_AJAX(){
+				include_once ('./libs/php/classes/client_class.php');
+				new Client;
+				exit;
+			}
 
 			/**
 			  *	получаем запрос по его id
@@ -645,18 +515,18 @@
 			  *	@version 	23:16 03.02.2016
 			  */
 			protected function get_query($id){
-				global $mysqli;
-				
-				$query = "SELECT * FROM `".RT_LIST."` WHERE `id` = '".(int)$id."';";
-				$Query = array();
-				// echo $query;
+				$this->db();
+
+                $query = "SELECT * FROM `".RT_LIST."` ";
+                $query .= " WHERE `id` = '".(int)$id."';";
+
 				$result = $mysqli->query($query) or die($mysqli->error);
 				if($result->num_rows > 0){
 					while($row = $result->fetch_assoc()){
-						$Query = $row;
+                        return $row;
 					}
 				}
-				return $Query;
+				return array();
 			}
 
 			// прикрепляет клиента к запросу
@@ -725,15 +595,6 @@
 							$result = $mysqli->query($query) or die($mysqli->error);	
 
 							
-							// if($this->user_access != 5){
-							// 	echo '{"response":"OK","function2":"change_attache_manager","function":"echo_message","message_type":"system_message","message":"'.base64_encode($message).'"}';
-							// }else{
-							// 	echo '{"response":"OK","function":"reload_order_tbl"}';
-							// }
-							// echo '{"response":"OK","function":"change_attache_manager","rt_list_id":"'.$_POST['rt_list_id'].'", "manager_id":"'.$managers_arr[0]['id'].'","manager_name":"'.$managers_arr[0]['name'].' '.$managers_arr[0]['last_name'].'"}';
-							
-							// $options['width'] = 1200;
-							// $this->responseClass->addSimpleWindow($query,"",$options);
 
 							$this->responseClass->addMessage($message,'system_message');
 							// $this->responseClass->addResponseFunction('change_attache_manager',array('rt_list_id'=>$_POST['rt_list_id'],'manager_id'=>$managers_arr[0]['id'],'name'=>$manager));
@@ -744,24 +605,6 @@
 							// если к клиенту присоединено несколько кураторов выполняем первый пункт по умолчанию, потом вызываем окно с выбором менеджера
 							
 							
-							/*
-								
-							***************************************************************
-							
-							временно отключаем прикрепление первого менеджера автоматически
-							
-							***************************************************************
-								global $mysqli;
-								// прикрепить клиента и менеджера к запросу	
-								$query ="UPDATE  `".RT_LIST."` SET  
-									`manager_id` =  '".(int)$managers_arr[0]['id']."',
-									`client_id` =  '".(int)$_POST['client_id']."', 
-									`time_attach_manager` = NOW(),
-									`status` = 'not_process'
-									WHERE `id` = '".(int)$_POST['rt_list_id']."';";	
-								$result = $mysqli->query($query) or die($mysqli->error);	
-							
-							*/
 
 							global $mysqli;
 							// прикрепить клиента 
@@ -801,18 +644,6 @@
 							$html .= '<input type="hidden" value="" name="client_id">';
 							$html .= '</div>';
 							
-							// записываем на странице пользователя в строку с установленным клиентом имя первого куратора из списка
-							// затем даём выбрать из иставшихся
-							
-							// echo '{"response":"show_new_window",
-							// 		"html":"'.base64_encode($html).'",
-							// 		"title":"Выберите куратора", 
-							// 		"function":"change_attache_manager",
-							// 		"rt_list_id":"'.$_POST['rt_list_id'].'", 
-							// 		"manager_id":"'.$managers_arr[0]['id'].'",
-							// 		"manager_name":"'.$managers_arr[0]['name'].' '.$managers_arr[0]['last_name'].'"
-							// 	}';
-
 
 							$this->responseClass->addPostWindow($html,'Выберите куратора',array('width' => '1000'));
 							
@@ -829,12 +660,7 @@
 
 					if(isset($_POST['row_id']) && (int)$_POST['row_id'] > 0){
 					$this->Query = $this->get_query((int)$_POST['row_id']);
-					// echo '<pre>';
-					// print_r($this->Query);
-					// echo '</pre>';
-					// echo '<pre>';
-					// print_r($_POST);
-					// echo '</pre>';
+
 					if(isset($_POST['query_status']) && $_POST['query_status']!= $this->Query['status']){
 						if((int)$_POST['client_id'] != $this->Query['client_id']){
 							include_once ('cabinet_class.php');
@@ -853,30 +679,6 @@
 				// exit;			
 			}
 
-			//пример обработки AJAX запроса
-			# выводит информацию из глобальных массивов и объекта текущего класса
-			protected function show_globals_arrays_AJAX(){
-				echo '<strong>POST:</strong>';
-				echo '<pre>';
-				print_r($_POST);
-				echo '</pre>';
-
-				echo '<strong>GET:</strong>';
-				echo '<pre>';
-				print_r($_POST);
-				echo '</pre>';
-
-				echo '<strong>SESSION:</strong>';
-				echo '<pre>';
-				print_r($_SESSION);
-				echo '</pre>';
-
-				echo '<strong>Object Class:</strong>';
-				echo '<pre>';
-				print_r($this);
-				echo '</pre>';
-				exit;
-			}
 
 			//////////////////////////
 			//	ORDERS start

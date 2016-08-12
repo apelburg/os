@@ -1206,29 +1206,6 @@ $(document).on('click', '.take_in_operation', function(event) {
 
 
 
-// взять в работу запрос
-
-$(document).on('click', '.get_in_work', function(event) {
-	event.preventDefault();
-	var obj = $(this);
-	if(Number($(this).parent().parent().find('.attach_the_client').attr('data-id')) == 0){
-		echo_message_js('Сначала необходимо прикрепить клиента.','error_message')
-	}else{
-		var row_id = $(this).parent().parent().attr('data-id');
-		$.post('', {
-			AJAX: 'get_in_work',
-			row_id:row_id
-		}, function(data, textStatus, xhr) {
-			standard_response_handler(data);
-			// if(data['response'] == 'OK'){
-			// // показываем что сменили статус и удаляем строку из дом модели
-			// 	obj.html('в работе').delay(3000).parent().parent().addClass('remove_this_row').next().addClass('remove_this_row').parent().parent().find('.remove_this_row').remove();
-				
-			// }
-		},'json');
-	}
-	return false;
-});
 
 
 
@@ -1249,9 +1226,7 @@ function replace_query_row_obj(obj){
 	// console.log('65654546');
 
 	var rowspan = obj.find('.show_hide').attr('rowspan');
-	// console.log(obj.find('.show_hide').attr('rowspan'));
-	// console.log(obj);
-	// console.log(rowspan);
+
 	$.post('', {
 		AJAX: 'replace_query_row',
 		os__rt_list_id: os__rt_list_id,

@@ -14,14 +14,11 @@
 		protected $filtres_position_variant = '';
 		// сортировка по вариантам позиций
 		protected $filtres_position_variant_sort = '';
+        // пагинация
+        protected $filtres_query_pagination = '';
 
 
-
-
-		// экземпляр класса продукции НЕ каталог (там нас интересуют кириллические названия статусов)
-		protected $POSITION_NO_CATALOG;
-
-		function __construct($id_row = 0,$user_access,$user_id){	
+		function __construct($id_row = 0,$user_access,$user_id){
 			include_once ('./libs/php/classes/rt_class.php');
 
 			include_once ('./libs/php/classes/comments_class.php');
@@ -30,8 +27,6 @@
 				$id_row = $_GET['query_num'];
 			}
 
-			// экземпляр класса продукции НЕ каталог
-			$this->POSITION_NO_CATALOG = new Position_no_catalog();
 
 
 			$this->user_id = $user_id;
@@ -41,19 +36,26 @@
 			// $method_template = $_GET['section'].'_Template';
 			// echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
 			// если в этом классе существует такой метод - выполняем его
-			if(method_exists($this, $method_template)){
-				// echo $this->$method_template;
-				$this->$method_template($id_row);				
-			}else{
-				// обработка ответа о неправильном адресе
-				echo 'фильтр '.$method_template.'() не найден';
-			}
+            if(method_exists($this, $method_template)){
+                $this->readPaginationParams();
+                // echo $this->$method_template;
+                $this->$method_template($id_row);
 
-			
-    	}
+            }else{
+                // обработка ответа о неправильном адресе
+                echo 'фильтр '.$method_template.'() не найден';
+            }
 
 
-    	
+        }
+
+
+        private function readPaginationParams(){
+            $this->filtres_query_pagination = " LIMIT 10";
+        }
+
+
+
 
     	
     	// Ожидают распределения (Админ)
@@ -232,9 +234,14 @@
 			if($this->filtres_query_sort != ''){
 				$query .= " ".$this->filtres_query_sort;
 			}
+
+			// пагинация
+            if ($this->filtres_query_pagination != ''){
+                $query .= " ".$this->filtres_query_pagination;
+            }
 			
 			$result = $mysqli->query($query) or die($mysqli->error);
-			// echo $query.'<br>';
+			 echo $query.'<br>';
 			$this->Query_arr = array();
 
 			$n = 0;
@@ -252,27 +259,8 @@
     	protected function get_button_status_for_request(){
     		// echo $this->user_access;
 			if($this->user_access == 5){
-				switch ($this->Query['status']) {
-					// case 'not_process':
+				$this->status_or_button = $this->statusQueryNameArrEn2Ru[$this->Query['status']];
 
-					// 	$this->status_or_button = '<div data-client_id="'.$this->Query['client_id'].'" data-manager_id="'.$this->Query['manager_id'].'" class="take_in_operation">Принять в обработку</div>';
-					// 	// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
-					// 	break;
-					// case 'taken_into_operation':
-					// 	$this->status_or_button = '<div class="get_in_work">Взять в работу</div>';
-					// 	// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],0);						
-					// 	break;
-
-					// case 'new_query':
-					// 	$this->status_or_button = '<div class="take_in_operation">Принять в обработку</div>';
-					// 	// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
-					// 	break;					
-
-					default:
-						$this->status_or_button = $this->statusQueryNameArrEn2Ru[$this->Query['status']];
-						// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
-						break;
-				}
 			}else {
 				$this->status_or_button = (isset($this->statusQueryNameArrEn2Ru[$this->Query['status']])?$this->statusQueryNameArrEn2Ru[$this->Query['status']]:'статус не предусмотрен!!!!'.$this->Query['status']);
 			}

@@ -500,7 +500,7 @@
 						   <td type="delta" class="delta right">'.$delta_format.'</td>
 						   <td type="margin" width="10" class="left" style="position:relative;">'.$currency.'<div style="right:3px;" class="summ_cell">'.$margin_format.$margin_currency.'</div></td>
 						   <td></td>
-						   <!-- <td raschet_status="1" style="position: relative;overflow:hidden;white-space: nowrap;"  tooltip="'.((isset($dop_row['status_snab']))?$Position_no_catalog->get_name_group($dop_row['status_snab']):'').'"><div style="position:absolute;" class="tooltips">&nbsp;'.((isset($dop_row['status_snab']))?$Position_no_catalog->get_name_group($dop_row['status_snab']):'').'<div></td>-->
+						   
 						   <td></td>
 						</tr>';
 			 // загружаем сформированный ряд в итоговый массив

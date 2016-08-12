@@ -33,9 +33,14 @@ class rtPositionUniversal extends Position_general_Class
 
 		// передававться через ключ AJAX
 		if(isset($_POST['AJAX'])){
-			$this->_AJAX_();
+			$this->_AJAX_($_POST['AJAX']);
 		}			
 	}
+
+    /**
+     * удаление услуги delete_services
+     * delete_usl_of_variant
+     */
 
 	protected function getFirstPositionImg_AJAX(){
 		$Images = new Images();
@@ -218,36 +223,7 @@ class rtPositionUniversal extends Position_general_Class
 			
 		}
 	}
-	/**
-	 *	для генерации отвта выделен класс responseClass()
-	 *
-	 *	метод имеет область видимости private 
-	 *  НО должен быть protected, для этого необходимо произвести рефакторинг всех 
-	 *  AJAX методов и преобразовать их ответы в соответствии с новыми правилами
-	 *
-	 *	@param name		method name width prefix _AJAX
-	 *	@return  		string
-	 *	@see 			{"respons","OK"}
-	 *	@author  		Алексей Капитонов
-	 *	@version 		12:16 17.12.2015
-	 */
-	protected function _AJAX_(){
-		$method_AJAX = $_POST['AJAX'].'_AJAX';
-		//echo $method_AJAX;exit;
-		
-		if(method_exists($this, $method_AJAX)){
-			// подключаем файл с набором стандартных утилит 
-			// AJAX, stdApl
-			include_once __DIR__.'/../../../../libs/php/classes/aplStdClass.php';
-			// создаем экземпляр обработчика
-			$this->responseClass = new responseClass();
-			// обращаемся непосредственно 
-			$this->$method_AJAX();				
-			// вывод ответа
-			echo $this->responseClass->getResponse();					
-			exit;
-		}					
-	}
+
 	//////////////////////////
 	//	AJAX
 	//////////////////////////
@@ -386,7 +362,7 @@ class rtPositionUniversal extends Position_general_Class
 		  *	@author  	Алексей Капитонов
 		  *	@version 	04:40 10.01.2016
 		  */
-		protected function change_status_row_AJAX(){
+    protected function change_status_row_AJAX(){
 			$id_in = $_POST['id_in'];
 			if(trim($id_in)!=''){
 				$color = $_POST['color'];
@@ -408,7 +384,7 @@ class rtPositionUniversal extends Position_general_Class
 		 *	@author  	Алексей Капитонов
 		 *	@version 	16:11 15.01.2016
 		 */
-		protected function dop_men_text_save_AJAX(){
+    protected function dop_men_text_save_AJAX(){
 			$query  = "UPDATE `".RT_DOP_DATA."` SET `dop_men_text` = '".$_POST['value']."' WHERE  `id` = '".$_POST['row_id']."';";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 			// $this->responseClass->addMessage($query);
@@ -419,7 +395,7 @@ class rtPositionUniversal extends Position_general_Class
 		 *  @author  	Alexey Kapitonov
 		 *	@version 	15:07 09.02.2016
 		 */
-		function get_window_service_other_name_AJAX(){
+    protected function get_window_service_other_name_AJAX(){
 			$html = '';
 			unset($_POST['AJAX']);
 			$html .= '<div id="js-edit-service-other-name">';
@@ -435,7 +411,7 @@ class rtPositionUniversal extends Position_general_Class
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	15:21 09.02.2016
 		 */
-		function save_service_other_name_AJAX(){
+    protected function save_service_other_name_AJAX(){
 			if(trim($_POST['new_other_name'])!= ""){
 				$query  = "UPDATE `".RT_DOP_USLUGI."` SET";
 				$query .= " `other_name` = '".addslashes(trim($_POST['new_other_name']))."'";
@@ -459,7 +435,7 @@ class rtPositionUniversal extends Position_general_Class
 		 *	@author  	Алексей Капитонов
 		 *	@version 	16:11 15.01.2016
 		 */
-		protected function get_dop_men_text_save_AJAX(){
+    protected function get_dop_men_text_save_AJAX(){
 			$html = '';
 			$query  = "SELECT * FROM `".RT_DOP_DATA."` WHERE  `id` = '".$_POST['row_id']."'";
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
@@ -478,7 +454,7 @@ class rtPositionUniversal extends Position_general_Class
 			$options['height'] = 290;
 			$this->responseClass->addSimpleWindow($html,'Примечания к варианту',$options);
 		}
-		private function save_image_open_close_AJAX(){
+    protected function save_image_open_close_AJAX(){
 			$query = "UPDATE `".RT_MAIN_ROWS."` SET";
 	        $query .= "`show_img` = '".$_POST['val']."'";
 	        $query .= "WHERE `id` = '".(int)$_POST['id_row']."'";
@@ -486,7 +462,7 @@ class rtPositionUniversal extends Position_general_Class
 			//echo '{"response":"OK"}';
 		}
 		// сохранение входящей цены за услугу
-		private function save_service_price_in_AJAX(){
+    protected function save_service_price_in_AJAX(){
 			$query = "UPDATE ".RT_DOP_USLUGI." SET ";
 			$query .= "`price_in`='".$_POST['price_in']."'"; 
 			$query .= "WHERE `id`='".$_POST['dop_uslugi_id']."';";
@@ -494,7 +470,7 @@ class rtPositionUniversal extends Position_general_Class
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 		// сохранение наценки / скидки
-		private function variant_save_discount_AJAX(){
+    protected function variant_save_discount_AJAX(){
 			$query = "UPDATE ".RT_DOP_DATA." SET ";
 			$query .= "`price_out`='".$_POST['price_out']."'"; 
 			$query .= ", `discount`='".$_POST['discount']."'"; 
@@ -503,7 +479,7 @@ class rtPositionUniversal extends Position_general_Class
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 		// сохранение исходящей цены за услугу
-		private function save_service_price_out_AJAX(){
+    protected function save_service_price_out_AJAX(){
 			$query = "UPDATE ".RT_DOP_USLUGI." SET ";
 			$query .= "`price_out`='".$_POST['price_out']."'"; 
 			$query .= "WHERE `id`='".$_POST['dop_uslugi_id']."';";
@@ -511,18 +487,16 @@ class rtPositionUniversal extends Position_general_Class
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
 		}
 		// сохранение входящей цены за товар
-		private function save_price_in_out_for_one_price_AJAX(){
+		protected function save_price_in_out_for_one_price_AJAX(){
 			$query = "UPDATE ".RT_DOP_DATA." SET ";
 			$query .= "`price_in`='".$_POST['price_in']."'"; 
-			// $query .= ", `price_out`='".$_POST['price_out']."' ";
 			$query .= "WHERE `id`='".$_POST['dop_data']."';";
 			
 			$result = $this->mysqli->query($query) or die($this->mysqli->error);
-			// echo '{"response":"OK"}';
-			// exit;
+
 		}
 		// изменение в размерной сетке
-		private function size_in_var_all_AJAX(){
+		protected function size_in_var_all_AJAX(){
 			
 			if (!isset($_POST['val']) ||
 				!isset($_POST['key']) ||
@@ -621,7 +595,7 @@ class rtPositionUniversal extends Position_general_Class
 		 *	@author  	Алексей Капитонов
 		 *	@version 	11:30 18.12.2015
 		 */
-		private function new_variant_AJAX(){
+		protected function new_variant_AJAX(){
 			$reference_id = (int)$_POST['id'];
 			// собираем запрос, копируем строку в БД
 			$query = "INSERT INTO `".RT_DOP_DATA."` 
@@ -988,14 +962,7 @@ class rtPositionUniversal extends Position_general_Class
 		$this->images =  new Images();
 		return $this->images->getImageHtml();
 	}
-	// покдключение к базе
-	// в дальнейшем подключим по уму
-	protected function db(){
-		if(!isset($this->mysqli)){
-			global $mysqli;
-			$this->mysqli = $mysqli;	
-		}		
-	}
+
 }
 /**
  *	класс расширение для добавления модуля изображений

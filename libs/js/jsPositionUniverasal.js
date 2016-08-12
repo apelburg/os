@@ -508,3 +508,220 @@ $(document).on('blur', '#edit_variants_content input', function(event) {
     }
   }
 });
+
+/**
+ * сохранение номера резерва
+ */
+$(document).on('keyup', '#rezerv_save', function(event) {
+  timing_save_input('saveReserveNumber',$(this));
+});
+
+function saveReserveNumber(obj){
+  var row_id = obj.attr('data-id');
+  new sendAjax('reserv_save',{
+    row_id:row_id,
+    value:obj.val()
+  },function(data){
+    if(data['response']=="OK"){
+      // php возвращает json в виде {"response":"OK"}
+      // если ответ OK - снимаем класс saved
+      obj.removeClass('saved');
+    }else{
+      console.log('Данные не были сохранены.');
+    }
+  })
+
+}
+
+function timing_save_input(fancName,obj){
+  //если сохраниться разрешено, т.е. уже 2 сек. запросы со страницы не отправлялись
+  if(!obj.hasClass('saved')){
+    window[fancName](obj);
+    obj.addClass('saved');
+  }else{// стоит запрет, проверяем очередь по сейву данной функции
+    if(obj.hasClass(fancName)){ //стоит в очереди на сохранение
+      // стоит очередь, значит мимо... всё и так сохранится
+    }else{
+      // не стоит в очереди, значит ставим
+      obj.addClass(fancName);
+      // вызываем эту же функцию через n времени всех очередей
+      var time = 20000;
+      $('.'+fancName).each(function(index, el) {
+        console.log($(this).html());
+
+        setTimeout(function(){timing_save_input(fancName,$('.'+fancName).eq(index));// обнуляем очередь
+          if(obj.hasClass(fancName)){obj.removeClass(fancName);}}, time);
+      });
+    }
+  }
+}
+
+/**
+ * редактирование темы запроса
+ */
+$(document).on('keyup', '#query_theme_block input', function(event) {
+  timing_save_input('save_query_theme',$(this));
+});
+function save_query_theme(obj){
+  var row_id = obj.attr('data-id');
+  $.post('', {
+    AJAX:'save_query_theme',
+    row_id:row_id,
+    value:obj.val()
+  }, function(data, textStatus, xhr) {
+    standard_response_handler(data);
+    if(data['response']=="OK"){
+      // php возвращает json в виде {"response":"OK"}
+      // если ответ OK - снимаем класс saved
+      obj.removeClass('saved');
+    }else{
+      console.log('Данные не были сохранены.');
+    }
+  },'json');
+}
+
+
+
+
+// ДОБАВЛЕНИЕ ИНФОРМАЦИИ В ТЗ ПО УСЛУГЕ
+$(document).on('click', '.tz_text_new', function(event) {
+  var id = 'incr'+Date.now();
+  var text = '<form><textarea name="tz" data-id="'+id+'" class="tz_taxtarea_edit">'+$(this).parent().find('.tz_text_shablon').html()+'</textarea>';
+  var ajax_name = '<input type="hidden" name="AJAX" value="save_tz_text">';
+  ajax_name += '<input type="hidden" name="increment_id" value="'+id+'">';
+  ajax_name += '<input type="hidden" name="rt_dop_uslugi_id" value="'+$(this).parent().parent().attr('data-dop_uslugi_id')+'"></form>';
+
+  $(this).attr('id',id);
+  // окно редактирования ТЗ
+  // show_dialog_and_send_POST_window2(text+ajax_name,'ТЗ');
+  show_dialog_and_send_POST_window(text+ajax_name,'ТЗ');
+});
+
+
+$(document).on('keyup', '.tz_taxtarea_edit', function(event) {
+  $('#'+$(this).attr('data-id')).parent().find('.tz_text').html($(this).val());
+});
+
+// РЕДАКТИРОВАНИЕ ИНФОРМАЦИИ В ТЗ ПО УСЛУГЕ
+$(document).on('click', '.tz_text_edit', function(event) {
+  var id = 'incr'+Date.now();
+  var text = '<form><textarea name="tz" data-id="'+id+'" class="tz_taxtarea_edit">'+$(this).parent().find('.tz_text').html()+'</textarea>';
+  var ajax_name = '<input type="hidden" name="AJAX" value="save_tz_text">';
+  ajax_name += '<input type="hidden" name="increment_id" value="'+id+'">';
+  ajax_name += '<input type="hidden" name="rt_dop_uslugi_id" value="'+$(this).parent().parent().attr('data-dop_uslugi_id')+'"></form>';
+
+  $(this).attr('id',id);
+  // окно редактирования ТЗ
+  show_dialog_and_send_POST_window(text+ajax_name,'ТЗ');
+});
+
+
+// SAVE DATA
+/*
+ атрибут data-save_enabled="" в теге table активной таблицы calkulate_table
+ сигнализирует о том можно ли приступать скрипту к сохранению
+ если нет, то скрипт проверяет теге table активной таблицы calkulate_table наличие атрибута
+ с названием data-*имя функции сохранения*, этот атрибут может быть только в ТРЁХ состаяниях:
+ 1. data-*имя функции сохранения*="true"
+ ФУНКЦИЯ СОХРАНЕНИЯ ПОСТАВЛЕНА В ОЧЕРЕДЬ
+ запрос на сохранение будет автоматически повтарен через 2 сек
+ 2. data-*имя функции сохранения*=""
+ можно приступать к сохранению, сохранения из этой функции на странице уже были
+
+ 3. data-*имя функции сохранения* - не существует
+ можно приступать к сохранению, сохранений из этой функции на странице еще не было
+ */
+
+function time_to_save(fancName,obj){
+  console.log(obj.attr('data-save_enabled'));
+  //если сохраниться разрешено, т.е. уже 2 сек. запросы со страницы не отправлялись
+  if(obj.attr('data-save_enabled')!="false"){
+    // обнуляем очередь
+    if(obj.hasClass(fancName)){obj.removeClass(fancName);}
+    // console.log(obj);
+
+    // console.log('re '+obj.find('.row_tirage_in_gen.price_in span').html());
+    console.log(fancName);
+    window[fancName](obj);
+
+    // пишем запрет на save
+    obj.attr('data-save_enabled','false');
+    // снимаем запрет на через n времени
+    var time = 2000;
+
+    setTimeout(function(){obj.attr("data-save_enabled","")}, time);
+  }else{// стоит запрет, проверяем очередь по сейву данной функции
+
+    if(obj.hasClass(fancName)){ //стоит в очереди на сохранение
+      // стоит очередь, значит мимо... всё и так сохранится
+    }else{
+      // не стоит в очереди, значит ставим
+      obj.addClass(fancName);
+
+      // вызываем эту же функцию через n времени всех очередей
+      var time = 2000;
+      $('.calkulate_table.'+fancName).each(function(index, el) {
+        console.log($(this).find('.row_tirage_in_gen.price_in span').html());
+
+        setTimeout(function(){time_to_save(fancName,$('.calkulate_table.'+fancName).eq(index));}, time);
+      });
+
+    }
+  }
+}
+
+
+
+
+
+function save_empty_tz_text_AJAX(data){
+  var id = $('#'+data.increment_id).parent().parent().attr('id');
+  $('#'+data.increment_id).attr('class','tz_text_new').removeAttr('id');
+  $('#'+id+' td:first-child .greyText').html(Base64.decode(data['html']));
+}
+function save_tz_text_AJAX(data) {
+  var id = $('#' + data.increment_id).parent().parent().attr('id');
+  $('#' + data.increment_id).attr('class', 'tz_text_edit').removeAttr('id');
+  $('#' + id + ' td:first-child .greyText').html(Base64.decode(data['html']));
+}
+
+// Удаление услуги
+$(document).on('click', '.del_row_variants', function(event) {
+  // подсчёт ИТОГО
+  if(confirm('Вы уверены, что хотите удалить услугу?')){
+    //если это последняя услуга в своём разделе, удаляем имя раздела
+    if($(this).parent().parent().next().find('th').length){
+      if($(this).parent().parent().prev().find('th').length){
+        $(this).parent().parent().prev().remove();
+      }
+    }
+
+    var service_id = Number($(this).parent().parent().attr('data-dop_uslugi_id'));
+    $(this).parent().parent().remove();
+
+    // отправка запроса на удаление услуги
+    new sendAjax('delete_services',{service_ids: [service_id]});
+    recalculate_table_price_Itogo();
+  }
+
+
+});
+
+
+
+//пересчитать прибыль для услуги
+function calc_usl_pribl(obj){// на вход подаётся строка услуги
+  var price_in = Number(obj.find('.row_tirage_in_gen.uslugi_class.price_in span').html());
+  var price_out = Number(obj.find('.row_price_out_gen.uslugi_class.price_out_men span').html());
+  obj.find('.row_pribl_out_gen.uslugi_class.pribl span').html(round_money(price_out - price_in));
+}
+
+//пересчитать % наценки для услуги
+function calc_usl_percent(obj){// на вход подаётся строка услуги
+  var price_in = Number(obj.find('.row_tirage_in_gen.uslugi_class.price_in span').html());
+  var price_out = Number(obj.find('.row_price_out_gen.uslugi_class.price_out_men span').html());
+  obj.find('.row_tirage_in_gen.uslugi_class.percent_usl span').html( round_percent(calculatePercentPart(price_out,price_in)) ) ;
+}
+function percent_calc(price_out,price_in){
+  return Math.ceil(((price_out-price_in)*100/price_in)*100)/100;
+}

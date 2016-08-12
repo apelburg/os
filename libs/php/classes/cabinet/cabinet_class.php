@@ -981,10 +981,6 @@
 		//   -----  END  -----     ДЕКОДЕРЫ СТАТУСОВ ПОДРАЗДЕЛЕНИЙ 	    -----  END  -----
 		///////////////////////////////////////////////////////////////////////////////////
 
-
-		/////////////////////////////////////////////////////////////////////////////////////
-		//	-----  START  -----  Вывод данных  -----  START  -----
-		/////////////////////////////////////////////////////////////////////////////////////
 			
 			// роутер по запросам
 			protected function requests_Template($id_row=0){
@@ -992,28 +988,7 @@
 				new Requests($id_row,$this->user_access,$this->user_id);					
 			}
 
-			// роутер по предзаказу
-			protected function paperwork_Template($id_row=0){
-				include_once './libs/php/classes/cabinet/cabinet_paperwork_class.php';
-				new Paperwork($id_row,$this->user_access,$this->user_id);				
-			}
 
-			// роутер по заказу
-			protected function orders_Template($id_row=0){
-				include_once './libs/php/classes/cabinet/cabinet_order_class.php';
-				new Order($id_row,$this->user_access,$this->user_id);
-			}
-
-			// роутер по заказу
-			protected function for_shipping_Template($id_row=0){
-				include_once './libs/php/classes/cabinet/cabinet_order_shipping_class.php';
-				new Order_shipping($id_row,$this->user_access,$this->user_id);
-			}
-			// роутер по отгруженным
-			protected function already_shipped_Template($id_row=0){
-				include_once './libs/php/classes/cabinet/cabinet_order_fully_shipped_class.php';
-				new Order_fully_shipped($id_row,$this->user_access,$this->user_id);
-			}
 
 			
 			// ссылка на фильтр по номеру заказа
@@ -1052,107 +1027,6 @@
 			}
 			
 
-
-		//////////////////////////////////////////////////////////////////////////////////
-		//   -----  END  -----  Вывод данных  -----  END  -----
-		///////////////////////////////////////////////////////////////////////////////////
-
-
-
-		
-
-		/////////////////////////////////////////////////////////////
-		//	-----  START  -----  МЕТОДЫ AJAX  -----  START  -----  //
-		/////////////////////////////////////////////////////////////
-			########   вызов AJAX   ########
-			// protected function _AJAX_($name){
-			// 	$method_AJAX = $name.'_AJAX';
-			// 	// если в этом классе существует искомый метод для AJAX - выполняем его и выходим
-			// 	if(method_exists($this, $method_AJAX)){
-			// 		$this->$method_AJAX();
-			// 		exit;
-			// 	}					
-			// }
-
-			//buh_uchet
-
-
-			// создать строку пустого счёта
-			// protected function create_a_new_bill(){
-			// 	global $mysqli;
-			// 	$time = time();
-			// 	$date_for_base = date("Y-m-d",$time);
-			// 	$date_for_html = date("d.m.Y",$time);
-
-
-			// 	$query ="UPDATE `".CAB_BILL_AND_SPEC_TBL."` SET 
-			// 		`type_the_bill` = '".$_POST['type_the_bill']."',
-			// 		`date_order_the_bill` = '".$date_for_base."'";// дата заказа счёта
-			// 		if(isset($_POST['comment_text'])){
-			// 			$query .= ",`comments` = '".$_POST['comment_text']."'";
-			// 		}
-
-			// 		$query .= " WHERE `id` = '".$_POST['order_id']."'";
-
-			// 	$result = $mysqli->query($query) or die($mysqli->error);
-			// 	// запоминаем новый id
-			
-			// 	return $html;
-			// }
-
-			// // получаем комментарии к счёту
-			// protected function get_the_comment_width_the_bill_AJAX(){
-			// 	global $mysqli;
-			// 	// типы счетов которые мы можем запросить
-		 //    	/*
-		 //    		$type_the_bill =array(
-		 //    		'the_bill' => 'счёт',
-		 //    		'the_bill_offer' => 'счёт - оферта',
-		 //    		'the_bill_for_simples' => 'счёт на образцы',
-		 //    		'prihodnik' => 'приходник',
-		 //    		);
-		 //    	*/
-
-			// 	$query = "SELECT *
-			// 	 FROM `".CAB_BILL_TBL."` WHERE `id` = '".$_POST['row_id']."'";
-			// 	// echo $query;
-			// 	$result = $mysqli->query($query) or die($mysqli->error);
-			// 	$the_bill = array();				
-			// 	if($result->num_rows > 0){
-			// 		while($row = $result->fetch_assoc()){
-			// 			$the_bill = $row;
-			// 		}
-			// 	}				
-
-			// 	$html = '';
-			// 		$html .= '<form>';
-			// 		//////////////////////////////
-			// 		//	форма комментария для БУХ
-			// 		//////////////////////////////
-			// 		$html .= '<input type="hidden" value="save_the_comment_for_the_bill" name="AJAX">';
-			// 		$html .= '<input type="hidden" value="'.(int)$_POST['row_id'].'" name="row_id">';
-			// 		$html .= '<div class="comment table">';
-			// 			$html .= '<div class="row">';
-			// 				$html .= '<div class="cell comment_text">';
-			// 					// исключение для only read
-			// 					if(isset($_POST['onlyread']) && $_POST['onlyread'] ==  1){
-			// 						$html .= '<strong>Комментарий к счёту:</strong><br><br>';
-			// 						$html .= '<div class="onlyread">';
-			// 						$html .= $the_bill['comments'];
-			// 						$html .= '</div>';
-			// 					}else{
-			// 						$html .= '<textarea name="comment_text">'.$the_bill['comments'].'</textarea>';
-			// 					}									
-			// 				$html .= '</div>';
-			// 			$html .= '</div>';
-			// 		$html .= '</div>';
-			// 		$html .= '</form>';
-			// 		// исключение для only read
-			// 		if(isset($_POST['onlyread']) && $_POST['onlyread'] ==  1){
-			// 			echo '{"response":"show_new_window_simple", "html":"'.base64_encode($html).'","title":"Комментарии для Бухгалтерии:","width":"600"}';
-			// 		}else{
-			// 			echo '{"response":"show_new_window", "html":"'.base64_encode($html).'","title":"Комментарии для Бухгалтерии:","width":"600"}';
-			// 		}
 					
 
 			// 	//comments
@@ -6234,11 +6108,7 @@
 				echo $json;
 				exit;
 			}
-		}	
-
-
-
-
+		}
 		
 		// фильтрация позиций ЗАПРОСОВ по горизонтальному меню
 		protected function requests_Template_recuestas_main_rows_Database($id){
@@ -6946,6 +6816,7 @@
 
 			// возвращает ссылку на договор по строке заказа
 			protected function get_agreement_link($Specification,$client_id,$create_time){
+                $html = '';
 				// если нет информации по договору
 				if($Specification['doc_id'] == 0 ){$html .= 'договор не указан'; return $html;}
 

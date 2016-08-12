@@ -74,136 +74,123 @@
 			'order_in_work' => 'В обработке',
 			'production' => 'Производство',
 			'stock_all' => 'Склад'								
-		); 
+		);
 
-		// protected $user_id;
-		// protected $user_access;
-
-		// название подраздела кабинета
-		// private $sub_subsection;
-
-		protected $user_id;
-		protected $user_access;
+	protected $user_id;
+	protected $user_access;
 
 
-		// содержит экземпляр класса кабинета вер. 1.0
-		// private $CABINET;
 
-		
+	function __construct($user_access = 0){ // необязательный параметр доступа... не передан - нет доступа =))
 
-		function __construct($user_access = 0){ // необязательный параметр доступа... не передан - нет доступа =)) 
+		$this->user_id = $_SESSION['access']['user_id'];
+		$this->user_access = $user_access;
 
-			$this->user_id = $_SESSION['access']['user_id'];
-			$this->user_access = $user_access;
+		## данные POST
+		if(isset($_POST['AJAX'])){
+			$this->_AJAX_($_POST['AJAX']);
+		}
 
-			## данные POST
-			if(isset($_POST['AJAX'])){
-				$this->_AJAX_($_POST['AJAX']);
-			}
+		## данные GET --- НА ВРЕМЯ ОТЛАДКИ !!!
+		if(isset($_GET['AJAX'])){
+			$this->_AJAX_($_GET['AJAX']);
+		}
 
-			## данные GET --- НА ВРЕМЯ ОТЛАДКИ !!!
-			if(isset($_GET['AJAX'])){
-				$this->_AJAX_($_GET['AJAX']);
-			}
-			
-			}
-
-
-		// стадратный метод для вывода шаблона
-		public function __subsection_router__(){
-			$method_template = $_GET['section'].'_Template';
-			// $method_template = $_GET['section'].'_Template';
-			//echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
-
-			// если в этом классе существует такой метод - выполняем его
-			if(method_exists($this, $method_template)){
-				$this->$method_template();				
-			}else{
-				header( 'Location: http://'.$_SERVER['HTTP_HOST'].'/'.get_worked_link_href_for_cabinet());
-				// exit;
-				// // обработка ответа о неправильном адресе
-				// $this->response_to_the_wrong_address($method_template);	
-			}
 		}
 
 
-    	// получаем массив пользователей с правами 5 и 1
-		protected function get_manager_list($access_arr = array(0 => 5)){
-			$n = 0;
-			$access_str = '';
-			foreach ($access_arr as $key => $value) {
-				$access_str .= (($n>0)?',':'')."'".$value."'";
-				$n++;
-			}
+	// стадратный метод для вывода шаблона
+	public function __subsection_router__(){
+		$method_template = $_GET['section'].'_Template';
+		// $method_template = $_GET['section'].'_Template';
+		//echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
 
-			global $mysqli;
-			$query = "SELECT * FROM  `".MANAGERS_TBL."` WHERE `access` IN (".$access_str.") ORDER BY `last_name` ASC;";
-			// echo $query;
-			$result = $mysqli->query($query) or die($mysqli->error);
-			$manager_names = array();			
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$manager_names[] = $row; 
+		// если в этом классе существует такой метод - выполняем его
+		if(method_exists($this, $method_template)){
+			$this->$method_template();
+		}else{
+			header( 'Location: http://'.$_SERVER['HTTP_HOST'].'/'.get_worked_link_href_for_cabinet());
+			// exit;
+			// // обработка ответа о неправильном адресе
+			// $this->response_to_the_wrong_address($method_template);
+		}
+	}
+
+
+    // получаем массив пользователей с правами 5 и 1
+	protected function get_manager_list($access_arr = array(0 => 5)){
+		$n = 0;
+		$access_str = '';
+		foreach ($access_arr as $key => $value) {
+			$access_str .= (($n>0)?',':'')."'".$value."'";
+			$n++;
+		}
+
+		global $mysqli;
+		$query = "SELECT * FROM  `".MANAGERS_TBL."` WHERE `access` IN (".$access_str.") ORDER BY `last_name` ASC;";
+		// echo $query;
+		$result = $mysqli->query($query) or die($mysqli->error);
+		$manager_names = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$manager_names[] = $row;
+			}
+		}
+		return $manager_names;
+
+	}
+
+		
+
+    // получаем форму выбора кураторов
+	protected function get_choose_curators_edit(){
+		// получаем список менеджеров
+		$managers_arr = $this->get_manager_list(array(1, 5, 4));
+
+		$managers_Json_arr  = explode(',', $_POST['managers_id_str']);
+		$Json = '{';
+		$n = 0;
+		foreach ($managers_Json_arr as $value) {
+			$Json .= (($n++>0)?',':'').'"'.$value.'":"'.$value.'"';
+
+		}
+		$Json .= '}';
+
+		$html = '';
+		$html .= '<form  id="chose_many_curators_tbl">';
+		$html .=' <div id="json_manager_arr">'.$Json.'</div>';
+		$html .=' <input type="hidden" name="Json_meneger_arr" value=\''.$Json.'\' id="json_manager_arr_val">';
+				$html .='<table>';
+
+				$count = count($managers_arr);
+				for ($i=0; $i <= $count; $i) {
+					$html .= '<tr>';
+				    for ($j=1; $j<=3; $j++) {
+				    	if(isset($managers_arr[$i])){
+					    	$checked = (in_array($managers_arr[$i]['id'], $managers_Json_arr))?'class="checked"':'';
+					    	$name = ((trim($managers_arr[$i]['name']) == '' && trim($managers_arr[$i]['last_name']) == '')?$managers_arr[$i]['nickname']:$managers_arr[$i]['name'].' '.$managers_arr[$i]['last_name']);
+					    	$html .= '<td '.$checked.' date-lll="'.$i.'" d="'.$managers_arr[$i]['id'].'_'.in_array($managers_arr[$i]['id'], $managers_Json_arr).'" data-id="'.$managers_arr[$i]['id'].'">'.$name."</td>";
+				    	}else{
+				    		$html .= '<td  date-lll="'.$i.'"></td>';
+				    	}
+				    	$i++;
+				    }
+				    $html .= '</tr>';
 				}
-			}
-			return $manager_names;
 
+				$html .= '</table>';
+
+		$html .= '<input type="hidden" name="AJAX" value="create_new_client_and_insert_curators">';
+
+		unset($_POST['AJAX']);
+		foreach ($_POST as $key => $value) {
+			$html .= '<input type="hidden" name="'.$key.'" value="'.$value.'">';
 		}
 
-		
+		$html .= '</form>';
 
-    	// получаем форму выбора кураторов
-		protected function get_choose_curators_edit(){
-			// получаем список менеджеров
-			$managers_arr = $this->get_manager_list(array(1, 5, 4));
-
-			$managers_Json_arr  = explode(',', $_POST['managers_id_str']);
-			$Json = '{';
-			$n = 0;
-			foreach ($managers_Json_arr as $value) {
-				$Json .= (($n++>0)?',':'').'"'.$value.'":"'.$value.'"';
-
-			}
-			$Json .= '}';
-
-			$html = '';
-			$html .= '<form  id="chose_many_curators_tbl">';
-			$html .=' <div id="json_manager_arr">'.$Json.'</div>';
-			$html .=' <input type="hidden" name="Json_meneger_arr" value=\''.$Json.'\' id="json_manager_arr_val">';
-					$html .='<table>';
-
-					$count = count($managers_arr);
-					for ($i=0; $i <= $count; $i) {
-						$html .= '<tr>';
-					    for ($j=1; $j<=3; $j++) {
-					    	if(isset($managers_arr[$i])){
-						    	$checked = (in_array($managers_arr[$i]['id'], $managers_Json_arr))?'class="checked"':'';
-						    	$name = ((trim($managers_arr[$i]['name']) == '' && trim($managers_arr[$i]['last_name']) == '')?$managers_arr[$i]['nickname']:$managers_arr[$i]['name'].' '.$managers_arr[$i]['last_name']);
-						    	$html .= '<td '.$checked.' date-lll="'.$i.'" d="'.$managers_arr[$i]['id'].'_'.in_array($managers_arr[$i]['id'], $managers_Json_arr).'" data-id="'.$managers_arr[$i]['id'].'">'.$name."</td>";
-					    	}else{
-					    		$html .= '<td  date-lll="'.$i.'"></td>';
-					    	}	
-					    	$i++;		    	
-					    }				    
-					    $html .= '</tr>';
-					}
-
-					$html .= '</table>';
-
-			$html .= '<input type="hidden" name="AJAX" value="create_new_client_and_insert_curators">';
-
-			unset($_POST['AJAX']);
-			foreach ($_POST as $key => $value) {
-				$html .= '<input type="hidden" name="'.$key.'" value="'.$value.'">';
-			}
-
-			$html .= '</form>';
-
-			return $html;
-		}
-
-
-		function __destruct(){}
+		return $html;
+	}
 }
 
 
