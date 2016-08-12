@@ -329,16 +329,15 @@ class rtPositionUniversal extends Position_general_Class
 
 				$i = 0;
 				foreach ($this->position['variants'] as $key => $variant) {
-                    $json = json_decode($variant['no_cat_json'], true);
+					$json = json_decode($variant['no_cat_json'],true);
 
-                    $this->position['variants'][$key]['json_encode'] = json_decode($variant['no_cat_json'], true);
+					$this->position['variants'][$key]['json_encode'] = json_decode($variant['no_cat_json'],true);
 
+					if($json['naimenovanie'] != $this->jsonArr['naimenovanie'] || isset($json['product_dop_text']) && $json['product_dop_text'] != $this->jsonArr['product_dop_text']){
+						if($_POST['row_id'] != $variant['id']){
 
-                    if ($json['naimenovanie'] != $this->jsonArr['naimenovanie'] || isset($json['product_dop_text']) && $json['product_dop_text'] != $this->jsonArr['product_dop_text']) {
-                        if ($_POST['row_id'] != $variant['id']) {
-
-                            $json['naimenovanie'] = $this->jsonArr['naimenovanie'];
-                            $json['product_dop_text'] = $this->jsonArr['product_dop_text'];
+							$json['naimenovanie']       = $this->jsonArr['naimenovanie'];
+                            $json['product_dop_text']   = $this->jsonArr['product_dop_text'];
 
                             $this->position['variants'][$key]['json_new'] = json_encode($json, JSON_UNESCAPED_UNICODE);
 
@@ -372,14 +371,8 @@ class rtPositionUniversal extends Position_general_Class
 
 
 			}
-
-			
-
-			
-				
-			// if($this->user_id != 42){
-				$option['timeout'] = '1000';
-				$this->responseClass->addResponseFunction('window_reload',$option);
+			$option['timeout'] = '1000';
+			$this->responseClass->addResponseFunction('window_reload',$option);
 			// }
 
 			$this->responseClass->addMessage('Характеристики изделия успешно сохранены','successful_message');	
@@ -442,26 +435,24 @@ class rtPositionUniversal extends Position_general_Class
 		 *	@author  	Alexey Kapitonov
 		 *	@version 	15:21 09.02.2016
 		 */
-		function save_service_other_name_AJAX()
-        {
-            if (trim($_POST['new_other_name']) != "") {
-                $query = "UPDATE `" . RT_DOP_USLUGI . "` SET";
-                $query .= " `other_name` = '" . addslashes(trim($_POST['new_other_name'])) . "'";
-                $query .= " WHERE  `id` = '" . (int)$_POST['id_row'] . "'";
-
-                $result = $this->mysqli->query($query) or die($this->mysqli->error);
-
-                $message = "Новое имя услуги сохранено";
-                $this->responseClass->addMessage($message, 'successful_message');
-
-                // вставка имени на стороне клиента
-                $option['tr_id'] = $_POST['tr_id'];
-                $option['html'] = $_POST['new_other_name'];
-                $this->responseClass->addResponseFunction('change_service_name_in_html', $option);
-
-            }
-        }
-
+		function save_service_other_name_AJAX(){
+			if(trim($_POST['new_other_name'])!= ""){
+				$query  = "UPDATE `".RT_DOP_USLUGI."` SET";
+				$query .= " `other_name` = '".addslashes(trim($_POST['new_other_name']))."'";
+				$query .= " WHERE  `id` = '".(int)$_POST['id_row']."'";
+					
+				$result = $this->mysqli->query($query) or die($this->mysqli->error);	
+				
+				$message = "Новое имя услуги сохранено";
+				$this->responseClass->addMessage($message,'successful_message');	
+				
+				// вставка имени на стороне клиента
+				$option['tr_id'] = $_POST['tr_id'];
+				$option['html'] = $_POST['new_other_name'];
+				$this->responseClass->addResponseFunction('change_service_name_in_html', $option);
+				
+			}
+		}
 		/**
 		 *	получаем окно примечания к вариантам
 		 *

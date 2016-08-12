@@ -150,6 +150,7 @@
 
 		}
 
+		
 
     	// получаем форму выбора кураторов
 		protected function get_choose_curators_edit(){

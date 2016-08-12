@@ -4,7 +4,7 @@
 	 *  The each methods, whose name ends on _AJAX - represent a methos whose work whith ajax query 
 	 *
 	 *	INPORTANT!!!
-	 *	1) In services groups by id:
+	 *	1) In services grops by id:
 	 *	- id in column by name united_calculations to must be saved in ascending order
      *
 	 *	@author  	Alexey Kapitonov
