@@ -1,15 +1,15 @@
 <?php
-	
+
 	if(isset($_GET['set_user_id'])){ 
 		if(!isset($_SESSION['access']['come_back_in_own_profile'])) $_SESSION['access']['come_back_in_own_profile'] = $_SESSION['access']['user_id']; 
 		$_SESSION['access']['user_id'] = $_GET['set_user_id'];
-		header ('Location:?'.addOrReplaceGetOnURL('','set_user_id'));
+			header ('Location:?'.addOrReplaceGetOnURL('','set_user_id'));
 		exit;
 	}
 	if(isset($_GET['come_back_in_own_profile'])){ 
 		if (isset($_SESSION['access']['come_back_in_own_profile']) && $_SESSION['access']['come_back_in_own_profile'] != '') {
-			$_SESSION['access']['user_id'] = $_SESSION['access']['come_back_in_own_profile']; 
-			unset($_SESSION['access']['come_back_in_own_profile']);
+		$_SESSION['access']['user_id'] = $_SESSION['access']['come_back_in_own_profile'];
+		unset($_SESSION['access']['come_back_in_own_profile']);
 			header ('Location:?'.addOrReplaceGetOnURL('','come_back_in_own_profile'));
 		}
 		

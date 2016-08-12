@@ -160,8 +160,7 @@
 	
 	define("COM_PRED_LIST_OLD","os__com_pred_list_old"); // КП
 	define("LAST_COM_PRED_NUM","os__last_com_pred_num"); // последний номер КП
-
-
+    
 	
 	$client_id = (isset($_GET['client_id']))? $_GET['client_id'] : false ;
 	
