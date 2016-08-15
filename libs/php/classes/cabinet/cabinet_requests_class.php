@@ -14,8 +14,7 @@
 		protected $filtres_position_variant = '';
 		// сортировка по вариантам позиций
 		protected $filtres_position_variant_sort = '';
-        // пагинация
-        protected $filtres_query_pagination = '';
+
 
 
 		function __construct($id_row = 0,$user_access,$user_id){
@@ -37,7 +36,7 @@
 			// echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
 			// если в этом классе существует такой метод - выполняем его
             if(method_exists($this, $method_template)){
-                $this->readPaginationParams();
+
                 // echo $this->$method_template;
                 $this->$method_template($id_row);
 
@@ -50,9 +49,7 @@
         }
 
 
-        private function readPaginationParams(){
-            $this->filtres_query_pagination = " LIMIT 10";
-        }
+
 
 
 
@@ -195,53 +192,75 @@
 				SEC_TO_TIME(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(`os__rt_list`.`time_attach_manager`)) AS `time_attach_manager`,
 				DATE_FORMAT(`".RT_LIST."`.`create_time`,'%d.%m.%Y %H:%i')  AS `create_time`
 				FROM `".RT_LIST."`";
+
+            // запрос общего количества записей для расчёта пагинации
+            $queryCount = "SELECT count(*) as `count` FROM ".RT_LIST;
+
 				
 			if((int)$id_row > 0){
-				$query .= " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`query_num` = '".$id_row."'";
-				$where = 1;
+				$queryFilter = " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`query_num` = '".$id_row."'";
+                $where = 1;
+
+                $query .= $queryFilter;
+                $queryCount .= $queryFilter;
+
 			}else{				
 				// фильтрация по клиенту
 				if(isset($_GET['client_id'])){
-					$query .= " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`client_id` = '".$_GET['client_id']."'";
+                    $queryFilter = " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`client_id` = '".$_GET['client_id']."'";
 					$where = 1;
+
+                    $query .= $queryFilter;
+                    $queryCount .= $queryFilter;
 				}
 				// для менеджера 
 				if($this->user_access == 5){
 					if($_GET['subsection'] == "no_worcked_men"){
-						$query .= " ".(($where)?'AND':'WHERE')." 
+                        $queryFilter = " ".(($where)?'AND':'WHERE')." 
 						(`".RT_LIST."`.`manager_id` = '".$this->user_id."' 
 						 OR (`".RT_LIST."`.`manager_id` = '0' AND `".RT_LIST."`.`dop_managers_id` LIKE '%$this->user_id%') )";
-						
-
 						$where = 1;
+
+
+
+                        $query .= $queryFilter;
+                        $queryCount .= $queryFilter;
 					}else if(!isset($_GET['client_id'])){
 						// при фильтрации по клиенту показываем все запросы по данному клиенту
 						// при желании тут же можно будет ограничить доступ для не кураторов
-						$query .= " ".(($where)?'AND':'WHERE')." 
+                        $queryFilter = " ".(($where)?'AND':'WHERE')." 
 						`".RT_LIST."`.`manager_id` = '".$this->user_id."' 
 						";
-						$where = 1;
+                        $where = 1;
+
+                        $query .= $queryFilter;
+                        $queryCount .= $queryFilter;
 					}
 				}
 			}
 
 			// фильтрация по запросу
 			if($this->filtres_query != ''){
-				$query .= " ".(($where)?'AND':'WHERE')." ".$this->filtres_query;
+                $queryFilter = " ".(($where)?'AND':'WHERE')." ".$this->filtres_query;
 				$where = 1;
+
+                $query .= $queryFilter;
+                $queryCount .= $queryFilter;
 			}
 			// сортировка по запросу
 			if($this->filtres_query_sort != ''){
 				$query .= " ".$this->filtres_query_sort;
 			}
 
-			// пагинация
-            if ($this->filtres_query_pagination != ''){
-                $query .= " ".$this->filtres_query_pagination;
-            }
-			
+//            echo $queryCount.'<br>';
+//            exit;
+			// модуль пагинация
+            $this->Pagination = Pagination::getInstance( $queryCount );
+            // добавляем параметры к запросу
+            $query .= " ".$this->Pagination->getPaginationQueryString();
+
 			$result = $mysqli->query($query) or die($mysqli->error);
-			 echo $query.'<br>';
+
 			$this->Query_arr = array();
 
 			$n = 0;
@@ -404,6 +423,9 @@
 					$this->query_num = $this->Query['query_num'];		
 			}			
 			echo $this->get_footer_tbl();
+
+            # добавляенм блок пагинации
+            echo $this->Pagination->getPaginationLinks();
 		}
 
 		// шаблон строки строки запроса
@@ -562,7 +584,11 @@
 					$html .= '<th>Сумма</th>';
 					$html .= '<th>Статус</th>';
 				$html .= '</tr>';
-			return $html;
+
+
+
+
+            return $html;
 		}
 
 		// возвращает закрывающий тег главной таблицы

@@ -144,15 +144,17 @@
 
     galleryWindow.prototype.initUploadify = function() {
       var self;
+      console.log('initUpl');
       self = this;
       this.contentDiv.append($('<div/>', {
         id: 'galleryWindowQueue'
       }));
-      return $('#' + this.data.token).uploadify({
+      console.log('http://' + window.location.hostname + '/libs/php/uploadify.swf');
+      return $('#' + self.data.token).uploadify({
         'formData': {
           'AJAX': 'add_new_files_in_kp_gallery',
           'timestamp': this.data.timestamp,
-          'token': this.data.token,
+          'token': self.data.token,
           'section': $.urlVar('section'),
           'id': this.data.id,
           'folder_name': this.data.folder_name
