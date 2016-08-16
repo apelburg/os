@@ -3,6 +3,12 @@
 /**
  * Class Pagination
  *
+ * отвечает за вывод пагинации в кабинете
+ * для использования используется 2 публичных метода:
+ * getInstance                  - возвращает экземпляр класса, если его ещё нет
+ * getPaginationQueryString     -
+ *
+ *
  * @author  Alexey Kapitonov
  * @version 15.08.16 11:30
  */
@@ -111,11 +117,17 @@ class Pagination{
      */
     public function setNumberOfRows($queryForCount)
     {
+        if ($queryForCount == ''){
+            return;
+        }
 
         $numberOfRows = 0;
-
         $this->db();
-        $result = $this->mysqli->query($queryForCount) or die($this->mysqli->error);
+        $result = $this->mysqli->query($queryForCount);
+
+        if(!$result){
+            return;
+        }
 
         if($result->num_rows > 0){
             while($row = $result->fetch_assoc()) {
@@ -169,8 +181,6 @@ class Pagination{
 
         # подсчитываем количество страниц
         $this->setNumberOfPages( $this->calcNumberOfPages() );
-
-
     }
 
     /**
