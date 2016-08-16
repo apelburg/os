@@ -9,7 +9,7 @@
 class Client extends aplStdAJAXMethod{
 
     // для входа в режим отладки раскоментировать строку или установить в значение FALSE
-//    protected $production = false;
+    protected $production = false;
 
 	/**
 	 * типы контактных данных
@@ -241,7 +241,7 @@ class Client extends aplStdAJAXMethod{
 				return $row;
 			}
 		}
-		//return [];
+		return [];
 	}
 
 	/**
@@ -836,81 +836,90 @@ class Client extends aplStdAJAXMethod{
 			exit;
 		}
 
-		protected function client_delete_AJAX() {
-			$outer = Client::delete_for_manager($_POST['id'], $this->user_id);
-			if ($outer == '1') {
-				$client_id = $_GET['client_id'];
+    /**
+     *  обработка запроса на отказ менеджера от клиента
+     */
+    protected function client_delete_AJAX() {
+        $this->prod__message('Вы временно не можете отказаться от клиента, но мы уже работаем над этим =)');
+        $this->prod__window($this->print_arr($_POST));
+        return;
 
-				$Client = $this->get_client_informationDatabase($client_id);
+        # запрос на открепление менеджера от клиента
+    	$isDetach = $this->detachManagerFromClient($_POST['id'], $this->user_id);
 
-			    $client_name_i = $Client['company']; // получаем название клиента
-			    
-			    // сообщение об отказе от клиента
-			    $text = '';
-			    $clien_href = '<a href="http://'.$_SERVER['HTTP_HOST'].'/os/?page=clients&section=client_folder&subsection=client_card_table&client_id='.$Client['id'].'">'.$client_name_i.'</a>';
-			    if(isset($_POST['text'])){
-			    	$text .= 'Куратор '.$this->user_name.' '. $this->user_last_name.' отказался от клиента '.$clien_href.'. ';
-			    	$text .= '<br>Причина: '.$_POST['text']; 
-			    }else{
-			    	$text .= 'Куратор '.$this->user_name.' '. $this->user_last_name.' отказался от клиента '.$clien_href.' не указав причину.';
-			    }
+    	if ( $isDetach ) {
 
-			    Client::history($this->user_id, $text ,'rejection_of_the_client',$_GET['client_id']);
-			    
+            # получаем информацию по клиенту
+    		$Client = $this->get_client_informationDatabase((int)$_GET['client_id']);
 
-			    // сообщение
-		        $message = 'Вы успешно откреплены от клиента. Спасибо.<br>';
-		        $message .= $outer;
-				$this->responseClass->addMessage($message,'successful_message');	
+    	    # собираем текст для истории
+    	    $client_href = '<a href="http://'.$_SERVER['HTTP_HOST'].'/os/?page=clients&section=client_folder&subsection=client_card_table&client_id='.$Client['id'].'">'.$Client['company'].'</a>';
+            $text_history  = 'Куратор '.$this->getUserFullName().' отказался от клиента '.$client_href.'. '.((isset($_POST['text']) && trim($_POST['text']) != '')?'<br>Причина отказа: '.$_POST['text']:'<br><b>причина не указана</b>');
 
-				// echo "test";
-				// JS function
-				$options['href'] = '?page=clients&section=clients_list';
-				$this->responseClass->addResponseFunction('location_href',$options);
-			    
-			    include_once('mail_class.php');
-			    $mailClass = new Mail;
-			    // $mailClass->add_bcc('bossnotify@apelburg.ru');
-				// $mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Отказ от клиента',$text);		
-				$mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Отказ от клиента',$text);		
-			} 
-			else {
-			   	// сообщение
-		        $message = 'Нет смысла отказываться от клиента, куратором которого вы не являетесь.';
-				$this->responseClass->addMessage($message,'error_message');
+            # пишем в историю событие отказа
+    	    Client::history((int)$this->getUserId(), $text_history ,'rejection_of_the_client',$Client['id']);
 
+            # вывод сообщения юзеру
+    		$this->responseClass->addMessage('Вы были успешно откреплены от клиента.','successful_message');
+            # переадресация юзера на стороне клиента
+    		$this->responseClass->addResponseFunction('location_href',['href'=>'?page=clients&section=clients_list']);
+
+            # отправка боссам оповещения о событии отказа от клиента
+    	    include_once('mail_class.php');
+    	    $mailClass = new Mail;
+    		$mailClass->send('bossnotify@apelburg.ru','os@apelburg.ru','Отказ от клиента',$text_history);
+
+    	} else {
+    	   	// сообщение
+            $message = 'Нет смысла отказываться от клиента, куратором которого вы не являетесь.';
+    		$this->responseClass->addMessage($message,'error_message');
+
+    	}
+
+    }
+
+    /**
+     * открепление менеджера от клиента
+     *
+     * @param $client_id
+     * @param $manager_id
+     * @return int
+     */
+     //	 private function delete_for_manager($client_id,$manager_id){
+    /**
+     * @param $client_id
+     * @param $manager_id
+     * @return int
+     */
+    private function detachManagerFromClient($client_id,$manager_id){
+
+
+		$query = "SELECT * FROM `".RELATE_CLIENT_MANAGER_TBL."` WHERE `client_id` = '".(int)$client_id."'";
+        $result = $this->mysqli->query($query) or die($this->mysqli->error);
+
+        $relate_managers = array();
+		if($result->num_rows > 0){
+			while($row = $result->fetch_assoc()){
+				$relate_managers[$row['manager_id']] = $row;
 			}
-			
 		}
 
-		// открепление от клиента
-		static function delete_for_manager($client_id,$manager_id){
-			global $mysqli;
-			$query = "SELECT * FROM `".RELATE_CLIENT_MANAGER_TBL."` WHERE `client_id` = '".(int)$client_id."'";
-			// echo $query;
-			$result = $mysqli->query($query) or die($mysqli->error);
-			$relate_managers = array();
-			if($result->num_rows > 0){
-				while($row = $result->fetch_assoc()){
-					$relate_managers[$row['manager_id']] = $row;
-				}
-			}
-				
-			// если менеджер не прикреплён
-			if(!isset($relate_managers[$manager_id])){
-				return 0;
-			}
-
-			// если прикреплён ещё кто-то
-			if(count($relate_managers) > 1){
-				$query = "DELETE FROM `".RELATE_CLIENT_MANAGER_TBL."` WHERE `manager_id` = '".(int)$manager_id."';";
-			}else{
-				// открепить менеджера от клиента в пользу юзера для раздачи	
-				$query ="UPDATE  `".RELATE_CLIENT_MANAGER_TBL."` SET  `manager_id` =  '61' WHERE `client_id` = '".(int)$client_id."' AND `manager_id` = '".(int)$manager_id."';";	
-			}		
-			$result = $mysqli->multi_query($query) or die($mysqli->error);	
-			return 1;
+		# если указанный менеджер не прикреплён к данному клиенту
+		if(!isset($relate_managers[$manager_id])){
+			return 0;
 		}
+
+        # если за клиентом закреплён только 1 конкретный менеджер
+        if(count($relate_managers) == 1){
+            # открепляем менеджера от клиента в пользу юзера для раздачи
+            $query = "UPDATE  `".RELATE_CLIENT_MANAGER_TBL."` SET  `manager_id` =  '61' WHERE `client_id` = '".(int)$client_id."' AND `manager_id` = '".(int)$manager_id."';";
+        }else{
+            $query = "DELETE FROM `".RELATE_CLIENT_MANAGER_TBL."` WHERE `id` = '".(int)$relate_managers[$manager_id]['id']."';";
+        }
+
+		$result = $this->mysqli->query($query) or die($this->mysqli->error);
+		return 1;
+	}
 			    
 		protected function update_requisites_AJAX() {
 			$query = "
