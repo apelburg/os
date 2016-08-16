@@ -4,10 +4,11 @@
  * Class Pagination
  *
  * отвечает за вывод пагинации в кабинете
- * для использования используется 2 публичных метода:
- * getInstance                  - возвращает экземпляр класса, если его ещё нет
- * getPaginationQueryString     -
+ * для работы используется 3 публичных метода:
  *
+ * getInstance                  - возвращает экземпляр класса, если он ещ не был создан
+ * getPaginationQueryString     - возвращает приставку к запросу, разделяющую запрошенный контент на страницы
+ * getPaginationLinks           - возвращает HTML блока пагинации
  *
  * @author  Alexey Kapitonov
  * @version 15.08.16 11:30
@@ -43,7 +44,7 @@ class Pagination{
     /**
      * @return string
      */
-    public function getPageNumberParameterName()
+    private function getPageNumberParameterName()
     {
         return $this->pageNumberParameterName;
     }
@@ -51,7 +52,7 @@ class Pagination{
     /**
      * @return int
      */
-    public function getPaginationLinksPageEnd()
+    private function getPaginationLinksPageEnd()
     {
         return $this->paginationLinksPageEnd;
     }
@@ -59,7 +60,7 @@ class Pagination{
     /**
      * @param int $paginationLinksPageEnd
      */
-    public function setPaginationLinksPageEnd($paginationLinksPageEnd)
+    private function setPaginationLinksPageEnd($paginationLinksPageEnd)
     {
         $this->paginationLinksPageEnd = $paginationLinksPageEnd;
     }
@@ -67,7 +68,7 @@ class Pagination{
     /**
      * @return int
      */
-    public function getPaginationLinksPageStart()
+    private function getPaginationLinksPageStart()
     {
         return $this->paginationLinksPageStart;
     }
@@ -75,7 +76,7 @@ class Pagination{
     /**
      * @param int $paginationLinksPageStart
      */
-    public function setPaginationLinksPageStart($paginationLinksPageStart)
+    private function setPaginationLinksPageStart($paginationLinksPageStart)
     {
         $this->paginationLinksPageStart = $paginationLinksPageStart;
     }
@@ -83,7 +84,7 @@ class Pagination{
     /**
      * @return int
      */
-    public function getMaxPaginationLinks()
+    private function getMaxPaginationLinks()
     {
         return $this->maxPaginationLinks;
     }
@@ -91,7 +92,7 @@ class Pagination{
     /**
      * @return int
      */
-    public function getNumberOfPages()
+    private function getNumberOfPages()
     {
         return $this->numberOfPages;
     }
@@ -99,7 +100,7 @@ class Pagination{
     /**
      * @param int $numberOfPages
      */
-    public function setNumberOfPages($numberOfPages)
+    private function setNumberOfPages($numberOfPages)
     {
         $this->numberOfPages = $numberOfPages;
     }
@@ -107,7 +108,7 @@ class Pagination{
     /**
      * @return int
      */
-    public function getNumberOfRows()
+    private function getNumberOfRows()
     {
         return $this->numberOfRows;
     }
@@ -115,7 +116,7 @@ class Pagination{
     /**
      * @param $queryForCount
      */
-    public function setNumberOfRows($queryForCount)
+    private function setNumberOfRows($queryForCount)
     {
         if ($queryForCount == ''){
             return;
@@ -143,7 +144,7 @@ class Pagination{
     /**
      * @return int
      */
-    public function getRowOnPage()
+    private function getRowOnPage()
     {
         return $this->rowOnPage;
     }
@@ -151,24 +152,31 @@ class Pagination{
     /**
      * @return int
      */
-    public function getPageNumber()
+    private function getPageNumber()
     {
         return $this->pageNumber;
     }
 
+    // Magic method clone is empty to prevent duplication of connection
+    private function __clone() { }
+
     /**
      * @param $i_pageNumber int
      */
-    public function setPageNumber($i_pageNumber)
+    private function setPageNumber($i_pageNumber)
     {
         $o_pageNumber = ($i_pageNumber > 0)?$i_pageNumber:1;
         $this->pageNumber = $o_pageNumber;
     }
 
-    //The single instance
-    private static $_instance;
-
-
+    /**
+     * подсчитывает общее количество страниц по выгрузке
+     *
+     * @return float
+     */
+    private function calcNumberOfPages(){
+        return ceil($this->getNumberOfRows()/$this->getRowOnPage());
+    }
 
     private function __construct($queryCount){
         # получаем номер страницы, на котором находится пользователь
@@ -183,27 +191,16 @@ class Pagination{
         $this->setNumberOfPages( $this->calcNumberOfPages() );
     }
 
-    /**
-     * подсчитывает общее количество страниц по выгрузке
-     *
-     * @return float
-     */
-    private function calcNumberOfPages(){
-        return ceil($this->getNumberOfRows()/$this->getRowOnPage());
-    }
+    //The single instance
+    private static $_instance;
 
     public static function getInstance($queryCount = '') {
-
-
         if(!self::$_instance) { // If no instance then make one
             self::$_instance = new self($queryCount);
         }
 
         return self::$_instance;
     }
-
-    // Magic method clone is empty to prevent duplication of connection
-    private function __clone() { }
 
     /**
      * возвращает приставку к запрос
@@ -217,6 +214,70 @@ class Pagination{
         $query = " LIMIT $start, ".$this->getRowOnPage();
 
         return $query;
+    }
+
+    /**
+     * возвращает html блока пагинации
+     *
+     * @return string
+     */
+    public function getPaginationLinks(){
+        # получаем параметры для работы
+        $pageNumberNow          = $this->getPageNumber();           # номер текущей страницы
+        $totalNumberOfPages     = $this->getNumberOfPages();        # всего количество страниц
+        $linkFromThisPage       = $this->getLinkFromPage();         # ссылка на текущую страницу
+        $maxPaginationLinks     = $this->getMaxPaginationLinks();   # получаем максимально разрешённое число ссылок в блоке пагинаций
+
+        # ссылка с пустым параметром
+        $emptyLinkFromOtherPage = $linkFromThisPage.'&'.$this->getPageNumberParameterName();
+
+        # устанавливаем параметры по умолчанию
+        $this->setPaginationLinksPageStart(1);                  # № первой страницы в блоке пагинации
+        $this->setPaginationLinksPageEnd($totalNumberOfPages);  # № последней страницы в блоке пагинации
+
+        # если количество страниц превышает максимально допустимое количество ссылок на них
+        if ($totalNumberOfPages > $maxPaginationLinks){
+            # по умолчанию считаем, что в центре у нас указана текущая страница
+            $centerPageLinkNumber = $pageNumberNow;
+            /**
+             * следующие процедуры переопределяют параметры по умаолчанию
+             * @paginationLinksPageStart
+             * @paginationLinksPageEnd
+             */
+            # переопределяем центральную ссылку и внутри метода переписываем параметр @paginationLinksPageStart
+            $centerPageLinkNumber = $this->calcPaginationLinksPageStart( $centerPageLinkNumber );
+
+            # внутри метода переписываем параметр @paginationLinksPageEnd
+            # и в зависимости от ситуации возможно @paginationLinksPageStart
+            $this->calcPaginationLinksPageEnd( $centerPageLinkNumber );
+        }
+
+        $html = '';
+
+        # условия показа ссылки на предыдущёю страницу
+        if( $totalNumberOfPages > $maxPaginationLinks && $pageNumberNow > 1){
+            # сборка ссылок
+            $html .= $this->getHtmlLink(' <<< ', $emptyLinkFromOtherPage.'=1');
+            $html .= $this->getHtmlLink('пред', $emptyLinkFromOtherPage.'='.($pageNumberNow-1));
+        }
+
+        # вывод центрального блока ссылок
+        for ($pageNumber = $this->getPaginationLinksPageStart(); $pageNumber <= $this->getPaginationLinksPageEnd(); $pageNumber++ ){
+            # выделяем текущую страницу
+            $classForStyle = ($pageNumber == $pageNumberNow)?'checked':'';
+
+            # собираем сылку на страницу
+            $html .= $this->getHtmlLink($pageNumber, $emptyLinkFromOtherPage.'='.$pageNumber, $classForStyle);
+        }
+
+        # условие показа ссылки на следующую страницу
+        if( $totalNumberOfPages > $maxPaginationLinks && $totalNumberOfPages > $pageNumberNow ){
+            # сборка ссылок
+            $html .= $this->getHtmlLink('след', $emptyLinkFromOtherPage.'='.($pageNumberNow+1));
+            $html .= $this->getHtmlLink(' >>> ', $emptyLinkFromOtherPage.'='.$totalNumberOfPages);
+        }
+
+        return $this->wrapHtmlContainer( $html );
     }
 
     private function getPageFromLimit(){
@@ -301,70 +362,6 @@ class Pagination{
     }
 
     /**
-     * возвращает html блока пагинации
-     *
-     * @return string
-     */
-    public function getPaginationLinks(){
-        # получаем параметры для работы
-        $pageNumberNow          = $this->getPageNumber();           # номер текущей страницы
-        $totalNumberOfPages     = $this->getNumberOfPages();        # всего количество страниц
-        $linkFromThisPage       = $this->getLinkFromPage();         # ссылка на текущую страницу
-        $maxPaginationLinks     = $this->getMaxPaginationLinks();   # получаем максимально разрешённое число ссылок в блоке пагинаций
-
-        # ссылка с пустым параметром
-        $emptyLinkFromOtherPage = $linkFromThisPage.'&'.$this->getPageNumberParameterName();
-
-        # устанавливаем параметры по умолчанию
-        $this->setPaginationLinksPageStart(1);                  # № первой страницы в блоке пагинации
-        $this->setPaginationLinksPageEnd($totalNumberOfPages);  # № последней страницы в блоке пагинации
-
-        # если количество страниц превышает максимально допустимое количество ссылок на них
-        if ($totalNumberOfPages > $maxPaginationLinks){
-            # по умолчанию считаем, что в центре у нас указана текущая страница
-            $centerPageLinkNumber = $pageNumberNow;
-            /**
-             * следующие процедуры переопределяют параметры по умаолчанию
-             * @paginationLinksPageStart
-             * @paginationLinksPageEnd
-             */
-            # переопределяем центральную ссылку и внутри метода переписываем параметр @paginationLinksPageStart
-            $centerPageLinkNumber = $this->calcPaginationLinksPageStart( $centerPageLinkNumber );
-
-            # внутри метода переписываем параметр @paginationLinksPageEnd
-            # и в зависимости от ситуации возможно @paginationLinksPageStart
-            $this->calcPaginationLinksPageEnd( $centerPageLinkNumber );
-        }
-
-        $html = '';
-
-        # условия показа ссылки на предыдущёю страницу
-        if( $totalNumberOfPages > $maxPaginationLinks && $pageNumberNow > 1){
-            # сборка ссылок
-            $html .= $this->getHtmlLink(' <<< ', $emptyLinkFromOtherPage.'=1');
-            $html .= $this->getHtmlLink('пред', $emptyLinkFromOtherPage.'='.($pageNumberNow-1));
-        }
-
-        # вывод центрального блока ссылок
-        for ($pageNumber = $this->getPaginationLinksPageStart(); $pageNumber <= $this->getPaginationLinksPageEnd(); $pageNumber++ ){
-            # выделяем текущую страницу
-            $classForStyle = ($pageNumber == $pageNumberNow)?'checked':'';
-
-            # собираем сылку на страницу
-            $html .= $this->getHtmlLink($pageNumber, $emptyLinkFromOtherPage.'='.$pageNumber, $classForStyle);
-        }
-
-        # условие показа ссылки на следующую страницу
-        if( $totalNumberOfPages > $maxPaginationLinks && $totalNumberOfPages > $pageNumberNow ){
-            # сборка ссылок
-            $html .= $this->getHtmlLink('след', $emptyLinkFromOtherPage.'='.($pageNumberNow+1));
-            $html .= $this->getHtmlLink(' >>> ', $emptyLinkFromOtherPage.'='.$totalNumberOfPages);
-        }
-        
-        return $this->wrapHtmlContainer( $html );
-    }
-
-    /**
      * возвращает HTML ссылки
      *
      * @param string $text
@@ -414,7 +411,7 @@ class Pagination{
     /**
      * @return string
      */
-    public function getWorkerLink()
+    private function getWorkerLink()
     {
         return $this->worker_link;
     }
@@ -422,7 +419,7 @@ class Pagination{
     /**
      * @param string $worker_link
      */
-    public function setWorkerLink($worker_link)
+    private function setWorkerLink($worker_link)
     {
         $this->worker_link = $worker_link;
     }
@@ -434,8 +431,7 @@ class Pagination{
      */
     private function db(){
         if(!isset($this->mysqli)){
-//            include_once $_SERVER['DOCUMENT_ROOT'].'/libs/mysqli.php';
-
+            //  include_once $_SERVER['DOCUMENT_ROOT'].'/libs/mysqli.php';
             $db = Database::getInstance();
             $this->mysqli = $db->getConnection();
         }
