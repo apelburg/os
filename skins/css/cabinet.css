@@ -1525,17 +1525,17 @@ table#general_panel_orders_tbl {
 /*
 пагинация в кабинете
 */
-#pagimation_conteiner{
+#pagination_container{
 	padding: 15px 15px 45px 15px;
 	text-align: center;
 }
-#pagimation_conteiner a{
+#pagination_container a{
 	padding: 5px 8px 6px 8px;
 	border: 1px solid #92b73e;
 	margin-left: 5px;
 	color: #c1c1c1;
 }
-#pagimation_conteiner a.checked{
+#pagination_container a.checked{
 	background-color: #92b73e;
 	color: #fff;
 }

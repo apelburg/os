@@ -3,9 +3,8 @@
 /**
  * Class Pagination
  *
- * User: Alexey Kapitonov
- * Date: 15.08.16
- * Time: 11:30
+ * @author  Alexey Kapitonov
+ * @version 15.08.16 11:30
  */
 class Pagination{
     # количество записей на странице
@@ -20,6 +19,43 @@ class Pagination{
     private $worker_link = '';
     # максимальное количетво ссылок на странице
     private $maxPaginationLinks = 9;
+
+    # номер страницы в первой ссылке в ряду пагинации
+    private $paginationLinksPageEnd = 0;
+    # номер страницы в последней ссылке в ряду пагинации
+    private $paginationLinksPageStart = 0;
+
+    /**
+     * @return int
+     */
+    public function getPaginationLinksPageEnd()
+    {
+        return $this->paginationLinksPageEnd;
+    }
+
+    /**
+     * @param int $paginationLinksPageEnd
+     */
+    public function setPaginationLinksPageEnd($paginationLinksPageEnd)
+    {
+        $this->paginationLinksPageEnd = $paginationLinksPageEnd;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPaginationLinksPageStart()
+    {
+        return $this->paginationLinksPageStart;
+    }
+
+    /**
+     * @param int $paginationLinksPageStart
+     */
+    public function setPaginationLinksPageStart($paginationLinksPageStart)
+    {
+        $this->paginationLinksPageStart = $paginationLinksPageStart;
+    }
 
     /**
      * @return int
@@ -54,21 +90,15 @@ class Pagination{
     }
 
     /**
-     * @param int $numberOfRows
+     * @param $queryForCount
      */
     public function setNumberOfRows($queryForCount)
     {
-        if ($queryForCount == ''){
-//           exit('для модуля пагинации требуется запрос для определения общего количество строк');
-
-        }else{
-            $this->q = $queryForCount;
-        }
 
         $numberOfRows = 0;
 
         $this->db();
-        $result = $this->mysqli->query($this->q) or die($this->mysqli->error);
+        $result = $this->mysqli->query($queryForCount) or die($this->mysqli->error);
 
         if($result->num_rows > 0){
             while($row = $result->fetch_assoc()) {
@@ -98,7 +128,7 @@ class Pagination{
     }
 
     /**
-     * @param int $pageNumber
+     * @param $i_pageNumber int
      */
     public function setPageNumber($i_pageNumber)
     {
@@ -170,29 +200,70 @@ class Pagination{
         return $this->getPageNumber() - 1;
     }
 
+    /**
+     * определяем номер первой страницы в списке ссылок
+     *
+     * @param $i_calcPageNumberNow
+     * @return float
+     * @internal param $maxPaginationLinks
+     */
+    private function calcPaginationLinksPageStart($i_calcPageNumberNow ){
+        # получаем максимально разрешённое количество ссылок в блоке  пагинации
+        $maxPaginationLinks = $this->getMaxPaginationLinks();
 
-    private function calcPaginationLinksPageStart($calcPageNumberNow, $maxPaginationLinks ){
+        # определяем сколько должно быть видно ссылок на страницы сбоку от центральной
+        $sideLinksNumber = (($maxPaginationLinks - 1)/2);
 
-        # определяем номер первой страницы в списке ссылко
-        $calcStartPage = ($calcPageNumberNow - (($maxPaginationLinks - 1)/2)) ;
+        # вычитая из номера текущей страницы количество ссылок, которое должно быть сбоку от центара
+        # определяем номер первой ссылки в блоке пагинации
+        $calcStartPage = $i_calcPageNumberNow - $sideLinksNumber ;
+
+        # если этот номер больше 0 - то все впорядке, он нам подходит как первый
         if ($calcStartPage > 0){
-            $this->paginationLinksPageStart = $calcStartPage;
+            # запоминаем номер первой ссылки в ряду пагинации
+            $this->setPaginationLinksPageStart($calcStartPage);
+            # назначаем центральную ссылку
+            $centerPageLinkNumber = $i_calcPageNumberNow;
+
         }else{
-            $this->paginationLinksPageStart = 1;
-            $calcPageNumberNow = (($maxPaginationLinks - 1)/2)+1;
+            # если номер высчитаной первой ссылка меньше или равен нулю (а такой страницы не может быть)
+            # присваиваем первой ссылке номер страницы -
+            $this->setPaginationLinksPageStart(1);
+
+            # назначаем центральную ссылку
+            $centerPageLinkNumber = $sideLinksNumber + 1;
         }
 
-        return $calcPageNumberNow;
+        return $centerPageLinkNumber;
     }
-    private function calcPaginationLinksPageEnd($calcPageNumberNow,$maxPaginationLinks,$totalNumberOfPages){
-        $calcEndPage = ($calcPageNumberNow + (($maxPaginationLinks - 1)/2)) ;
 
+    /**
+     * определяем номер последней страницы в списке ссылок
+     *
+     * @param $centerPageLinkNumber int
+     */
+    private function calcPaginationLinksPageEnd($centerPageLinkNumber){
+        # получаем конесное количество страниц для вывода
+        $totalNumberOfPages = $this->getNumberOfPages();
+
+        # получаем максимально разрешённое количество ссылок в блоке  пагинации
+        $maxPaginationLinks = $this->getMaxPaginationLinks();
+
+        # определяем сколько должно быть видно ссылок на страницы сбоку от центральной
+        $sideLinksNumber = (($maxPaginationLinks - 1)/2);
+
+        # высчитываем номер крайней правой страницы в блоке пагинации
+        $calcEndPage = $centerPageLinkNumber + $sideLinksNumber;
+
+        # если вычисленный номер меньше общего числа страниц
         if ($calcEndPage < $totalNumberOfPages){
-            $this->paginationLinksPageEnd = $calcEndPage;
-
+            # ставим его
+            $this->setPaginationLinksPageEnd( $calcEndPage );
         }else{
-            $this->paginationLinksPageEnd = $totalNumberOfPages;
-            $this->paginationLinksPageStart = $totalNumberOfPages - $maxPaginationLinks;
+            # если больше, то крайнее праве положение будет иметь последняя станица
+            $this->setPaginationLinksPageEnd( $totalNumberOfPages );
+            # а крайнее левое страница меньше
+            $this->setPaginationLinksPageStart( $totalNumberOfPages - $maxPaginationLinks );
         }
     }
 
@@ -202,38 +273,46 @@ class Pagination{
      * @return string
      */
     public function getPaginationLinks(){
-        $pageNumberNow      = $this->getPageNumber();
-        $totalNumberOfPages = $this->getNumberOfPages();
-        $linkFromPage       = $this->getLinkFromPage();
-        $maxPaginationLinks = $this->getMaxPaginationLinks();
+        # получаем параметры для работы
+        $pageNumberNow          = $this->getPageNumber();           # номер текущей страницы
+        $totalNumberOfPages     = $this->getNumberOfPages();        # всего количество страниц
+        $linkFromPage           = $this->getLinkFromPage();         # ссылка на текущую страницу
+        $maxPaginationLinks     = $this->getMaxPaginationLinks();   # получаем максимально разрешённое число ссылок в блоке пагинаций
 
-        $html = '<div id="pagimation_conteiner">';
+
+        # устанавливаем параметры по умолчанию
+        $this->setPaginationLinksPageStart(1);                  # № первой страницы в блоке пагинации
+        $this->setPaginationLinksPageEnd($totalNumberOfPages);  # № последней страницы в блоке пагинации
+
+        # если количество страниц превышает максимально допустимое количество ссылок на них
+        if ($totalNumberOfPages > $maxPaginationLinks){
+            # по умолчанию считаем, что в центре у нас указана текущая страница
+            $centerPageLinkNumber = $pageNumberNow;
+            /**
+             * следующие процедуры переопределяют параметры по умаолчанию
+             * @paginationLinksPageStart
+             * @paginationLinksPageEnd
+             */
+            # переопределяем центральную ссылку и внутри метода переписываем параметр @paginationLinksPageStart
+            $centerPageLinkNumber = $this->calcPaginationLinksPageStart( $centerPageLinkNumber );
+
+            # внутри метода переписываем параметр @paginationLinksPageEnd
+            # и в зависимости от ситуации возможно @paginationLinksPageStart
+            $this->calcPaginationLinksPageEnd( $centerPageLinkNumber );
+        }
+
+        $html = '<div id="pagination_container">';
 
         # условия показа ссылки на предыдущёю страницу
         if( $totalNumberOfPages > $maxPaginationLinks && $pageNumberNow > 1){
             $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number=1"> <<< </a>';
             $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number='.($pageNumberNow-1).'"> пред. </a>';
         }
-
-        $this->paginationLinksPageStart = 1;
-        $this->paginationLinksPageEnd = $totalNumberOfPages;
-
-        # если количество ссылок показываемых клиенту необходимо сократить
-        if ($totalNumberOfPages > $maxPaginationLinks){
-            # определяем первую ссылку в списке
-            $calcPageNumberNow = $this->calcPaginationLinksPageStart($pageNumberNow, $maxPaginationLinks );
-
-            # определяем последнюю ссылку в списке
-            $this->calcPaginationLinksPageEnd($calcPageNumberNow,$maxPaginationLinks,$totalNumberOfPages);
-        }
-
-
+        # вывод центрального блока ссылок
         for ($pageNumber = $this->paginationLinksPageStart; $pageNumber <= $this->paginationLinksPageEnd; $pageNumber++ ){
             $class = ($pageNumber == $pageNumberNow)?' class="checked"':'';
             $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number='.$pageNumber.'" '.$class.'>'.$pageNumber.'</a>';
         }
-
-
 
         # условие показа ссылки на следующую страницу
         if( $totalNumberOfPages > $maxPaginationLinks && $totalNumberOfPages > $pageNumberNow ){
@@ -290,6 +369,8 @@ class Pagination{
      */
     private function db(){
         if(!isset($this->mysqli)){
+//            include_once $_SERVER['DOCUMENT_ROOT'].'/libs/mysqli.php';
+
             $db = Database::getInstance();
             $this->mysqli = $db->getConnection();
         }
