@@ -9,7 +9,7 @@
 class Client extends aplStdAJAXMethod{
 
     // для входа в режим отладки раскоментировать строку или установить в значение FALSE
-    protected $production = false;
+//    protected $production = false;
 
 	/**
 	 * типы контактных данных
@@ -842,7 +842,7 @@ class Client extends aplStdAJAXMethod{
     protected function client_delete_AJAX() {
         $this->prod__message('Вы временно не можете отказаться от клиента, но мы уже работаем над этим =)');
         $this->prod__window($this->print_arr($_POST));
-        return;
+//        return;
 
         # запрос на открепление менеджера от клиента
     	$isDetach = $this->detachManagerFromClient($_POST['id'], $this->user_id);
