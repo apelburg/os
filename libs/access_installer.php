@@ -173,29 +173,29 @@
 				       );
 	// ПРО-ВО
 	$ACCESS_SHABLON[4] = array(
-				       'cabinet'=> array(
-										'access'=> true,
-										'section'=> array( // 1
-											// 'orders'=> array(
-											// 	'access'=>true,
-											// 	'subsection'=>array(  // 2
-													
-											// 		'production_get_in_work' =>array('access'=>true),
-											// 		'set_in_the_plan' =>array('access'=>true),
-											// 		'production_stencil_shelk_and_transfer' =>array('access'=>true),
-											// 		// 'production_shelk' =>array('access'=>true),
-											// 		// 'production_transfer' =>array('access'=>true),
-											// 		'production_tampoo' =>array('access'=>true),
-											// 		'production_tisnenie' =>array('access'=>true),
-											// 		'production_dop_uslugi' =>array('access'=>true),
-											// 		'production_plenki_and_klishe' =>array('access'=>true),
-											// 		'question_pause' =>array('access'=>true),
-											// 		'the_service_is_performed' =>array('access'=>true),
-											// 		'production' =>array('access'=>true)
-											// 		)
-											// 	)
-											)
-										)
+//				       'cabinet'=> array(
+//										'access'=> true,
+//										'section'=> array( // 1
+//											// 'orders'=> array(
+//											// 	'access'=>true,
+//											// 	'subsection'=>array(  // 2
+//
+//											// 		'production_get_in_work' =>array('access'=>true),
+//											// 		'set_in_the_plan' =>array('access'=>true),
+//											// 		'production_stencil_shelk_and_transfer' =>array('access'=>true),
+//											// 		// 'production_shelk' =>array('access'=>true),
+//											// 		// 'production_transfer' =>array('access'=>true),
+//											// 		'production_tampoo' =>array('access'=>true),
+//											// 		'production_tisnenie' =>array('access'=>true),
+//											// 		'production_dop_uslugi' =>array('access'=>true),
+//											// 		'production_plenki_and_klishe' =>array('access'=>true),
+//											// 		'question_pause' =>array('access'=>true),
+//											// 		'the_service_is_performed' =>array('access'=>true),
+//											// 		'production' =>array('access'=>true)
+//											// 		)
+//											// 	)
+//											)
+//										)
 				       );
 	// МЕНЕДЖЕР					  
 	$ACCESS_SHABLON[5] = array(

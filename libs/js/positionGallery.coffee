@@ -146,17 +146,20 @@ class window.galleryWindow
     return @contentDiv
 
   initUploadify:()->
+    console.log 'initUpl';
     self = @
     # добавляем месть для вставки индикаторов загрузки
     @contentDiv.append($('<div/>',{
       id:'galleryWindowQueue'
     }))
 
-    $('#'+@data.token).uploadify({
+    console.log 'http://' + window.location.hostname + '/libs/php/uploadify.swf'
+
+    $('#'+self.data.token).uploadify({
       'formData'     : {
         'AJAX'			: 'add_new_files_in_kp_gallery',
         'timestamp' 	: @data.timestamp,
-        'token'     	: @data.token,
+        'token'     	: self.data.token,
         'section'      	: $.urlVar('section'),
         'id'        	: @data.id,
         'folder_name'	: @data.folder_name

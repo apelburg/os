@@ -112,6 +112,7 @@ class Comments_for_query_class{
 		$html .= $this->get_comment_for_query();
 		$html .= $this->get_the_comment_for_query_form();
 		echo '{"response":"OK","html":"'.base64_encode($html).'"}';
+
 	}
 
 	// получаем все комментарии по запросу

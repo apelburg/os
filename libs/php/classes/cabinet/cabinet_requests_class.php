@@ -17,11 +17,7 @@
 
 
 
-
-		// экземпляр класса продукции НЕ каталог (там нас интересуют кириллические названия статусов)
-		protected $POSITION_NO_CATALOG;
-
-		function __construct($id_row = 0,$user_access,$user_id){	
+		function __construct($id_row = 0,$user_access,$user_id){
 			include_once ('./libs/php/classes/rt_class.php');
 
 			include_once ('./libs/php/classes/comments_class.php');
@@ -30,8 +26,6 @@
 				$id_row = $_GET['query_num'];
 			}
 
-			// экземпляр класса продукции НЕ каталог
-			$this->POSITION_NO_CATALOG = new Position_no_catalog();
 
 
 			$this->user_id = $user_id;
@@ -41,19 +35,24 @@
 			// $method_template = $_GET['section'].'_Template';
 			// echo '<div id="fixed_div" style="position:fixed; background-color:#fff;padding:5px; bottom:0; right:0">метод '.$method_template.' </div>';
 			// если в этом классе существует такой метод - выполняем его
-			if(method_exists($this, $method_template)){
-				// echo $this->$method_template;
-				$this->$method_template($id_row);				
-			}else{
-				// обработка ответа о неправильном адресе
-				echo 'фильтр '.$method_template.'() не найден';
-			}
+            if(method_exists($this, $method_template)){
 
-			
-    	}
+                // echo $this->$method_template;
+                $this->$method_template($id_row);
+
+            }else{
+                // обработка ответа о неправильном адресе
+                echo 'фильтр '.$method_template.'() не найден';
+            }
 
 
-    	
+        }
+
+
+
+
+
+
 
     	
     	// Ожидают распределения (Админ)
@@ -193,48 +192,75 @@
 				SEC_TO_TIME(UNIX_TIMESTAMP()-UNIX_TIMESTAMP(`os__rt_list`.`time_attach_manager`)) AS `time_attach_manager`,
 				DATE_FORMAT(`".RT_LIST."`.`create_time`,'%d.%m.%Y %H:%i')  AS `create_time`
 				FROM `".RT_LIST."`";
+
+            // запрос общего количества записей для расчёта пагинации
+            $queryCount = "SELECT count(*) as `count` FROM ".RT_LIST;
+
 				
 			if((int)$id_row > 0){
-				$query .= " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`query_num` = '".$id_row."'";
-				$where = 1;
+				$queryFilter = " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`query_num` = '".$id_row."'";
+                $where = 1;
+
+                $query .= $queryFilter;
+                $queryCount .= $queryFilter;
+
 			}else{				
 				// фильтрация по клиенту
 				if(isset($_GET['client_id'])){
-					$query .= " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`client_id` = '".$_GET['client_id']."'";
+                    $queryFilter = " ".(($where)?'AND':'WHERE')." `".RT_LIST."`.`client_id` = '".$_GET['client_id']."'";
 					$where = 1;
+
+                    $query .= $queryFilter;
+                    $queryCount .= $queryFilter;
 				}
 				// для менеджера 
 				if($this->user_access == 5){
 					if($_GET['subsection'] == "no_worcked_men"){
-						$query .= " ".(($where)?'AND':'WHERE')." 
+                        $queryFilter = " ".(($where)?'AND':'WHERE')." 
 						(`".RT_LIST."`.`manager_id` = '".$this->user_id."' 
 						 OR (`".RT_LIST."`.`manager_id` = '0' AND `".RT_LIST."`.`dop_managers_id` LIKE '%$this->user_id%') )";
-						
-
 						$where = 1;
+
+
+
+                        $query .= $queryFilter;
+                        $queryCount .= $queryFilter;
 					}else if(!isset($_GET['client_id'])){
 						// при фильтрации по клиенту показываем все запросы по данному клиенту
 						// при желании тут же можно будет ограничить доступ для не кураторов
-						$query .= " ".(($where)?'AND':'WHERE')." 
+                        $queryFilter = " ".(($where)?'AND':'WHERE')." 
 						`".RT_LIST."`.`manager_id` = '".$this->user_id."' 
 						";
-						$where = 1;
+                        $where = 1;
+
+                        $query .= $queryFilter;
+                        $queryCount .= $queryFilter;
 					}
 				}
 			}
 
 			// фильтрация по запросу
 			if($this->filtres_query != ''){
-				$query .= " ".(($where)?'AND':'WHERE')." ".$this->filtres_query;
+                $queryFilter = " ".(($where)?'AND':'WHERE')." ".$this->filtres_query;
 				$where = 1;
+
+                $query .= $queryFilter;
+                $queryCount .= $queryFilter;
 			}
 			// сортировка по запросу
 			if($this->filtres_query_sort != ''){
 				$query .= " ".$this->filtres_query_sort;
 			}
-			
+
+//            echo $queryCount.'<br>';
+//            exit;
+			// модуль пагинация
+            $this->Pagination = Pagination::getInstance( $queryCount );
+            // добавляем параметры к запросу
+            $query .= " ".$this->Pagination->getPaginationQueryString();
+
 			$result = $mysqli->query($query) or die($mysqli->error);
-			// echo $query.'<br>';
+
 			$this->Query_arr = array();
 
 			$n = 0;
@@ -252,27 +278,8 @@
     	protected function get_button_status_for_request(){
     		// echo $this->user_access;
 			if($this->user_access == 5){
-				switch ($this->Query['status']) {
-					// case 'not_process':
+				$this->status_or_button = $this->statusQueryNameArrEn2Ru[$this->Query['status']];
 
-					// 	$this->status_or_button = '<div data-client_id="'.$this->Query['client_id'].'" data-manager_id="'.$this->Query['manager_id'].'" class="take_in_operation">Принять в обработку</div>';
-					// 	// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
-					// 	break;
-					// case 'taken_into_operation':
-					// 	$this->status_or_button = '<div class="get_in_work">Взять в работу</div>';
-					// 	// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],0);						
-					// 	break;
-
-					// case 'new_query':
-					// 	$this->status_or_button = '<div class="take_in_operation">Принять в обработку</div>';
-					// 	// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
-					// 	break;					
-
-					default:
-						$this->status_or_button = $this->statusQueryNameArrEn2Ru[$this->Query['status']];
-						// $this->client_button = $this->get_client_name_Database($this->Query['client_id'],1);						
-						break;
-				}
 			}else {
 				$this->status_or_button = (isset($this->statusQueryNameArrEn2Ru[$this->Query['status']])?$this->statusQueryNameArrEn2Ru[$this->Query['status']]:'статус не предусмотрен!!!!'.$this->Query['status']);
 			}
@@ -416,6 +423,9 @@
 					$this->query_num = $this->Query['query_num'];		
 			}			
 			echo $this->get_footer_tbl();
+
+            # добавляенм блок пагинации
+            echo $this->Pagination->getPaginationLinks();
 		}
 
 		// шаблон строки строки запроса
@@ -574,7 +584,11 @@
 					$html .= '<th>Сумма</th>';
 					$html .= '<th>Статус</th>';
 				$html .= '</tr>';
-			return $html;
+
+
+
+
+            return $html;
 		}
 
 		// возвращает закрывающий тег главной таблицы
