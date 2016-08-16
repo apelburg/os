@@ -146,15 +146,16 @@ class InvoiceNotify extends aplStdAJAXMethod
 //		include_once 'mail_class.php';
 //		$mail = new Mail();
 
+
 		if (is_array($to)){
 			foreach ($to as $email){
 
 				return mail($email,
-					$subject,
-					$message,
-					"From: $from\r\n"
-					."Content-type: text/html; charset=utf-8\r\n"
-					."X-Mailer: PHP mail script"
+                    $subject,
+                    $message,
+                    "From: $from\r\n"
+                    ."Content-type: text/html; charset=utf-8\r\n"
+                    ."X-Mailer: PHP mail script"
 				);
 //				$mail->send($email,$from,$subject,$message,TRUE);
 			}
@@ -173,8 +174,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 	}
 
 	public function sendMessageToId($id,$from,$subject,$message ){
-	    // !!!!
-		return $this->sendMessage($this->getUsersEmail($id),$from,$subject,$message );
+
+        $userEmails = $this->getUsersEmail($id);
+		return $this->sendMessage($userEmails,$from,$subject,$message );
 	}
 	/**
 	 * тригер для крон
@@ -402,9 +404,9 @@ class InvoiceNotify extends aplStdAJAXMethod
 			# сообщение менеджеру edit_ttn_status
 			# сообщение на почтуconfirm_create_ttn
 			$Invoice = new InvoiceNotify();
-			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') была создана УПД №'.$_POST['number'];
+			$subject = 'Для счёта № '.$_POST['invoice_num'].' ('.$_POST['client_name'].') была создана УПД';
 			$userName = $_POST['manager_name'];
-			$message= 'Для клиента '.$_POST['client_name'].' создан новый счет';
+			$message = $subject.' №'.$_POST['number'];
 			$href = 'http://www.apelburg.ru/os/?page=invoice&section=6&client_id='.$_POST['client_id'];
 			# подгружаем шаблон
 			ob_start();
@@ -412,7 +414,10 @@ class InvoiceNotify extends aplStdAJAXMethod
 				include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
 				$html = ob_get_contents();
 			ob_get_clean();
-			$Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html);
+
+            if ($Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html)){
+                $this->responseClass->addMessage('Менеджеру '.$userName.' было отправлено уведомление на почту.');
+            }
 		}
 
 
@@ -449,7 +454,7 @@ class InvoiceNotify extends aplStdAJAXMethod
                 $html = ob_get_contents();
 			ob_get_clean();
 
-            if ($Invoice->sendMessageToId([(int)$_POST['manager_id'],42],'',$subject,$html)){
+            if ($Invoice->sendMessageToId($_POST['manager_id'],'',$subject,$html)){
                 $this->responseClass->addMessage('Менеджеру '.$userName.' было отправлено уведомление на почту.');
             }
 
@@ -858,12 +863,19 @@ class InvoiceNotify extends aplStdAJAXMethod
 				$query .= " `invoice_num` = '".$curSearch['invoice_num']."' ";
 				$w++;
 			}else{
-				// если мы в клиенте
-				if(isset($_GET['client_id'])){
-					$query .= ($w>0?' AND ':' WHERE ');
-					$query .= " `client_id` = '".(int)$_GET['client_id']."' ";
-					$w++;
-				}
+                // если мы в клиенте
+                if(isset($_GET['client_id'])){
+                    $query .= ($w>0?' AND ':' WHERE ');
+                    $query .= " `client_id` = '".(int)$_GET['client_id']."' ";
+                    $w++;
+                }
+
+                // если мы в клиенте
+                if(isset($_GET['manager_id'])){
+                    $query .= ($w>0?' AND ':' WHERE ');
+                    $query .= " `manager_id` = '".(int)$_GET['manager_id']."' ";
+                    $w++;
+                }
 
 				// если мы не используем поиск
 				// правила выборки счетов по вкладкам
@@ -1294,6 +1306,12 @@ class InvoiceNotify extends aplStdAJAXMethod
 					$query .= " `client_id` = '".(int)$_GET['client_id']."' ";
 					$w++;
 				}
+                // если мы в клиенте
+                if(isset($_GET['manager_id'])){
+                    $query .= ($w>0?' AND ':' WHERE ');
+                    $query .= " `manager_id` = '".(int)$_GET['manager_id']."' ";
+                    $w++;
+                }
 
 				if (isset($_GET['section'])){
 					switch ((int)$_GET['section']){
