@@ -364,7 +364,7 @@ class Pagination{
      */
     private function getHtmlLink( $text = "Page Name", $href="#", $i_class = ""){
         $class = '';
-        if ($class != ""){
+        if ($i_class != ""){
             $class = ' class="'.$i_class.'"';
         }
         return '<a href="'.$href.'" '.$class.'>'.$text.'</a>';
