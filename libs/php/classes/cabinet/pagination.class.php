@@ -9,21 +9,38 @@
 class Pagination{
     # количество записей на странице
     private $rowOnPage = 15;
+
     # номер текущей страницы
     private $pageNumber = 1;
+
     # количество строк
     private $numberOfRows = 0;
+
     # колдичество страниц
     private $numberOfPages = 1;
+
     # рабочая ссылка
     private $worker_link = '';
+
     # максимальное количетво ссылок на странице
     private $maxPaginationLinks = 9;
 
     # номер страницы в первой ссылке в ряду пагинации
     private $paginationLinksPageEnd = 0;
+
     # номер страницы в последней ссылке в ряду пагинации
     private $paginationLinksPageStart = 0;
+
+    # ключ GET параметра, содержащего номер страницы
+    private $pageNumberParameterName = 'page_number';
+
+    /**
+     * @return string
+     */
+    public function getPageNumberParameterName()
+    {
+        return $this->pageNumberParameterName;
+    }
 
     /**
      * @return int
@@ -143,8 +160,8 @@ class Pagination{
 
     private function __construct($queryCount){
         # получаем номер страницы, на котором находится пользователь
-        if(isset($_GET['page_number'])){
-            $this->setPageNumber((int)$_GET['page_number']);
+        if(isset($_GET[ $this->getPageNumberParameterName() ])){
+            $this->setPageNumber((int)$_GET[ $this->getPageNumberParameterName() ]);
         }
 
         # получаем и запоминаем общее количество строк
@@ -178,10 +195,6 @@ class Pagination{
     // Magic method clone is empty to prevent duplication of connection
     private function __clone() { }
 
-
-    public function getPaginationHtml() {
-        // $this->db();
-    }
     /**
      * возвращает приставку к запрос
      * для контроля постраничного вывода
@@ -203,27 +216,27 @@ class Pagination{
     /**
      * определяем номер первой страницы в списке ссылок
      *
-     * @param $i_calcPageNumberNow
+     * @param $i_centerPageLinkNumber - номер страницы по центру
      * @return float
      * @internal param $maxPaginationLinks
      */
-    private function calcPaginationLinksPageStart($i_calcPageNumberNow ){
+    private function calcPaginationLinksPageStart( $i_centerPageLinkNumber ){
         # получаем максимально разрешённое количество ссылок в блоке  пагинации
         $maxPaginationLinks = $this->getMaxPaginationLinks();
 
-        # определяем сколько должно быть видно ссылок на страницы сбоку от центральной
-        $sideLinksNumber = (($maxPaginationLinks - 1)/2);
+        # определяем максимальное количество ссылок на сбоку от центральной
+        $sideLinksNumber    = $this->getSideLinksNumber($maxPaginationLinks);
 
         # вычитая из номера текущей страницы количество ссылок, которое должно быть сбоку от центара
         # определяем номер первой ссылки в блоке пагинации
-        $calcStartPage = $i_calcPageNumberNow - $sideLinksNumber ;
+        $calcStartPage = $i_centerPageLinkNumber - $sideLinksNumber ;
 
         # если этот номер больше 0 - то все впорядке, он нам подходит как первый
         if ($calcStartPage > 0){
             # запоминаем номер первой ссылки в ряду пагинации
             $this->setPaginationLinksPageStart($calcStartPage);
             # назначаем центральную ссылку
-            $centerPageLinkNumber = $i_calcPageNumberNow;
+            $centerPageLinkNumber = $i_centerPageLinkNumber;
 
         }else{
             # если номер высчитаной первой ссылка меньше или равен нулю (а такой страницы не может быть)
@@ -249,11 +262,11 @@ class Pagination{
         # получаем максимально разрешённое количество ссылок в блоке  пагинации
         $maxPaginationLinks = $this->getMaxPaginationLinks();
 
-        # определяем сколько должно быть видно ссылок на страницы сбоку от центральной
-        $sideLinksNumber = (($maxPaginationLinks - 1)/2);
+        # определяем максимальное количество ссылок на сбоку от центральной
+        $sideLinksNumber    = $this->getSideLinksNumber($maxPaginationLinks);
 
         # высчитываем номер крайней правой страницы в блоке пагинации
-        $calcEndPage = $centerPageLinkNumber + $sideLinksNumber;
+        $calcEndPage        = $centerPageLinkNumber + $sideLinksNumber;
 
         # если вычисленный номер меньше общего числа страниц
         if ($calcEndPage < $totalNumberOfPages){
@@ -268,6 +281,16 @@ class Pagination{
     }
 
     /**
+     * определяем максимальное количество ссылок на сбоку от центральной
+     *
+     * @param $maxPaginationLinks
+     * @return int
+     */
+    private function getSideLinksNumber($maxPaginationLinks){
+        return ceil(($maxPaginationLinks - 1)/2);
+    }
+
+    /**
      * возвращает html блока пагинации
      *
      * @return string
@@ -276,9 +299,11 @@ class Pagination{
         # получаем параметры для работы
         $pageNumberNow          = $this->getPageNumber();           # номер текущей страницы
         $totalNumberOfPages     = $this->getNumberOfPages();        # всего количество страниц
-        $linkFromPage           = $this->getLinkFromPage();         # ссылка на текущую страницу
+        $linkFromThisPage       = $this->getLinkFromPage();         # ссылка на текущую страницу
         $maxPaginationLinks     = $this->getMaxPaginationLinks();   # получаем максимально разрешённое число ссылок в блоке пагинаций
 
+        # ссылка с пустым параметром
+        $emptyLinkFromOtherPage = $linkFromThisPage.'&'.$this->getPageNumberParameterName();
 
         # устанавливаем параметры по умолчанию
         $this->setPaginationLinksPageStart(1);                  # № первой страницы в блоке пагинации
@@ -301,32 +326,58 @@ class Pagination{
             $this->calcPaginationLinksPageEnd( $centerPageLinkNumber );
         }
 
-        $html = '<div id="pagination_container">';
+        $html = '';
 
         # условия показа ссылки на предыдущёю страницу
         if( $totalNumberOfPages > $maxPaginationLinks && $pageNumberNow > 1){
-            $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number=1"> <<< </a>';
-            $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number='.($pageNumberNow-1).'"> пред. </a>';
+            # сборка ссылок
+            $html .= $this->getHtmlLink(' <<< ', $emptyLinkFromOtherPage.'=1');
+            $html .= $this->getHtmlLink('пред', $emptyLinkFromOtherPage.'='.($pageNumberNow-1));
         }
+
         # вывод центрального блока ссылок
-        for ($pageNumber = $this->paginationLinksPageStart; $pageNumber <= $this->paginationLinksPageEnd; $pageNumber++ ){
-            $class = ($pageNumber == $pageNumberNow)?' class="checked"':'';
-            $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number='.$pageNumber.'" '.$class.'>'.$pageNumber.'</a>';
+        for ($pageNumber = $this->getPaginationLinksPageStart(); $pageNumber <= $this->getPaginationLinksPageEnd(); $pageNumber++ ){
+            # выделяем текущую страницу
+            $classForStyle = ($pageNumber == $pageNumberNow)?' class="checked"':'';
+
+            # собираем сылку на страницу
+            $html .= $this->getHtmlLink($pageNumber, $emptyLinkFromOtherPage.'='.$pageNumber, $classForStyle);
         }
 
         # условие показа ссылки на следующую страницу
         if( $totalNumberOfPages > $maxPaginationLinks && $totalNumberOfPages > $pageNumberNow ){
-            $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number='.($pageNumberNow+1).'"> след. </a>';
-            $html .= '<a style="padding:5px;" href="http://'.$linkFromPage.'&page_number='.$totalNumberOfPages.'"> >>> </a>';
+            # сборка ссылок
+            $html .= $this->getHtmlLink('след', $emptyLinkFromOtherPage.'='.($pageNumberNow+1));
+            $html .= $this->getHtmlLink(' >>> ', $emptyLinkFromOtherPage.'='.$totalNumberOfPages);
         }
-
-        $html .= '</div>';
         
-        return $html;
+        return $this->wrapHtmlContainer( $html );
     }
 
     /**
-     * возхвращает рабочую ссылку на страниц выгрузки
+     * возвращает HTML ссылки
+     *
+     * @param string $text
+     * @param string $href
+     * @param string $class
+     * @return string
+     */
+    private function getHtmlLink( $text = "Page Name", $href="#", $class = ""){
+        return '<a href="'.$href.'" '.$class.'>'.$text.'</a>';
+    }
+
+    /**
+     * оборачивает контент в div
+     *
+     * @param $html
+     * @return string
+     */
+    private function wrapHtmlContainer($html){
+        return '<div id="pagination_container">'.$html.'</div>';
+    }
+
+    /**
+     * возвращает рабочую ссылку на страниц выгрузки
      * @return string
      */
     private function getLinkFromPage(){
@@ -334,13 +385,13 @@ class Pagination{
             $newLink = '';
             $i = 0;
             foreach ($_GET as $key => $param){
-                if ($key != 'page_number'){
+                if ($key != $this->getPageNumberParameterName()){
                     $newLink .= ($i == 0)?'?':'&';
                     $newLink .= $key.'='.$param;
                 }
                 $i++;
             }
-            $this->setWorkerLink($_SERVER['HTTP_HOST'].'/os/'.$newLink);
+            $this->setWorkerLink('http://'.$_SERVER['HTTP_HOST'].'/os/'.$newLink);
         }
         return $this->getWorkerLink();
 

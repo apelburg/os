@@ -1533,7 +1533,11 @@ table#general_panel_orders_tbl {
 	padding: 5px 8px 6px 8px;
 	border: 1px solid #92b73e;
 	margin-left: 5px;
-	color: #c1c1c1;
+	color: #616161;
+	text-decoration: none;
+}
+#pagination_container a:hover{
+	background-color: #f1f1f1;
 }
 #pagination_container a.checked{
 	background-color: #92b73e;
