@@ -338,7 +338,7 @@ class Pagination{
         # вывод центрального блока ссылок
         for ($pageNumber = $this->getPaginationLinksPageStart(); $pageNumber <= $this->getPaginationLinksPageEnd(); $pageNumber++ ){
             # выделяем текущую страницу
-            $classForStyle = ($pageNumber == $pageNumberNow)?' class="checked"':'';
+            $classForStyle = ($pageNumber == $pageNumberNow)?'checked':'';
 
             # собираем сылку на страницу
             $html .= $this->getHtmlLink($pageNumber, $emptyLinkFromOtherPage.'='.$pageNumber, $classForStyle);
@@ -362,7 +362,11 @@ class Pagination{
      * @param string $class
      * @return string
      */
-    private function getHtmlLink( $text = "Page Name", $href="#", $class = ""){
+    private function getHtmlLink( $text = "Page Name", $href="#", $i_class = ""){
+        $class = '';
+        if ($class != ""){
+            $class = ' class="'.$i_class.'"';
+        }
         return '<a href="'.$href.'" '.$class.'>'.$text.'</a>';
     }
 
