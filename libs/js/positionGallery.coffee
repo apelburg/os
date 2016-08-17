@@ -10,10 +10,23 @@ class window.galleryWindow
 
     self = @
     new sendAjax('get_gallery_content',{ id:@positionId }, ( response )->
+
+
       window_preload_del()
       self.setData( response.data )
       self.init()
-      self.initUploadify()
+
+      try
+        # попытка подключить модуль загрузки
+        self.initUploadify()
+      catch error
+        $('#'+self.data.token).remove()
+        echo_message_js('Не удоалось подключить модуль загрузки изображений, проблема уже исправляется <br>попробуйте перейти в карточку товара','error_message',3500);
+
+
+
+
+
     )
 
   init:()->

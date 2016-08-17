@@ -16,10 +16,17 @@
       new sendAjax('get_gallery_content', {
         id: this.positionId
       }, function(response) {
+        var error;
         window_preload_del();
         self.setData(response.data);
         self.init();
-        return self.initUploadify();
+        try {
+          return self.initUploadify();
+        } catch (_error) {
+          error = _error;
+          $('#' + self.data.token).remove();
+          return echo_message_js('Не удоалось подключить модуль загрузки изображений, проблема уже исправляется <br>попробуйте перейти в карточку товара', 'error_message', 3500);
+        }
       });
     }
 
