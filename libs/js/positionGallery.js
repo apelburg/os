@@ -150,19 +150,23 @@
     };
 
     galleryWindow.prototype.initUploadify = function() {
-      var self;
+      var section, self, url;
       console.log('initUpl');
       self = this;
       this.contentDiv.append($('<div/>', {
         id: 'galleryWindowQueue'
       }));
-      console.log('http://' + window.location.hostname + '/libs/php/uploadify.swf');
+      section = '';
+      url = $.getUrlVars('section');
+      if (url['section'] !== void 0) {
+        section = url['section'];
+      }
       return $('#' + self.data.token).uploadify({
         'formData': {
           'AJAX': 'add_new_files_in_kp_gallery',
           'timestamp': this.data.timestamp,
           'token': self.data.token,
-          'section': $.urlVar('section'),
+          'section': section,
           'id': this.data.id,
           'folder_name': this.data.folder_name
         },

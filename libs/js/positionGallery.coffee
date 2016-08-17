@@ -166,14 +166,17 @@ class window.galleryWindow
       id:'galleryWindowQueue'
     }))
 
-    console.log 'http://' + window.location.hostname + '/libs/php/uploadify.swf'
+    section = ''
+    url = $.getUrlVars('section')
+    if url['section'] != undefined
+      section =url['section']
 
     $('#'+self.data.token).uploadify({
       'formData'     : {
         'AJAX'			: 'add_new_files_in_kp_gallery',
         'timestamp' 	: @data.timestamp,
         'token'     	: self.data.token,
-        'section'      	: $.urlVar('section'),
+        'section'      	: section,
         'id'        	: @data.id,
         'folder_name'	: @data.folder_name
       },
