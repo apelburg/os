@@ -5,20 +5,20 @@
 	if(!@$ACCESS['client_folder']['access']) exit($ACCESS_NOTICE);
 	// ** БЕЗОПАСНОСТЬ **
 
-	// класс комментов к запросу
+    // подключаем галлерею
+    include_once './libs/php/classes/rt_KpGallery.class.php';
+    new rtKpGallery();
+
+    // класс комментов к запросу
 	include './libs/php/classes/comments_class.php';
-	$comments = new Comments_for_query_class;
+	new Comments_for_query_class();
 	
-
-
-	// класс центр услуг
+    // класс центр услуг
 	include_once ('./libs/php/classes/print_calculators_class.php');
 	include_once ('./libs/php/classes/serviceCenter.class.php');
 	new ServiceCenter();
 
-
-
-	// client_details
+    // client_details
 	if(!$section || $section=='rt' || $section=='business_offers'  || $section=='agreements' || $section=='planner'){
 		$client_id = (isset($_GET['client_id']) && $_GET['client_id']!='0')? $_GET['client_id'] :((isset($_POST['client_id']) && $_GET['client_id']!='0')? $_POST['client_id']: FALSE) ;
 	

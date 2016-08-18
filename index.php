@@ -1,4 +1,4 @@
-<?php 
+<?php
 	header('Content-type: text/html; charset=utf-8');
 	define(DOCUMENT_ROOT, __DIR__);
 	// ini_set('error_reporting', E_ALL);
@@ -15,19 +15,17 @@
 	include_once('libs/lock.php');
 	include_once('libs/variables.php');
 
-	// aplStdClass
-	include_once ROOT.'/../libs/php/classes/aplStdClass.php';
+	/**
+	 * подключаем osGeneral и aplStdAJAXMethod
+	 *
+	 * osGeneral содержит глобальные AJAX запросы по всей ОС
+	 * наследует методы aplStdAJAXMethod
+	 */
+	include_once ROOT.'/libs/php/classes/osGeneral.class.php';
+	new osGeneral();
 
-	// галлерея
-	include_once ROOT.'/libs/php/classes/rt_KpGallery.class.php';
-	new rtKpGallery;
-	//
-	include_once('libs/php/classes/clientSearchClass.php');
-	new clientSearch();
 
 	include_once('libs/access_installer.php');
-
-
 	include_once('libs/php/classes/mail_class.php');
 	include_once('libs/php/common.php');
     
