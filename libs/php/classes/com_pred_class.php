@@ -1085,6 +1085,7 @@ dop_data_tbl.details AS details, dop_data_tbl.tirage_str AS tirage_str, dop_data
 								    $y_params_coeff = (isset($y_params_coeff))?$y_params_coeff:1;
 								    $print_block_price += ($new_price_arr['price_out']/$y_params_count)*$y_params_coeff;
 								}*/
+								$quantity = (int)$quantity;
 								$print_block_summ = $quantity*$print_block_price;
 								 
 								$all_print_summ+= $quantity*$new_price_arr['price_out'];
