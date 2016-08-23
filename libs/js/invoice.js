@@ -4799,6 +4799,7 @@
         if (len < this.Pmax) {
           this.Pmax = len;
         }
+        console.log('@Pmax =', this.Pmax);
         for (i = j = ref = this.Pmin, ref1 = this.Pmax; ref <= ref1 ? j < ref1 : j > ref1; i = ref <= ref1 ? ++j : --j) {
           this.$el.find('tbody').append(this.createRow(this.options.data[i]));
         }
@@ -4832,7 +4833,7 @@
         if (Pmin === this.Pmax) {
           return echo_message_js("На страницу уже выгружены все счета " + Pmin + " / " + this.Pmax);
         }
-        for (i = j = ref = this.Pmin, ref1 = this.Pmax; ref <= ref1 ? j < ref1 : j > ref1; i = ref <= ref1 ? ++j : --j) {
+        for (i = j = ref = Pmin, ref1 = this.Pmax; ref <= ref1 ? j < ref1 : j > ref1; i = ref <= ref1 ? ++j : --j) {
           this.$el.find('tbody').append(this.createRow(this.options.data[i]));
         }
         this.showMore.html(text);

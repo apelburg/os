@@ -3,7 +3,7 @@
 	define(DOCUMENT_ROOT, __DIR__);
 	// ini_set('error_reporting', E_ALL);
 	// при переходе на ановую версию php - вылазят сообщения об устаревших методах mysql
-	// поэтому DEPRECATED пока что отключаем 
+	// поэтому DEPRECATED пока что отключаем
 	ini_set('error_reporting', E_ALL ^ E_DEPRECATED);
 	ini_set('display_errors', 1);
 	ini_set('display_startup_errors', 1);

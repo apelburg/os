@@ -4324,7 +4324,7 @@ class invoiceWindow
       @Pmin = @PminStart
       #      console.log len,@Prange,@Pmax
       @Pmax = len if len < @Pmax
-
+      console.log '@Pmax =',@Pmax 
       for i in [@Pmin...@Pmax]
         @$el.find('tbody').append(@createRow(@options.data[i]))
 
@@ -4346,6 +4346,7 @@ class invoiceWindow
       text = 'Показать еще ' + @Pmax + '/' + @showMore.data().c
       Pmin = @Pmax
       @Pmin = @Pmax + 1
+      
       @Pmax = @Pmax + @Prange
       if Number(@showMore.data().c) < @Pmax
         @Pmax = Number(@showMore.data().c)
@@ -4354,7 +4355,7 @@ class invoiceWindow
       if Pmin == @Pmax
         return echo_message_js("На страницу уже выгружены все счета " + Pmin + " / " + @Pmax)
 
-      for i in [@Pmin...@Pmax]
+      for i in [Pmin...@Pmax]
         @$el.find('tbody').append(@createRow(@options.data[i]))
 
 
