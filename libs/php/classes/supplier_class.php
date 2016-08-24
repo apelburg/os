@@ -35,7 +35,7 @@ class Supplier extends aplStdAJAXMethod{
 	 * Supplier constructor.
 	 * @param $id
      */
-	public function __construct($id) {
+	public function __construct($id = 0) {
 
         $this->db();
 
@@ -133,9 +133,58 @@ class Supplier extends aplStdAJAXMethod{
      * запрос на создание поставщика
      */
     protected function create_supplier_AJAX(){
+//        $this->responseClass->addMessage('Добавление поставщика временно не доступно','error_message',1500);
 
-        $option['href'] = 'http://'.$_SERVER['HTTP_HOST'].'/os/?page=suppliers&section=suppliers_data&suppliers_id=634'.$this->insert_supplier_in_database($_POST['nickName'],$_POST['fullName'],$_POST['dop_info']);
+        $nickName = $_POST['nickName'];
+        $dop_info = $_POST['dop_info'];
+        $fullName = $_POST['fullName'];
+
+
+        if ($this->search_name($nickName) > 0 ) {
+            $this->responseClass->addMessage('Сокращённое название данной организации уже содержится в базе ОС');
+            return;
+        }
+        if ($this->search_name($fullName) > 0) {
+            $this->responseClass->addMessage('Полное название данной организации уже содержится в базе ОС');
+            return;
+        }
+
+        # заводим строку поставщика в базе
+        $insert_id = $this->insert_supplier_in_database($nickName,$fullName,$dop_info);
+
+        # отправляем юзера на страницу с поставщиком
+        $option['href'] = 'http://'.$_SERVER['HTTP_HOST'].'/os/?page=suppliers&section=suppliers_data&suppliers_id='.$insert_id;
         $this->responseClass->addResponseFunction('location_href',$option);
+
+
+        $userName = "";
+        # отправляем сообщение менеджерам
+        include_once $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/invoice.class.php';
+        $Invoice = new InvoiceNotify();
+        $subject = 'В базу добавлен новый поставщик';
+
+
+        $message = 'В базу поставщиков добавлен новый поставщик '.$nickName;
+        $href = 'http://www.apelburg.ru/os/?page=suppliers&section=suppliers_data&suppliers_id='.$insert_id;
+        # подгружаем шаблон
+        ob_start();
+
+        include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+        $html = ob_get_contents();
+        ob_get_clean();
+
+        return mail('sales@apelburg.ru',
+//        return mail('kapitonoval2012@gmail.com',
+            $subject,
+            $html,
+            "From: snab@apelburg.ru\r\n"
+            ."Content-type: text/html; charset=utf-8\r\n"
+            ."X-Mailer: PHP mail script"
+        );
+
+
+
+
     }
 
     /**
@@ -143,16 +192,20 @@ class Supplier extends aplStdAJAXMethod{
      *
      * @param $nickName
      * @param $fullName
-     * @param $dopInfo
+     * @param string $dopInfo
      * @return mixed
      */
-    private function insert_supplier_in_database($nickName,$fullName,$dopInfo){
+    private function insert_supplier_in_database($nickName,$fullName,$dopInfo = ''){
         $query = "INSERT INTO ".SUPPLIERS_TBL." SET ";
-        $query .= " `nickName`=?";
-        $query .= " `fullName`=?";
+        $query .= " `nickName`=? ,";
+        $query .= " `fullName`=? ,";
         $query .= " `dop_info`=?";
         $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
         $stmt->bind_param('sss', $nickName,$fullName,$dopInfo) or die($this->mysqli->error);
+
+        $stmt->execute() or die($this->mysqli->error);
+        $result = $stmt->get_result();
+        $stmt->close();
 
         return $this->mysqli->insert_id;
     }
@@ -556,15 +609,22 @@ class Supplier extends aplStdAJAXMethod{
 		return 1;		
 	}
 
-	/**
-	 *
-	 * @param $name
-	 * @return int
-	 */
-	static function search_name($name){
-		global $mysqli;
-		$query = "SELECT `id` FROM `".SUPPLIERS_TBL."` WHERE `fullName` = '".$name."' OR `nickName` = '".$name."'";
-		$result = $mysqli->query($query) or die($mysqli->error);
+    /**
+     * поиск поставщика по краткому и полному имени
+     *
+     * @param $name
+     * @return mixed
+     */
+	private function search_name($name){
+		$this->db();
+
+		$query = "SELECT `id` FROM `".SUPPLIERS_TBL."` WHERE `fullName` = ? OR `nickName` =? ";
+
+        $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+        $stmt->bind_param('ss', $name, $name) or die($this->mysqli->error);
+        $stmt->execute() or die($this->mysqli->error);
+        $result = $stmt->get_result();
+        $stmt->close();
 
 		$row_cnt = $result->num_rows;
 		return $row_cnt;
@@ -590,7 +650,35 @@ class Supplier extends aplStdAJAXMethod{
 		$stmt->execute() or die($mysqli->error);
 		$result = $stmt->get_result();
 		$stmt->close();
-		return $mysqli->insert_id;
+
+        $insert_id = $mysqli->insert_id;
+//        $insert_id = 2;
+
+        $userName = "";
+        # отправляем сообщение менеджерам
+        include_once $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/invoice.class.php';
+        $Invoice = new InvoiceNotify();
+        $subject = 'В базу добавлен новый поставщик';
+
+
+        $message = 'В базу поставщиков добавлен новый поставщик '.$name;
+        $href = 'http://www.apelburg.ru/os/?page=suppliers&section=suppliers_data&suppliers_id='.$insert_id;
+        # подгружаем шаблон
+        ob_start();
+        // include_once '/var/www/admin/data/www/apelburg.ru/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+        include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+        $html = ob_get_contents();
+        ob_get_clean();
+
+        return mail('sales@apelburg.ru',
+            $subject,
+            $html,
+            "From: snab@apelburg.ru\r\n"
+            ."Content-type: text/html; charset=utf-8\r\n"
+            ."X-Mailer: PHP mail script"
+        );
+
+		return $insert_id;
 	}
 
 	/**

@@ -367,6 +367,98 @@
 
   })();
 
+  window.create_supplier = (function() {
+    function create_supplier() {
+      var buttons, mod, self;
+      self = this;
+      buttons = [
+        {
+          text: 'Отмена',
+          "class": 'button_yes_or_no no',
+          style: 'float:right;',
+          click: function() {
+            return $(mod.winDiv).dialog('close').dialog('destroy').remove();
+          }
+        }, {
+          text: 'Создать',
+          "class": 'button_yes_or_no yes',
+          style: 'float:right;',
+          click: function() {
+            if (self.isValidForm()) {
+              return new sendAjax('create_supplier', {
+                fullName: self.fullName.val(),
+                nickName: self.nickName.val(),
+                dop_info: self.dop_info.val()
+              }, function(response) {
+                return console.log(response);
+              });
+            }
+          }
+        }
+      ];
+      this.form = this.getWindowContent();
+      mod = new modalWindow({
+        html: this.form,
+        title: "Создать поставщика",
+        buttons: buttons
+      }, {
+        closeOnEscape: true
+      });
+    }
+
+    create_supplier.prototype.isValidForm = function() {
+      if (this.nickName.val().length === 0) {
+        this.error_div.html('Укажите сокращённое название');
+        this.nickName.css({
+          'borderColor': 'red'
+        }).focus();
+        return false;
+      }
+      this.nickName.removeAttr('style');
+      if (this.fullName.val().length === 0) {
+        this.error_div.html('Укажите полное название');
+        this.fullName.css({
+          'borderColor': 'red'
+        }).focus();
+        return false;
+      }
+      this.fullName.removeAttr('style');
+      this.error_div.html('');
+      return true;
+    };
+
+    create_supplier.prototype.getWindowContent = function() {
+      var mainDiv;
+      mainDiv = $('<form/>', {
+        id: 'create_supplier_form'
+      }).append(this.error_div = $('<div/>', {
+        "class": 'errors_text'
+      }));
+      mainDiv.append(this.nickName = $('<input/>', {
+        type: 'text',
+        placeholder: 'Сокращённое название',
+        name: 'nickName'
+      }));
+      mainDiv.append(this.fullName = $('<input/>', {
+        type: 'text',
+        placeholder: 'Полное название',
+        name: 'fullName'
+      }));
+      return mainDiv.append(this.dop_info = $('<textarea/>', {
+        type: 'text',
+        placeholder: 'Дополнительная информация',
+        name: 'dop_info',
+        css: {
+          width: '100%',
+          height: 100
+        }
+      }));
+    };
+
+    return create_supplier;
+
+  })();
+
   requisitSimpleWindow = (function() {
     function requisitSimpleWindow(data, access) {
       var buttons, html, i, len, num, rowData, self, tbl;

@@ -2,7 +2,9 @@
 
     <script type="text/javascript" src="libs/js/assosiatingScrolledTable.js"></script>
     <script type="text/javascript" src="libs/js/supplier_card.js"></script>
+    <script type="text/javascript" src="libs/js/js_coffee_library.js"></script>
 
+    <link href="skins/css/js_coffee_library.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/js_coffee_library.js"></script>
     <script src="<?php  echo HOST; ?>/libs/js/supplier.js" rel="stylesheet" type="application/javascript"></script>
 

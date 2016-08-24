@@ -1,34 +1,6 @@
 <?php 
     ////////////////////////////////////////////////////  AJAX /////////////////////////////////////////////////////////////////
-	if(isset($_POST['AJAX'])){
-		if($_POST['AJAX']=='create_supplier'){
-			$nickName = $_POST['nickName'];
-			$dop_info = $_POST['dop_info'];
-			$fullName = $_POST['fullName'];
-			if(Supplier::search_name($nickName)==0){
-				if(Supplier::search_name($fullName)==0){
-					echo '{
-				       "response":"1",
-				       "id":"'.Supplier::create($nickName,$fullName,$dop_info).'",
-				       "text":"Данные успешно сохранены"
-				      }';
-				}else{
-					echo '{
-				       "response":"0",
-				       "error":"2",
-				       "text":"Название данной организации уже содержится в базе ОС"
-				      }';
-				}
-			}else{
-				echo '{
-			       "response":"0",
-				    "error":"1",
-			       "text":"Это сокращённое название уже содержится в базе ОС"
-			      }';
-			}			
-			exit;
-		}
-	}
+	new Supplier();
     ////////////////////////////////////////////////////  AJAX /////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////   quick_bar   ///////////////////////////////////////////////////

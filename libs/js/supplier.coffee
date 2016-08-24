@@ -267,6 +267,91 @@ class requesitContent
 
     return tbl
 
+class window.create_supplier
+  constructor:()->
+    self = @
+    buttons = [{
+      text: 'Отмена',
+      class: 'button_yes_or_no no',
+      style: 'float:right;'
+      click: ()->
+        $(mod.winDiv).dialog('close').dialog('destroy').remove()
+    }, {
+      text: 'Создать',
+      class: 'button_yes_or_no yes',
+      style: 'float:right;',
+      click: ()->
+        if(self.isValidForm())
+          new sendAjax 'create_supplier', {fullName:self.fullName.val(),nickName:self.nickName.val(),dop_info:self.dop_info.val()}, (response)->
+            console.log response
+#            $(mod.winDiv).dialog('close').dialog('destroy').remove()
+
+
+
+    }]
+
+    @form = @getWindowContent()
+
+    mod = new modalWindow({
+      html: @form,
+      title: "Создать поставщика"
+      buttons:buttons
+    },{
+      closeOnEscape:true
+    })
+
+  isValidForm:()->
+    if (@nickName.val().length == 0)
+      @error_div.html( 'Укажите сокращённое название' )
+      @nickName.css({
+        'borderColor':'red'
+      }).focus()
+      return false
+    @nickName.removeAttr('style')
+
+    if (@fullName.val().length == 0)
+      @error_div.html( 'Укажите полное название' )
+      @fullName.css({
+        'borderColor':'red'
+      }).focus()
+      return false
+    @fullName.removeAttr('style')
+
+    @error_div.html('')
+
+    return true
+
+
+  getWindowContent:()->
+    mainDiv = $('<form/>',{
+      id:'create_supplier_form',
+
+    }).append(@error_div = $('<div/>',{
+      class:'errors_text'
+    }))
+
+
+
+    mainDiv.append(@nickName = $('<input/>',{
+      type:'text',
+      placeholder:'Сокращённое название',
+      name:'nickName'
+    }))
+    mainDiv.append(@fullName = $('<input/>',{
+      type:'text',
+      placeholder:'Полное название',
+      name:'fullName'
+    }))
+    mainDiv.append(@dop_info = $('<textarea/>',{
+      type:'text',
+      placeholder:'Дополнительная информация',
+      name:'dop_info',
+      css:{
+        width:'100%',
+        height:100
+      }
+    }))
+
 
 
 class requisitSimpleWindow

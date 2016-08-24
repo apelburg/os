@@ -22,78 +22,7 @@ $(document).on('click', '.ok_bw, .send_bw, .greate_bw, .save_bw', function(event
 //
 
 $('#create_new_supplier').click(function(event) {
-    $('#create_supplier_form input').css({'border':'none'});
-    $('#create_supplier_form .errors_text').html(''); 
-    var num = Number($('.ui-dialog').length)+1;
-    var div_id = 'dialog_window_'+num;
-    var div_title = "Создать поставщика";
-    // создаём объект формы
-    var obj_form = $('<form/>',{id:'create_supplier_form','style':'min-width:200px'});
-    console.log('создаём объект формы');
-    $('<div/>',{class:'errors_text'}).appendTo(obj_form);
-    // $('<div/>').text('Сокращённое название').appendTo(obj_form);
-    $('<input/>',{type:'text',name:'nickName',placeholder:'Сокращённое название'}).appendTo(obj_form);
-    // $('<div/>').text('Полное название').appendTo(obj_form);
-    $('<div/>',{class:'errors_text'}).appendTo(obj_form);
-    $('<input/>',{type:'text',name:'fullName',placeholder:'Полное название'}).appendTo(obj_form);
-    // $('<div/>').text('Дополнительная информация').appendTo(obj_form);
-    $('<input/>',{type:'hidden',name:'AJAX',val:'create_supplier'}).appendTo(obj_form);
-    $('<textarea/>',{name:'dop_info',placeholder:'Дополнительная информация'}).css({'width':'100%','height':'100px'}).appendTo(obj_form);
-    //console.log('добавил див для окна #'+div_id);
-    $('body').append('<div class="dialog_window" id="' + div_id + '"></div>');
-    $('#'+div_id).html(obj_form);
-
-    // кнопки для окна
-    var buttons = new Array();
-
-    buttons.push({
-        text: 'Отмена',
-        click: function() {
-            // закрыть окно 
-            var window_id_close = $(this).parent().find('.ui-dialog-content').attr('id');
-            $('#' + div_id).dialog('destroy');
-            $('#' + div_id).remove();
-        }
-    });
-
-    buttons.push({
-        text: 'ОК',
-        css:{'width':'100px','float':'right'},
-        click: function() { 
-            var link = 'http://'+location.hostname+'/os/?page=suppliers&section=suppliers_data&suppliers_id=';
-            // проверяем введена ли дата отсрочки
-            $.post('', $('#'+div_id+' form').serialize(), function(data, textStatus, xhr) {
-                 standard_response_handler(data);
-
-                if(data['response']=='1' || data['response']=='OK'){
-                    window.location.href = link+''+data['id']+'&supplier_edit';  
-                }else{
-                    if(data['response']=='0'){
-                        $('#create_supplier_form input:nth-of-type('+data["error"]+')').css({'border':'1px solid red'});
-                        $('#create_supplier_form .errors_text:nth-of-type('+data["error"]+')').html(data['text']);                               
-                        
-                    }
-                }
-            },'json');
-        }
-    });                    
-          
-    // console.log('создан диалог для окна- '+'#' + div_id);
-    var dialog = $('#' + div_id).dialog({
-        width: 400,
-        height: 'auto',
-        modal: true,
-        title : div_title,
-        autoOpen : true,
-        css:{'top':'10px'},
-        buttons: buttons,
-        open:function() {
-            // скрываем крестик
-            // $(this).parents(".ui-dialog:first").find("a").remove();
-            // $(this).parent(".ui-dialog:first").find(".ui-dialog-titlebar-close,.ui-dialog-titlebar-minimize").remove();
-            // $('.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset').css({'width':'94%'});
-        }
-    });
+    new create_supplier()
 });
 
 

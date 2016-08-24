@@ -170,7 +170,6 @@ class InvoiceNotify extends aplStdAJAXMethod
 			);
 //			return $mail->send($to,$from,$subject,$message,TRUE);
 		}
-
 	}
 
 	public function sendMessageToId($id,$from,$subject,$message ){
