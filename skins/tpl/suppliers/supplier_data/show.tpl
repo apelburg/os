@@ -1,5 +1,7 @@
-<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/js_coffee_library.js"></script>
+<script type="text/javascript" src="libs/js/js_coffee_library.js"></script>
+<link href="skins/css/js_coffee_library.css" rel="stylesheet" type="text/css">
 <script src="<?php  echo HOST; ?>/libs/js/supplier.js" rel="stylesheet" type="application/javascript"></script>
+
 <!-- <?php echo __FILE__; ?> -- START-->
 <div id="content_general_header">
     <table>

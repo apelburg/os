@@ -656,48 +656,14 @@ $(function(){
     });
 });
 
-// окно удаления клиента
+
+// удалить поставщика
 $(document).on('click','#client_delete',function(){
-    if(!$('#client_delete_div').length){
-        $('body').append('<div id="client_delete_div">Отправить запрос на удаление поставщика?</div>');
-        $('#client_delete_div').dialog({
-            width: 'auto',
-            height: 'auto',
-            title: 'Удалить поставщика',
-            autoOpen : false,
-            buttons: [
-                {
-                text: 'Отправить',
-                    click: function() {
-                        $.post('', {
-                            AJAX:"client_delete",
-                            id:$('#client_delete').attr('data-id')
-                        }, function(data) {
-                            standard_response_handler(data);
-                            if(data['response']=='1' || data['response'] =="OK"){
-                                // all Okey
-                                window.location = "http://"+location.hostname+"/os/?page=clients&section=clients_list";                    
-                            }else{
-                                $('#delete_cont_f_row'+id).removeAttr('id');
-                                echo_message_js('Что-то пошло не так, запомните свои действия и опишите их в письме к разработчикам.','error_message');
-                             }
-                        }, "json");
+    new modalConfirm({html:'Поставщик будет удалён навсегда<br>Продолжить?'},function(){
+        new sendAjax('supplier_delete',{id:$('#client_delete').attr('data-id')})
 
-                        $( this ).dialog( "close" );
-                    }
-                },
-                {
-                text: 'Отмена',
-                    click: function() {
-                        $( this ).dialog( "close" );
-                    }
-                }
-            ]
-            });
-    }
-    $('#client_delete_div').dialog('open');
+    })
 });
-
 
 // ДОБАВИТЬ ПРОФИЛЬ ПОСТАВЩИКА
 $(document).on('click','#add_curator',function(){

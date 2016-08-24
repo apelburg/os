@@ -24,29 +24,6 @@
 
 	if(isset($_POST['AJAX'])){
 
-		if($_POST['AJAX']=="client_delete"){
-			//-- START -- //  логирование
-	        $supplier_name_i = Supplier::get_supplier_name($supplier_id); // получаем название клиента
-	        $user_n = $user_name.' '.$user_last_name;
-	        $text_history = $user_n.' запросил удаление поставщика '.$supplier_name_i;
-	        Supplier::history($user_id, $text_history ,'contact_face_new_form',$supplier_id);
-	        //-- END -- //
-			$id_row2 = base64_encode($_POST['id']);
-			$username = $user_name.' '.$user_last_name;
-			$response = Supplier::removal_request(trim($id_row2),$username);						
-			if($response=='1'){
-				echo '{
-			       "response":"1",
-			       "text":"Запрос на удаление поставщика отправлен."
-			    }';
-		  	}else{
-		  		echo '{
-			       "response":"0",
-			       "text":"Что-то пошло не так."
-		    	}';
-		  	}			
-			exit;
-		}
 
 		if ($_POST['AJAX'] == "edit_adress_row") {
 	        $id_row = $_POST['id'];

@@ -591,23 +591,61 @@ class Supplier extends aplStdAJAXMethod{
 		return $contact;
 	}
 
-	/**
-	 * оповещение разработчиков об удалении поставщика
-	 *
-	 * @param $supplier_id
-	 * @param $username
-	 * @return int
-	 */
-	static function removal_request($supplier_id,$username){
-		$mail = new Mail();
-		$mail->add_bcc('kapitonoval2012@gmail.com');
-		$to = 'premier22@yandex.ru';
-		$from = 'Оналайн Сервис <online_service@apelburg.ru>';
-		$subject = 'Заявка на удаление поставщика';
-	    $message = 'Прошу удалить поставщика № '.$supplier_id.' '.$username.'';
-		$out_data = $mail->send($to,$from,$subject,$message);
-		return 1;		
-	}
+    /**
+     * удаление поставщика
+     */
+	protected function supplier_delete_AJAX(){
+        $supplier_id = $_POST['id'];
+	    # получаем название поставщика
+        $supplier_name = self::get_supplier_name($supplier_id);
+
+        # если админ или снаб - удаляем поставщика
+        if ($this->user_access == 8 || $this->user_access == 1){
+            $this->responseClass->addMessage('Удаление поставщика временно недоступно. ');
+
+        }else{
+            # сохраняем в лог
+            $username = $this->user_name.' '.$this->user_last_name;
+            $text_history = 'Пользователь '.$username.' запросил удаление поставщика '.$supplier_name;
+            self::history($this->user_id, $text_history ,'contact_face_new_form',$supplier_id);
+
+            # отправляем запрос на удаление
+
+            $subject = 'Заявка на удаление поставщика';
+
+
+
+            $this->responseClass->addMessage('Запрос на удаление поставщика отправлен в снабжение');
+
+            $userName = "";
+            # отправляем сообщение снабам
+            include_once $_SERVER['DOCUMENT_ROOT'].'/os/libs/php/classes/invoice.class.php';
+            $Invoice = new InvoiceNotify();
+
+
+
+            $message = $text_history;
+            $href = 'http://www.apelburg.ru/os/?page=suppliers&section=suppliers_data&suppliers_id='.$supplier_id.'&supplier_edit';
+            # подгружаем шаблон
+            ob_start();
+
+            include_once $_SERVER['DOCUMENT_ROOT'].'/os/skins/tpl/invoice/notifi_templates/create_invoice.tpl';
+            $html = ob_get_contents();
+            ob_get_clean();
+
+            return mail('snab@apelburg.ru',
+//            return mail('kapitonoval2012@gmail.com',
+                $subject,
+                $html,
+                "From: os@apelburg.ru\r\n"
+                ."Content-type: text/html; charset=utf-8\r\n"
+                ."X-Mailer: PHP mail script"
+            );
+        }
+
+
+    }
+
 
     /**
      * поиск поставщика по краткому и полному имени
