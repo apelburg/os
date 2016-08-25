@@ -367,34 +367,30 @@
 	}
 
 
-	
-	 
-	 /////////////////////////////////// AJAX //////////////////////////////////////	
-	
+
+
+	 /////////////////////////////////// AJAX //////////////////////////////////////
+
 	$supplierClass = new Supplier($_GET['suppliers_id']);
 
-	$supplier = $supplierClass->info;
+	if(isset($supplierClass->name)){
+		$supplier = $supplierClass->info;
 
-	$cont_company_phone = $supplierClass->cont_company_phone;
-	$cont_company_other = $supplierClass->cont_company_other;
+		$cont_company_phone = $supplierClass->cont_company_phone;
+		$cont_company_other = $supplierClass->cont_company_other;
 
-	// получаем адрес
-	$supplier_address = Supplier::get_addres($_GET['suppliers_id']);
+		$supplier = $supplierClass->info;
 
-	$contact_faces_contacts = Supplier::cont_faces($_GET['suppliers_id']);
+		// получаем адрес
+		$supplier_address = Supplier::get_addres($_GET['suppliers_id']);
 
-	$edit_show = (isset($_GET['supplier_edit']))?'admin_':'';
+		$contact_faces_contacts = Supplier::cont_faces($_GET['suppliers_id']);
 
-	$adress_name_arr = array('office' => 'офиса', 'delivery' => 'доставки' );
+		$edit_show = (isset($_GET['supplier_edit']))?'admin_':'';
 
-	$supplier = $supplierClass->info;
-	################################
+		$adress_name_arr = array('office' => 'офиса', 'delivery' => 'доставки' );
 
-	if($supplier==0){
-		//такого поставщика не существует
-		$quick_button = '<div class="quick_button_div"><a href="http://'.$_SERVER['SERVER_NAME'].'/os/?page=suppliers&section=suppliers_list" id="" class="button ">Показать всех</a></div>';
-		include('./skins/tpl/suppliers/supplier_data/default.tpl'); 	
-	}else{
+
 		//получаем информацию по профилям поставщика
 		$get_activities_arr = Supplier::get_activities($_GET['suppliers_id']);
 		// echo '<pre>';
@@ -475,11 +471,16 @@
 		include('./skins/tpl/common/quick_bar.tpl');
 
 		//выводим общий шаблон
-		include('./skins/tpl/suppliers/supplier_data/show.tpl'); 
-		// echo "<pre>";
-		// print_r($supplierClass);
-		// echo "</pre>";
+		include('./skins/tpl/suppliers/supplier_data/show.tpl');
 
+	}else{
+		$quick_button = '<div class="quick_button_div"></div>';
+
+		include('./skins/tpl/common/quick_bar.tpl');
+
+		//такого поставщика не существует
+		$quick_button = '<div class="quick_button_div"><a href="http://'.$_SERVER['SERVER_NAME'].'/os/?page=suppliers&section=suppliers_list" id="" class="button ">Показать всех</a></div>';
+		include('./skins/tpl/suppliers/supplier_data/default.tpl');
 	}
 
 

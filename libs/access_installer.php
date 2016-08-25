@@ -190,7 +190,7 @@
 		'planner'=> array('access'=> true),
 		'suppliers'=> array(
 			'access'=> true,
-//			'full_suppliers_delete'=> true
+			'full_suppliers_delete'=> true
 		),
 		'cabinet'=> array(
 			'access'=> true,
