@@ -411,6 +411,8 @@ var rtCalculator = {
 	}
 	,
 	show_good_preview:function(e){
+		// метод показа превью-изображений при наведении на артикул
+		// console.log('init method show_good_preview');
 	    e = e || window.event;
         var cursor_pos_left = e.clientX;
 		var cur_cell = e.target || e.srcElement;
@@ -455,6 +457,7 @@ var rtCalculator = {
 	}
 	,
 	hide_good_preview:function(e){
+		// скрытие превью
 		if(rtCalculator.good_preview_timer) clearTimeout(rtCalculator.good_preview_timer);
 		if(document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id)){
 			document.getElementById('goodPreviewWin'+rtCalculator.show_good_row_id).style.display = 'none';

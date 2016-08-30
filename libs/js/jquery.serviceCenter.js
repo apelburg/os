@@ -2097,24 +2097,6 @@ jQuery(document).on('click', '.open_service_center', function(event) {
  *	@version 	
  */
 $.extend({
-	// создание кнопки открытия окна Тотал 
-	// SC_createShowWindowButton : function(event){
-	// 	if($('#js-win-sv').length) return true;
-	// 	var obj = $('<div/>',{
-	// 		"id" : "js-win-sv"	
-	// 	}).click(function(event) {
-	// 		$.SC_sendAjax(event);
-	// 	});
-
-	// 	$('body').append( obj );
-	// },
-	// запрос на вызов окна
-	SC_sendAjax:function(obj){
-		// event.preventDefault();
-		// console.log(this)
-
-		
-	},
 	// открытие окна Тотал
 	SC_createWindow : function(html){
 		// если окно вызывается впервые

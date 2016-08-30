@@ -524,3 +524,25 @@ input.getSizesBtn {
 .newAgreementTbl td{ vertical-align: top}
 input.for_new_address{ margin: 5px 0 -15px 0; width: 226px}
 
+button#js--update-prices{
+    background-image: url(../images/img_design/ref.png);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    width: 20px;
+    height: 20px;
+    padding: 0px;
+    border: 1px;
+    background-position: 50%;
+    background-color: transparent;
+    outline: none;
+    -moz-transition: all 0.3s ease;
+    -webkit-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    float: left;
+    margin-left: 30px;
+}
+button#js--update-prices:active{
+    /*background-position: 50% 65% ;*/
+    transform: rotate(45deg)
+}

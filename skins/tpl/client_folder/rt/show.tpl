@@ -25,9 +25,11 @@ $( document ).ready(function() {
   $('#blanket').height($('#rt_tbl_body').height()+250);
 });  
 </script>
+
 <link href="<?php  echo HOST; ?>/skins/css/rt_position.css" rel="stylesheet" type="text/css">
 <link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/statusTooltip.js"></script>
+
 <!-- сервис центр -->
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.serviceCenter.js"></script>
 <link href="<?php  echo HOST; ?>/skins/css/serviceCenter.css" rel="stylesheet" type="text/css">
@@ -43,7 +45,7 @@ $( document ).ready(function() {
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/classes/calendar_consturctor.js"></script>
 
-
+<!-- перетаскиваем строки -->
 <script type="text/javascript" src="<?=HOST;?>/libs/js/drag_and_drop.js"></script>
 
 <link href="<?php  echo HOST; ?>/skins/css/rt.css" rel="stylesheet" type="text/css">
