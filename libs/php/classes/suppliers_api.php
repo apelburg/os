@@ -15,6 +15,14 @@ class SuppliersApi   extends aplStdAJAXMethod
     public 		$user           = array(); 	// authorised user info
     public 	    $user_access    = 0; 		// user right (int)
 
+
+//    private     $ip     = '46.19.190.26';
+//    private     $port   = '8593';
+    private     $ip     = '0.0.0.0';
+    private     $port   = '8000';
+    private     $format = 'json';
+
+
     public function __construct()
     {
         // подключаемся к базе
@@ -42,10 +50,50 @@ class SuppliersApi   extends aplStdAJAXMethod
     }
 
     /**
+     * приводит данные запроса к API к надлежащему виду
+     *
+     * @param array $data
+     * @return string
+     */
+    private function format_data_to_sending($data = []){
+        // убираем дубли
+        $data_new = [];
+
+        foreach ($data as $key => $val ){
+            if (is_array($val)){
+                $data_new[$key] = [];
+                $data_new[$key] = array_unique($val);
+            }
+
+
+        }
+        return $data_new;
+//        return json_encode($data_new,JSON_FORCE_OBJECT);
+    }
+
+    private function getUrl($data){
+        return 'http://'.$this->ip.':'.$this->port.'/?format='.$this->format;
+    }
+
+    /**
      * метод получения данных по артикулам
      */
     protected function get_actual_prices_AJAX(){
-        $this->responseClass->addMessage('test_message');
+
+
+        $data = $this->format_data_to_sending($_POST['data']);
+
+        $myCurl = curl_init();
+        curl_setopt_array($myCurl, array(
+            CURLOPT_URL => $this->getUrl($data),
+            CURLOPT_RETURNTRANSFER => true,
+        ));
+        $response = curl_exec($myCurl);
+
+        $responseJson = json_decode($response, true);
+        curl_close($myCurl);
+        $this->responseClass->addSimpleWindow($response.'<br>'.$this->getUrl($data));
+        $this->responseClass->response['data'] = $responseJson;
 
     }
 

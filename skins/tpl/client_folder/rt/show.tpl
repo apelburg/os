@@ -56,6 +56,9 @@ $( document ).ready(function() {
 
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/classes/rtCalculatorClass.js"></script>
 
+<script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/menuClick.js"></script>
+<link href="<?php  echo HOST; ?>/skins/css/menuClick.css" rel="stylesheet" type="text/css">
+
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/classes/printCalculatorClass.js"></script>
 <script type="text/javascript" src="./libs/js/up_window_consructor.js"></script>
 <div id="replace_rt_maincontent">

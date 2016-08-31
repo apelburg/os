@@ -73,13 +73,7 @@ var rtCalculator = {
 		this.set_interactive_cells();
 
 
-		this.print_previos_data()
-	}
-	,
-	print_previos_data:function(){
-		console.log('656465 -- start -- 654654')
-		console.log(this.tbl_model)
-		console.log('656465 --  end  -- 654654')
+
 	}
 	,
 	add_change_color_menu:function( tr ){
@@ -92,14 +86,14 @@ var rtCalculator = {
 
 				var obj = $(this);
 				var pos_id = $(this).parent().parent().attr('pos_id');
-				$("#context-menu").remove();
+				$("#context-menu-color").remove();
 				event.preventDefault();
 				// Создаем меню:
 
 
 				var context = $('<div/>', {
-					'class': 'context-menu',
-					'id':'context-menu'
+					'class': 'context-menu-color',
+					'id':'context-menu-color'
 					// Присваиваем блоку наш css класс контекстного меню:
 				}).css({
 					left: event.pageX+'px',
@@ -146,12 +140,9 @@ var rtCalculator = {
 				$(document).click( function(event){
 					if( $(event.target).closest("#context-menu").length )
 						return;
-					$(".context-menu").remove();
+					$(".context-menu-color").remove();
 					event.stopPropagation();
 				});
-
-
-
 				// document.oncontextmenu = function() {return false;};
 				// echo_message_js('сейчас вылетить птичко )))');
 				// return false;
@@ -160,11 +151,43 @@ var rtCalculator = {
 	}
 	,
 	// метод получает данные по входящим ценам
-	get_price_in_data:function(){
-		self = this
-		new sendAjax('get_actual_prices',{},function(response){
-			console.log(response)
+	get_price_in_data:function(update){
+		var  update_type;
+
+		update_type = update || 'all';
+
+		dat1 = this.get_articule_list()
+
+		new sendAjax('get_actual_prices',{ 'data':dat1 },function(response){
+
+
 		})
+	},
+
+	// метод собирает список артикулов и сортирует их по префиксам поставщиков
+	get_articule_list:function(){
+		var attr, responseArray = {};
+
+		var t=0;
+		for(var i in this.tbl_model) {
+
+			// проверяем наличие информации по поставщику
+			if (this.tbl_model[i].supplier && this.tbl_model[i].supplier != '' && this.tbl_model[i].art && this.tbl_model[i].art!=''){
+				var supplier = 's'+String(this.tbl_model[i].supplier)
+				// создаем массив по поставщику, если таковой ещё не создан
+				if(!responseArray[ supplier ]){
+					responseArray[ supplier ] = []
+				}
+
+				// кладём реальный артикул в поставщика
+				// console.log(this.tbl_model[i].art, t++)
+				responseArray[ supplier ].push(this.tbl_model[i].art)
+
+			}
+
+		}
+		console.log(responseArray.length,responseArray)
+		return responseArray
 	}
 	,
 	collect_data:function(){
@@ -176,10 +199,28 @@ var rtCalculator = {
 		var trs_arr = ($(this.head_tbl).children('tbody').length>0)? $(this.head_tbl).children('tbody').children('tr'):$(this.head_tbl).children('tr');
 
 		// навешиваем обработчик кнопки обновления цен
-		self = this
 		if (button_update_prices = $(this.head_tbl).find('#js--update-prices')){
-			button_update_prices.on('click',function(){
-				self.get_price_in_data()
+			self = this
+			buttons = [
+				{
+					'name': 'Обновить входящую',
+					'class': '',
+					click: function(e){
+						self.get_price_in_data('price_in')
+					}
+
+				},{
+					'name': 'Обновить входящую + исходящую',
+					'class': '',
+					click: function(e){
+						self.get_price_in_data('all')
+					}
+				}
+			]
+			// собираем меню на левый клик
+			button_update_prices.menuClick({
+				'buttons': buttons,
+				'click':'leftClick'
 			})
 		}
 
@@ -254,6 +295,15 @@ var rtCalculator = {
 			if(!this.tbl_model[row_id]){
 				this.tbl_model[row_id] = {};
 			}
+
+			// добавляем в объект информацию об артикуле
+			if(trs_arr[i].getAttribute('art')){
+				this.tbl_model[row_id].art 		= trs_arr[i].getAttribute('art');
+			}
+			if(trs_arr[i].getAttribute('supplier') && trs_arr[i].getAttribute('supplier')!= ''){
+				this.tbl_model[row_id].supplier = trs_arr[i].getAttribute('supplier');
+			}
+
 			
 			// заносим информацию об исключении ряда из расчета
 			/*if(row_id!='total_row'){
@@ -267,9 +317,9 @@ var rtCalculator = {
 				if(parent_pos_id){
 					// устанавливаем id родительского ряда id товарной позиции
 					if(!this.tbl_model[row_id].dop_data) this.tbl_model[row_id].dop_data = {};
-					this.tbl_model[row_id].dop_data.parent_pos_id = parent_pos_id; 
+					this.tbl_model[row_id].dop_data.parent_pos_id = parent_pos_id;
 				}
-				
+
 				if(tds_arr[j].getAttribute && tds_arr[j].getAttribute('type')){
 
 					var type = tds_arr[j].getAttribute('type');
@@ -327,6 +377,7 @@ var rtCalculator = {
 		
 		}
 	    //print_r(this.tbl_model);
+		console.log(this.tbl_model)
 		return true;  
 	},
 	set_interactive_cells:function(){

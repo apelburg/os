@@ -2,6 +2,8 @@
 
 <link href="skins/css/invoice.css" rel="stylesheet" type="text/css">
 <link href="skins/css/comments.css" rel="stylesheet" type="text/css">
+<link href="skins/css/menuClick.css" rel="stylesheet" type="text/css">
+
 <link href="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery_ui/jquery.datetimepicker.js"></script>
 <script type="text/javascript" src="<?php  echo HOST; ?>/libs/js/jquery.urlVar.js"></script>

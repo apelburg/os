@@ -289,23 +289,23 @@ height:200px;
 .rt_tbl_body .ext{
  background-color:#c5e6f1;
 }*/
-#context-menu{
+#context-menu-color{
   float: left;
   position: absolute;
   background: red
 }
-#context-menu ul{
+#context-menu-color ul{
   padding:0;
   margin: 0;
   float: left;
 }
-#context-menu ul li{
+#context-menu-color ul li{
   float: left;
   width: 28px;
   height: 28px;
   display: inline-block;  
 }
-#context-menu ul li:hover:before{
+#context-menu-color ul li:hover:before{
   position: absolute;
   background: none;
   content: "";
@@ -316,28 +316,28 @@ height:200px;
   border:1px solid #A8AAA9;
 }
 .rt_tbl_body .js-color-grey,
-#context-menu ul li.js-color-grey{
+#context-menu-color ul li.js-color-grey{
   background: #e3e5e5;
 }
 .rt_tbl_body .js-color-yellow,
-#context-menu ul li.js-color-yellow{
+#context-menu-color ul li.js-color-yellow{
   background: #FFFA9A;
 }
 .rt_tbl_body .js-color-green,
-#context-menu ul li.js-color-green{
+#context-menu-color ul li.js-color-green{
   background: #C5E0AA;
 }
 .rt_tbl_body .js-color-red,
-#context-menu ul li.js-color-red{
+#context-menu-color ul li.js-color-red{
   background: #F68D90;
 }
 
 .rt_tbl_body .js-color-violet,
-#context-menu ul li.js-color-violet{
+#context-menu-color ul li.js-color-violet{
   background: #C992CB;
 }
 .rt_tbl_body .js-color-blue,
-#context-menu ul li.js-color-blue{
+#context-menu-color ul li.js-color-blue{
   background: #B2E8F9;
 }
 

@@ -737,13 +737,13 @@
         });
       }
       if (this.access !== 5) {
-        td1.menuRightClick({
+        td1.menuClick({
           'buttons': button2
         });
-        td2.menuRightClick({
+        td2.menuClick({
           'buttons': button2
         });
-        return td3.menuRightClick({
+        return td3.menuClick({
           'buttons': button2
         });
       }
@@ -5672,13 +5672,14 @@
             return new getStatisticForm("invoice_repealed", {
               dialogMessage: 'Пажалуйста, выберите нужный пункт и напишите пару строк для статистики. '
             }, function() {
-              return new sendAjax('repeal_invoice', {
+              new sendAjax('repeal_invoice', {
                 id: _this.options.id
               }, function() {
                 return tr.remove();
               });
-            }, function() {
-              return echo_message_js("Ответы на данные вопросы обязательны");
+              return function() {
+                return echo_message_js("Ответы на данные вопросы обязательны");
+              };
             });
           });
         }
@@ -5834,7 +5835,7 @@
       }
       console.log(this.options.closed);
       if (button.length > 0) {
-        td.menuRightClick({
+        td.menuClick({
           'buttons': button
         });
       }
@@ -6146,7 +6147,7 @@
         button2.push(btn1);
         button2.push(btn2);
         button2.push(btn3);
-        thDate.menuRightClick({
+        thDate.menuClick({
           'buttons': button2
         });
         tr.append($('<th/>', {
@@ -6570,7 +6571,7 @@
       button2.push(btn1);
       button2.push(btn2);
       if (this.access === 7) {
-        status_shipment.menuRightClick({
+        status_shipment.menuClick({
           'buttons': button2
         });
       }

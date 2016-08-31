@@ -9,8 +9,7 @@
 (($, window) ->
 
 # Define the plugin class
-  class menuRightClick
-
+  class menuClick
     defaults:
       buttons: [
         {
@@ -19,72 +18,92 @@
           click:(e)->
             echo_message_js this.name
         }
-      ]
+      ],
+      click:'rightClick'
 
     constructor: (el, options) ->
-
-
       @options = $.extend({}, @defaults, options)
       @$el = $(el)
 
       self = @
       @$el.on('contextmenu click', (e)->
-        self.rightClick(e)
-
+        self[self.options.click](e)
       )
 
 
-    # Additional plugin methods go here
+# Additional plugin methods go here
     rightClick: (event) ->
-      self = @
+      event.preventDefault();
+      console.log event.button
+      if(event.button == 2)
+        @initMenu(event)
+      return
+    leftClick: (event) ->
       event.preventDefault();
 
-      if(event.button == 2)
-        $("#context-menu").remove();
+      if(event.button == 0)
+        @initMenu(event)
+      return
 
-        # Создаем меню:
-        context = $('<div/>', {
-          'class': 'context-menu',
-          'id':'context-menu'
-        # Присваиваем блоку наш css класс контекстного меню:
-        }).css({
-          left: (event.pageX)+'px',
-        # Задаем позицию меню на X
-        top: (event.pageY-15)+'px'
-        # Задаем позицию меню по Y
-        })
 
-        menu = $('<ul/>');
-        for n,i in @options.buttons
-          menu.append(li = $('<li/>',{
-            'class':@options.buttons[i].class,
-            'html':@options.buttons[i].name,
+    getLiObj:( list_item )->
+      self = @
+      func = list_item.click
+
+      $('<li/>',{
+        'class':list_item.class,
+        'html':list_item.name,
 #            'css':{
 #              'padding':'10px 15px'
 #            }
-            click:self.options.buttons[i].click
-          }))
+        click:()->
+          func()
+          self.context.remove()
 
-        context.append(menu).appendTo('body') # Присоединяем наше меню к body документа:
-        .show('fast').css('marginLeft','-20px');
+      })
+    initMenu:(event)->
+      self = @
+      if $("#context-menu").length > 0
+        $("#context-menu").remove();
 
+      # Создаем меню:
+      @context = $('<div/>', {
+        'class': 'context-menu',
+        'id':'context-menu'
+        click:(e)->
+          e.stopPropagation()
+# Присваиваем блоку наш css класс контекстного меню:
+      }).css({
+        left: (event.pageX)+'px',
+# Задаем позицию меню на X
+        top: (event.pageY-15)+'px'
+# Задаем позицию меню по Y
+      })
 
-        $(document).click((event)->
-#          if( $(event.target).closest("#context-menu").length )
-#            return
-          $(".context-menu").remove()
-          event.stopPropagation()
-        )
-      return
+      menu = $('<ul/>');
+      # создаём элементы списка
+      for list_item in @options.buttons
+        @getLiObj(list_item).appendTo( menu )
+
+      $(document).mouseup((e)->
+# если клик был не по нашему блоку
+# и не по его дочерним элементам
+        if (!self.context.is(e.target) && self.context.has(e.target).length == 0)
+# скрываем меню
+          self.context.remove()
+      )
+
+      @context.append(menu).appendTo('body') # Присоединяем наше меню к body документа:
+      .show('fast').css('marginLeft','-20px');
 
   # Define the plugin
-  $.fn.extend menuRightClick: (option, args...) ->
+  $.fn.extend menuClick: (option, args...) ->
     @each ->
       $this = $(this)
-      data = $this.data('menuRightClick')
+      data = $this.data('menuClick')
 
       if !data
-        $this.data 'menuRightClick', (data = new menuRightClick(this, option))
+        $this.data 'menuClick', (data = new menuClick(this, option))
       if typeof option == 'string'
         data[option].apply(data, args)
 
