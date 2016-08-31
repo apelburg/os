@@ -10,7 +10,6 @@
 
 # Define the plugin class
   class menuClick
-
     defaults:
       buttons: [
         {

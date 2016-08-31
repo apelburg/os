@@ -867,7 +867,7 @@ class costsRow
 
             # отработка выхода из ячейки
             input.css('textAlign', $(this).css('textAlign')).focus().blur(()->
-              
+
               input = $(this)
               _this.options.price = round_money($(this).val())
 
@@ -1027,7 +1027,7 @@ class costsRow
         _this.options.del = 1
         row = $(windowObj.$el).find('#myGroupRowDelete').attr('id', '').addClass('deleted').data(_this.options)
         console.log _this.options
-        
+
         # помечаем удаленные строки
         n = i
         while rowspan > 0
@@ -1178,7 +1178,7 @@ class costsWindow
       InvoiceRowData.costs_supplier_bill = round_money(costs_supplier_bill)
 
       new sendAjax('costs_supplier_bill', { invoice_id:InvoiceRowData.id, costs_supplier_bill: InvoiceRowData.costs_supplier_bill })
-      
+
     # сохранение ожидаемой прибыли
     costs = 0
 #    @bodyRows.find('tr.singleRow,tr.firstGroupRow').each( ()->
@@ -1202,12 +1202,12 @@ class costsWindow
 
     @options = InvoiceRowData
     @updateHead(InvoiceRowData)
-    
+
     prof = round_money(Number(@options.price_out) - Number(@options.costs_supplier_bill))
     console.log " ***** >>>>> **** prof = ", prof
     console.info "@options.price_out",@options.price_out
     console.info "@options.costs_supplier_bill",@options.costs_supplier_bill
-    
+
 #    @head.profit.html(prof)
     $('#js-main-invoice-table').invoice('reflesh', InvoiceRowData)
 
@@ -1347,7 +1347,7 @@ class costsWindow
             new costsWindow(responseRow.data[0], response.data, _this.access)
           )
     )
-    
+
   # шапка таблицы
   createHead: (InvoiceRowData)->
     _this = @
@@ -1490,14 +1490,14 @@ class costsWindow
     div1 = $('<div/>').append(@head.profit = $('<span/>', {'html': round_money( @getProfitExpected(InvoiceRowData) )})).append('р')
     # фактическая
     div2 = $('<div/>').append(@head.profit_f = $('<span/>', {'html': round_money( @getProfitFact(InvoiceRowData)     )})).append('р')
-    
+
     tr.append($('<td/>', {'class': 'wating-and-facting-right bold'}).append(div1).append(div2))
 
 
     # калькулятор / % оплаты
     r_percent = round_money((Number(InvoiceRowData.price_out_payment) - Number(InvoiceRowData.costs)) / Number(InvoiceRowData.price_out_payment) * 100)
     r_percent = '0.00' if Number(InvoiceRowData.price_out_payment) == 0 || Number(InvoiceRowData.costs) == 0
-    
+
     console.log Number(InvoiceRowData.price_out_payment) , Number(InvoiceRowData.costs), r_percent
     console.log "# калькулятор / % оплаты:  price_out_payment = %d, costs = %d, r_percent = %s", Number(InvoiceRowData.price_out_payment) , Number(InvoiceRowData.costs), r_percent
 
@@ -1521,7 +1521,7 @@ class costsWindow
           else
             _this.options.flag_calc = 1;
             t.addClass('checked')
-  
+
           # сохраняем значение флага
           new sendAjax('edit_flag_calc', {id: _this.options.id, val: _this.options.flag_calc}, ()->
             $('#js-main-invoice-table').invoice('reflesh', _this.options)
@@ -1923,7 +1923,7 @@ class errorWindow
         if comment.length <= self.MessageMinLen
           echo_message_js "Сообщение должно быть не короче "+self.MessageMinLen+" символов"
         else
-          
+
           new sendAjax('send__error_message',{ message:comment},(response)->
             self.destroy()
           )
@@ -2096,7 +2096,7 @@ class paymentRow
               _this.options.price = round_money($(this).val())
 
             per = calculatePercentPart(InvoiceRowData.price_out, $(this).val() )
-            
+
             paymentWindowObj.flag_edit++
 
             new sendAjax 'save_payment_row', {id: _this.options.id, price: _this.options.price, percent: per}, ()->
@@ -2115,7 +2115,7 @@ class paymentRow
               # обновляем информацию по строке счёта
 
               #              paymentWindowObj.updateHead(InvoiceRowData)
-              
+
               paymentWindowObj.updateHeaderPercent(InvoiceRowData)
 
           )
@@ -2441,7 +2441,7 @@ class paymentWindow
       'paddingLeft':'10px',
       'fontSize':'16px'
     }))
-    
+
     # проверка на плоную оплату
     if (Number(InvoiceRowData.price_out) < Number(InvoiceRowData.price_out_payment))
       div1
@@ -2465,7 +2465,7 @@ class paymentWindow
           'fontSize':'16px'
         }
       }))
-    
+
 
 
     div2 = $('<div/>')
@@ -2507,7 +2507,7 @@ class paymentWindow
 
     #    tr = $('<tr/>').append(td)
     table.append(tr)
-    
+
     ###
     # добавляем всё в контейнер и возвращаем
     ###
@@ -2683,7 +2683,7 @@ class ttnWindow
         if ttn.ttn_query != undefined
           @defaults.query = ttn.ttn_query
         true
-        
+
     else
       ttn = {}
     console.warn ttn
@@ -2926,7 +2926,7 @@ class ttnWindow
       click: ()->
         val = $(this).html()
         input = self.inputSpan(val)
-        
+
         $(this).replaceWith(input)
         setTimeout(input.focus(), 500)
     })
@@ -3196,7 +3196,7 @@ class ttnWindow
     tr.append(td)
     # Name
     td = $('<td/>').append(position.name)
-    
+
 
     tr.append(td)
     # Quantity
@@ -3498,7 +3498,7 @@ class ttnWindow
 
     if date_formate(self.newTtnDate) < date_formate(getDateNow())
       ship_date = getDateNow()
-      
+
     content = $('<div/>').append($('<div/>', {
       'html': 'Укажите приблизительную дату отгрузки/доставки',
 
@@ -3764,7 +3764,7 @@ class invoiceWindow
       # Price for all
       if position.quantity == 0
         position.quantity = 1
-      
+
       main_price += pr_out * position.quantity
       console.warn(" --- 1 >>> ",Number(pr_out * position.quantity),main_price)
 
@@ -4191,7 +4191,7 @@ class invoiceWindow
           name: 'Аннулированные'
         }
       ]
-      
+
       if Number(_this.access) == 1
         tabs.push({
           index: 15
@@ -4324,7 +4324,7 @@ class invoiceWindow
       @Pmin = @PminStart
       #      console.log len,@Prange,@Pmax
       @Pmax = len if len < @Pmax
-      console.log '@Pmax =',@Pmax 
+      console.log '@Pmax =',@Pmax
       for i in [@Pmin...@Pmax]
         @$el.find('tbody').append(@createRow(@options.data[i]))
 
@@ -4346,7 +4346,7 @@ class invoiceWindow
       text = 'Показать еще ' + @Pmax + '/' + @showMore.data().c
       Pmin = @Pmax
       @Pmin = @Pmax + 1
-      
+
       @Pmax = @Pmax + @Prange
       if Number(@showMore.data().c) < @Pmax
         @Pmax = Number(@showMore.data().c)
@@ -4647,7 +4647,7 @@ class invoiceRow
         if Number(_this.options.invoice_num)==0 && _this.options.invoice_create_date == '00.00.0000'
           new warnNotCreateInvoice()
           return false
-          
+
         if $(this).hasClass('checked')
           _this.options.flag_1c = 0;
           $('#js-main-invoice-table').invoice('reflesh', _this.options)
@@ -5095,7 +5095,7 @@ class invoiceRow
             tr.remove()
           )
         )
-        
+
     }
     btn4 = {
       'name': 'Вернуть в работу',
@@ -5608,7 +5608,7 @@ class invoiceRow
           console.log
 
           # echo_message_j  s(ttn.id+' + '+$(this).attr('data-id'))
-          
+
           if Number(ttn.return) == 0
 # вставляем подтверждение
             t = $(this)
@@ -5745,7 +5745,7 @@ class skladRow
     }))
     tr.append(td)
 
-    
+
     tr.append(self.subRow(rowspan))
     tr.append($('<td/>', {
       'rowspan': rowspan,
