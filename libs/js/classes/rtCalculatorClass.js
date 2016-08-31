@@ -71,15 +71,119 @@ var rtCalculator = {
 		//alert(this.tbl);
 		this.collect_data();
 		this.set_interactive_cells();
+
+
+		this.print_previos_data()
+	}
+	,
+	print_previos_data:function(){
+		console.log('656465 -- start -- 654654')
+		console.log(this.tbl_model)
+		console.log('656465 --  end  -- 654654')
+	}
+	,
+	add_change_color_menu:function( tr ){
+		// ищет в строке поле к которому требуется добавить контекстное меню с выбором цвета
+		// при наличии данного поля - устанавливает событие показа
+		tr.find('td.art_name .pos_plank ').on('contextmenu click',function(e) {
+
+			if(e.button == 2){
+				var lang = new Array('green','yellow','red','blue','violet','grey');
+
+				var obj = $(this);
+				var pos_id = $(this).parent().parent().attr('pos_id');
+				$("#context-menu").remove();
+				event.preventDefault();
+				// Создаем меню:
+
+
+				var context = $('<div/>', {
+					'class': 'context-menu',
+					'id':'context-menu'
+					// Присваиваем блоку наш css класс контекстного меню:
+				}).css({
+					left: event.pageX+'px',
+					// Задаем позицию меню на X
+					top: event.pageY+'px'
+					// Задаем позицию меню по Y
+				})
+
+				var menu = $('<ul/>');
+
+				for(var t in lang){
+
+					var element = $('<li/>',{
+						'class':'js-color-'+lang[t],
+						'data-color':lang[t],
+
+						click:function(){
+							for(var i in lang){
+								if(i!=t){
+									obj.removeClass('js-color-'+lang[i]);
+								}
+							}
+							obj.addClass($(this).attr('class'));
+							var color = $(this).attr('data-color');
+							$.post('', {
+								AJAX: 'change_main_rows_color',
+								row_id:pos_id,
+								val:color
+							}, function(data, textStatus, xhr) {
+							},'json');
+
+							$(this).parent().parent().remove();
+						}
+					});
+					// Добавляем пункты меню:
+					menu.append(element);
+				}
+
+				context.append(menu).appendTo('body') // Присоединяем наше меню к body документа:
+					.show('fast').css('marginLeft','-60px');
+
+
+				// клик вне элемента
+				$(document).click( function(event){
+					if( $(event.target).closest("#context-menu").length )
+						return;
+					$(".context-menu").remove();
+					event.stopPropagation();
+				});
+
+
+
+				// document.oncontextmenu = function() {return false;};
+				// echo_message_js('сейчас вылетить птичко )))');
+				// return false;
+			}
+		});
+	}
+	,
+	// метод получает данные по входящим ценам
+	get_price_in_data:function(){
+		self = this
+		new sendAjax('get_actual_prices',{},function(response){
+			console.log(response)
+		})
 	}
 	,
 	collect_data:function(){
 	    // метод считывающий данные таблицы РТ и сохраняющий их в свойство this.tbl_model 
-	    this.tbl_model={};
+
+		this.tbl_model={};
 		
 		// считываем данные из head_tbl
 		var trs_arr = ($(this.head_tbl).children('tbody').length>0)? $(this.head_tbl).children('tbody').children('tr'):$(this.head_tbl).children('tr');
-		
+
+		// навешиваем обработчик кнопки обновления цен
+		self = this
+		if (button_update_prices = $(this.head_tbl).find('#js--update-prices')){
+			button_update_prices.on('click',function(){
+				self.get_price_in_data()
+			})
+		}
+
+
 		var ln = trs_arr.length;
 		for(var i = 0;i < ln;i++){ 
 		
@@ -87,9 +191,13 @@ var rtCalculator = {
 			
 			var row_id = trs_arr[i].getAttribute('row_id');
 			
-			if(!this.tbl_model[row_id]) this.tbl_model[row_id] = {}; 
+			if(!this.tbl_model[row_id]){
+				this.tbl_model[row_id] = {};
+			}
 			
-		    if(row_id=='total_row') this.tbl_total_row = trs_arr[i]; 
+		    if(row_id=='total_row'){
+				this.tbl_total_row = trs_arr[i];
+			}
 			
 			
 			var tds_arr = $(trs_arr[i]).children('td');
@@ -99,104 +207,53 @@ var rtCalculator = {
 				//if(tds_arr[j].getAttribute && tds_arr[j].getAttribute('type')){
 				if(tds_arr[j].hasAttribute('type')){
 					var type = tds_arr[j].getAttribute('type');
-					if(type == 'glob_counter' || type == 'dop_details' || type == 'master_btn' || type == 'name') continue;
+					if(	type == 'glob_counter' ||
+						type == 'dop_details' ||
+						type == 'master_btn' ||
+						type == 'name'){
+						continue;
+					}
 				    this.tbl_model[row_id][type] = parseFloat(tds_arr[j].innerHTML);
 				}
-			}/**/
+			}
 	    }
 		
 		//  считываем данные из body_tbl
         var trs_arr = ($(this.body_tbl).children('tbody').length>0)? $(this.body_tbl).children('tbody').children('tr'):$(this.body_tbl).children('tr');
-		
+
+
+
+
+
 		var ln = trs_arr.length;
 		for(var i = 0;i < ln;i++){ 
-			// если ряд не имеет атрибута row_id пропускаем его
-		    if(!trs_arr[i].getAttribute('row_id')){					
+			// если ряд не имеет атрибута row_id
+			if(!trs_arr[i].getAttribute('row_id')){
+				// значит это поле относится только к позиции и мы пропускаем его
 				continue;
 		    }
-		    $(trs_arr[i]).find('td.art_name .pos_plank ').on('contextmenu click',function(e) {
-		    	
-		    	if(e.button == 2){
-		    		var lang = new Array('green','yellow','red','blue','violet','grey');
 
-		    		var obj = $(this);
-		    		var pos_id = $(this).parent().parent().attr('pos_id');
-		    		$("#context-menu").remove();
-		    		event.preventDefault();
-		    		// Создаем меню:
+			// устанавливаем событие показа меню выбора цвета на поле с артикулом
+			this.add_change_color_menu( $(trs_arr[i]) )
 
-
-				    var context = $('<div/>', {
-						'class': 'context-menu',
-						'id':'context-menu'
-						// Присваиваем блоку наш css класс контекстного меню:
-					}).css({
-						left: event.pageX+'px',
-						// Задаем позицию меню на X
-						top: event.pageY+'px'
-						// Задаем позицию меню по Y
-					})
-
-					var menu = $('<ul/>');
-
-					for(var t in lang){
-						
-						var element = $('<li/>',{
-							'class':'js-color-'+lang[t],
-							'data-color':lang[t],
-							
-							click:function(){
-								for(var i in lang){
-									if(i!=t){
-										obj.removeClass('js-color-'+lang[i]);
-									}
-								}
-								obj.addClass($(this).attr('class'));
-								var color = $(this).attr('data-color');
-								$.post('', {
-									AJAX: 'change_main_rows_color',
-									row_id:pos_id,
-									val:color
-								}, function(data, textStatus, xhr) {
-								},'json');
-
-								$(this).parent().parent().remove();
-							}
-						});
-						// Добавляем пункты меню:
-						menu.append(element);
-					}
-
-					context.append(menu).appendTo('body') // Присоединяем наше меню к body документа:					
-					.show('fast').css('marginLeft','-60px');
-
-
-					// клик вне элемента
-					$(document).click( function(event){
-				    	if( $(event.target).closest("#context-menu").length ) 
-				    		return;
-				    	$(".context-menu").remove();
-				    	event.stopPropagation();
-				    });
-
-
-
-		    		// document.oncontextmenu = function() {return false;};  
-			        // echo_message_js('сейчас вылетить птичко )))');
-					// return false;
-			    }
-		    });
-			
+			// получаем id строки варианта
 			var row_id = trs_arr[i].getAttribute('row_id');
 			
-			//
+			// получаем id строки позиции (если есть) в противном случае - false
 			var pos_id = (trs_arr[i].getAttribute('pos_id'))? trs_arr[i].getAttribute('pos_id'):false;
+
+			// ????
 			var parent_pos_id = (pos_id)? pos_id:((typeof parent_pos_id !=='undefined')?parent_pos_id:false);
 			
 			// row_id==0 у вспомогательных рядов их пропускаем
-			if(row_id==0) continue; //trs_arr[i].style.backgroundColor = '#FFFF00';
+			if(row_id==0){
+				trs_arr[i].style.backgroundColor = '#FFFF00';
+				continue;
+			}
 			
-			if(!this.tbl_model[row_id]) this.tbl_model[row_id] = {}; 
+			if(!this.tbl_model[row_id]){
+				this.tbl_model[row_id] = {};
+			}
 			
 			// заносим информацию об исключении ряда из расчета
 			/*if(row_id!='total_row'){
@@ -214,28 +271,49 @@ var rtCalculator = {
 				}
 				
 				if(tds_arr[j].getAttribute && tds_arr[j].getAttribute('type')){
+
 					var type = tds_arr[j].getAttribute('type');
-					if(type == 'glob_counter' || type == 'master_btn' || type == 'name') continue;
-					
-					if(type == 'item_summ_in' || type == 'item_summ_out' || type == 'uslugi_summ_in' || type == 'uslugi_summ_out' || type == 'total_summ_in' || type == 'total_summ_out' || type == 'margin'){
-						this.tbl_model[row_id][type] = parseFloat(tds_arr[j].getElementsByTagName('div')[0].innerHTML); 
-						
+
+					if(	type == 'glob_counter' ||
+						type == 'master_btn' ||
+						type == 'name'){
+						continue;
 					}
-					else this.tbl_model[row_id][type] = parseFloat(tds_arr[j].innerHTML);
+					
+					if(	type == 'item_summ_in' ||
+						type == 'item_summ_out' ||
+						type == 'uslugi_summ_in' ||
+						type == 'uslugi_summ_out' ||
+						type == 'total_summ_in' ||
+						type == 'total_summ_out' ||
+						type == 'margin'){
+						this.tbl_model[row_id][type] = parseFloat(tds_arr[j].getElementsByTagName('div')[0].innerHTML);
+					}else{
+						this.tbl_model[row_id][type] = parseFloat(tds_arr[j].innerHTML);
+					}
 	
 					if(tds_arr[j].getAttribute('expel')){
-						if(!this.tbl_model[row_id].dop_data)this.tbl_model[row_id].dop_data = {};
-						if(!this.tbl_model[row_id].dop_data.expel)this.tbl_model[row_id].dop_data.expel = {};
+						if(!this.tbl_model[row_id].dop_data){
+							this.tbl_model[row_id].dop_data = {};
+						}
+
+						if(!this.tbl_model[row_id].dop_data.expel){
+							this.tbl_model[row_id].dop_data.expel = {};
+						}
+
 						var expel = !!parseInt(tds_arr[j].getAttribute('expel'));
 						if(type=='total_summ_out'){
 							this.tbl_model[row_id].dop_data.expel.main=expel;
 						}
 					}
+
 					if(tds_arr[j].hasAttribute('svetofor')){
-						if(!this.tbl_model[row_id].dop_data)this.tbl_model[row_id].dop_data = {};
+						if(!this.tbl_model[row_id].dop_data){
+							this.tbl_model[row_id].dop_data = {};
+						}
+
 						this.tbl_model[row_id].dop_data.svetofor = tds_arr[j].getAttribute('svetofor');
 					}
-
 
 					/*// если это ряд содержащий абсолютные ссуммы сохраняем постоянные ссылки на его ячейки , чтобы затем вносить в них изменения
 					// КАК ТО НЕ ПОЛУЧИЛОСЬ
@@ -542,32 +620,35 @@ var rtCalculator = {
 		// 	standard_response_handler(data);
 		// },'json');
 
-		$.SC_sendAjax();return;
-		var dialog = $('<div class="uslugi_panel"></div>');
-		var btn1 = document.createElement('DIV');
-		btn1.className = 'ovalBtn';
-		btn1.innerHTML = 'Список услуг';
-		btn1.onclick =  function(){ 
-		     $(dialog).remove();
-			 printCalculator.start_calculator({"calculator_type":"extra","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});	
-	    };
-		dialog.append(btn1);
-	
-		var btn2 = document.createElement('DIV');
-		btn2.className = 'ovalBtn';
-		btn2.innerHTML = 'Калькулятор';
-		btn2.onclick =  function(){ 
-		     $(dialog).remove();
-			 printCalculator.start_calculator({"calculator_type":"print","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});	
-	    };
-		dialog.append(btn2);
-		
-		$('body').append(dialog);
-		$(dialog).dialog({modal: true, width: 500,minHeight : 120 ,title: 'Выберите вид расчета',close: function() {$(this).remove();} });
-		$(dialog).dialog('open');
+		// $.SC_sendAjax();return;
+
+
+		// var dialog = $('<div class="uslugi_panel"></div>');
+		// var btn1 = document.createElement('DIV');
+		// btn1.className = 'ovalBtn';
+		// btn1.innerHTML = 'Список услуг';
+		// btn1.onclick =  function(){
+		//      $(dialog).remove();
+		// 	 printCalculator.start_calculator({"calculator_type":"extra","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});
+        // };
+		// dialog.append(btn1);
+        //
+		// var btn2 = document.createElement('DIV');
+		// btn2.className = 'ovalBtn';
+		// btn2.innerHTML = 'Калькулятор';
+		// btn2.onclick =  function(){
+		//      $(dialog).remove();
+		// 	 printCalculator.start_calculator({"calculator_type":"print","cell":cell,"quantity":quantity,"art_id":art_id,"dop_data_row_id":dop_data_row_id,"discount":discount,"trTag":trTag,"creator_id":creator_id});
+        // };
+		// dialog.append(btn2);
+		//
+		// $('body').append(dialog);
+		// $(dialog).dialog({modal: true, width: 500,minHeight : 120 ,title: 'Выберите вид расчета',close: function() {$(this).remove();} });
+		// $(dialog).dialog('open');
 	}
 	,
 	launch_uslugi_panel_2:function(e){
+		console.log('method launch_uslugi_panel_2')
 	    e = e || window.event;
 		var cell = e.target || e.srcElement;
 		// метод срабатывающий первым ( изначально ) при клике по значку обозначаещему услуги в РТ
