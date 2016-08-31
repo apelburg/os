@@ -636,9 +636,9 @@ class costsRow
     # добавляем на ячейки оплаты меню
     # ограничения для менеджера
     if @access != 5
-      td1.menuRightClick({'buttons': button2})
-      td2.menuRightClick({'buttons': button2})
-      td3.menuRightClick({'buttons': button2})
+      td1.menuClick({'buttons': button2})
+      td2.menuClick({'buttons': button2})
+      td3.menuClick({'buttons': button2})
 # добавляем обработчик для на элементы поиска по счетам
   supplierSearch: (td, InvoiceRowData)->
     _this = @
@@ -5180,7 +5180,7 @@ class invoiceRow
       button.push(btn1)  if @options.closed == 0
     console.log @options.closed
     if button.length > 0
-      td.menuRightClick({'buttons': button})
+      td.menuClick({'buttons': button})
 
 
     tr.append(td)
@@ -5448,7 +5448,7 @@ class invoiceRow
       button2.push(btn2)
       button2.push(btn3)
 
-      thDate.menuRightClick({'buttons': button2})
+      thDate.menuClick({'buttons': button2})
 
       tr.append($('<th/>', {
         'colspan': 4,
@@ -5860,7 +5860,7 @@ class skladRow
     button2.push(btn1)
     button2.push(btn2)
     if @access == 7
-      status_shipment.menuRightClick({'buttons': button2})
+      status_shipment.menuClick({'buttons': button2})
 
 
     #    console.log tr
