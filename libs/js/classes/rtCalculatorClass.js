@@ -259,7 +259,7 @@ var rtCalculator = {
         self = this;
 
 		var buttons = [{
-				text: 'Да',
+				text: 'Отмена',
 				class: 'button_yes_or_no no',
 				style: 'float:right;',
 				click: function(){
@@ -409,13 +409,14 @@ var rtCalculator = {
 						self.get_price_in_data('price_in')
 					}
 
-				},{
-					'name': 'Обновить входящую + исходящую',
-					'class': '',
-					click: function(e){
-						self.get_price_in_data('all')
-					}
-				}
+				},
+				// {
+				// 	'name': 'Обновить входящую + исходящую',
+				// 	'class': '',
+				// 	click: function(e){
+				// 		self.get_price_in_data('all')
+				// 	}
+				// }
 			];
 			// собираем меню на левый клик
 			button_update_prices.menuClick({
