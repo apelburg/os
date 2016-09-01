@@ -16,11 +16,11 @@ class SuppliersApi   extends aplStdAJAXMethod
     public 	    $user_access    = 0; 		// user right (int)
 
 
-//    private     $ip     = '46.19.190.26';
-//    private     $port   = '8593';
+    private     $ip     = '46.19.190.26';
+    private     $port   = '8593';
 
-    private     $ip     = '192.168.1.25';
-    private     $port   = '8000';
+//    private     $ip     = '192.168.1.25';
+//    private     $port   = '8000';
 
 //    private     $ip     = '0.0.0.0';
 //    private     $ip     = 'localhost';

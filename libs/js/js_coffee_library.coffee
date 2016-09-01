@@ -716,7 +716,7 @@ class window.timingProgressbar
     @progressBarDiv.progressbar({
       value: @percentComplete
     });
-    console.log @percentComplete
+#    console.log @percentComplete
     @i = 0
 
     self = @
@@ -726,7 +726,7 @@ class window.timingProgressbar
 
 
       self.percentComplete = (100/self.timing) * self.i++ / (1000 / self.timeLoad)
-      console.log 'percentComplete',self.percentComplete
+#      console.log 'percentComplete',self.percentComplete
       self.progressBarDiv.progressbar('value', self.percentComplete);
 
       # останавливаем таймер по достижении 100 %

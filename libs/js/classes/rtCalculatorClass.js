@@ -257,8 +257,8 @@ var rtCalculator = {
         }
 
         self = this;
-
-		var buttons = [{
+		if (saveData.length > 0){
+			var buttons = [{
 				text: 'Отмена',
 				class: 'button_yes_or_no no',
 				style: 'float:right;',
@@ -279,13 +279,21 @@ var rtCalculator = {
 					$(self.window_change_in_price.winDiv).dialog('close').dialog('destroy').remove();
 				}
 			}];
-		// создаем окно подтверждения
-        this.window_change_in_price = new modalWindow({
-            html:		answer_content,
-            title:		'Внимание!!! На следующие артикулы изменилась цена:',
-            width:		500,
-			buttons:	buttons
-        })
+			// создаем окно подтверждения
+			this.window_change_in_price = new modalWindow({
+				html:		answer_content,
+				title:		'Внимание!!! На следующие артикулы изменилась цена:',
+				width:		500,
+				buttons:	buttons
+			})
+		}else{
+			// входящие цены требующие обновления не обнаружены
+			// или по некоторым поставщикам пока что не ведётся обновление цен
+			echo_message_js('входящие цены требующие обновления не обнаружены, <br>или по некоторым поставщикам пока что не ведётся обновление цен', 'system_message', 5000);
+			echo_message_js('Внимание !!! <br> Обновление цен работает в тестовом режиме и только по проекту!!!!','error_message',5000)
+
+		}
+
 
     },
 

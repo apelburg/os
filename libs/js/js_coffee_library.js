@@ -866,12 +866,10 @@
       this.progressBarDiv.progressbar({
         value: this.percentComplete
       });
-      console.log(this.percentComplete);
       this.i = 0;
       self = this;
       return this.timerT = setInterval(function() {
         self.percentComplete = (100 / self.timing) * self.i++ / (1000 / self.timeLoad);
-        console.log('percentComplete', self.percentComplete);
         self.progressBarDiv.progressbar('value', self.percentComplete);
         if (self.percentComplete > 100) {
           return self.stopTimer();
