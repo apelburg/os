@@ -22,6 +22,19 @@ window.getDateNow = () ->
   return dd + '.' + mm + '.' + yy
 
 ###
+# Проверяет, присутствует ли в массиве значение
+# @var value  - значение
+# @var array - массив, в котором осуществляется поиск
+#
+# @return bool - возвращает false или true
+###
+window.in_array = (value, array) ->
+  for n,i in array
+    if(value == array[i])
+      return true;
+  return false;
+
+###
 # возвращяет текущую дату в читабельном формате
 ###
 window.getDateTomorrow = () ->
@@ -660,4 +673,84 @@ class window.getStatisticForm
 
   destroy: ()->
     $(@$el).parent().dialog('close').dialog('destroy').remove()
+
+
+###
+# прототип окна Confirm
+#
+# @version   21.04.2016 11:20:30
+###
+class window.timingProgressbar
+  timeLoad:         200
+  timing:           0
+  moduleIdDiv:      'progressDiv'
+  percentComplete:  0
+
+  constructor: (timing = 5)->
+    @timing = Number(timing)
+
+    @init()
+
+  init:()->
+    if($('#'+@moduleIdDiv).length > 0)
+      echo_message_js('timingProgressbar already exists')
+
+    window_preload_add()
+
+
+    $('body').append(@progressBarDiv = $('<div/>',{
+      id:@moduleIdDiv,
+      css:{
+        'z-index':  999999999,
+        'width':    '80%',
+        'left':     '10%',
+        'float':    'left',
+        'top':      '20%',
+        'position': 'fixed',
+        'height':    20
+#        'boxShadow':'6px 2px 9px 2px rgba(0,0,0,0.33)'
+      }
+    }));
+    
+
+    @progressBarDiv.progressbar({
+      value: @percentComplete
+    });
+    console.log @percentComplete
+    @i = 0
+
+    self = @
+    @timerT = setInterval(()->
+
+
+
+
+      self.percentComplete = (100/self.timing) * self.i++ / (1000 / self.timeLoad)
+      console.log 'percentComplete',self.percentComplete
+      self.progressBarDiv.progressbar('value', self.percentComplete);
+
+      # останавливаем таймер по достижении 100 %
+      if self.percentComplete > 100
+        self.stopTimer()
+
+    , @timeLoad);
+
+  stopTimer:()->
+    clearInterval(@timerT)
+
+
+
+  destroy:()->
+    @stopTimer()
+    window_preload_del()
+    @progressBarDiv.remove()
+
+
+
+
+
+
+
+
+
 

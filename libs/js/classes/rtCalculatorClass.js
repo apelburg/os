@@ -60,7 +60,17 @@ var rtCalculator = {
 	complite_count:0,
 	dscntDisclaimerProtocol:{},
 	sizeExistsDisclaimerProtocol:{},
-	primary_val:false
+	primary_val:false,
+	supplierList:{
+		15: 'Интерпрезент',
+		26 : 'Оазис',
+		37 :  'Проект 111',
+		59 :  'Макрос',
+		61 :  'XINDAO',
+		'e_' :  'Ебазар',
+		'm_' : 'Макрос',
+		'FF' : 'Апельбург'
+	}
 	,
 	init_tbl:function(head_tbl_id,body_tbl_id){// метод запускаемый при наступлении события window.onload()
 	                          // вызывает методы:
@@ -76,9 +86,12 @@ var rtCalculator = {
 
 	}
 	,
+	/**
+	 * ищет в строке поле к которому требуется добавить контекстное меню с выбором цвета
+	 * при наличии данного поля - устанавливает событие показа
+	 * @param tr
+     */
 	add_change_color_menu:function( tr ){
-		// ищет в строке поле к которому требуется добавить контекстное меню с выбором цвета
-		// при наличии данного поля - устанавливает событие показа
 		tr.find('td.art_name .pos_plank ').on('contextmenu click',function(e) {
 
 			if(e.button == 2){
@@ -156,42 +169,229 @@ var rtCalculator = {
 
 		update_type = update || 'all';
 
-		dat1 = this.get_articule_list()
+		sendData = this.get_articule_list()
 
-		new sendAjax('get_actual_prices',{ 'data':dat1 },function(response){
+        self = this
+		new sendAjax('get_actual_prices',{ 'data':sendData },function(response){
 
+		    // если был включен прогрессбар - удаляем его
+            if (self.progressBar){
+                self.progressBar.destroy()
+            }
+
+            // показываем окно с информацией по входящим ценам не соответствующим действительности
+            self.show_window_update_price_in(response.data)
 
 		})
 	},
 
-	// метод собирает список артикулов и сортирует их по префиксам поставщиков
-	get_articule_list:function(){
-		var attr, responseArray = {};
+	/**
+	 * рассчитывает окно с информацией по изменённым ценам и выводит его
+	 *
+	 * @param responseData
+     */
+	show_window_update_price_in:function(responseData){
+        var art, sendData, answer_content = $('<div/>'), supplier_edit = [], saveData = [];
 
-		var t=0;
-		for(var i in this.tbl_model) {
+		// получаем все имеющиеся артикулы (дубли артикулов так же будут в списке)
+        sendData = this.get_articule_list_with_price_in();
 
-			// проверяем наличие информации по поставщику
-			if (this.tbl_model[i].supplier && this.tbl_model[i].supplier != '' && this.tbl_model[i].art && this.tbl_model[i].art!=''){
-				var supplier = 's'+String(this.tbl_model[i].supplier)
-				// создаем массив по поставщику, если таковой ещё не создан
-				if(!responseArray[ supplier ]){
-					responseArray[ supplier ] = []
+
+		// перебор всех имеющихся артикулов
+		var price_in_new, price_in_old;
+        for(var supplier_index in sendData) {
+            // если данные по данному поставщику были получены
+        	if (responseData[supplier_index] && responseData[supplier_index][0] != 'none'){
+                for(var j in sendData[supplier_index]){
+					// получаем артикул
+                    art = sendData[supplier_index][j].art;
+
+                    if(responseData[supplier_index][art]){
+                        // получаем старую и новую вх. цену
+                        price_in_new = responseData[supplier_index][art].prices.price_in;
+						price_in_old = sendData[supplier_index][j].price_in;
+
+                        // если текущая входящая цена в РТ не соответствует входящей цене у поставщика
+                        if( Number(price_in_new) != Number(price_in_old) ){
+                            // выводим инфу в окно
+
+                            // если по данному поставщику данных пока не проверялось
+                            if (!in_array(supplier_index, supplier_edit)){
+                                // добавляем поставщика в список найденных различий
+                                supplier_edit[supplier_edit.length] = supplier_index;
+                                // получаем имя поставщика или его индекс
+                                var supplierName = ((this.supplierList[supplier_index])?this.supplierList[supplier_index]:supplier_index)+':<br>';
+                                // выводим имя поставщика
+								answer_content.append($('<div>',{
+                                	html:supplierName,
+									class:'window-change-in-price--supplier-name'
+								}));
+
+								// создаем таблицу со старыми и новыми ценами
+                                tbl = $('<table/>',{
+                                	class:'window-change-in-price--table-price'
+								}).appendTo(answer_content);
+								// добавляем шапку таблицы
+								tbl.append(tr=$('<tr/>'));
+								tr.append($('<td/>',{html:'Арт.:'}));
+								tr.append($('<td/>',{html:'было:'}));
+								tr.append($('<td/>',{html:'стало:'}));
+
+
+                            }
+
+							saveData.push({
+								'id_dop_data':sendData[supplier_index][j].dop_data_id,
+								'price_in':price_in_new
+							});
+                            // заводм строку артикула
+							tbl.append(tr=$('<tr/>'))
+                            tr.append($('<td/>',{html:supplier_index+''+art}));
+                            tr.append($('<td/>',{html:round_money(price_in_old)+' ₽'}));
+                            tr.append($('<td/>',{html:round_money(price_in_new)+' ₽'}));
+
+                        }
+                    }
+                }
+            }
+        }
+
+        self = this;
+
+		var buttons = [{
+				text: 'Да',
+				class: 'button_yes_or_no no',
+				style: 'float:right;',
+				click: function(){
+					$(self.window_change_in_price.winDiv).dialog('close').dialog('destroy').remove();
 				}
+			},{
+				text: 'Применить',
+				class: 'button_yes_or_no ',
+				css:{'float':'right'},
+				click: function(){
 
-				// кладём реальный артикул в поставщика
-				// console.log(this.tbl_model[i].art, t++)
-				responseArray[ supplier ].push(this.tbl_model[i].art)
+					new sendAjax('update_price_in_data',{ 'data':saveData },function(response){
+						// обновляем окно РТ
+						$.SC_reload_RT_content()
+					})
 
-			}
+					$(self.window_change_in_price.winDiv).dialog('close').dialog('destroy').remove();
+				}
+			}];
+		// создаем окно подтверждения
+        this.window_change_in_price = new modalWindow({
+            html:		answer_content,
+            title:		'Внимание!!! На следующие артикулы изменилась цена:',
+            width:		500,
+			buttons:	buttons
+        })
 
-		}
-		console.log(responseArray.length,responseArray)
-		return responseArray
-	}
+    },
+
+	/**
+	 * метод собирает список артикулов и сортирует их по префиксам поставщиков
+	 *
+	 * @returns {{}}
+     */
+    get_articule_list:function(){
+        var responseArray = {}, count = 0, supplier, seconds;
+
+        for(var i in this.tbl_model) {
+
+            // проверяем наличие информации по поставщику
+            if (this.tbl_model[i].supplier && this.tbl_model[i].supplier != '' && this.tbl_model[i].art && this.tbl_model[i].art!=''){
+
+            	supplier = ''+String(this.tbl_model[i].supplier);
+                // создаем массив по поставщику, если таковой ещё не создан
+                if(!responseArray[ supplier ]){
+                    responseArray[ supplier ] = [];
+                }
+
+                // кладём реальный артикул в поставщика
+                responseArray[ supplier ].push( this.tbl_model[i].art );
+                count++;
+            }
+
+        }
+
+        // подсчитываем приблизительное время отклика API
+        seconds =this.calc_time_api_query(count);
+        // добавляем прогресс бар
+        this.add_time_progress_bar(seconds);
+
+        return responseArray
+    },
+	/**
+	 * метод собирает список артикулов и их входящие цены установленные в данный момент в РТ
+	 * и сортирует их по префиксам поставщиков
+	 *
+	 * @returns {{}}
+     */
+    get_articule_list_with_price_in:function(){
+        var responseArray = {};
+
+        for(var dop_data_indexId in this.tbl_model) {
+
+            // проверяем наличие информации по поставщику и артикулу
+            if (this.tbl_model[ dop_data_indexId ].supplier &&
+				this.tbl_model[ dop_data_indexId ].supplier != '' &&
+				this.tbl_model[ dop_data_indexId ].art &&
+				this.tbl_model[ dop_data_indexId ].art!=''){
+
+                var supplier = ''+String(this.tbl_model[ dop_data_indexId ].supplier);
+                // создаем массив по поставщику, если таковой ещё не создан
+                if(!responseArray[ supplier ]){
+                    responseArray[ supplier ] = [];
+                }
+
+                responseArray[ supplier ].push({
+                    'art':			this.tbl_model[ dop_data_indexId ].art,
+					'price_in':		this.tbl_model[ dop_data_indexId ].item_price_in,
+					'dop_data_id':  dop_data_indexId
+				});
+            }
+
+        }
+        return responseArray
+    }
+
 	,
+	/**
+	 * создает экземпляр прогресс-бара пор времени
+	 *
+	 * @param seconds
+     */
+    add_time_progress_bar:function(seconds){
+        this.progressBar = new timingProgressbar(seconds);
+    },
+	/**
+	 * подсчёт приблизительного количество времени, которое потребуется на запрос к API
+	 * просчитывается в соответствии с реализованным в API алгоритме,
+	 * TODO при изменении в API алгоритма расчёта задержек данный метод будет выдавать неверные значения, проверять размерность переменной step !
+	 *
+	 * @param art_length
+	 * @returns {number}
+     */
+    calc_time_api_query:function(art_length){
+    	var step = 0.05, type = 0, maxT = 0, startTime = 0.10, totalSeconds;
+
+        while (startTime < 1){
+			startTime += step;
+            maxT += startTime;
+            type++;
+        }
+        totalSeconds = art_length / type * maxT;
+
+        return totalSeconds;
+    }
+	,
+	/**
+	 * метод считывающий данные таблицы РТ и сохраняющий их в свойство this.tbl_model
+	 *
+	 * @returns {boolean}
+     */
 	collect_data:function(){
-	    // метод считывающий данные таблицы РТ и сохраняющий их в свойство this.tbl_model 
 
 		this.tbl_model={};
 		
@@ -216,7 +416,7 @@ var rtCalculator = {
 						self.get_price_in_data('all')
 					}
 				}
-			]
+			];
 			// собираем меню на левый клик
 			button_update_prices.menuClick({
 				'buttons': buttons,

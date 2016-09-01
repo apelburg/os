@@ -304,10 +304,8 @@
 	}
 
 	if(isset($_POST['AJAX'])){
-        if($_POST['AJAX'] == 'get_actual_prices'){
-            include_once './libs/php/classes/suppliers_api.php';
-            new SuppliersApi();
-        }
+        include_once './libs/php/classes/suppliers_api.php';
+        new SuppliersApi();
 
 		if($_POST['AJAX']=='edit_query_theme'){
 			RT::save_theme($_POST['query_num'],$_POST['theme']);

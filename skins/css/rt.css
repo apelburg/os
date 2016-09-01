@@ -546,3 +546,36 @@ button#js--update-prices:active{
     /*background-position: 50% 65% ;*/
     transform: rotate(45deg)
 }
+
+
+
+.window-change-in-price--supplier-name{
+    color: rgb(153, 179, 94);
+    font-size: 18px;
+    font-weight: bold;
+}
+.window-change-in-price--table-price{
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 15px;
+}
+.window-change-in-price--table-price tr td{
+    padding: 7px;
+    border:1px solid #f1f1f1;
+}
+
+.window-change-in-price--table-price tr td:nth-of-type(1){
+    text-transform: capitalize;
+    font-weight: bold;
+}
+.window-change-in-price--table-price tr td:nth-of-type(2),
+.window-change-in-price--table-price tr td:nth-of-type(3){
+    text-align: right;
+}
+.window-change-in-price--table-price tr:nth-of-type(1) td{
+    text-align: left;
+    font-weight: normal;
+    color: #8c8c8c;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}

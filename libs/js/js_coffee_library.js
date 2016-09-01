@@ -31,6 +31,26 @@
 
 
   /*
+   * Проверяет, присутствует ли в массиве значение
+   * @var value  - значение
+   * @var array - массив, в котором осуществляется поиск
+   *
+   * @return bool - возвращает false или true
+   */
+
+  window.in_array = function(value, array) {
+    var i, j, len1, n;
+    for (i = j = 0, len1 = array.length; j < len1; i = ++j) {
+      n = array[i];
+      if (value === array[i]) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+
+  /*
    * возвращяет текущую дату в читабельном формате
    */
 
@@ -798,6 +818,78 @@
     };
 
     return getStatisticForm;
+
+  })();
+
+
+  /*
+   * прототип окна Confirm
+   *
+   * @version   21.04.2016 11:20:30
+   */
+
+  window.timingProgressbar = (function() {
+    timingProgressbar.prototype.timeLoad = 200;
+
+    timingProgressbar.prototype.timing = 0;
+
+    timingProgressbar.prototype.moduleIdDiv = 'progressDiv';
+
+    timingProgressbar.prototype.percentComplete = 0;
+
+    function timingProgressbar(timing) {
+      if (timing == null) {
+        timing = 5;
+      }
+      this.timing = Number(timing);
+      this.init();
+    }
+
+    timingProgressbar.prototype.init = function() {
+      var self;
+      if ($('#' + this.moduleIdDiv).length > 0) {
+        echo_message_js('timingProgressbar already exists');
+      }
+      window_preload_add();
+      $('body').append(this.progressBarDiv = $('<div/>', {
+        id: this.moduleIdDiv,
+        css: {
+          'z-index': 999999999,
+          'width': '80%',
+          'left': '10%',
+          'float': 'left',
+          'top': '20%',
+          'position': 'fixed',
+          'height': 20
+        }
+      }));
+      this.progressBarDiv.progressbar({
+        value: this.percentComplete
+      });
+      console.log(this.percentComplete);
+      this.i = 0;
+      self = this;
+      return this.timerT = setInterval(function() {
+        self.percentComplete = (100 / self.timing) * self.i++ / (1000 / self.timeLoad);
+        console.log('percentComplete', self.percentComplete);
+        self.progressBarDiv.progressbar('value', self.percentComplete);
+        if (self.percentComplete > 100) {
+          return self.stopTimer();
+        }
+      }, this.timeLoad);
+    };
+
+    timingProgressbar.prototype.stopTimer = function() {
+      return clearInterval(this.timerT);
+    };
+
+    timingProgressbar.prototype.destroy = function() {
+      this.stopTimer();
+      window_preload_del();
+      return this.progressBarDiv.remove();
+    };
+
+    return timingProgressbar;
 
   })();
 

@@ -9,7 +9,7 @@
 class SuppliersApi   extends aplStdAJAXMethod
 {
     // для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-    protected   $production = false;
+//    protected   $production = false;
 
     protected 	$user_id        = 0;		// user id with base
     public 		$user           = array(); 	// authorised user info
@@ -18,8 +18,13 @@ class SuppliersApi   extends aplStdAJAXMethod
 
 //    private     $ip     = '46.19.190.26';
 //    private     $port   = '8593';
-    private     $ip     = '0.0.0.0';
+
+    private     $ip     = '192.168.1.25';
     private     $port   = '8000';
+
+//    private     $ip     = '0.0.0.0';
+//    private     $ip     = 'localhost';
+//    private     $port   = '8000';
     private     $format = 'json';
 
 
@@ -49,6 +54,8 @@ class SuppliersApi   extends aplStdAJAXMethod
         }
     }
 
+
+
     /**
      * приводит данные запроса к API к надлежащему виду
      *
@@ -60,19 +67,65 @@ class SuppliersApi   extends aplStdAJAXMethod
         $data_new = [];
 
         foreach ($data as $key => $val ){
-            if (is_array($val)){
+            if (is_array($val) /*&& $key == '37'*/){
                 $data_new[$key] = [];
-                $data_new[$key] = array_unique($val);
+                $data_new[$key] = array_unique($this->crash_first_art($val));
             }
-
-
         }
         return $data_new;
-//        return json_encode($data_new,JSON_FORCE_OBJECT);
+//        return json_encode($data_new,JSON_FORCE_OBJECT);apt-get install
     }
 
-    private function getUrl($data){
-        return 'http://'.$this->ip.':'.$this->port.'/?format='.$this->format;
+    /**
+     * тестовый метод для отладки вывода ошибок
+     * добавляет несуществующий артикула, по которому API должен будет сгенерировать ошибку
+     *
+     * @param $arr
+     * @return mixed
+     */
+    function crash_first_art($arr){
+//        $arr[] = '6sdasad65456s';
+        return $arr;
+    }
+
+
+    private function getUrl($supplier_key, $data){
+        return 'http://'.$this->ip.':'.$this->port.'/?format='.$this->format.'&supplier='.$supplier_key.'&'.$data;
+    }
+
+    /**
+     * сохранение новой информации о входящих ценах
+     */
+    protected function update_price_in_data_AJAX(){
+
+//        $this->prod__window($this->printArr($_POST['data']));
+
+        foreach ($_POST['data'] as $newData){
+            $price_in = $newData['price_in'];
+            $id =       $newData['id_dop_data'];
+
+            $query = "UPDATE `".RT_DOP_DATA."` SET ";
+            $query .= " price_in =? ";
+
+            $query .= " WHERE `id` =?";
+            $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+            $stmt->bind_param('di',$price_in, $id ) or die($this->mysqli->error);
+            $stmt->execute() or die($this->mysqli->error);
+            $result = $stmt->get_result();
+
+        }
+
+        $this->responseClass->addMessage('Входящие цены успешно обновлены','successful_message',1000);
+
+        $stmt->close();
+
+
+
+    }
+
+    private function convert_data_to_string($send_data){
+//        return '["'.implode('","',$send_data).'"]';
+        return implode('_',$send_data);
     }
 
     /**
@@ -83,19 +136,62 @@ class SuppliersApi   extends aplStdAJAXMethod
 
         $data = $this->format_data_to_sending($_POST['data']);
 
-        $myCurl = curl_init();
-        curl_setopt_array($myCurl, array(
-            CURLOPT_URL => $this->getUrl($data),
-            CURLOPT_RETURNTRANSFER => true,
-        ));
-        $response = curl_exec($myCurl);
+        $responseJson = [];
 
-        $responseJson = json_decode($response, true);
-        curl_close($myCurl);
-        $this->responseClass->addSimpleWindow($response.'<br>'.$this->getUrl($data));
-        $this->responseClass->response['data'] = $responseJson;
+        foreach ($data as $supplier_key => $send_data){
+            $myCurl = curl_init();
+            $url = $this->getUrl($supplier_key, 'art='.$this->convert_data_to_string($send_data));
+            curl_setopt_array($myCurl, array(
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+            ));
+            $responseApi = curl_exec($myCurl);
+            curl_close($myCurl);
 
+            $this->prod__window('--'.$url.'--<br>','system_message', 500000);
+
+            $response[$supplier_key] = json_decode($responseApi, true);
+        }
+
+
+        # проверяем на ошибки
+        $this->check_on_errors($response);
+
+        $this->responseClass->response['data'] = $response;
     }
+
+
+    /**
+     * проверяет наличие сообщений об ошибках
+     * вызывает метод добавления сообщений об ошибок
+     */
+    private function check_on_errors($data = []){
+        if (is_array($data)){
+            if (isset($data['errors'])){
+                $this->add_message_to_user($data['errors']);
+            }
+            foreach ($data as $arr){
+                if(is_array($arr)){
+                    $this->check_on_errors($arr);
+                }
+            }
+        }
+    }
+
+    /**
+     * добавляет сообщение об ошибке для пользователя
+
+     * @param array $error
+     */
+    private function add_message_to_user($error = []){
+        if (isset($error['name']) && isset($error['text'])){
+
+            $message = $error['name'].'<br><div style="font-size:12px; text-transform:lowercase">'.$error['text'].'</div>';
+
+            $this->responseClass->addMessage($message,'error_message',10000);
+        }
+    }
+
 
     /**
      * get user access
@@ -115,6 +211,8 @@ class SuppliersApi   extends aplStdAJAXMethod
         }
         return $int;
     }
+
+
 }
 
 ?>
