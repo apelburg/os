@@ -233,7 +233,8 @@ var rtCalculator = {
 						};
 
 
-                        // если текущая входящая цена в РТ не соответствует входящей цене у поставщика
+                        // если текущая цена в РТ не соответствует цене у поставщика
+						// TODO old_price_out уже посчитана в соответствии со скидкой и в случае установленного процента всегда будет выдавться несоответствие, нужно править !!!!
                         if( (update == 'all' && Number(params.new.price_out) != Number(params.old.price_out)) || Number(params.old.price_in) != Number(params.new.price_in) ){
                             // если по данному поставщику данных пока не проверялось
                             if (!in_array(supplier_index, supplier_edit)){
