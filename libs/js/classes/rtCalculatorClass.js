@@ -2,6 +2,7 @@
 window.onload = function(){
    rtCalculator.init_tbl('rt_tbl_head','rt_tbl_body');
 }
+//
 
 // инициализация
 /*if(window.addEventListener){
