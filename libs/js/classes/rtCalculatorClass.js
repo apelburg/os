@@ -163,26 +163,35 @@ var rtCalculator = {
 		});
 	}
 	,
-	// метод получает данные по входящим ценам
+	// метод получает данные по входящим ценам с API парсера
 	get_price_in_data:function(update){
-		var  update_type;
+		update = update || 'all';
 
-		update_type = update || 'all';
+		var sendData = this.get_articule_list();
 
-		sendData = this.get_articule_list()
 
-        self = this
+
+		console.log(sendData, sendData.length )
+		self = this;
+		// if (sendData.length > 0){
 		new sendAjax('get_actual_prices',{ 'data':sendData },function(response){
 
-		    // если был включен прогрессбар - удаляем его
-            if (self.progressBar){
-                self.progressBar.destroy()
-            }
+				// если был включен прогрессбар - удаляем его
+			if (self.progressBar){
+				self.progressBar.destroy()
+			}
 
-            // показываем окно с информацией по входящим ценам не соответствующим действительности
-            self.show_window_update_price_in(response.data)
-
+				// показываем окно с информацией по входящим ценам не соответствующим действительности
+			self.show_window_update_price_in(response.data, update)
 		})
+		// }else{
+		// 	// если был включен прогрессбар - удаляем его
+		// 	if (self.progressBar){
+		// 		self.progressBar.destroy()
+		// 	}
+		// 	echo_message_js('К сожалению в РТ не было найдено ни одного артикула, добавьте артикул и поторите попытку.','error_message',2000)
+		// }
+
 	},
 
 	/**
@@ -190,12 +199,12 @@ var rtCalculator = {
 	 *
 	 * @param responseData
      */
-	show_window_update_price_in:function(responseData){
-        var art, sendData, answer_content = $('<div/>'), supplier_edit = [], saveData = [];
+	show_window_update_price_in:function(responseData, update){
+		update = update || 'price_in';
+        var art, sendData, answer_content = $('<div/>'), supplier_edit = [], saveData = [], params = {};
 
 		// получаем все имеющиеся артикулы (дубли артикулов так же будут в списке)
         sendData = this.get_articule_list_with_price_in();
-
 
 		// перебор всех имеющихся артикулов
 		var price_in_new, price_in_old;
@@ -207,48 +216,54 @@ var rtCalculator = {
                     art = sendData[supplier_index][j].art;
 
                     if(responseData[supplier_index][art]){
-                        // получаем старую и новую вх. цену
-                        price_in_new = responseData[supplier_index][art].prices.price_in;
-						price_in_old = sendData[supplier_index][j].price_in;
+						// собираем объект необходимых нам параметров
+						params = {
+							'new':{
+								'price_in':		responseData[supplier_index][art].prices.price_in,
+								'price_out':	responseData[supplier_index][art].prices.price_out
+							},
+							'old':{
+								'price_in': 	sendData[supplier_index][j].price_in,
+								'price_out': 	sendData[supplier_index][j].price_out
+							},
+							'link':				responseData[supplier_index][art]['link'],
+							'supplier_index':	supplier_index,
+							'art':				art
+						};
+
 
                         // если текущая входящая цена в РТ не соответствует входящей цене у поставщика
-                        if( Number(price_in_new) != Number(price_in_old) ){
-                            // выводим инфу в окно
-
+                        if( (update == 'all' && Number(params.new.price_out) != Number(params.old.price_out)) || Number(params.old.price_in) != Number(params.new.price_in) ){
                             // если по данному поставщику данных пока не проверялось
                             if (!in_array(supplier_index, supplier_edit)){
                                 // добавляем поставщика в список найденных различий
                                 supplier_edit[supplier_edit.length] = supplier_index;
                                 // получаем имя поставщика или его индекс
                                 var supplierName = ((this.supplierList[supplier_index])?this.supplierList[supplier_index]:supplier_index)+':<br>';
-                                // выводим имя поставщика
+
+								// выводим имя поставщика
 								answer_content.append($('<div>',{
                                 	html:supplierName,
 									class:'window-change-in-price--supplier-name'
 								}));
 
 								// создаем таблицу со старыми и новыми ценами
-                                tbl = $('<table/>',{
-                                	class:'window-change-in-price--table-price'
-								}).appendTo(answer_content);
-								// добавляем шапку таблицы
-								tbl.append(tr=$('<tr/>'));
-								tr.append($('<td/>',{html:'Арт.:'}));
-								tr.append($('<td/>',{html:'было:'}));
-								tr.append($('<td/>',{html:'стало:'}));
-
-
+                                tbl = this.window_change_in_price__tbl_head(update);
+								// добавляем таблицу в контейнер, предназначенный к выводу юзеру
+								tbl.appendTo(answer_content);
                             }
 
+                            // создаем строку артикула
+							tr = this.window_change_in_price__tbl_tr(update, params);
+							// вставляем строку в таблицу
+							tbl.append(tr);
+
+							// добавляем изменения в массив изменений
 							saveData.push({
-								'id_dop_data':sendData[supplier_index][j].dop_data_id,
-								'price_in':price_in_new
+								'id_dop_data':		sendData[supplier_index][j].dop_data_id,
+								'price_in':			params.new.price_in,
+								'price_out':		params.new.price_out,
 							});
-                            // заводм строку артикула
-							tbl.append(tr=$('<tr/>'))
-                            tr.append($('<td/>',{html:supplier_index+''+art}));
-                            tr.append($('<td/>',{html:round_money(price_in_old)+' ₽'}));
-                            tr.append($('<td/>',{html:round_money(price_in_new)+' ₽'}));
 
                         }
                     }
@@ -271,7 +286,7 @@ var rtCalculator = {
 				css:{'float':'right'},
 				click: function(){
 
-					new sendAjax('update_price_in_data',{ 'data':saveData },function(response){
+					new sendAjax('update_price_in_data',{ 'data':saveData, 'update_type':update },function(response){
 						// обновляем окно РТ
 						$.SC_reload_RT_content()
 					})
@@ -289,16 +304,110 @@ var rtCalculator = {
 		}else{
 			// входящие цены требующие обновления не обнаружены
 			// или по некоторым поставщикам пока что не ведётся обновление цен
-			echo_message_js('входящие цены требующие обновления не обнаружены, <br>или по некоторым поставщикам пока что не ведётся обновление цен', 'system_message', 5000);
+			echo_message_js('входящие цены требующие обновления не обнаружены', 'system_message', 5000);
 			echo_message_js('Внимание !!! <br> Обновление цен работает в тестовом режиме и только по проекту!!!!','error_message',5000)
 
 		}
 
 
     },
+	/**
+	 * возвращает объект таблицы изменения цен с шапкой
+	 *
+	 * @param updateType
+	 * @returns {*|jQuery|HTMLElement}
+     */
+	window_change_in_price__tbl_head:function(updateType){
+		updateType = updateType || 'all';
+
+		tbl = $('<table/>',{
+			class:'window-change-in-price--table-price'
+		});
+
+		// добавляем шапку таблицы
+		if (updateType == 'all'){
+
+
+			tbl.append(tr=$('<tr/>'));
+			tr.append($('<td/>',{
+				html:'Арт.:',
+				rowspan:2
+			}));
+			tr.append($('<td/>',{
+				html:'входящая цена',
+				class:'head',
+				colspan:2
+			}));
+			tr.append($('<td/>',{
+				html:'исходящая цена',
+				class:'head',
+				colspan:2
+			}));
+
+			tbl.append(tr=$('<tr/>'));
+			tr.append($('<td/>',{html:'было:'}));
+			tr.append($('<td/>',{html:'стало:'}));
+			tr.append($('<td/>',{html:'было:'}));
+			tr.append($('<td/>',{html:'стало:'}));
+		}else{
+
+			// добавляем шапку таблицы
+			tbl.append(tr=$('<tr/>',{class:'head'}));
+			tr.append($('<td/>',{html:'Арт.:'}));
+			tr.append($('<td/>',{html:'было:'}));
+			tr.append($('<td/>',{html:'стало:'}));
+		}
+		return tbl;
+	},
+	/**
+	 * возвращает строку для таблицы изменения цен
+	 *
+	 * @param updateType
+	 * @param params
+	 * @returns {*|jQuery|HTMLElement}
+     */
+	window_change_in_price__tbl_tr:function(updateType, params){
+		updateType = updateType || 'all';
+
+		tr = $('<tr/>',{
+			class:'body'
+		});
+		console.log(params)
+		tr.append($('<td/>',{html:$('<a/>',{
+			href:params.link,
+			target:'_blank',
+			html:params.supplier_index+''+params.art
+		})}));
+
+
+		// входящая цена
+		tr.append($('<td/>',{html:round_money(params.old.price_in)+' р'}));
+		tr.append(td = $('<td/>',{html:round_money(params.new.price_in)+' р'}));
+		if (Number(params.old.price_in) != Number(params.new.price_in)){
+			td.css({
+				'color':'red'
+			})
+		}
+
+		if (updateType == 'all'){
+			// исходящая цена
+			tr.append($('<td/>',{html:round_money(params.old.price_out)+' р'}));
+			tr.append(td = $('<td/>',{html:round_money(params.new.price_out)+' р'}));
+			if (Number(params.old.price_out) != Number(params.new.price_out)){
+				td.css({
+					'color':'red'
+				})
+			}
+		}
+
+		return tr;
+
+	},
+
+
 
 	/**
-	 * метод собирает список артикулов и сортирует их по префиксам поставщиков
+	 * метод собирает списоки артикулов и сортирует их по префиксам поставщиков
 	 *
 	 * @returns {{}}
      */
@@ -320,8 +429,19 @@ var rtCalculator = {
                 responseArray[ supplier ].push( this.tbl_model[i].art );
                 count++;
             }
-
         }
+
+        // чтобы избежать ошибок в php
+		// в случае, если артикулы не найдены - добавляем пустое значение с несуществующим поставщиком
+		if (count == 0){
+			responseArray = {
+				'00':{
+					0:"none"
+				}
+			}
+		}
+
+
 
         // подсчитываем приблизительное время отклика API
         seconds =this.calc_time_api_query(count);
@@ -356,6 +476,7 @@ var rtCalculator = {
                 responseArray[ supplier ].push({
                     'art':			this.tbl_model[ dop_data_indexId ].art,
 					'price_in':		this.tbl_model[ dop_data_indexId ].item_price_in,
+					'price_out':	this.tbl_model[ dop_data_indexId ].item_price_out,
 					'dop_data_id':  dop_data_indexId
 				});
             }
@@ -418,13 +539,13 @@ var rtCalculator = {
 					}
 
 				},
-				// {
-				// 	'name': 'Обновить входящую + исходящую',
-				// 	'class': '',
-				// 	click: function(e){
-				// 		self.get_price_in_data('all')
-				// 	}
-				// }
+				{
+					'name': 'Обновить входящую + исходящую',
+					'class': '',
+					click: function(e){
+						self.get_price_in_data('all')
+					}
+				}
 			];
 			// собираем меню на левый клик
 			button_update_prices.menuClick({
@@ -497,7 +618,7 @@ var rtCalculator = {
 			
 			// row_id==0 у вспомогательных рядов их пропускаем
 			if(row_id==0){
-				trs_arr[i].style.backgroundColor = '#FFFF00';
+				// trs_arr[i].style.backgroundColor = '#FFFF00';
 				continue;
 			}
 			

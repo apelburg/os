@@ -99,17 +99,27 @@ class SuppliersApi   extends aplStdAJAXMethod
     protected function update_price_in_data_AJAX(){
 
 //        $this->prod__window($this->printArr($_POST['data']));
+        $update_type = (isset($_POST['update_type']))?$_POST['update_type']:'price_in';
 
         foreach ($_POST['data'] as $newData){
-            $price_in = $newData['price_in'];
-            $id =       $newData['id_dop_data'];
+            $price_in =     $newData['price_in'];
+            $price_out =    $newData['price_out'];
+            $id =           $newData['id_dop_data'];
 
             $query = "UPDATE `".RT_DOP_DATA."` SET ";
             $query .= " price_in =? ";
+            if ($update_type == 'all'){
+                $query .= " , `price_out` =?";
+                $query .= " WHERE `id` =?";
+                $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+                $stmt->bind_param('ddi',$price_in,$price_out, $id ) or die($this->mysqli->error);
+            }else{
+                $query .= " WHERE `id` =?";
+                $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
+                $stmt->bind_param('di',$price_in, $id ) or die($this->mysqli->error);
+            }
 
-            $query .= " WHERE `id` =?";
-            $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-            $stmt->bind_param('di',$price_in, $id ) or die($this->mysqli->error);
+
             $stmt->execute() or die($this->mysqli->error);
             $result = $stmt->get_result();
 
