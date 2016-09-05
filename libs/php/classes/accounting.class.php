@@ -262,15 +262,14 @@ class CalculateMoneyBlock extends Accounting{
         $stmt->execute() or die($this->mysqli->error);
         $result = $stmt->get_result();
         $stmt->close();
+
         $data_bill_closed = array();
         if($result->num_rows > 0){
             while($row = $result->fetch_assoc()){
                 $data_bill_closed[] = $row;
             }
         }
-//
-//		print_r($this);
-//		print_r($this->manager_id);
+
         return $data_bill_closed;
     }
 }
