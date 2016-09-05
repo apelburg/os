@@ -109,6 +109,7 @@ class CalculateMoneyBlock extends Accounting{
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
         return $this->get_rows_compensations($id);
     }
+
     /**
      * @return array
      */
@@ -118,8 +119,9 @@ class CalculateMoneyBlock extends Accounting{
         $where['manager_id']  = $this->manager_id;
         $where['month'] = $this->month;
         $where['year']  = $this->year;
-
+        // запрос
         $old_row = $this->get_all_tbl(ACCOUNTING_ACCRUALS,$where);
+
         if(count($old_row) == 0){
             # если строка не найдена
             # создание новой строки расчёта с расчитанными параметрами
@@ -128,7 +130,6 @@ class CalculateMoneyBlock extends Accounting{
             # обновление старой строки расчёта с расчитанными параметрами
             return $this->update_old_row($old_row[0]['id']);
         }
-
 
         return $old_row;
     }
@@ -150,6 +151,7 @@ class CalculateMoneyBlock extends Accounting{
         # возвращаем обновленные данные
         return $this->get_all_tbl(ACCOUNTING_ACCRUALS,['id'=>$id]);
     }
+
     /**
      * создание новой строки с расчётом начислений
      *
@@ -163,8 +165,11 @@ class CalculateMoneyBlock extends Accounting{
         return $this->insert_empty_row(ACCOUNTING_ACCRUALS,$data);
     }
 
-
-    # расчёт начислений
+    /**
+     * расчёт начислений
+     *
+     * @return array
+     */
     private function accruals_calc(){
         $arr = [
             'salary'=>0,
@@ -202,16 +207,14 @@ class CalculateMoneyBlock extends Accounting{
                 }
             }
             # расчет бонуса пенсии
-//			echo $this->printArr($arr);
             if ($this->manager_data['date_start_wock'] != ''){
                 $pension_rows = $this->get_all_tbl(ACCOUNTING_PENSION,array('checked'=>'1'));
 
                 $time = time() - strtotime($this->manager_data['date_start_wock']);
-                $month = floor($time/2628000); // 2628000
+                $month = floor($time/2628000);
                 $year = $month / 12;
                 $s = 0;
-//				echo $year.' / '.$month;
-//							echo $this->printArr($pension_rows);
+
                 foreach ($pension_rows as $row){
                     if ($s > 0){break;}
                     # перебор колонок
@@ -223,7 +226,6 @@ class CalculateMoneyBlock extends Accounting{
                             $filter = explode("_",substr($key, 2));
 
                             if ($filter[0] <= $year and $filter[1] >= $year){
-//								echo $val;
                                 $arr['pension'] += $val;
                                 $s = 1;
                                 break;
@@ -233,11 +235,12 @@ class CalculateMoneyBlock extends Accounting{
                 }
             }
         }
-//					echo $this->printArr($arr);
+
         return $arr;
     }
     /**
      * вычисляет строки закрытых за месяц счетов
+     *
      * @return array
      */
     public function get_data_bill_closed(){
