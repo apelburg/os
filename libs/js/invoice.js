@@ -967,6 +967,7 @@
             }
           }));
         }
+        console.log('сумма счёта (денежный формат)');
         tr.append(td2 = $('<td/>', {
           'rowspan': rowspan,
           'html': this.options.price,
@@ -979,7 +980,7 @@
                 'val': $(this).html(),
                 keyup: function() {
                   var percent, val;
-                  this.val(val = deleteNotMoneySymbols($(this).val()));
+                  $(this).val(val = deleteNotMoneySymbols($(this).val()));
                   percent = calculatePercentPart(val, _this.options.pay_price);
                   return _this.percentSpan.html(round_percent(percent));
                 },
@@ -2396,8 +2397,8 @@
               'type': 'text',
               'val': $(this).html(),
               keyup: function() {
-                var per;
-                $(this).val($(this).val().replace(/[\/,]/gim, '.').replace(/[^-0-9\/.]/gim, '').replace(/^([^\.]*\.)|\./g, '$1'));
+                var per, val;
+                $(this).val(val = deleteNotMoneySymbols($(this).val()));
                 per = calculatePercentPart(InvoiceRowData.price_out, $(this).val());
                 return _this.percentSpan.html(round_percent(per));
               },

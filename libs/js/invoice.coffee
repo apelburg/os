@@ -407,7 +407,7 @@ class costsRow
             'type': 'text',
             'val': $(this).html(),
             keyup: ()->
-# вырезаем символы недоступные в денежном формате
+              # вырезаем символы недоступные в денежном формате
               $(this).val( val = deleteNotMoneySymbols( $(this).val() ) )
 
               # правим дату на сегодня
@@ -785,14 +785,14 @@ class costsRow
       if rowspan == 1
         editClass = 'mayBeEdit'
       if @access == 5
-# дата счёта
+        # дата счёта
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'html': @options.date,
           'class': 'date '
         }))
       else
-# дата счёта
+        # дата счёта
         tr.append($('<td/>', {
           'rowspan': rowspan,
           'html': @options.date,
@@ -843,18 +843,18 @@ class costsRow
               'type': 'text',
               'val': $(this).html(),
               keyup: ()->
-# вырезаем лишние символы
-                (this).val( val = deleteNotMoneySymbols($(@).val()) )
+                # вырезаем лишние символы
+                $(this).val( val = deleteNotMoneySymbols($(@).val()) )
                 # расчёт %
                 percent = calculatePercentPart(val, _this.options.pay_price)
                 _this.percentSpan.html(round_percent( percent ))
 
               focus: ()->
                 if(Number($(this).val()) == 0)
-# если 0.00 подменяем на пусто
+                  # если 0.00 подменяем на пусто
                   $(this).val('')
                 else
-# выделение
+                  # выделение
                   focusedElement = $(this)
                   setTimeout(()->
                     focusedElement.select()
@@ -2068,7 +2068,7 @@ class paymentRow
             'type': 'text',
             'val': $(this).html(),
             keyup: ()->
-              $(this).val($(this).val().replace(/[/,]/gim, '.').replace(/[^-0-9/.]/gim, '').replace( /^([^\.]*\.)|\./g, '$1' ))
+              $(this).val( val = deleteNotMoneySymbols($(@).val()) )
 
               per = calculatePercentPart(InvoiceRowData.price_out, $(this).val() )
 
