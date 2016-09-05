@@ -194,8 +194,8 @@ class InvoiceNotify extends aplStdAJAXMethod
 		# выбираем все счета, которые пора переводить в закрытые
 		$query = "SELECT *,DATE_FORMAT(`".INVOICE_TBL."`.`invoice_create_date`,'%d.%m.%Y') as invoice_create_date FROM `".INVOICE_TBL."` ";
 
-		# если статус счёта отгружен был выставлен более 10 дней назад
-		$query .= " WHERE `shipped_date` < (NOW() - interval 10 day)";
+		# если статус счёта отгружен был выставлен более 1-го дня назад
+		$query .= " WHERE `shipped_date` < (NOW() - interval 1 day)";
 		# если был зажат калькулятор
 		$query .= " AND `flag_calc` > 0 ";
 		# если заказ отгружен
