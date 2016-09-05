@@ -253,9 +253,13 @@ class CalculateMoneyBlock extends Accounting{
         $query .= " WHERE `manager_id`=?";
         $query .= " AND YEAR(closed_date)=?";
         $query .= " AND MONTH(closed_date)=?";
-        //		 echo $query.' - '.$this->manager_id.' - '. $this->year.' - '. $this->month;
+        $query .= " AND closed=?";
+
+
+        $closedStatus = 1; // статус закрытого заказа
+
         $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
-        $stmt->bind_param('iss',$this->manager_id, $this->year, $this->month ) or die($this->mysqli->error);
+        $stmt->bind_param('issi',$this->manager_id, $this->year, $this->month, $closedStatus ) or die($this->mysqli->error);
         $stmt->execute() or die($this->mysqli->error);
         $result = $stmt->get_result();
         $stmt->close();
@@ -1017,6 +1021,7 @@ class Accounting  extends aplStdAJAXMethod
 
         $Calc = new CalculateMoneyBlock($_GET['manager_id'],$_GET['month_number'],$_GET['year']);
 
+        // закрытые счета
         $this->responseClass->response['data']['bill_closed'] = $Calc->get_data_bill_closed();
 
         // запрос рассчитанных начислений
