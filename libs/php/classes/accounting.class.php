@@ -255,7 +255,6 @@ class CalculateMoneyBlock extends Accounting{
         $query .= " AND MONTH(closed_date)=?";
         $query .= " AND closed=?";
 
-
         $closedStatus = 1; // статус закрытого заказа
 
         $stmt = $this->mysqli->prepare($query) or die($this->mysqli->error);
