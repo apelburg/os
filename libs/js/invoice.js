@@ -967,7 +967,6 @@
             }
           }));
         }
-        console.log('сумма счёта (денежный формат)');
         tr.append(td2 = $('<td/>', {
           'rowspan': rowspan,
           'html': this.options.price,
