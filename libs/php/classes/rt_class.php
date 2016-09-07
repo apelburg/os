@@ -896,7 +896,8 @@ class RT{
             $characteristics =(count($characteristics)>0)?RT::json_fix_cyr(json_encode($characteristics)):'';
 
             //print_r($dop_info);
-            if($dop_info) $data_arr[$key]['dop_info'] = $dop_info[$key];
+            if($dop_info && isset($dop_info[$key])) $data_arr[$key]['dop_info'] = $dop_info[$key];
+
             $data_arr[$key]['art_id'] = $basket_data['article'];
             $data_arr[$key]['art'] = $art_data['art'];
             $data_arr[$key]['type'] = 'cat';
