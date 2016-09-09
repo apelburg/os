@@ -361,7 +361,7 @@ if(isset($_SESSION['access']['user_id'])){ // && ($_SESSION['access']['access']=
     }
 	
 	function transform_img_size($img,$limit_height,$limit_width){
-     	list($img_width, $img_height, $type, $attr) = (fopen($img,'r'))? getimagesize($img): array($limit_width,$limit_height,'',''); 
+     	list($img_width, $img_height, $type, $attr) = (@fopen($img,'r'))? getimagesize($img): array($limit_width,$limit_height,'','');
 		if($img_width==0 || $img_height ==0 )return array(0,0);
 		$limit_relate = $limit_height/$limit_width;
 		$img_relate = $img_height/$img_width;

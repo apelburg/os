@@ -2,8 +2,9 @@
 
 
 /**
- * Class Commercial offer
- *
+ * класс API для коммерческих предложений (в дальнейшем КП)
+ * отвечает за манипуляции над КП
+ * (создание, удаление а так же остальные штуки, связанные с КП)
  *
  * @author  	Alexey Kapitonov
  * @version 	06.09.2016 10:30
@@ -13,23 +14,35 @@ class Commercial_offer  extends osGeneral
     private $imgType   = [];
     private $totalInfo = [];
 
-    # настройки по умолчанию
+    /**
+     * содержит список зажатых и отжатых кнопок - настройки по умолчанию
+     * настройки, которые применяются при отсутствии сохранённых настроек у юзера
+     *
+     * @var array
+     */
     private $DefaultOptions = [
-
+        'button_1' => true,     // пример заполнения
+        'button_2' => true,     // пример заполнения
+        'button_3' => true,     // пример заполнения
+        'button_4' => false,    // пример заполнения
     ];
-    // для перевода всех приложений в режим разработки раскоментировать и установить FALSE
-    //    protected $production = false;
+
+//    для перевода всех приложений в режим разработки раскоментировать и установить FALSE
+//    protected $production = false;
 
     public 	$user_access = 0; 		    // user right (int)
     protected 	$user_id = 0;			// user id with base
-    public 		$user = array(); 		// authorised user info
+    public 		$user = array();
 
     /**
-     *
+     * @return array
      */
-    private function getDefaultOptions(){
+    public function getDefaultOptions()
+    {
+        return $this->DefaultOptions;
+    } 		// authorised user info
 
-    }
+
 
     public function __construct()
     {
@@ -64,9 +77,6 @@ class Commercial_offer  extends osGeneral
     /////////////////////////
 
 
-
-
-
     /**
      * get user access
      *
@@ -76,15 +86,16 @@ class Commercial_offer  extends osGeneral
     public function get_user_access_Database_Int($id){
         $query = "SELECT * FROM `".MANAGERS_TBL."` WHERE id = '".$id."'";
         $result = $this->mysqli->query($query) or die($this->mysqli->error);
-        $int = 0;
+        $access = 0;
         if($result->num_rows > 0){
             while($row = $result->fetch_assoc()){
-                $int = (int)$row['access'];
+                $access = (int)$row['access'];
                 $this->user = $row;
             }
         }
-        return $int;
+        return $access;
     }
+
 }
 
 /**
