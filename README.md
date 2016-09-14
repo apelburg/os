@@ -1,4 +1,1 @@
-# os
-new_os
-
-this is SRM
+# ВСЕ ПРОЕКТЫ ПЕРЕВЕДЕНЫ НА bitbucket
